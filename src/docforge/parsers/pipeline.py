@@ -2,12 +2,15 @@ from __future__ import annotations
 
 from docforge.models import AnchorRef, ParsedDocument, RawDocument, Segment, StructureNode
 from docforge.parsers.interfaces import Canonicalizer, Segmenter, StructureExtractor
+from docforge.parsers.registry import ContentTypeCanonicalizer
 
 
 class DefaultCanonicalizer:
+    def __init__(self, delegate: Canonicalizer | None = None) -> None:
+        self._delegate = delegate or ContentTypeCanonicalizer()
+
     def canonicalize(self, document: RawDocument) -> str:
-        text = document.content_bytes.decode("utf-8", errors="replace")
-        return text.replace("\r\n", "\n").replace("\r", "\n")
+        return self._delegate.canonicalize(document)
 
 
 class DefaultStructureExtractor:

@@ -33,7 +33,7 @@ Out of scope for this workplan:
 
 Progress status (as of 2026-03-03):
 - PR1: done
-- PR2: pending
+- PR2: done
 - PR3: pending
 - PR4: pending
 - PR5: pending
@@ -79,7 +79,7 @@ Exit criteria:
 - [x] `make type` passes
 - [x] `make test` passes
 
-### PR2: Canonicalization adapters (plain/markdown/html/pdf)
+### PR2: Canonicalization adapters (plain/markdown/html/pdf) (Done 2026-03-03)
 Scope:
 - Implement canonical text conversion to UTF-8
 - Normalize newline behavior while preserving code block content
@@ -90,19 +90,35 @@ Touched modules (expected):
 - `src/.../parsers/canonicalize_*.py`
 - `src/.../parsers/registry.py`
 
+Implemented modules:
+- `src/docforge/parsers/canonicalize_common.py`
+- `src/docforge/parsers/canonicalize_plain.py`
+- `src/docforge/parsers/canonicalize_markdown.py`
+- `src/docforge/parsers/canonicalize_html.py`
+- `src/docforge/parsers/canonicalize_pdf.py`
+- `src/docforge/parsers/errors.py`
+- `src/docforge/parsers/registry.py`
+
 Acceptance checks:
-- Identical bytes + metadata produce identical canonical text
-- Unsupported/empty content types return explicit typed error paths
+- [x] Identical bytes + metadata produce identical canonical text
+- [x] Unsupported/empty content types return explicit typed error paths
 
 Required tests:
-- Format-specific fixture tests (`.txt`, `.md`, `.html`, `.pdf`)
-- Determinism test (repeat run produces byte-identical canonical output)
+- [x] Format-specific fixture tests (`.txt`, `.md`, `.html`, `.pdf`)
+- [x] Determinism test (repeat run produces byte-identical canonical output)
+
+Implemented tests:
+- `tests/test_parsers_canonicalization.py`
+- `tests/fixtures/parsers/sample.txt`
+- `tests/fixtures/parsers/sample.md`
+- `tests/fixtures/parsers/sample.html`
+- `tests/fixtures/parsers/sample.pdf`
 
 Exit criteria:
-- `make fmt` passes
-- `make lint` passes
-- `make type` passes
-- `make test` passes
+- [x] `make fmt` passes
+- [x] `make lint` passes
+- [x] `make type` passes
+- [x] `make test` passes
 
 ### PR3: Structure extraction + anchors
 Scope:
