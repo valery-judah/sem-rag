@@ -30,6 +30,10 @@ def test_parser_pipeline_default_components_parse_document() -> None:
     assert [segment.type for segment in parsed.segments] == ["SECTION", "PASSAGE"]
     assert parsed.segments[0].child_ids == [parsed.segments[1].segment_id]
     assert parsed.segments[1].parent_id == parsed.segments[0].segment_id
+    assert [anchor.anchor_id for anchor in parsed.section_anchors] == ["section:doc-1:root"]
+    assert [anchor.kind for anchor in parsed.block_anchors] == ["block"]
+    assert parsed.block_anchors[0].start_offset == 0
+    assert parsed.block_anchors[0].end_offset == len(parsed.canonical_text)
 
 
 def test_parser_pipeline_uses_components_via_interface_contract() -> None:

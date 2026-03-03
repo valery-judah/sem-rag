@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from docforge.parsers.anchors import AnchorBuilder, collect_structure_anchors, normalize_anchor_slug
 from docforge.parsers.canonicalize_html import HtmlCanonicalizer
 from docforge.parsers.canonicalize_markdown import MarkdownCanonicalizer
 from docforge.parsers.canonicalize_pdf import PdfCanonicalizer
@@ -18,8 +19,10 @@ from docforge.parsers.pipeline import (
     ParserPipeline,
 )
 from docforge.parsers.registry import ContentTypeCanonicalizer, default_canonicalizers
+from docforge.parsers.structure import HeuristicStructureExtractor
 
 __all__ = [
+    "AnchorBuilder",
     "CanonicalizationError",
     "Canonicalizer",
     "ContentTypeCanonicalizer",
@@ -28,6 +31,7 @@ __all__ = [
     "DefaultStructureExtractor",
     "EmptyContentError",
     "HtmlCanonicalizer",
+    "HeuristicStructureExtractor",
     "MarkdownCanonicalizer",
     "ParserPipeline",
     "PdfCanonicalizer",
@@ -36,5 +40,7 @@ __all__ = [
     "Segmenter",
     "StructureExtractor",
     "UnsupportedContentTypeError",
+    "collect_structure_anchors",
     "default_canonicalizers",
+    "normalize_anchor_slug",
 ]

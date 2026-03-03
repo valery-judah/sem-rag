@@ -34,7 +34,7 @@ Out of scope for this workplan:
 Progress status (as of 2026-03-03):
 - PR1: done
 - PR2: done
-- PR3: pending
+- PR3: done
 - PR4: pending
 - PR5: pending
 
@@ -120,7 +120,7 @@ Exit criteria:
 - [x] `make type` passes
 - [x] `make test` passes
 
-### PR3: Structure extraction + anchors
+### PR3: Structure extraction + anchors (Done 2026-03-03)
 Scope:
 - Build structure tree with nodes for headings, paragraphs, lists, tables, code
 - Generate:
@@ -133,6 +133,12 @@ Touched modules (expected):
 - `src/.../parsers/structure.py`
 - `src/.../parsers/anchors.py`
 
+Implemented modules:
+- `src/docforge/parsers/structure.py`
+- `src/docforge/parsers/anchors.py`
+- `src/docforge/parsers/pipeline.py`
+- `src/docforge/parsers/__init__.py`
+
 Acceptance checks:
 - Heading hierarchy is preserved
 - Tables preserve header semantics in serialized text
@@ -144,10 +150,14 @@ Required tests:
 - Anchor uniqueness/collision tests
 - Regression tests for repeated headings with identical titles
 
+Implemented tests:
+- `tests/test_parsers_structure.py`
+- `tests/test_parsers_pipeline.py`
+
 Exit criteria:
-- `make lint` passes
-- `make type` passes
-- `make test` passes
+- [x] `make lint` passes
+- [x] `make type` passes
+- [x] `make test` passes
 
 ### PR4: Hierarchical segmenter
 Scope:
