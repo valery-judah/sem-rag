@@ -5,7 +5,8 @@ import hashlib
 from docforge.connectors.models import RawDocument
 from docforge.parsers.base import BaseParser
 from docforge.parsers.canonicalize import canonicalize
-from docforge.parsers.models import AnchorMap, DocNode, ParsedDocument
+from docforge.parsers.models import AnchorMap, ParsedDocument
+from docforge.parsers.tree_builder import build_tree
 
 
 class DeterministicParser(BaseParser):
@@ -36,7 +37,7 @@ class DeterministicParser(BaseParser):
             doc_id=doc.doc_id,
             title=title,
             canonical_text=canon.canonical_text,
-            structure_tree=DocNode(children=[]),
+            structure_tree=build_tree(canon.canonical_text),
             anchors=AnchorMap(
                 doc_anchor=_stable_doc_anchor(doc.doc_id),
                 sections=[],
