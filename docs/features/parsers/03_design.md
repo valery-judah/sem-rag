@@ -8,7 +8,7 @@
 
 ## 2. Data Flow
 1. Receive `RawDocument` from connector output.
-2. Canonicalize source format to internal markdown-like text (`canonical_text`).
+2. Canonicalize source format to internal strict CommonMark + GFM tables text (`canonical_text`).
 3. Parse canonical text to AST.
 4. Build `structure_tree` using heading-aware stack traversal.
 5. Compute block `range` indices against final canonical text.
@@ -18,15 +18,15 @@
 ## 3. Algorithms and Tie-Breakers
 
 ### 3.1 Canonicalization by `content_type`
-- `text/markdown`: parse directly with normalization pass.
-- `text/html`: convert to markdown-like representation with stdlib parser (`html.parser`), preserving tables/code blocks.
+- `text/markdown`: parse directly with normalization pass to ensure strict CommonMark + GFM tables compliance.
+- `text/html`: convert to CommonMark + GFM tables using a robust, deterministic library (e.g., `beautifulsoup4` or `markdownify`), preserving tables/code blocks.
 - `text/plain`: wrap into paragraph/list-compatible canonical form.
 - Other textual types (`text/*`): route through deterministic plain-text normalization.
 - Non-textual types (`application/pdf`, `application/octet-stream`, unknown binary): emit `canonical_text=""` with `has_textual_content=false`.
 
 ### 3.2 AST parsing and tree construction
 - Use a deterministic AST parser configuration (stable options and version pin).
-- Maintain a heading stack rooted at `doc`.
+- Maintain a heading stack rooted at `doc`. The `doc` node inherently maps to the document. Its title is derived from `RawDocument.metadata.title` if available; otherwise, it defaults to the `doc_id` or a generic placeholder (e.g., `'Untitled Document'`). Initial blocks before the first heading attach directly to this root.
 - For each heading node:
   - pop while top heading level is greater than or equal to incoming level
   - attach heading under resulting parent
@@ -54,7 +54,7 @@
 - Compute ranges after canonical text is finalized.
 - Track spans in one pass over canonical block serialization.
 - Emit `[start, end]` with `0 <= start < end <= len(canonical_text)` for non-empty blocks.
-- For empty blocks (if representable), enforce deterministic zero-length policy.
+- Empty blocks (e.g., paragraphs containing only whitespace) MUST be discarded. All emitted blocks must have length > 0.
 
 ### 3.6 Anchor generation
 - `doc_anchor = hash(doc_id)`
@@ -65,14 +65,14 @@
 ## 4. Edge-Case Handling
 - Missing headings: attach initial blocks to root node.
 - Skipped heading levels: keep valid tree without synthesizing missing levels.
-- Malformed tables: preserve recoverable textual content; mark as paragraph fallback when table semantics cannot be trusted.
+- Malformed tables: preserve recoverable textual content. A table is considered malformed if row column counts vary by more than 50% from the header. In such cases, preserve text sequentially as paragraph fallbacks separated by spaces.
 - Nested/escaped code fences: treat outer parsed fence as structural boundary and preserve interior text.
 - Empty/near-empty input: emit well-formed deterministic document with root tree and metadata.
 
 ## 5. Tradeoff Decisions
-- Markdown-like canonical representation:
-  - Pros: unified downstream parsing path and easier human inspection.
-  - Cons: HTML edge cases may need fallback handling.
+- CommonMark + GFM tables canonical representation:
+  - Pros: unified downstream parsing path, formal grammar contract, and easier human inspection.
+  - Cons: external dependency needed for HTML conversion (e.g., `beautifulsoup4`/`markdownify`) rather than pure stdlib.
 - Stack-based heading tree build:
   - Pros: O(n) behavior and deterministic parent selection.
   - Cons: requires strict parser token ordering assumptions.
@@ -82,10 +82,10 @@
 
 ## 6. Observability
 Emit parser-stage events aligned with Phase 1 vocabulary:
-- `DocParsed(doc_id, anchors_count, structure_nodes)`
+- `DocParsed(doc_id, content_type, parser_version, duration_ms, section_count, block_count)`
 - `PipelineError(stage="Parse", doc_id, error_class)`
 
-Recommended event payload fields:
+Recommended event payload fields (for `DocParsed` and potentially debug logs):
 - `doc_id`
 - `content_type`
 - `parser_version`
