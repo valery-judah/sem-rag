@@ -49,15 +49,18 @@ Scope:
 
 Touched modules:
 - `src/docforge/parsers/canonicalize.py`
-- parser entrypoint implementation files
+- `src/docforge/parsers/default.py`
+- `src/docforge/parsers/__init__.py`
 
 Acceptance checks:
 - `canonical_text` UTF-8 correctness.
 - Non-empty output for parser-eligible textual docs.
+- Non-textual docs deterministically emit empty `canonical_text` with metadata flag.
 
 Required tests:
 - HTML/Markdown/plain-text unit fixtures.
 - Newline and whitespace normalization tests.
+- Minimal parser integration tests for deterministic metadata and output.
 
 Rollback/mitigation:
 - Feature-flag canonicalization backend strategy if conversion regressions occur.
@@ -65,6 +68,7 @@ Rollback/mitigation:
 Exit criteria:
 - Canonicalization tests pass on fixture suite.
 - No nondeterministic deltas between repeated runs.
+- Minimal parser class is available and exported for PR3/PR4 integration.
 
 ### PR3: Structure Tree Extraction (M1)
 Scope:
