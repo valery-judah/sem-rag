@@ -29,6 +29,28 @@ htmlcov/
 .env.*
 !.env.example
 
+# Local secrets / credentials
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.cer
+*.jks
+*.keystore
+*.der
+id_rsa
+id_dsa
+id_ecdsa
+id_ed25519
+secrets.*
+credentials.*
+*.secret
+*.secrets
+*.api_key
+*.apikey
+*.token
+
 # Editor / OS noise
 .DS_Store
 .vscode/
