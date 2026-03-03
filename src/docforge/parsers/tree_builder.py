@@ -56,7 +56,6 @@ class BlockTokenizer:
 
             # Code Block
             if line.startswith(CODE_FENCE):
-                start_idx = idx
                 start_offset = self.line_starts[idx]
                 idx += 1
                 while idx < n_lines and not self.lines[idx].startswith(CODE_FENCE):
