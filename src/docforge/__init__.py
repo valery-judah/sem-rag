@@ -1,5 +1,11 @@
-"""Semantic RAG baseline package."""
+from __future__ import annotations
 
-from .retrieval import SemanticIndex
+from importlib.metadata import PackageNotFoundError, version
 
-__all__ = ["SemanticIndex"]
+try:
+    __version__ = version("docforge")
+except PackageNotFoundError:  # pragma: no cover
+    __version__ = "0.0.0"
+
+__all__ = ["__version__"]
+
