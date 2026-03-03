@@ -31,7 +31,14 @@ Out of scope for this workplan:
 
 ## 4. PR Plan with Exit Criteria
 
-### PR1: Contracts + parser pipeline skeleton
+Progress status (as of 2026-03-03):
+- PR1: done
+- PR2: pending
+- PR3: pending
+- PR4: pending
+- PR5: pending
+
+### PR1: Contracts + parser pipeline skeleton (Done 2026-03-03)
 Scope:
 - Add/confirm typed models for:
   - `ParsedDocument`
@@ -48,17 +55,29 @@ Touched modules (expected):
 - `src/.../models/`
 - `src/.../parsers/`
 
+Implemented modules:
+- `src/docforge/models/parser.py`
+- `src/docforge/models/__init__.py`
+- `src/docforge/models/raw_document.py`
+- `src/docforge/parsers/interfaces.py`
+- `src/docforge/parsers/pipeline.py`
+- `src/docforge/parsers/__init__.py`
+
 Acceptance checks:
-- Pipeline imports cleanly and can construct no-op/default components
-- Contracts encode parent/child segment relationships and anchor fields
+- [x] Pipeline imports cleanly and can construct no-op/default components
+- [x] Contracts encode parent/child segment relationships and anchor fields
 
 Required tests:
-- Model serialization/deserialization tests
-- Interface contract test (minimal fake implementation)
+- [x] Model serialization/deserialization tests
+- [x] Interface contract test (minimal fake implementation)
+
+Implemented tests:
+- `tests/test_models_parser.py`
+- `tests/test_parsers_pipeline.py`
 
 Exit criteria:
-- `make type` passes
-- `make test` passes
+- [x] `make type` passes
+- [x] `make test` passes
 
 ### PR2: Canonicalization adapters (plain/markdown/html/pdf)
 Scope:

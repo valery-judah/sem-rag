@@ -5,7 +5,13 @@ from typing import Any, Literal, TypeAlias
 
 from pydantic import BaseModel, Field
 
-KnownContentType: TypeAlias = Literal["application/pdf", "application/octet-stream"]
+KnownContentType: TypeAlias = Literal[
+    "text/plain",
+    "text/markdown",
+    "text/html",
+    "application/pdf",
+    "application/octet-stream",
+]
 
 
 class DocumentTimestamps(BaseModel):
