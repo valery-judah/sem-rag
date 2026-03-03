@@ -5,7 +5,6 @@ from typing import Any, Literal, TypeAlias
 
 from pydantic import BaseModel, Field
 
-
 KnownContentType: TypeAlias = Literal["application/pdf", "application/octet-stream"]
 
 

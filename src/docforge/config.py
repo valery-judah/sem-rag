@@ -1,9 +1,9 @@
 from __future__ import annotations
 
+import tomllib
 from pathlib import Path
 from typing import Any
 
-import tomllib
 from pydantic import BaseModel, Field
 
 from docforge.models import KnownContentType

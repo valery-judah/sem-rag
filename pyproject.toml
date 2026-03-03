@@ -24,6 +24,7 @@ docforge = "docforge.cli:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/docforge"]
+include = ["src/docforge/py.typed"]
 
 [tool.ruff]
 line-length = 100
