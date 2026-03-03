@@ -1,10 +1,14 @@
 from collections.abc import Iterator
-from dataclasses import dataclass
 from typing import Any
 
+from pydantic import BaseModel, ConfigDict, field_validator
 
-@dataclass
-class RawDocument:
+
+class StrictModel(BaseModel):
+    model_config = ConfigDict(strict=True, extra="forbid", arbitrary_types_allowed=True)
+
+
+class RawDocument(StrictModel):
     """
     Standardized schema for all documents fetched from source connectors.
     """
@@ -19,23 +23,23 @@ class RawDocument:
     acl_scope: dict[str, Any]
     timestamps: dict[str, str]
 
-    def __post_init__(self) -> None:
-        """Validate that required fields are present and of the correct type."""
-        if not isinstance(self.doc_id, str) or not self.doc_id:
-            raise ValueError("doc_id must be a non-empty string")
-        if not isinstance(self.source, str) or not self.source:
-            raise ValueError("source must be a non-empty string")
-        if not isinstance(self.source_ref, str) or not self.source_ref:
-            raise ValueError("source_ref must be a non-empty string")
-        if not isinstance(self.url, str):
+    @field_validator("doc_id", "source", "source_ref", "content_type")
+    @classmethod
+    def _validate_non_empty_strings(cls, value: str) -> str:
+        if not value:
+            raise ValueError("must be a non-empty string")
+        return value
+
+    @field_validator("url")
+    @classmethod
+    def _validate_url_string(cls, value: str) -> str:
+        if not isinstance(value, str):
             raise ValueError("url must be a string")
-        if not isinstance(self.content_stream, Iterator):
-            raise TypeError("content_stream must be an iterator")
-        if not isinstance(self.content_type, str) or not self.content_type:
-            raise ValueError("content_type must be a non-empty string")
-        if not isinstance(self.metadata, dict):
-            raise TypeError("metadata must be a dictionary")
-        if not isinstance(self.acl_scope, dict):
-            raise TypeError("acl_scope must be a dictionary")
-        if not isinstance(self.timestamps, dict):
-            raise TypeError("timestamps must be a dictionary")
+        return value
+
+    @field_validator("content_stream", mode="before")
+    @classmethod
+    def _validate_content_stream_is_iterator(cls, value: Any) -> Any:
+        if not isinstance(value, Iterator):
+            raise ValueError("content_stream must be an iterator")
+        return value
