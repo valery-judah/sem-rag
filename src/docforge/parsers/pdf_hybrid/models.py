@@ -118,3 +118,35 @@ class PageCandidate(BaseModel):
     assets: list[AssetCandidate] = Field(default_factory=list)
     signals: PageSignals = Field(default_factory=PageSignals)
     status: ParseStatus
+
+    @classmethod
+    def empty(cls, page_idx: int) -> "PageCandidate":
+        return cls(
+            page_idx=page_idx,
+            blocks=[],
+            assets=[],
+            status=ParseStatus.EMPTY,
+            signals=PageSignals(),
+        )
+
+    @classmethod
+    def placeholder_error(cls, page_idx: int, message: str | None = None) -> "PageCandidate":
+        block = BlockCandidate(
+            block_id=f"placeholder_p{page_idx}",
+            type=BlockType.UNKNOWN,
+            text=message or f"[UNPARSEABLE PAGE {page_idx}]",
+            page_idx=page_idx,
+            reading_order_key="0",
+            source=BlockSource(
+                engine="pipeline",
+                engine_artifact_ref="none",
+                engine_block_ref="none",
+            ),
+        )
+        return cls(
+            page_idx=page_idx,
+            blocks=[block],
+            assets=[],
+            status=ParseStatus.ERROR,
+            signals=PageSignals(),
+        )
