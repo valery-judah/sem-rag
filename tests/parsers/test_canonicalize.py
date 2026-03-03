@@ -73,3 +73,40 @@ def test_canonicalize_is_deterministic_for_same_input() -> None:
     for _ in range(5):
         current = canonicalize(content, "text/markdown", blank_line_collapse=2)
         assert current == expected
+
+
+def test_html_flushes_trailing_inline_text() -> None:
+    content = b"<html><body><div>first</div><span>second</span></body></html>"
+
+    result = canonicalize(content, "text/html", blank_line_collapse=2)
+
+    assert result.canonical_text == "firstsecond"
+    assert result.has_textual_content is True
+
+
+def test_html_table_header_uses_row_with_th_cells() -> None:
+    content = b"""
+    <table>
+      <tr><td>r1c1</td><td>r1c2</td></tr>
+      <tr><th>h1</th><th>h2</th></tr>
+      <tr><td>r3c1</td><td>r3c2</td></tr>
+    </table>
+    """
+
+    result = canonicalize(content, "text/html", blank_line_collapse=2)
+
+    assert result.canonical_text == "\n\n".join(
+        [
+            "| h1 | h2 |",
+            "| --- | --- |",
+            "| r1c1 | r1c2 |",
+            "| r3c1 | r3c2 |",
+        ]
+    )
+
+
+def test_empty_text_payloads_are_marked_non_textual() -> None:
+    for content_type in ("text/plain", "text/markdown", "text/html"):
+        result = canonicalize(b"   \n\n\t", content_type, blank_line_collapse=2)
+        assert result.canonical_text == ""
+        assert result.has_textual_content is False
