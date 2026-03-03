@@ -53,8 +53,7 @@ credentials.*
 
 # Editor / OS noise
 .DS_Store
-.vscode/
 .idea/
 
 # rag test corpus
-input/
+data/
