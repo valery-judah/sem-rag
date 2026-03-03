@@ -4,6 +4,7 @@ from docforge.models import AnchorRef, ParsedDocument, RawDocument, Segment, Str
 from docforge.parsers.anchors import collect_structure_anchors
 from docforge.parsers.interfaces import Canonicalizer, Segmenter, StructureExtractor
 from docforge.parsers.registry import ContentTypeCanonicalizer
+from docforge.parsers.segmenter import HierarchicalSegmenter
 from docforge.parsers.structure import HeuristicStructureExtractor
 
 
@@ -34,6 +35,9 @@ class DefaultStructureExtractor:
 
 
 class DefaultSegmenter:
+    def __init__(self, delegate: Segmenter | None = None) -> None:
+        self._delegate = delegate or HierarchicalSegmenter()
+
     def segment(
         self,
         *,
@@ -42,46 +46,12 @@ class DefaultSegmenter:
         structure_tree: StructureNode,
         doc_anchor: AnchorRef,
     ) -> list[Segment]:
-        del structure_tree
-
-        section_segment_id = f"{document.doc_id}:section:0"
-        passage_segment_id = f"{document.doc_id}:passage:0"
-        has_text = bool(canonical_text.strip())
-
-        section = Segment(
-            segment_id=section_segment_id,
-            doc_id=document.doc_id,
-            type="SECTION",
-            child_ids=[passage_segment_id] if has_text else [],
-            section_path="root",
-            anchor=AnchorRef(
-                anchor_id=f"section:{document.doc_id}:root",
-                kind="section",
-                section_path="root",
-            ),
-            text=canonical_text,
-            token_count=_token_count(canonical_text),
+        return self._delegate.segment(
+            document=document,
+            canonical_text=canonical_text,
+            structure_tree=structure_tree,
+            doc_anchor=doc_anchor,
         )
-        if not has_text:
-            return [section]
-
-        passage = Segment(
-            segment_id=passage_segment_id,
-            doc_id=document.doc_id,
-            type="PASSAGE",
-            parent_id=section_segment_id,
-            section_path="root",
-            anchor=AnchorRef(
-                anchor_id=f"passage:{document.doc_id}:0",
-                kind="passage",
-                section_path="root",
-                start_offset=0,
-                end_offset=len(canonical_text),
-            ),
-            text=canonical_text,
-            token_count=_token_count(canonical_text),
-        )
-        return [section, passage]
 
 
 class ParserPipeline:
@@ -132,9 +102,3 @@ def _title_from_metadata(document: RawDocument) -> str | None:
     if isinstance(title, str):
         return title
     return None
-
-
-def _token_count(text: str) -> int:
-    if not text.strip():
-        return 0
-    return len(text.split())

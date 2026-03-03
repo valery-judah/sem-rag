@@ -35,7 +35,7 @@ Progress status (as of 2026-03-03):
 - PR1: done
 - PR2: done
 - PR3: done
-- PR4: pending
+- PR4: done
 - PR5: pending
 
 ### PR1: Contracts + parser pipeline skeleton (Done 2026-03-03)
@@ -159,7 +159,7 @@ Exit criteria:
 - [x] `make type` passes
 - [x] `make test` passes
 
-### PR4: Hierarchical segmenter
+### PR4: Hierarchical segmenter (Done 2026-03-03)
 Scope:
 - Implement section boundary detection from structure tree
 - Implement passage splitting with configurable token target (300–800) and overlap (0–15%)
@@ -171,21 +171,31 @@ Touched modules (expected):
 - `src/.../parsers/segmenter.py`
 - `src/.../config.py` (parser/segmenter tunables)
 
+Implemented modules:
+- `src/docforge/parsers/segmenter.py`
+- `src/docforge/parsers/pipeline.py`
+- `src/docforge/parsers/__init__.py`
+- `src/docforge/config.py`
+
 Acceptance checks:
-- Segment DAG is cycle-free and parent pointers are valid
-- `segment_id` stability guaranteed for identical doc version input
-- Token window constraints respected within tolerance
+- [x] Segment DAG is cycle-free and parent pointers are valid
+- [x] `segment_id` stability guaranteed for identical doc version input
+- [x] Token window constraints respected within tolerance
 
 Required tests:
-- Segment contract tests (parent/child integrity)
-- Determinism tests for segment IDs
-- Edge-case fixtures: long tables, long code blocks, no headings
+- [x] Segment contract tests (parent/child integrity)
+- [x] Determinism tests for segment IDs
+- [x] Edge-case fixtures: long tables, long code blocks, no headings
+
+Implemented tests:
+- `tests/test_parsers_segmenter.py`
+- `tests/test_config.py`
 
 Exit criteria:
-- `make fmt` passes
-- `make lint` passes
-- `make type` passes
-- `make test` passes
+- [x] `make fmt` passes
+- [x] `make lint` passes
+- [x] `make type` passes
+- [x] `make test` passes
 
 ### PR5: Parser CLI stage + persisted artifacts
 Scope:

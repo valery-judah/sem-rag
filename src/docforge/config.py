@@ -22,8 +22,20 @@ class SourceConfig(BaseModel):
     acl_scope: dict[str, Any] = Field(default_factory=dict)
 
 
+class ParsingConfig(BaseModel):
+    preserve_tables: bool = True
+    preserve_code_blocks: bool = True
+
+
+class SegmentationConfig(BaseModel):
+    passage_tokens_target: int = Field(default=600, ge=300, le=800)
+    overlap_ratio: float = Field(default=0.1, ge=0.0, le=0.15)
+
+
 class DocforgeConfig(BaseModel):
     sources: list[SourceConfig]
+    parsing: ParsingConfig = Field(default_factory=ParsingConfig)
+    segmentation: SegmentationConfig = Field(default_factory=SegmentationConfig)
 
 
 def load_config(path: Path | str) -> DocforgeConfig:

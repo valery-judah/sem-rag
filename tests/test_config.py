@@ -90,3 +90,43 @@ type = "local_file"
         pass
     else:
         raise AssertionError("Expected pydantic.ValidationError")
+
+
+def test_load_config_applies_segmentation_defaults(tmp_path: Path) -> None:
+    config_file = tmp_path / "connectors.toml"
+    config_file.write_text(
+        """
+[[sources]]
+type = "local_file"
+path = "data/mvp.md"
+""".strip(),
+        encoding="utf-8",
+    )
+
+    config = load_config(config_file)
+
+    assert config.segmentation.passage_tokens_target == 600
+    assert config.segmentation.overlap_ratio == 0.1
+
+
+def test_load_config_rejects_out_of_range_segmentation_values(tmp_path: Path) -> None:
+    config_file = tmp_path / "connectors.toml"
+    config_file.write_text(
+        """
+[[sources]]
+type = "local_file"
+path = "data/mvp.md"
+
+[segmentation]
+passage_tokens_target = 200
+overlap_ratio = 0.20
+""".strip(),
+        encoding="utf-8",
+    )
+
+    try:
+        load_config(config_file)
+    except pydantic.ValidationError:
+        pass
+    else:
+        raise AssertionError("Expected pydantic.ValidationError")

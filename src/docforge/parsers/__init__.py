@@ -19,6 +19,7 @@ from docforge.parsers.pipeline import (
     ParserPipeline,
 )
 from docforge.parsers.registry import ContentTypeCanonicalizer, default_canonicalizers
+from docforge.parsers.segmenter import HierarchicalSegmenter
 from docforge.parsers.structure import HeuristicStructureExtractor
 
 __all__ = [
@@ -30,6 +31,7 @@ __all__ = [
     "DefaultSegmenter",
     "DefaultStructureExtractor",
     "EmptyContentError",
+    "HierarchicalSegmenter",
     "HtmlCanonicalizer",
     "HeuristicStructureExtractor",
     "MarkdownCanonicalizer",
