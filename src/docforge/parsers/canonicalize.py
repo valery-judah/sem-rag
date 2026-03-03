@@ -25,7 +25,7 @@ def canonicalize(
         canonical_text = _normalize_markdown_like(text, blank_line_collapse=blank_line_collapse)
         return CanonicalizationResult(
             canonical_text=canonical_text,
-            has_textual_content=True,
+            has_textual_content=bool(canonical_text),
             detected_content_family="markdown",
             warnings=[],
         )
@@ -35,7 +35,7 @@ def canonicalize(
         canonical_text = _canonicalize_html(text, blank_line_collapse=blank_line_collapse)
         return CanonicalizationResult(
             canonical_text=canonical_text,
-            has_textual_content=True,
+            has_textual_content=bool(canonical_text),
             detected_content_family="html",
             warnings=[],
         )
@@ -45,7 +45,7 @@ def canonicalize(
         canonical_text = _normalize_markdown_like(text, blank_line_collapse=blank_line_collapse)
         return CanonicalizationResult(
             canonical_text=canonical_text,
-            has_textual_content=True,
+            has_textual_content=bool(canonical_text),
             detected_content_family="plain",
             warnings=[],
         )
@@ -100,6 +100,7 @@ def _canonicalize_html(text: str, blank_line_collapse: int) -> str:
     parser = _HtmlToMarkdownLikeParser()
     parser.feed(text)
     parser.close()
+    parser.finalize()
     markdown_like = "\n\n".join(block for block in parser.blocks if block)
     return _normalize_markdown_like(markdown_like, blank_line_collapse=blank_line_collapse)
 
@@ -123,6 +124,7 @@ class _HtmlToMarkdownLikeParser(HTMLParser):
         self._row_cells: list[str] = []
         self._row_has_header_cell = False
         self._table_rows: list[list[str]] = []
+        self._table_row_has_header: list[bool] = []
         self._table_has_header = False
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
@@ -167,6 +169,7 @@ class _HtmlToMarkdownLikeParser(HTMLParser):
             self._flush_inline_buffer()
             self._in_table = True
             self._table_rows = []
+            self._table_row_has_header = []
             self._table_has_header = False
             return
 
@@ -234,6 +237,7 @@ class _HtmlToMarkdownLikeParser(HTMLParser):
         if tag_l == "tr" and self._in_row:
             if self._row_cells:
                 self._table_rows.append(self._row_cells)
+                self._table_row_has_header.append(self._row_has_header_cell)
                 if self._row_has_header_cell:
                     self._table_has_header = True
             self._row_cells = []
@@ -261,6 +265,9 @@ class _HtmlToMarkdownLikeParser(HTMLParser):
             self.blocks.append(text)
         self._inline_buffer = []
 
+    def finalize(self) -> None:
+        self._flush_inline_buffer()
+
     def _emit_table(self) -> None:
         if not self._table_rows:
             return
@@ -270,11 +277,14 @@ class _HtmlToMarkdownLikeParser(HTMLParser):
         padded_rows = [row + ([""] * (max_cols - len(row))) for row in rows]
 
         if self._table_has_header:
-            header = padded_rows[0]
+            header_idx = self._table_row_has_header.index(True)
+            header = padded_rows[header_idx]
             separator = ["---"] * max_cols
             self.blocks.append(_render_table_row(header))
             self.blocks.append(_render_table_row(separator))
-            for row in padded_rows[1:]:
+            for idx, row in enumerate(padded_rows):
+                if idx == header_idx:
+                    continue
                 self.blocks.append(_render_table_row(row))
             return
 
