@@ -19,9 +19,10 @@
 
 ### 3.1 Canonicalization by `content_type`
 - `text/markdown`: parse directly with normalization pass.
-- `text/html`: convert to markdown-like representation, preserving tables/code blocks.
+- `text/html`: convert to markdown-like representation with stdlib parser (`html.parser`), preserving tables/code blocks.
 - `text/plain`: wrap into paragraph/list-compatible canonical form.
-- Other textual types: route through best-effort text extraction policy; parser remains deterministic for the chosen policy.
+- Other textual types (`text/*`): route through deterministic plain-text normalization.
+- Non-textual types (`application/pdf`, `application/octet-stream`, unknown binary): emit `canonical_text=""` with `has_textual_content=false`.
 
 ### 3.2 AST parsing and tree construction
 - Use a deterministic AST parser configuration (stable options and version pin).
@@ -41,6 +42,8 @@
 - Inside code blocks:
   - preserve verbatim text and indentation
   - do not collapse internal whitespace
+- UTF-8 decode policy for textual inputs:
+  - decode with `errors="replace"` so canonicalization is always valid UTF-8 and deterministic.
 
 ### 3.4 Duplicate heading policy
 - Generate normalized section path material from heading lineage.
