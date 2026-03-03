@@ -1,6 +1,7 @@
 from typing import Any
 
 import pytest
+from pydantic import ValidationError
 
 from docforge.connectors.exceptions import (
     ConfigurationError,
@@ -25,8 +26,7 @@ def get_valid_doc_kwargs() -> dict[str, Any]:
     }
 
 
-def test_raw_document_valid():
-    """Ensure a correctly formatted RawDocument passes validation."""
+def test_raw_document_valid() -> None:
     kwargs = get_valid_doc_kwargs()
     doc = RawDocument(**kwargs)
     assert doc.doc_id == "test_id_123"
@@ -57,43 +57,47 @@ def test_raw_document_valid():
         "timestamps",
     ],
 )
-def test_raw_document_missing_mandatory_fields(missing_field: str):
-    """Ensure RawDocument requires all mandatory fields by dropping each one."""
+def test_raw_document_missing_mandatory_fields(missing_field: str) -> None:
     kwargs = get_valid_doc_kwargs()
     del kwargs[missing_field]
-    with pytest.raises(TypeError):
+    with pytest.raises(ValidationError):
         RawDocument(**kwargs)
 
 
 @pytest.mark.parametrize(
-    "field, invalid_value, expected_exc",
+    "field, invalid_value",
     [
-        ("doc_id", "", ValueError),
-        ("doc_id", 123, ValueError),
-        ("source", "", ValueError),
-        ("source", 123, ValueError),
-        ("source_ref", "", ValueError),
-        ("source_ref", 123, ValueError),
-        ("url", 123, ValueError),
-        ("content_stream", "string instead of iterator", TypeError),
-        ("content_stream", b"bytes instead of iterator", TypeError),
-        ("content_type", "", ValueError),
-        ("content_type", 123, ValueError),
-        ("metadata", [], TypeError),
-        ("acl_scope", "not_a_dict", TypeError),
-        ("timestamps", [], TypeError),
+        ("doc_id", ""),
+        ("doc_id", 123),
+        ("source", ""),
+        ("source", 123),
+        ("source_ref", ""),
+        ("source_ref", 123),
+        ("url", 123),
+        ("content_stream", "string instead of iterator"),
+        ("content_stream", b"bytes instead of iterator"),
+        ("content_type", ""),
+        ("content_type", 123),
+        ("metadata", []),
+        ("acl_scope", "not_a_dict"),
+        ("timestamps", []),
     ],
 )
-def test_raw_document_invalid_types_and_values(field: str, invalid_value: Any, expected_exc):
-    """Ensure RawDocument enforces basic type checking in __post_init__."""
+def test_raw_document_invalid_types_and_values(field: str, invalid_value: Any) -> None:
     kwargs = get_valid_doc_kwargs()
     kwargs[field] = invalid_value
-    with pytest.raises(expected_exc):
+    with pytest.raises(ValidationError):
         RawDocument(**kwargs)
 
 
-def test_exception_hierarchies():
-    """Ensure all custom exceptions correctly inherit from their bases and retain parameters."""
+def test_raw_document_strict_mode_rejects_coercion() -> None:
+    kwargs = get_valid_doc_kwargs()
+    kwargs["timestamps"] = {"created_at": 1, "updated_at": 2}
+    with pytest.raises(ValidationError):
+        RawDocument(**kwargs)
+
+
+def test_exception_hierarchies() -> None:
     err_rate = RateLimitError("Rate limited", retry_after=60)
     assert err_rate.retry_after == 60
     assert str(err_rate) == "Rate limited"
