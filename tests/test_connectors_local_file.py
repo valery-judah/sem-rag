@@ -61,6 +61,36 @@ def test_local_file_connector_since_filter_excludes_older_update(tmp_path: Path)
     assert docs == []
 
 
+def test_local_file_connector_since_filter_excludes_equal_update(tmp_path: Path) -> None:
+    doc_path = tmp_path / "note.txt"
+    doc_path.write_text("hello", encoding="utf-8")
+    updated_at = datetime(2025, 6, 1, 12, 0, 0, tzinfo=UTC)
+    _set_mtime(doc_path, updated_at)
+
+    source = SourceConfig(type="local_file", path=str(doc_path))
+    connector = LocalFileConnector(source)
+
+    docs = list(connector.iter_raw_documents(since=updated_at))
+
+    assert docs == []
+
+
+def test_local_file_connector_since_filter_includes_newer_update(tmp_path: Path) -> None:
+    doc_path = tmp_path / "note.txt"
+    doc_path.write_text("hello", encoding="utf-8")
+    updated_at = datetime(2025, 6, 1, 12, 0, 1, tzinfo=UTC)
+    _set_mtime(doc_path, updated_at)
+
+    source = SourceConfig(type="local_file", path=str(doc_path))
+    connector = LocalFileConnector(source)
+    since = updated_at - timedelta(seconds=1)
+
+    docs = list(connector.iter_raw_documents(since=since))
+
+    assert len(docs) == 1
+    assert docs[0].timestamps.updated_at == updated_at
+
+
 def test_local_file_connector_content_type_resolution_priority(tmp_path: Path) -> None:
     unknown_path = tmp_path / "blob.unknownext"
     unknown_path.write_bytes(b"x")
