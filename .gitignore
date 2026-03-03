@@ -54,6 +54,7 @@ credentials.*
 # Editor / OS noise
 .DS_Store
 .idea/
+.git/
 
 # rag test corpus
 data/

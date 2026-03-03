@@ -1,0 +1,7 @@
+[[sources]]
+type = "local_file"
+path = "data/kak-ocenivat-ii-sistemy-kurs-dlya-inzhenerov-i-pm-ov_9.pdf"
+
+[[sources]]
+type = "local_file"
+path = "data/kleppmann_martin_riccomin_chris_designing_dataintensive_appl.pdf"
