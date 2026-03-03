@@ -7,8 +7,8 @@
 This workplan is parser-scoped (component 3.2) and uses [01_rfc.md](./01_rfc.md) as the contract source.
 
 ## 2. Dependency Order
-1. PR1 contract scaffolding
-2. PR2 canonicalization
+1. ~~PR1 contract scaffolding~~ (Done)
+2. ~~PR2 canonicalization~~ (Done)
 3. PR3 structure extraction
 4. PR4 ranges + anchors + edge policies
 5. PR5 determinism + observability + corpus gates
@@ -17,7 +17,7 @@ No PR should proceed to merge without prior PR exit criteria satisfied.
 
 ## 3. PR Plan with Exit Criteria
 
-### PR1: Contract Scaffolding (M1)
+### PR1: Contract Scaffolding (M1) [COMPLETED]
 Scope:
 - Define/align parser-side data models to RFC input/output contract.
 - Define explicit tree node types and parser metadata fields.
@@ -42,7 +42,7 @@ Exit criteria:
 - Contract tests pass.
 - No breaking import churn in downstream parser package users.
 
-### PR2: Canonicalization Pipeline (M1)
+### PR2: Canonicalization Pipeline (M1) [COMPLETED]
 Scope:
 - Implement deterministic canonicalization by content type.
 - Preserve code/table semantics during conversion.

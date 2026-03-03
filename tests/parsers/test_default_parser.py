@@ -34,7 +34,8 @@ def test_parse_textual_doc_emits_non_empty_canonical_text() -> None:
     assert parsed.metadata["has_textual_content"] is True
     assert parsed.metadata["parser_version"] == "1.0.0"
     assert parsed.metadata["content_type"] == "text/markdown"
-    assert parsed.structure_tree.children == []
+    assert parsed.structure_tree.children != []
+    assert len(parsed.structure_tree.children) == 1
     assert parsed.anchors.sections == []
     assert parsed.anchors.blocks == []
 
