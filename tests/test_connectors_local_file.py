@@ -78,3 +78,47 @@ def test_local_file_connector_content_type_resolution_priority(tmp_path: Path) -
     connector_default = LocalFileConnector(default_source)
     default_doc = list(connector_default.iter_raw_documents())[0]
     assert default_doc.content_type == "application/octet-stream"
+
+
+def test_local_file_connector_url_override_is_used(tmp_path: Path) -> None:
+    pdf_path = tmp_path / "guide.pdf"
+    pdf_path.write_bytes(b"%PDF-1.7\nhello\n")
+    fixed_time = datetime(2025, 1, 2, 3, 4, 5, tzinfo=UTC)
+    _set_mtime(pdf_path, fixed_time)
+
+    source = SourceConfig(
+        type="local_file",
+        path=str(pdf_path),
+        url="https://example.invalid/doc",
+    )
+    connector = LocalFileConnector(source)
+    doc = list(connector.iter_raw_documents())[0]
+    assert doc.url == "https://example.invalid/doc"
+
+
+def test_local_file_connector_timestamps_are_utc_aware(tmp_path: Path) -> None:
+    pdf_path = tmp_path / "guide.pdf"
+    pdf_path.write_bytes(b"%PDF-1.7\nhello\n")
+    fixed_time = datetime(2025, 1, 2, 3, 4, 5, tzinfo=UTC)
+    _set_mtime(pdf_path, fixed_time)
+
+    source = SourceConfig(type="local_file", path=str(pdf_path))
+    connector = LocalFileConnector(source)
+    doc = list(connector.iter_raw_documents())[0]
+    assert doc.timestamps.updated_at.tzinfo is UTC
+    assert doc.timestamps.created_at.tzinfo is UTC
+
+
+def test_local_file_connector_defaults_metadata_and_acl_scope_to_empty_dict(
+    tmp_path: Path,
+) -> None:
+    pdf_path = tmp_path / "guide.pdf"
+    pdf_path.write_bytes(b"%PDF-1.7\nhello\n")
+    fixed_time = datetime(2025, 1, 2, 3, 4, 5, tzinfo=UTC)
+    _set_mtime(pdf_path, fixed_time)
+
+    source = SourceConfig(type="local_file", path=str(pdf_path))
+    connector = LocalFileConnector(source)
+    doc = list(connector.iter_raw_documents())[0]
+    assert doc.metadata == {}
+    assert doc.acl_scope == {}

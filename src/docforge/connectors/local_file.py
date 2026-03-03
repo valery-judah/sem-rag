@@ -25,14 +25,14 @@ class LocalFileConnector:
 
     def iter_raw_documents(self, since: datetime | None = None) -> Iterator[RawDocument]:
         source_ref = self.source.path
-        file_path = Path(source_ref)
-        stat_result = file_path.stat()
+        io_path = Path(self.source.path_resolved or source_ref)
+        stat_result = io_path.stat()
         updated_at = datetime.fromtimestamp(stat_result.st_mtime, tz=UTC)
 
         if since is not None and updated_at <= _normalize_utc(since):
             return
 
-        content_bytes = file_path.read_bytes()
+        content_bytes = io_path.read_bytes()
         timestamps = DocumentTimestamps(created_at=updated_at, updated_at=updated_at)
 
         yield RawDocument(

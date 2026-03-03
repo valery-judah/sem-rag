@@ -12,6 +12,9 @@ from docforge.models import KnownContentType
 class SourceConfig(BaseModel):
     type: str
     path: str
+    # Internal/runtime-only: resolved filesystem path used for file IO.
+    # This must not affect `source_ref`, which preserves `path` as configured.
+    path_resolved: str | None = None
     doc_id: str | None = None
     url: str | None = None
     content_type: KnownContentType | str | None = None
@@ -27,4 +30,16 @@ def load_config(path: Path | str) -> DocforgeConfig:
     config_path = Path(path)
     with config_path.open("rb") as file_obj:
         data = tomllib.load(file_obj)
-    return DocforgeConfig.model_validate(data)
+    config = DocforgeConfig.model_validate(data)
+
+    # Resolve relative `path` values relative to the TOML config's directory for IO,
+    # while preserving `source_ref` as the configured path string.
+    base_dir = config_path.resolve().parent
+    for source in config.sources:
+        source_path = Path(source.path)
+        if source_path.is_absolute():
+            source.path_resolved = source.path
+        else:
+            source.path_resolved = str(base_dir / source.path)
+
+    return config

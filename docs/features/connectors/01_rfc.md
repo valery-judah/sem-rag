@@ -24,6 +24,8 @@ Configuration is provided via TOML with an array-of-tables at `[[sources]]`.
 Required fields:
 - `type: "local_file"`
 - `path: string` (file path; relative or absolute)
+  - If `path` is relative, it is resolved relative to the TOML config file directory for file IO.
+  - `source_ref` preserves the configured `path` string exactly as given (no normalization).
 
 Optional fields:
 - `doc_id: string` (recommended for single-file MVP)
@@ -99,4 +101,3 @@ None for MVP-1.
   - this RFC
   - corresponding tests
   - any downstream code that assumes the contract
-

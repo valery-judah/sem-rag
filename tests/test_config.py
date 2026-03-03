@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pydantic
+
 from docforge.config import load_config
 from docforge.models import DocumentTimestamps, RawDocument
 
@@ -70,3 +72,21 @@ content_type = "application/x-custom"
     config = load_config(config_file)
 
     assert config.sources[0].content_type == "application/x-custom"
+
+
+def test_load_config_missing_required_fields_fails(tmp_path: Path) -> None:
+    config_file = tmp_path / "connectors.toml"
+    config_file.write_text(
+        """
+[[sources]]
+type = "local_file"
+""".strip(),
+        encoding="utf-8",
+    )
+
+    try:
+        load_config(config_file)
+    except pydantic.ValidationError:
+        pass
+    else:
+        raise AssertionError("Expected pydantic.ValidationError")

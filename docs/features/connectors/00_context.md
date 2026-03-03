@@ -40,6 +40,7 @@ Expected outcomes:
 - A single `RawDocument` is produced.
 - `RawDocument.source == "local_file"`.
 - `RawDocument.source_ref == "data/mvp.pdf"` (preserved as configured).
+- If `path` is relative, the file is read from a config-dir-relative resolved path.
 - `RawDocument.url == "file:data/mvp.pdf"` unless explicitly configured otherwise.
 - `RawDocument.content_type == "application/pdf"`.
 - `RawDocument.content_bytes` matches the bytes read from the file.
@@ -65,4 +66,3 @@ Output shape (bytes omitted):
 | TOML config parsing | Unit tests | loads `[[sources]]` (type/path/doc_id/content_type/metadata/acl_scope) into config model |
 | `LocalFileConnector` output contract | Unit tests | yields exactly 1 `RawDocument` with required fields + correct bytes + correct `content_type` |
 | CLI emission (`raw/*.json` + `blobs/*.bin`) | CLI tests | `docforge connect` writes both files; `content_sha256` matches blob bytes |
-
