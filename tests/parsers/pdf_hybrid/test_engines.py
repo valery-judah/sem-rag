@@ -20,7 +20,10 @@ def test_adapt_marker_output():
                     {
                         "id": "/page/1/Text/1",
                         "block_type": "Text",
-                        "html": "<p>A simple paragraph.</p>",
+                        "html": (
+                            "<p>A simple paragraph.</p><br/>With a second line "
+                            "and an entity &amp; a quote &quot;.</p>"
+                        ),
                         "polygon": [[10.0, 40.0], [100.0, 40.0], [100.0, 50.0], [10.0, 50.0]],
                     },
                     {
@@ -58,7 +61,10 @@ def test_adapt_marker_output():
 
     assert page1.blocks[1].type == BlockType.PARA
     assert page1.blocks[1].poly == [(10.0, 40.0), (100.0, 40.0), (100.0, 50.0), (10.0, 50.0)]
-    assert page1.blocks[1].text == "A simple paragraph."
+    assert (
+        page1.blocks[1].text
+        == 'A simple paragraph.\n\nWith a second line and an entity & a quote ".'
+    )
 
     # Check assets
     assert len(page1.assets) == 1
@@ -76,6 +82,45 @@ def test_adapt_marker_output():
     assert page1.signals.asset_count == 1
     assert page1.signals.heading_like_count == 1
     assert page1.signals.has_coords is True
+
+
+def test_adapt_marker_output_flat():
+    raw_marker = {
+        "blocks": [
+            {
+                "id": "/page/1/SectionHeader/0",
+                "block_type": "SectionHeader",
+                "html": "<h1><i>Flat Title</i></h1>",
+                "polygon": [[10.0, 10.0], [100.0, 10.0], [100.0, 30.0], [10.0, 30.0]],
+            },
+            {
+                "id": "/page/2/Text/1",
+                "block_type": "Text",
+                "html": "<p>Flat paragraph.</p>",
+                "polygon": [[10.0, 40.0], [100.0, 40.0], [100.0, 50.0], [10.0, 50.0]],
+            },
+        ],
+        "page_info": {},  # Might be ignored in our logic, but included for realism
+    }
+
+    artifact_ref = "s3://test-bucket/marker/output_flat.json"
+    candidates = adapt_marker_output(raw_marker, artifact_ref)
+
+    assert len(candidates) == 2
+    page1 = candidates[0]
+    page2 = candidates[1]
+
+    assert page1.page_idx == 0
+    assert page1.status == ParseStatus.OK
+    assert len(page1.blocks) == 1
+    assert page1.blocks[0].text == "Flat Title"
+    assert page1.blocks[0].type == BlockType.HEADING
+
+    assert page2.page_idx == 1
+    assert page2.status == ParseStatus.OK
+    assert len(page2.blocks) == 1
+    assert page2.blocks[0].text == "Flat paragraph."
+    assert page2.blocks[0].type == BlockType.PARA
 
 
 def test_adapt_mineru_output_flat():

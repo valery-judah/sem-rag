@@ -1,3 +1,4 @@
+import html
 import re
 from typing import Any
 
@@ -38,7 +39,9 @@ def _strip_html_tags(html_str: str) -> str:
     """Basic HTML tag stripping to get plain text."""
     if not html_str:
         return ""
-    text = re.sub(r"<[^>]+>", "", html_str)
+    text = re.sub(r"(?i)<br\s*/?>|</p>", "\n", html_str)
+    text = re.sub(r"<[^>]+>", "", text)
+    text = html.unescape(text)
     return text.strip()
 
 
@@ -53,6 +56,23 @@ def adapt_marker_output(raw_output: dict[str, Any], artifact_ref: str) -> list[P
     if not pages and "pages" in raw_output:
         # Fallback to older marker format if 'children' is not at root
         pages = raw_output["pages"]
+
+    if not pages and "blocks" in raw_output:
+        # Flat schema: blocks are in a single list
+        pages_dict: dict[int, dict[str, Any]] = {}
+        for block in raw_output["blocks"]:
+            p = block.get("page", block.get("page_idx"))
+            if p is None:
+                m = re.search(r"/page/(\d+)/", block.get("id", ""))
+                if m:
+                    p = int(m.group(1)) - 1
+                else:
+                    p = 0
+            if p not in pages_dict:
+                pages_dict[p] = {"page_idx": p, "blocks": []}
+            pages_dict[p]["blocks"].append(block)
+
+        pages = [pages_dict[k] for k in sorted(pages_dict.keys())]
 
     for page_idx, page_dict in enumerate(pages):
         # Allow older format where page index is explicit, or rely on enumeration
