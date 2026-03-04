@@ -1,0 +1,16 @@
+For born-digital PDFs, the cleanest separation is to treat “text extraction” as a deterministic signal (glyphs/words with bboxes) and put all “meaning” (reading order, hierarchy, table structure) into explicit, testable assembly stages. This makes your document-tree JSON the canonical IR, and Markdown a projection.
+
+## 1) Extraction (physical layer)
+Goal: produce a **lossless** set of primitives (chars/words/lines/spans) with geometry and styling. `pdfplumber` can give you character-level objects and also `extract_words()` that returns “word-looking things” with bounding boxes (tunable tolerances).  PyMuPDF can extract `blocks` / `words` including bbox coordinates and per-word provenance like `block_no`, `line_no`, `word_no`, and it can expose a richer nested structure via `get_text("dict")`. [github](https://github.com/jsvine/pdfplumber)
+
+## 2) Layout typing (what is where)
+Goal: label regions/elements (Title, Paragraph, List, Table region, Figure region, Caption) without deciding hierarchy yet. If you want ML-based region detection, LayoutParser is explicitly positioned as a deep-learning document image analysis toolkit that outputs layout objects you can post-process.  If you want a library that “partitions” into typed elements, Unstructured’s `hi_res` strategy is model-based and is also the strategy that extracts tables from PDFs. [ar5iv.labs.arxiv](https://ar5iv.labs.arxiv.org/html/2103.15348)
+
+## 3) Arrangement (reading order & grouping)
+Goal: turn typed elements into ordered, grouped units: lines → paragraphs, paragraphs → columns/flows, and page-level order. Keep this stage pure and declarative: it should only consume geometry + types and output (a) `reading_order` edges and (b) group nodes with provenance unions. PyMuPDF’s text extraction outputs already reflect an internal grouping (blocks → lines → spans) that you can either accept as a baseline or override when you need stricter order guarantees. [pymupdf.readthedocs](https://pymupdf.readthedocs.io/en/latest/recipes-text.html)
+
+## 4) Specialized extractors (tables, figures)
+Goal: for each non-paragraph element type, run a dedicated recognizer and attach a structured payload. For born-digital tables, Camelot provides multiple parsers (e.g., Stream vs Lattice), and its Lattice mode is designed for ruled tables by detecting line segments/intersections and mapping them back into PDF coordinate space.  Keep outputs separate: `TablePayload(cells, spans, bbox, caption_id?)`, `FigurePayload(image_ref, bbox, caption_id?)`, etc., then link them in the next stage. [camelot-py.readthedocs](https://camelot-py.readthedocs.io/en/master/user/how-it-works.html)
+
+## 5) Canonical document tree + projections
+Goal: assemble everything into your canonical tree JSON (sections, paragraphs, tables, figures) plus cross-links (caption↔figure/table) and provenance back to original blocks. Docling describes an explicit “assemble predictions into a document” step and then exports to representations like JSON / Markdown, which is a good mental model even if you implement it yourself.  Finally, generate Markdown as a projection: stable node IDs as anchors/comments, and (optionally) char-span maps so later embedding/chunking can reference nodes deterministically. [arxiv](https://arxiv.org/html/2408.09869v3)
