@@ -1,6 +1,6 @@
 # Design: run_pdf_pipeline() Wiring
 
-**Status:** Draft
+**Status:** Partially Implemented
 **Last updated:** 2026-03-04
 
 ## 1. Entry points
@@ -12,7 +12,7 @@ Add internal runner modules (shared with the E2E harness):
 - `src/docforge/parsers/pdf_hybrid/engines/_subprocess.py`
 - `src/docforge/parsers/pdf_hybrid/engines/run_manifest.py`
 - `src/docforge/parsers/pdf_hybrid/engines/marker_cli.py`
-- `src/docforge/parsers/pdf_hybrid/engines/mineru_cli.py`
+- `src/docforge/parsers/pdf_hybrid/engines/mineru_cli.py` (Pending/Deferred to later PR)
 
 ## 3. Stream-drain safe routing (required)
 Because `RawDocument.content_stream` can be drained once:

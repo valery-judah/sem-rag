@@ -1,6 +1,6 @@
 # Workplan: Hybrid PDF Pipeline Wiring
 
-**Status:** Draft  
+**Status:** Partially Implemented  
 **Last updated:** 2026-03-04
 
 ## Summary
@@ -71,6 +71,7 @@ RawDocument (PDF bytes)
 ## PR Plan (Phased, With Exit Criteria)
 
 ### PR1: Feature docs (this directory)
+**Status:** Implemented
 **Scope:**
 - Ensure `docs/features/pdf-pipeline/` artifact set is complete and internally consistent.
 - Cross-link to:
@@ -87,6 +88,7 @@ RawDocument (PDF bytes)
 ---
 
 ### PR2: Config plumbing + stream-drain safety + `pypdf` dependency + exceptions
+**Status:** Implemented
 **Scope:**
 - Config plumbing:
   - Add `ParserConfig.pdf_hybrid: PdfHybridConfig` with defaults.
@@ -119,15 +121,16 @@ RawDocument (PDF bytes)
 ---
 
 ### PR3: Subprocess runner layer (tools isolation) without moving adapters
+**Status:** Partially Implemented (Marker CLI completed, MinerU CLI pending)
 **Scope:**
 - Add CLI runner modules under `src/docforge/parsers/pdf_hybrid/engines/`:
-  - `_subprocess.py` (shared subprocess utilities)
-  - `run_manifest.py` (run metadata)
-  - `marker_cli.py` (Marker discovery/version/run)
-  - `mineru_cli.py` (MinerU discovery/version/run)
+  - `_subprocess.py` (shared subprocess utilities) - **Completed**
+  - `run_manifest.py` (run metadata) - **Completed**
+  - `marker_cli.py` (Marker discovery/version/run) - **Completed**
+  - `mineru_cli.py` (MinerU discovery/version/run) - *Pending*
 - Keep existing adapters in place:
-  - `src/docforge/parsers/pdf_hybrid/engines/marker.py::adapt_marker_output`
-  - `src/docforge/parsers/pdf_hybrid/engines/miner_u.py::adapt_mineru_output`
+  - `src/docforge/parsers/pdf_hybrid/engines/marker.py::adapt_marker_output` - **Completed**
+  - `src/docforge/parsers/pdf_hybrid/engines/miner_u.py::adapt_mineru_output` - *Pending integration*
   - The new `*_cli.py` modules should load raw outputs and call these adapters.
 - Discovery policy follows `03_design.md` / `01_rfc.md`:
   - Prefer `tools/marker/.venv/bin/marker_single` then fallback to `marker` on PATH.

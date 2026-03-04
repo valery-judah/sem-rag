@@ -59,3 +59,8 @@ credentials.*
 # rag test corpus
 input/
 data/
+output/marker_test/llm-evals-course-notes-july/_page_5_Figure_3.jpeg
+output/marker_test/llm-evals-course-notes-july/_page_7_Figure_6.jpeg
+output/marker_test/llm-evals-course-notes-july/llm-evals-course-notes-july_meta.json
+output/marker_test/llm-evals-course-notes-july/llm-evals-course-notes-july.json
+output/marker_test/llm-evals-course-notes-july/llm-evals-course-notes-july.md
