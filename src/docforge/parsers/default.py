@@ -7,6 +7,7 @@ from docforge.parsers.base import BaseParser
 from docforge.parsers.canonicalize import canonicalize
 from docforge.parsers.models import AnchorMap, ParsedDocument
 from docforge.parsers.pdf_hybrid.distill import distill_pdf
+from docforge.parsers.pdf_hybrid.exceptions import PdfHybridPipelineError
 from docforge.parsers.pdf_hybrid.pipeline import run_pdf_pipeline
 from docforge.parsers.tree_builder import build_tree
 
@@ -22,17 +23,23 @@ class DeterministicParser(BaseParser):
             title = doc.source_ref
 
         pdf_hybrid_fallback = False
+        content_bytes = None
+
         if doc.content_type == "application/pdf" and getattr(
             self.config, "enable_hybrid_pdf_pipeline", False
         ):
+            content_bytes = self._materialize_content(doc)
+            pipeline_doc = doc.model_copy(update={"content_stream": iter([content_bytes])})
             try:
-                extracted_doc = run_pdf_pipeline(doc, self.config)
-            except NotImplementedError:
+                extracted_doc = run_pdf_pipeline(pipeline_doc, self.config)
+            except (NotImplementedError, PdfHybridPipelineError):
                 pdf_hybrid_fallback = True
             else:
                 return distill_pdf(extracted_doc, self.config, title=title)
 
-        content_bytes = self._materialize_content(doc)
+        if content_bytes is None:
+            content_bytes = self._materialize_content(doc)
+
         canon = canonicalize(content_bytes, doc.content_type, self.config.blank_line_collapse)
 
         metadata = dict(doc.metadata)

@@ -187,6 +187,37 @@ def test_parser_config_construction() -> None:
     cfg = ParserConfig(parser_version="1.0.0")
     assert cfg.parser_version == "1.0.0"
     assert cfg.blank_line_collapse == 2
+    assert getattr(cfg, "pdf_hybrid", None) is not None
+
+
+def test_parser_config_pdf_hybrid_rejects_extra_keys() -> None:
+    with pytest.raises(ValidationError):
+        ParserConfig(parser_version="1.0.0", pdf_hybrid={"marker_timeot_s": 123})
+
+
+def test_parser_config_pdf_hybrid_is_strict_about_types() -> None:
+    with pytest.raises(ValidationError):
+        ParserConfig(parser_version="1.0.0", pdf_hybrid={"marker_timeout_s": "120"})
+
+
+def test_parser_config_pdf_hybrid_selection_weights_rejects_extra_keys() -> None:
+    with pytest.raises(ValidationError):
+        ParserConfig(
+            parser_version="1.0.0",
+            pdf_hybrid={"selection_weights": {"w_chars": 1.0, "w_charz": 0.0}},
+        )
+
+
+def test_parser_config_hash() -> None:
+    cfg1 = ParserConfig(parser_version="1.0.0")
+    cfg2 = ParserConfig(parser_version="1.0.0")
+    assert cfg1.config_hash == cfg2.config_hash
+
+    cfg3 = ParserConfig(parser_version="1.0.1")
+    assert cfg1.config_hash != cfg3.config_hash
+
+    cfg4 = ParserConfig(parser_version="1.0.0", blank_line_collapse=3)
+    assert cfg1.config_hash != cfg4.config_hash
 
 
 def test_parser_config_empty_version_raises() -> None:

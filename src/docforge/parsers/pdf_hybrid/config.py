@@ -1,7 +1,9 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class SelectionWeights(BaseModel):
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     w_chars: float = 1.0
     w_blocks: float = 0.2
     w_dupes: float = 2.0
@@ -11,6 +13,8 @@ class SelectionWeights(BaseModel):
 
 
 class PdfHybridConfig(BaseModel):
+    model_config = ConfigDict(strict=True, extra="forbid")
+
     marker_timeout_s: int = 120
     mineru_timeout_s: int = 180
     selection_weights: SelectionWeights = Field(default_factory=SelectionWeights)

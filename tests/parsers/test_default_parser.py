@@ -1,9 +1,12 @@
 from typing import Any
 from unittest.mock import patch
 
+import pytest
+
 from docforge.connectors.models import RawDocument
 from docforge.parsers.default import DeterministicParser
 from docforge.parsers.models import ParserConfig
+from docforge.parsers.pdf_hybrid.exceptions import PdfHybridPipelineError
 
 
 def _make_raw_doc(
@@ -66,27 +69,54 @@ def test_parse_routes_to_pdf_pipeline_when_enabled(mock_distill, mock_run) -> No
     parsed = parser.parse(doc)
 
     assert parsed == "fake_parsed_doc"
-    mock_run.assert_called_once_with(doc, parser.config)
+    mock_run.assert_called_once()
+    passed_doc = mock_run.call_args[0][0]
+    passed_config = mock_run.call_args[0][1]
+    assert passed_doc.content_type == "application/pdf"
+    assert next(passed_doc.content_stream) == b"%PDF-1.7"
+    assert passed_config is parser.config
     mock_distill.assert_called_once_with("fake_extracted_doc", parser.config, title="My Title")
 
 
 @patch("docforge.parsers.default.run_pdf_pipeline")
 @patch("docforge.parsers.default.distill_pdf")
-def test_parse_pdf_pipeline_not_implemented_falls_back(mock_distill, mock_run) -> None:
+@patch("docforge.parsers.default.canonicalize")
+def test_parse_pdf_pipeline_not_implemented_falls_back(mock_canon, mock_distill, mock_run) -> None:
     parser = DeterministicParser(
         ParserConfig(parser_version="1.0.0", enable_hybrid_pdf_pipeline=True)
     )
     doc = _make_raw_doc(b"%PDF-1.7", "application/pdf")
 
-    mock_run.side_effect = NotImplementedError("stub")
+    mock_run.side_effect = PdfHybridPipelineError("pipeline crashed")
+
+    class FakeCanon:
+        has_textual_content = False
+        detected_content_family = "unsupported"
+        warnings = []
+        canonical_text = ""
+
+    mock_canon.return_value = FakeCanon()
 
     parsed = parser.parse(doc)
 
     assert parsed.canonical_text == ""
     assert parsed.metadata["has_textual_content"] is False
-    assert parsed.metadata["detected_content_family"] == "unsupported"
     assert parsed.metadata["pdf_hybrid_pipeline_fallback"] is True
     mock_distill.assert_not_called()
+    mock_canon.assert_called_once_with(b"%PDF-1.7", "application/pdf", 2)
+
+
+@patch("docforge.parsers.default.run_pdf_pipeline")
+def test_parse_pdf_pipeline_unexpected_error_propagates(mock_run) -> None:
+    parser = DeterministicParser(
+        ParserConfig(parser_version="1.0.0", enable_hybrid_pdf_pipeline=True)
+    )
+    doc = _make_raw_doc(b"%PDF-1.7", "application/pdf")
+
+    mock_run.side_effect = RuntimeError("unexpected")
+
+    with pytest.raises(RuntimeError, match="unexpected"):
+        parser.parse(doc)
 
 
 def test_parse_falls_back_to_source_ref_for_missing_title() -> None:
