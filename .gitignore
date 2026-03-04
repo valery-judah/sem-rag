@@ -58,3 +58,4 @@ credentials.*
 
 # rag test corpus
 input/
+data/
