@@ -1,9 +1,13 @@
 from __future__ import annotations
 
 import enum
+import hashlib
+import json
 from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
+
+from docforge.parsers.pdf_hybrid.config import PdfHybridConfig
 
 
 class StrictModel(BaseModel):
@@ -120,11 +124,19 @@ class ParserConfig(StrictModel):
     parser_version: str
     blank_line_collapse: int = 2
     enable_hybrid_pdf_pipeline: bool = False
+    pdf_hybrid: PdfHybridConfig = Field(default_factory=PdfHybridConfig)
 
     @model_validator(mode="after")
     def _validate_model(self) -> ParserConfig:
         _validate_non_empty_string(self.parser_version, "parser_version")
         return self
+
+    @property
+    def config_hash(self) -> str:
+        """Return a deterministic SHA-256 hash of the configuration state."""
+        serialized = self.model_dump(mode="json")
+        json_str = json.dumps(serialized, sort_keys=True)
+        return hashlib.sha256(json_str.encode("utf-8")).hexdigest()
 
 
 class ParsedDocument(StrictModel):
