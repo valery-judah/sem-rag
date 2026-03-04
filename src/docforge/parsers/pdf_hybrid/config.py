@@ -17,3 +17,5 @@ class PdfHybridConfig(BaseModel):
     # Rollback/mitigation config:
     # "marker", "mineru", or None for normal hybrid
     force_engine: str | None = None
+    emit_artifacts: bool = True
+    artifact_dir: str | None = None
