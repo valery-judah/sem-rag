@@ -119,6 +119,7 @@ class ParserConfig(StrictModel):
 
     parser_version: str
     blank_line_collapse: int = 2
+    enable_hybrid_pdf_pipeline: bool = False
 
     @model_validator(mode="after")
     def _validate_model(self) -> ParserConfig:
