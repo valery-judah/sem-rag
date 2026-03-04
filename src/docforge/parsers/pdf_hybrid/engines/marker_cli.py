@@ -91,7 +91,14 @@ class MarkerRunner:
         """Returns True if the binary is found."""
         return self.discover() is not None
 
-    def run(self, pdf_path: Path, output_dir: Path, timeout_s: float) -> EngineRunManifest:
+    def run(
+        self,
+        pdf_path: Path,
+        output_dir: Path,
+        timeout_s: float,
+        page_range: str | None = None,
+        output_formats: list[str] | None = None,
+    ) -> EngineRunManifest:
         """
         Executes marker on the given PDF, saving outputs to output_dir.
         Returns the run manifest detailing the outcome.
@@ -103,17 +110,8 @@ class MarkerRunner:
                 status="unavailable",
             )
 
-        cmd = [
-            bin_path,
-            str(pdf_path),
-            "--output_dir",
-            str(output_dir),
-            "--output_format",
-            "json",
-            "--output_format",
-            "markdown",
-            "--disable_multiprocessing",
-        ]
+        if output_formats is None:
+            output_formats = ["json", "markdown"]
 
         env = os.environ.copy()
         env.update(self._env_overrides)
@@ -123,13 +121,40 @@ class MarkerRunner:
             env["PYTORCH_ALLOC_CONF"] = "expandable_segments:True"
 
         start_time = time.monotonic()
-
-        # Version should be fetched before the run to include in manifest accurately
-        # but we can fetch it lazily or just call get_version
         version = self.get_version()
 
-        result = run_command(cmd, timeout_s=timeout_s, env=env)
+        last_result = None
+        for fmt in output_formats:
+            cmd = [
+                bin_path,
+                str(pdf_path),
+                "--output_dir",
+                str(output_dir),
+                "--output_format",
+                fmt,
+                "--disable_multiprocessing",
+            ]
+            if page_range:
+                cmd.extend(["--page_range", page_range])
+
+            result = run_command(cmd, timeout_s=timeout_s, env=env)
+            last_result = result
+            if result.timed_out or result.returncode != 0:
+                break
+
         execution_time_s = time.monotonic() - start_time
+        
+        if last_result is None:
+             return EngineRunManifest(
+                 engine_name="marker",
+                 status="error",
+                 version=version,
+                 binary_path=bin_path,
+                 execution_time_s=execution_time_s,
+                 error_details="No output formats specified.",
+             )
+
+        result = last_result
 
         if result.timed_out:
             return EngineRunManifest(
