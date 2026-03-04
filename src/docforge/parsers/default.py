@@ -6,6 +6,8 @@ from docforge.connectors.models import RawDocument
 from docforge.parsers.base import BaseParser
 from docforge.parsers.canonicalize import canonicalize
 from docforge.parsers.models import AnchorMap, ParsedDocument
+from docforge.parsers.pdf_hybrid.distill import distill_pdf
+from docforge.parsers.pdf_hybrid.pipeline import run_pdf_pipeline
 from docforge.parsers.tree_builder import build_tree
 
 
@@ -13,14 +15,25 @@ class DeterministicParser(BaseParser):
     """Minimal parser implementation that currently performs canonicalization only."""
 
     def parse(self, doc: RawDocument) -> ParsedDocument:
-        content_bytes = self._materialize_content(doc)
-        canon = canonicalize(content_bytes, doc.content_type, self.config.blank_line_collapse)
-
         title_meta = doc.metadata.get("title")
         if isinstance(title_meta, str) and title_meta:
             title = title_meta
         else:
             title = doc.source_ref
+
+        pdf_hybrid_fallback = False
+        if doc.content_type == "application/pdf" and getattr(
+            self.config, "enable_hybrid_pdf_pipeline", False
+        ):
+            try:
+                extracted_doc = run_pdf_pipeline(doc, self.config)
+            except NotImplementedError:
+                pdf_hybrid_fallback = True
+            else:
+                return distill_pdf(extracted_doc, self.config, title=title)
+
+        content_bytes = self._materialize_content(doc)
+        canon = canonicalize(content_bytes, doc.content_type, self.config.blank_line_collapse)
 
         metadata = dict(doc.metadata)
         metadata.update(
@@ -32,6 +45,10 @@ class DeterministicParser(BaseParser):
                 "canonicalization_warnings": canon.warnings,
             }
         )
+        if doc.content_type == "application/pdf" and getattr(
+            self.config, "enable_hybrid_pdf_pipeline", False
+        ):
+            metadata["pdf_hybrid_pipeline_fallback"] = pdf_hybrid_fallback
 
         return ParsedDocument(
             doc_id=doc.doc_id,

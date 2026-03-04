@@ -1,0 +1,93 @@
+{
+  "doc_id": "doc-digital-born",
+  "source_pdf": {
+    "content_hash": "abc",
+    "page_count": 2,
+    "metadata": {}
+  },
+  "pipeline": {
+    "pipeline_version": "1.0",
+    "config_hash": "xyz"
+  },
+  "engine_runs": [
+    {
+      "engine": "marker",
+      "engine_version": "v1",
+      "engine_config_hash": "h",
+      "engine_artifact_ref": "ref1",
+      "status": "ok"
+    }
+  ],
+  "pages": [
+    {
+      "page_idx": 0,
+      "width": 0.0,
+      "height": 0.0,
+      "selected_engine": "marker",
+      "selection_reason": "text_heavy",
+      "blocks": [
+        {
+          "block_id": "b1",
+          "type": "heading",
+          "text": "# First Heading",
+          "page_idx": 0,
+          "bbox": null,
+          "poly": null,
+          "reading_order_key": "00",
+          "source": {
+            "engine": "marker",
+            "engine_artifact_ref": "r",
+            "engine_block_ref": null
+          },
+          "confidence": 1.0,
+          "metadata": {}
+        },
+        {
+          "block_id": "b2",
+          "type": "para",
+          "text": "This is a paragraph under the heading.",
+          "page_idx": 0,
+          "bbox": null,
+          "poly": null,
+          "reading_order_key": "01",
+          "source": {
+            "engine": "marker",
+            "engine_artifact_ref": "r",
+            "engine_block_ref": null
+          },
+          "confidence": 1.0,
+          "metadata": {}
+        }
+      ],
+      "assets": [],
+      "diagnostics": {}
+    },
+    {
+      "page_idx": 1,
+      "width": 0.0,
+      "height": 0.0,
+      "selected_engine": "marker",
+      "selection_reason": "text_heavy",
+      "blocks": [
+        {
+          "block_id": "b3",
+          "type": "list",
+          "text": "- Item 1\n- Item 2",
+          "page_idx": 1,
+          "bbox": null,
+          "poly": null,
+          "reading_order_key": "00",
+          "source": {
+            "engine": "marker",
+            "engine_artifact_ref": "r",
+            "engine_block_ref": null
+          },
+          "confidence": 1.0,
+          "metadata": {}
+        }
+      ],
+      "assets": [],
+      "diagnostics": {}
+    }
+  ]
+}

@@ -1,0 +1,77 @@
+{
+  "doc_id": "doc-scan-heavy",
+  "source_pdf": {
+    "content_hash": "def",
+    "page_count": 2,
+    "metadata": {}
+  },
+  "pipeline": {
+    "pipeline_version": "1.0",
+    "config_hash": "xyz"
+  },
+  "engine_runs": [
+    {
+      "engine": "mineru",
+      "engine_version": "v2",
+      "engine_config_hash": "h",
+      "engine_artifact_ref": "ref2",
+      "status": "ok"
+    }
+  ],
+  "pages": [
+    {
+      "page_idx": 0,
+      "width": 0.0,
+      "height": 0.0,
+      "selected_engine": "mineru",
+      "selection_reason": "scan",
+      "blocks": [
+        {
+          "block_id": "b1",
+          "type": "para",
+          "text": "Some OCR text.",
+          "page_idx": 0,
+          "bbox": null,
+          "poly": null,
+          "reading_order_key": "00",
+          "source": {
+            "engine": "mineru",
+            "engine_artifact_ref": "r",
+            "engine_block_ref": null
+          },
+          "confidence": 1.0,
+          "metadata": {}
+        }
+      ],
+      "assets": [],
+      "diagnostics": {}
+    },
+    {
+      "page_idx": 1,
+      "width": 0.0,
+      "height": 0.0,
+      "selected_engine": null,
+      "selection_reason": "error",
+      "blocks": [
+        {
+          "block_id": "placeholder_p1",
+          "type": "unknown",
+          "text": "[UNPARSEABLE PAGE 1]",
+          "page_idx": 1,
+          "bbox": null,
+          "poly": null,
+          "reading_order_key": "0",
+          "source": {
+            "engine": "pipeline",
+            "engine_artifact_ref": "none",
+            "engine_block_ref": "none"
+          },
+          "confidence": 1.0,
+          "metadata": {}
+        }
+      ],
+      "assets": [],
+      "diagnostics": {}
+    }
+  ]
+}
