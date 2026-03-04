@@ -31,61 +31,94 @@ def distill_pdf(
     # Sort pages sequentially
     sorted_pages = sorted(extracted_doc.pages, key=lambda p: p.page_idx)
 
-    for i, page in enumerate(sorted_pages):
-        # Sort blocks sequentially within the page
-        sorted_blocks = sorted(page.blocks, key=lambda b: b.reading_order_key)
+    # Pre-flatten blocks to handle cross-page merging
+    flat_blocks: list[tuple[int, Any]] = [] # (page_idx, block)
+    for page in sorted_pages:
+        for block in sorted(page.blocks, key=lambda b: b.reading_order_key):
+            flat_blocks.append((page.page_idx, block))
 
-        for j, block in enumerate(sorted_blocks):
+    # Apply heuristic to merge broken paragraphs across pages
+    merged_blocks: list[tuple[int, Any]] = []
+    for page_idx, block in flat_blocks:
+        if not merged_blocks:
+            merged_blocks.append((page_idx, block))
+            continue
+            
+        prev_page_idx, prev_block = merged_blocks[-1]
+        
+        # Check if we should merge with the previous block
+        # Criteria:
+        # 1. Blocks are on different pages (specifically, adjacent pages)
+        # 2. Both blocks are PARA type
+        # 3. Previous block does not end with terminal punctuation
+        # 4. Current block starts with lowercase letter
+        
+        should_merge = False
+        if (page_idx > prev_page_idx and 
+            prev_block.type == BlockType.PARA and 
+            block.type == BlockType.PARA):
+            
+            prev_text = (prev_block.text or "").strip()
+            curr_text = (block.text or "").strip()
+            
+            if prev_text and curr_text:
+                if not prev_text[-1] in (".", "?", "!", ":", '"', "'"):
+                    if curr_text[0].islower():
+                        should_merge = True
+
+        if should_merge:
+            # Merge current block into previous block
+            prev_block.text = f"{prev_block.text.rstrip()} {block.text.lstrip()}"
+            # Extend polygon/bbox if necessary (omitted here as it's complex and not strictly needed for text extraction)
+        else:
+            merged_blocks.append((page_idx, block))
+
+        for i, (page_idx, block) in enumerate(merged_blocks):
             text = block.text or ""
 
-            # 2.2 Tree Construction setup
-            # Map intermediate BlockType to ParserBlockType
-            b_type = block.type
-            if b_type == BlockType.HEADING:
-                p_type = (
-                    ParserBlockType.PARA
-                )  # Handled specially for HeadingNode, but BlockNode inside may be PARA
-            elif b_type == BlockType.CODE:
-                p_type = ParserBlockType.CODE
-            elif b_type == BlockType.TABLE:
-                p_type = ParserBlockType.TABLE
-            elif b_type == BlockType.LIST:
-                p_type = ParserBlockType.LIST
-            else:
-                p_type = ParserBlockType.PARA
+        # 2.2 Tree Construction setup
+        # Map intermediate BlockType to ParserBlockType
+        b_type = block.type
+        if b_type == BlockType.HEADING:
+            p_type = (
+                ParserBlockType.PARA
+            )  # Handled specially for HeadingNode, but BlockNode inside may be PARA
+        elif b_type == BlockType.CODE:
+            p_type = ParserBlockType.CODE
+        elif b_type == BlockType.TABLE:
+            p_type = ParserBlockType.TABLE
+        elif b_type == BlockType.LIST:
+            p_type = ParserBlockType.LIST
+        else:
+            p_type = ParserBlockType.PARA
 
-            start_offset = current_offset
-            end_offset = current_offset + len(text)
+        start_offset = current_offset
+        end_offset = current_offset + len(text)
 
-            # The actual node to add
-            node = BlockNode(
-                type=p_type,
-                range=(start_offset, end_offset),
-                metadata={"page_idx": page.page_idx, "reading_order_key": block.reading_order_key},
-            )
+        # The actual node to add
+        node = BlockNode(
+            type=p_type,
+            range=(start_offset, end_offset),
+            metadata={"page_idx": page_idx, "reading_order_key": block.reading_order_key},
+        )
 
-            block_info = {"original_type": b_type, "text": text}
+        block_info = {"original_type": b_type, "text": text}
 
-            block_nodes.append((node, block_info))
+        block_nodes.append((node, block_info))
 
-            canonical_text_parts.append(text)
-            current_offset += len(text)
+        canonical_text_parts.append(text)
+        current_offset += len(text)
 
-            # Appending inter-block separator
-            if j < len(sorted_blocks) - 1:
+        # Determine separator
+        if i < len(merged_blocks) - 1:
+            next_page_idx, _ = merged_blocks[i + 1]
+            if next_page_idx == page_idx:
                 separator = "\n\n"
+            else:
+                separator = "\n\n\f\n\n"
+                
                 canonical_text_parts.append(separator)
                 current_offset += len(separator)
-
-        # Appending inter-page separator
-        if i < len(sorted_pages) - 1:
-            if not sorted_blocks:
-                # If page is completely empty, it shouldn't leave multiple
-                # newlines without content, but let's follow spec
-                pass
-            separator = "\n\n\f\n\n"
-            canonical_text_parts.append(separator)
-            current_offset += len(separator)
 
     canonical_text = "".join(canonical_text_parts)
 

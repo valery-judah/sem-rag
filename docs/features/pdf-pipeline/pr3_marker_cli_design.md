@@ -162,6 +162,13 @@ The `adapt_marker_output` function must be updated to handle Marker's output for
 *   **Two Payload Schemas:** Marker can return a "flat" payload (containing a `"blocks"` list and `"page_info"` dictionary) OR a "tree" payload (containing a `"children"` list). The downstream adapter must gracefully handle both.
 *   **HTML to Plain Text Cleanup:** Marker's JSON payload often embeds text as HTML (`<br/>`, `</p>`). The adapter must run a cleanup pass replacing `<br/>` and `</p>` with newlines (`\n`), stripping all `<[^>]+>` tags, and unescaping HTML entities before yielding `PageCandidate` objects.
 
+### 3.2. Addressing Marker Parsing Limitations (Derived from Output Verification)
+Recent verification tests using `scripts/verify_targets.py` revealed several native behaviors in Marker's raw JSON output that must be explicitly handled by the adapter or the `MarkerRunner` configuration:
+
+1. **Physical Page Indexing:** Marker operates strictly on **absolute physical page numbers**. If the pipeline relies on logical page numbers (e.g., ignoring Roman numeral prefaces), the adapter must not blindly trust the logical targets; physical offsets must be resolved either at the orchestrator level or clearly documented for consumers.
+2. **Cross-Page Paragraph Fragmentation:** Marker enforces hard boundaries at the end of each page, natively splitting continuous paragraphs across pages into separate `Text` blocks. The adapter (or `distill.py` downstream) must implement a heuristic—such as checking for the absence of terminal punctuation—to merge fragmented paragraphs across `PageCandidate` boundaries.
+3. **Aggressive Filtering of Floating Text (Dropped Captions):** Marker occasionally misclassifies and drops isolated text blocks, such as code snippet captions (e.g., `Listing 3.1`), likely mistaking them for headers/footers or noise. To mitigate this, `MarkerRunner` should be extended to support injecting specific layout and OCR threshold environment variables, or expose flags that disable aggressive header/footer stripping.
+
 ## 4. CI-Safe Testing Strategy
 
 To ensure tests run reliably in CI without requiring the actual Marker binary or GPU resources, we will employ a mocking strategy focused on the `_subprocess.py` boundary.
