@@ -31,11 +31,19 @@ To set up the `marker-pdf` engine locally for testing:
 
 Scripts should generally be run from the root of the repository using `uv run`, which ensures they have access to the main project's dependencies and source code.
 
-### Example: `verify_marker.py`
+### Example: `run_marker.py`
 
 This script tests the integration with the `marker-pdf` CLI tool. Ensure you have set up the `marker-pdf` environment as described above before running it.
 
-To run the verification script from the project root:
-```bash
-uv run scripts/verify_marker.py
-```
+There are two main ways to run the script from the project root:
+
+1. Running on a specific PDF using the `--pdf` argument:
+   ```bash
+   uv run scripts/run_marker.py --pdf data/some_file.pdf
+   ```
+
+2. Running on a set of targets using the `--targets` argument:
+   ```bash
+   uv run scripts/run_marker.py --targets scripts/targets.json
+   ```
+   This will parse the JSON file, extract the specific page ranges for each task, and run marker on each task individually, creating a separate output directory for each. The script produces both Markdown (`.md`) and JSON (`.json`) outputs for each target, providing both the extracted text and the detailed layout metadata.

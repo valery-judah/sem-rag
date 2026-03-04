@@ -136,17 +136,21 @@ class TestMarkerRunnerRun:
         assert manifest.stdout == "done"
 
         # Verify environment injection
-        call_args = mock_run_command.call_args
+        call_args = mock_run_command.call_args_list[0]
         env = call_args.kwargs["env"]
         assert env["TORCH_DEVICE"] == "cpu"
         assert env["PYTORCH_ALLOC_CONF"] == "expandable_segments:True"
 
         # Verify required args
-        cmd = call_args.args[0]
-        assert "--output_dir" in cmd
-        assert "--output_format" in cmd
-        assert "json" in cmd
-        assert "markdown" in cmd
+        cmd1 = mock_run_command.call_args_list[0].args[0]
+        assert "--output_dir" in cmd1
+        assert "--output_format" in cmd1
+        assert "json" in cmd1
+
+        cmd2 = mock_run_command.call_args_list[1].args[0]
+        assert "--output_dir" in cmd2
+        assert "--output_format" in cmd2
+        assert "markdown" in cmd2
 
     @patch.object(MarkerRunner, "get_version", return_value="1.0.0")
     def test_run_with_env_overrides(
