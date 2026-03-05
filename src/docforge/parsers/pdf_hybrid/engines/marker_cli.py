@@ -143,16 +143,16 @@ class MarkerRunner:
                 break
 
         execution_time_s = time.monotonic() - start_time
-        
+
         if last_result is None:
-             return EngineRunManifest(
-                 engine_name="marker",
-                 status="error",
-                 version=version,
-                 binary_path=bin_path,
-                 execution_time_s=execution_time_s,
-                 error_details="No output formats specified.",
-             )
+            return EngineRunManifest(
+                engine_name="marker",
+                status="error",
+                version=version,
+                binary_path=bin_path,
+                execution_time_s=execution_time_s,
+                error_details="No output formats specified.",
+            )
 
         result = last_result
 

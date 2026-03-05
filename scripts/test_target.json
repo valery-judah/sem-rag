@@ -1,0 +1,17 @@
+[
+  {
+    "file": "rc_microservices.pdf",
+    "targets": [
+      {
+        "pages": "106",
+        "description": "code block",
+        "checks": [
+          {
+            "type": "code_merged",
+            "contains": "Listing 3.1"
+          }
+        ]
+      }
+    ]
+  }
+]

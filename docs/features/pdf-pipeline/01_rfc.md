@@ -36,7 +36,7 @@ This RFC does not redefine the hybrid-parsers contract; it references it.
 
 Optional overrides (allowed but must be included in config_hash if used):
 - explicit engine binary paths
-- MinerU runtime knobs (models dir, device, backend)
+- MinerU runtime knobs (dictionary-based models-dir, device, -b pipeline backend)
 
 ## 4. Artifact layout (normative)
 Artifacts are written under:

@@ -27,6 +27,24 @@ To set up the `marker-pdf` engine locally for testing:
    VIRTUAL_ENV=tools/marker/.venv uv pip install marker-pdf
    ```
 
+### Example: Setting up `mineru` (MinerU)
+
+To set up the `mineru` engine locally for testing:
+
+1. Create the `tools/mineru` directory if it doesn't exist:
+   ```bash
+   mkdir -p tools/mineru
+   ```
+
+2. Create an isolated virtual environment using `uv` and install `mineru`:
+   ```bash
+   # Create a virtual environment specifically for mineru
+   uv venv tools/mineru/.venv
+   
+   # Install mineru into that isolated environment
+   uv pip install --python tools/mineru/.venv "mineru[all]"
+   ```
+
 ## Running Scripts
 
 Scripts should generally be run from the root of the repository using `uv run`, which ensures they have access to the main project's dependencies and source code.
@@ -47,6 +65,23 @@ There are two main ways to run the script from the project root:
    uv run scripts/run_marker.py --targets scripts/targets.json
    ```
    This will parse the JSON file, extract the specific page ranges for each task, and run marker on each task individually, creating a separate output directory for each. The script produces both Markdown (`.md`) and JSON (`.json`) outputs for each target, providing both the extracted text and the detailed layout metadata.
+
+### Example: `run_mineru.py`
+
+This script tests the integration with the `mineru` CLI tool. Ensure you have set up the `mineru` environment as described above before running it.
+
+There are two main ways to run the script from the project root:
+
+1. Running on a specific PDF using the `--pdf` argument:
+   ```bash
+   uv run scripts/run_mineru.py --pdf data/some_file.pdf
+   ```
+
+2. Running on a set of targets using the `--targets` argument:
+   ```bash
+   uv run scripts/run_mineru.py --targets scripts/targets.json
+   ```
+   This will parse the JSON file and run MinerU on each task individually, creating a separate output directory for each. The script produces both Markdown (`.md`) and JSON (`.json`) outputs for each target.
 
 ### Example: `verify_targets.py`
 
