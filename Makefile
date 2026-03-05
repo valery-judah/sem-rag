@@ -36,6 +36,18 @@ test: install ## Run unit tests
 .PHONY: check
 check: fmt lint type test ## Run all checks
 
+.PHONY: secret-scan
+secret-scan: ## Scan tracked repository files for leaked Gemini API keys
+	uv run python -m docforge.devtools.secret_scan --scope repo
+
+.PHONY: secret-scan-staged
+secret-scan-staged: ## Scan staged added lines for leaked Gemini API keys
+	uv run python -m docforge.devtools.secret_scan --scope staged-added
+
+.PHONY: install-git-hooks
+install-git-hooks: ## Configure git to use repo-managed hooks
+	git config core.hooksPath .githooks
+
 .PHONY: run
 run: install ## Run docforge demo CLI
 	uv run python -m docforge.cli
