@@ -83,17 +83,14 @@ Runner outcomes are recorded in `EngineRunManifest.status`:
 
 ## 4. Discovery policy (deterministic)
 
-MinerU discovery must support both modern and legacy CLIs:
+MinerU discovery must support the modern CLI:
 - preferred: `mineru`
-- fallback: `magic-pdf`
 
 Resolution order (first hit wins):
 1. `override_binary_path` (if provided)
 2. `DOCFORGE_MINERU_BIN` (explicit path; must exist)
 3. `{DOCFORGE_MINERU_VENV or "tools/mineru/.venv"}/bin/mineru` (if exists)
-4. `{...}/bin/magic-pdf` (if exists)
-5. `mineru` in `$PATH`
-6. `magic-pdf` in `$PATH`
+4. `mineru` in `$PATH`
 
 Notes:
 - This runner does not provision tool envs; it only discovers and runs.
@@ -119,7 +116,6 @@ Design choice (locked): the runner writes this config file inside the run output
 The config payload must include:
 - `models-dir`
   - modern `mineru`: `{"pipeline": "<dir>", "vlm": "<dir>"}`
-  - legacy `magic-pdf`: `"<dir>"`
 - `device-mode`: from `DOCFORGE_MINERU_DEVICE` (default `"cpu"`)
 - `table-config`: `{"enable": True, "max_time": 400}`
 - `formula-config`: `{"enable": True}`
@@ -136,11 +132,6 @@ Optional Gemini block:
 
 ## 7. Command construction + page range semantics
 
-Determine CLI flavor by binary basename:
-- `Path(binary).name.lower() == "mineru"` => modern
-- otherwise legacy `magic-pdf`
-
-### 7.1. Modern CLI (`mineru`)
 Base command:
 - `[bin, "-p", <pdf_path>, "-o", <output_dir>, "-b", <backend>]`
 
@@ -151,16 +142,6 @@ Page range:
 - if `start_page` is not None: add `["-s", str(start_page)]`
 - if `end_page` is not None: add `["-e", str(end_page)]`
 - page indices are **0-based, inclusive** at the runner API level
-
-### 7.2. Legacy CLI (`magic-pdf`)
-Base command:
-- `[bin, "-p", <pdf_path>, "-o", <output_dir>, "-m", <method>]`
-
-Method:
-- from `DOCFORGE_MINERU_METHOD` (default `"auto"`)
-
-Page range:
-- not supported; if `start_page` or `end_page` is set, return `status="error"` with a clear message
 
 ## 8. Output selection (canonical JSON for adaptation)
 
@@ -194,13 +175,12 @@ Mutually exclusive:
 ### 10.2. Targets file semantics (locked)
 Design choice (locked): page ranges in `scripts/targets.json` are **1-based (human)**.
 
-For MinerU modern CLI flags (`-s/-e`, 0-based inclusive), convert:
+For MinerU CLI flags (`-s/-e`, 0-based inclusive), convert:
 - `"37"` => `start_page=36`, `end_page=36`
 - `"37-38"` => `start_page=36`, `end_page=37`
 
 Constraints:
 - reject comma-separated non-contiguous ranges (e.g. `"1,3,5"`) with a clear error
-- if MinerU legacy CLI is in use and a page range is requested, record the run as an error and continue
 
 ### 10.3. Output dirs
 For each target, output root:
@@ -233,7 +213,6 @@ Add `tests/parsers/pdf_hybrid/test_mineru_cli.py` following the structure of `te
   - `timeout` yields manifest `status="timeout"`
   - non-zero exit yields `status="error"`
   - discover None yields `status="unavailable"`
-  - legacy CLI + range yields `status="error"`
 - load_and_adapt() tests:
   - ok manifest loads payload and calls `adapt_mineru_output(...)`
   - non-ok manifest returns `[]`

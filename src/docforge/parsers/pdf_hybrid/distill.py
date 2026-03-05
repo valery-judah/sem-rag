@@ -32,7 +32,7 @@ def distill_pdf(
     sorted_pages = sorted(extracted_doc.pages, key=lambda p: p.page_idx)
 
     # Pre-flatten blocks to handle cross-page merging
-    flat_blocks: list[tuple[int, Any]] = [] # (page_idx, block)
+    flat_blocks: list[tuple[int, Any]] = []  # (page_idx, block)
     for page in sorted_pages:
         for block in sorted(page.blocks, key=lambda b: b.reading_order_key):
             flat_blocks.append((page.page_idx, block))
@@ -43,26 +43,27 @@ def distill_pdf(
         if not merged_blocks:
             merged_blocks.append((page_idx, block))
             continue
-            
+
         prev_page_idx, prev_block = merged_blocks[-1]
-        
+
         # Check if we should merge with the previous block
         # Criteria:
         # 1. Blocks are on different pages (specifically, adjacent pages)
         # 2. Both blocks are PARA type
         # 3. Previous block does not end with terminal punctuation
         # 4. Current block starts with lowercase letter
-        
+
         should_merge = False
-        if (page_idx > prev_page_idx and 
-            prev_block.type == BlockType.PARA and 
-            block.type == BlockType.PARA):
-            
+        if (
+            page_idx > prev_page_idx
+            and prev_block.type == BlockType.PARA
+            and block.type == BlockType.PARA
+        ):
             prev_text = (prev_block.text or "").strip()
             curr_text = (block.text or "").strip()
-            
+
             if prev_text and curr_text:
-                if not prev_text[-1] in (".", "?", "!", ":", '"', "'"):
+                if prev_text[-1] not in (".", "?", "!", ":", '"', "'"):
                     if curr_text[0].islower():
                         should_merge = True
 
@@ -73,8 +74,8 @@ def distill_pdf(
         else:
             merged_blocks.append((page_idx, block))
 
-        for i, (page_idx, block) in enumerate(merged_blocks):
-            text = block.text or ""
+    for i, (page_idx, block) in enumerate(merged_blocks):
+        text = block.text or ""
 
         # 2.2 Tree Construction setup
         # Map intermediate BlockType to ParserBlockType
@@ -116,9 +117,9 @@ def distill_pdf(
                 separator = "\n\n"
             else:
                 separator = "\n\n\f\n\n"
-                
-                canonical_text_parts.append(separator)
-                current_offset += len(separator)
+
+            canonical_text_parts.append(separator)
+            current_offset += len(separator)
 
     canonical_text = "".join(canonical_text_parts)
 

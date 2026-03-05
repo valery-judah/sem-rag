@@ -23,10 +23,10 @@ The pdf-hybrid pipeline already has a Marker CLI runner. This PR adds an analogo
 Mirror `marker_cli.py` structure with MinerU-specific logic from design doc sections 3–9.
 
 ### Key differences from MarkerRunner:
-- **Discovery (§4):** two binary names (`mineru`, `magic-pdf`), env var `DOCFORGE_MINERU_BIN`, venv path `tools/mineru/.venv`
+- **Discovery (§4):** binary name `mineru`, env var `DOCFORGE_MINERU_BIN`, venv path `tools/mineru/.venv`
 - **Version (§5):** try `--version`, fallback `-V`
-- **Config injection (§6):** write `mineru_config.json` into output_dir, set `MINERU_TOOLS_CONFIG_JSON` env var. Config includes models-dir (modern vs legacy format), device-mode, table/formula/layout config, bucket_info, optional Gemini block
-- **CLI flavor detection (§7):** check binary basename — `mineru` = modern, else = legacy `magic-pdf`. Different flags (`-b backend` vs `-m method`), different page range support (modern: `-s`/`-e` 0-based; legacy: not supported → error)
+- **Config injection (§6):** write `mineru_config.json` into output_dir, set `MINERU_TOOLS_CONFIG_JSON` env var. Config includes models-dir format, device-mode, table/formula/layout config, bucket_info, optional Gemini block
+- **CLI parameters (§7):** uses flags `-s`/`-e` for page ranges (0-based) and `-b backend`
 - **Output selection (§8):** `_select_mineru_json_payload()` — prefer `*_content_list.json`, then `*_middle.json`, then largest `.json` (excluding `mineru_config.json`)
 - **Bridge (§9):** `load_and_adapt()` calls `adapt_mineru_output()`
 - **Page range API:** `start_page`/`end_page` (0-based inclusive ints) instead of Marker's string `page_range`
@@ -34,8 +34,7 @@ Mirror `marker_cli.py` structure with MinerU-specific logic from design doc sect
 ### Implementation outline:
 ```
 _select_mineru_json_payload(output_dir: Path) -> Path
-_build_mineru_config(output_dir, binary_name, models_dir, device, env) -> Path
-_is_modern_cli(binary_path: str) -> bool
+_build_mineru_config(output_dir, models_dir, device, env) -> Path
 
 class MineruRunner:
     __init__(override_binary_path, env_overrides)
@@ -52,7 +51,6 @@ Mirror `scripts/run_marker.py` with MinerU adaptations per §10:
 - `--pdf` / `--targets` mutually exclusive args
 - Page range conversion: targets.json 1-based → runner 0-based (`"37"` → start=36, end=36; `"37-38"` → start=36, end=37)
 - Reject comma-separated ranges with clear error
-- Legacy CLI + page range → record error, continue
 - Output dirs: `output/mineru_test/{pdf_stem}_{clean_page_range}/`
 - Print: binary + version, status, error details, artifact counts (`.json`, `.md` recursive)
 - Default timeout: 300s
@@ -63,9 +61,9 @@ Mirror `test_marker_cli.py` structure per §11:
 
 ### Test classes:
 1. **TestMineruPayloadSelection** — `_content_list.json` preferred, `_middle.json` fallback, largest `.json` fallback, error if none
-2. **TestMineruRunnerDiscovery** — override path, `DOCFORGE_MINERU_BIN`, venv `mineru`/`magic-pdf`, PATH `mineru`/`magic-pdf`
+2. **TestMineruRunnerDiscovery** — override path, `DOCFORGE_MINERU_BIN`, venv `mineru`, PATH `mineru`
 3. **TestMineruRunnerVersion** — semver from `--version` stdout, `-V` fallback, None on unparseable
-4. **TestMineruRunnerRun** — ok (writes dummy `_content_list.json`), timeout, crash, unavailable, legacy+range → error
+4. **TestMineruRunnerRun** — ok (writes dummy `_content_list.json`), timeout, crash, unavailable
 5. **TestMineruRunnerLoadAndAdapt** — ok manifest → calls `adapt_mineru_output`, non-ok → `[]`
 
 ### Mock boundaries:

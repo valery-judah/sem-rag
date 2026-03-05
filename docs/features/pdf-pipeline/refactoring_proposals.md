@@ -1,6 +1,6 @@
 # CLI Runner Refactoring Proposals
 
-**Context:** Adding `MineruRunner` alongside `MarkerRunner`. Both share ~70% structural overlap (init, discovery chain, version parsing, outcome recording, load_and_adapt). The key tension: their `run()` methods genuinely differ — Marker loops over output formats, MinerU has binary-flavor branching and config file injection.
+**Context:** Adding `MineruRunner` alongside `MarkerRunner`. Both share ~70% structural overlap (init, discovery chain, version parsing, outcome recording, load_and_adapt). The key tension: their `run()` methods genuinely differ — Marker loops over output formats, MinerU uses dictionary-based configuration and specific backend arguments (like -b pipeline).
 
 ---
 
@@ -25,7 +25,7 @@ build_outcome_manifest(engine_name, result, version, bin_path,
 | `engines/mineru_cli.py` | Create (~160 lines), importing from `_runner_utils` |
 | `test_marker_cli.py` | **No changes** — all patch targets survive |
 
-**Pros:** Zero test breakage. Each runner file is fully self-contained. MinerU's unique complexity (config file writing, CLI flavor detection) stays local.
+**Pros:** Zero test breakage. Each runner file is fully self-contained. MinerU's unique complexity (dictionary-based config injection) stays local.
 
 **Cons:** ~15 lines of structural duplication accepted (`__init__`, `is_available`, `load_and_adapt` guard). Discovery chain pattern is copy-pasted.
 
@@ -35,7 +35,7 @@ build_outcome_manifest(engine_name, result, version, bin_path,
 
 Introduce `BaseCLIRunner` ABC in `engines/_base_runner.py` with concrete `is_available`, `get_version`, `load_and_adapt`, `_record_outcome`. Abstract methods: `discover()`, `_select_json_payload()`, `_adapt()`.
 
-**Key constraint:** `run()` cannot be a template method — Marker's format loop and MinerU's single-call-with-flavor-branching are structurally different. So `run()` stays concrete in each subclass, calling `self._record_outcome()`.
+**Key constraint:** `run()` cannot be a template method — Marker's format loop and MinerU's single-call with backend arguments are structurally different. So `run()` stays concrete in each subclass, calling `self._record_outcome()`.
 
 ```python
 class BaseCLIRunner(ABC):
@@ -57,7 +57,7 @@ MinerU overrides `get_version` to add `-V` fallback.
 
 **Pros:** `is_available`, `load_and_adapt`, version regex, outcome recording written once. ABC enforces interface at import time.
 
-**Cons:** `run()` duplication remains (~20 lines each). `_build_env` for MinerU writes files to disk — doesn't fit an abstract "build env" contract. One more file to trace through.
+**Cons:** `run()` duplication remains (~20 lines each). One more file to trace through.
 
 ---
 
@@ -72,7 +72,7 @@ class EngineConfig:
     env_bin_var: str           # "DOCFORGE_MINERU_BIN"
     env_venv_var: str          # "DOCFORGE_MINERU_VENV"
     default_venv_path: str     # "tools/mineru/.venv"
-    primary_binary_names: list[str]  # ["mineru", "magic-pdf"]
+    primary_binary_names: list[str]  # ["mineru"]
     version_flags: list[str]
     build_env: EnvBuilder      # callable
     build_cmd: CmdBuilder      # callable
@@ -101,7 +101,6 @@ Discovery is fully generic — parameterized by config values. Each engine modul
 **Proposal 1** for now. Rationale:
 
 1. The shared duplication is bounded (~55 lines of outcome recording + ~5 lines of semver parsing). That's a fair price for self-contained, readable runner files.
-2. The `run()` signatures genuinely differ — Marker's format loop and MinerU's flavor branching resist a clean shared template.
-3. MinerU's `_build_env` writes a config file to disk — a side effect that doesn't belong in an abstract contract.
-4. Zero test breakage. `test_marker_cli.py` survives unchanged.
-5. **Revisit Proposal 2 if a third engine arrives** — at that point, the ABC cost is justified and can be designed with three concrete examples rather than speculation.
+2. The `run()` signatures genuinely differ — Marker's format loop and MinerU's backend arguments and JSON payload injection resist a clean shared template.
+3. Zero test breakage. `test_marker_cli.py` survives unchanged.
+4. **Revisit Proposal 2 if a third engine arrives** — at that point, the ABC cost is justified and can be designed with three concrete examples rather than speculation.
