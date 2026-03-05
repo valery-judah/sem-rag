@@ -144,7 +144,7 @@ def test_build_mineru_command_for_modern_cli_defaults_to_pipeline(monkeypatch) -
 
 def test_write_mineru_config_includes_gemini_settings(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.setenv("GEMINI_API_KEY", "test-key")
-    monkeypatch.setenv("GEMINI_MODEL", "gemini-2.5-flash")
+    monkeypatch.setenv("GEMINI_MODEL", "gemini-3-flash-preview")
     monkeypatch.setenv("GEMINI_BASE_URL", "https://example.com/openai/")
     monkeypatch.delenv("DOCFORGE_MINERU_MODELS_DIR", raising=False)
 
