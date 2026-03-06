@@ -55,7 +55,7 @@ Structures that modify or wrap work rather than describing the problem itself.
 Examples:
 
 - Review Gatekeeper
-- high-control governance overlay
+- `governance_escalation` overlay
 - Feature Cell as long-horizon workstream pattern
 
 ### Layer D -- Lifecycle control plane
@@ -119,7 +119,7 @@ then later become: work rather than describing the problem itself.
 Examples:
 
 - Review Gatekeeper
-- high-control governance overlay
+- `governance_escalation` overlay
 - Feature Cell as long-horizon workstream pattern
 - low uncertainty,
 - implementation-ready,
@@ -681,7 +681,7 @@ These are routing outputs.
 Examples:
 
 - Review Gatekeeper
-- high-control governance overlay
+- `governance_escalation` overlay
 - Feature Cell
 
 These are not task descriptors. They are modifiers or orchestration structures.
@@ -974,6 +974,6 @@ This is the right place to classify a long-running feature at the beginning as:
 - uncertain,
 - partially specified,
 - multi-PR,
-- and high handoff need,
+- and `handoff_need = high`,
 
 without prematurely calling it `Contract Builder`, `Feature Cell`, or any other downstream construct.

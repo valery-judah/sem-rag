@@ -672,7 +672,7 @@ Layer A supplies the raw descriptors that make Layer C decisions possible.
 
 Examples:
 
-- `execution_horizon` and handoff need drive `feature_cell`,
+- `execution_horizon` and `handoff_need` drive `feature_cell`,
 - governance fields such as blast radius, reversibility, sensitivity, and approval requirement drive `governance_escalation`,
 - validation burden and artifact type may help determine whether `review_gatekeeper` is needed.
 
@@ -894,7 +894,7 @@ The regime requires review, but the current control state still belongs in Layer
 ## Example 3 -- Ambiguous feature workstream
 ### Context
 
-- Layer A: implement intent, scoped problem, design-heavy, multi-PR, high handoff need
+- Layer A: implement intent, scoped problem, design-heavy, multi-PR, `handoff_need = high`
 - Layer B: starts as `contract_builder`, later becomes `routine_implementer`
 - Layer D: task-scope and workstream-scope lifecycle may both exist
 
@@ -1059,7 +1059,7 @@ layer_c:
 ## Example 7 -- Long-running program with dual-scope lifecycle
 ### Context
 
-- Layer A: long-running, mixed uncertainty across slices, high handoff need
+- Layer A: long-running, mixed uncertainty across slices, `handoff_need = high`
 - Layer B: changes over time across several modes
 - Layer C: `feature_cell` plus workstream-scope governance
 - Layer D: both workstream-scope and task-scope records may be tracked
