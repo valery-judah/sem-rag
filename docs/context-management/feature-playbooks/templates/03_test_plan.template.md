@@ -3,19 +3,16 @@
 ## Scope
 - 
 
-## Test Pyramid
+## Test Matrix
 - Unit:
-- Property:
-- Snapshot:
 - Integration:
+- Property / invariant:
+- Snapshot / golden:
 
 ## Fixtures and Corpora
 - 
 
 ## CI Gates
-- 
-
-## Snapshot Update Policy
 - 
 
 ## Reporting

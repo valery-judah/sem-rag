@@ -1,79 +1,60 @@
 # Artifact Contracts
 
 ## Contract Authority
-For each feature folder, `01_rfc.md` is the single normative source of truth for:
-- input/output contracts
+For new features using the slim playbook, `01_contract.md` is the single normative source of truth for:
+- behavior and scope
+- touched interfaces
 - required fields
 - invariants
-- deterministic ordering rules
-- identity/anchor strategy
+- acceptance semantics
+- change-control rules
 
-Other artifacts must reference RFC sections instead of redefining contracts.
+Other artifacts may summarize this information, but must not silently redefine it.
 
-## `00_context.md` Contract
+## `README.md` Contract
 Must include:
-- pipeline/module placement
-- upstream/downstream ownership boundaries
-- invariant summary (high-level only)
-- one compact golden example
-- verification map (contract area -> test family)
+- feature summary
+- current status and chosen track
+- authoritative file list and read order
+- boundary/context summary
+- current step and next step
+- blockers/open questions
+- execution log
+- latest validation summary
 
-Must not include full schema duplication.
+Must not own normative behavior or invariants.
 
-## `01_rfc.md` Contract
+## `01_contract.md` Contract
 Must include:
 - problem and scope
-- normative input/output schemas
-- required fields
-- invariants and deterministic ordering
-- success criteria thresholds
-- non-goals
-- open decisions
+- explicit out-of-scope or non-goals
+- inputs/outputs or touched interfaces
+- required behavior and invariants
+- acceptance checks
+- failure and edge scenarios
+- success criteria
 - change-control policy
 
-## `02_user_stories.md` Contract
+## `02_design.md` Contract
 Must include:
-- personas and outcomes
-- Given/When/Then acceptance criteria
-- explicit edge/failure scenarios
-- traceability matrix: AC/ES -> RFC section -> test category
-- measurable quality gates
+- design goals linked to the contract
+- data flow or decomposition
+- key decisions and tie-breakers
+- change triggers for contract/readme updates
+- observability
+- limitations and deferred items
 
-Must not include implementation-library decisions.
-
-## `03_design.md` Contract
-Must include:
-- implementation goals linked to RFC
-- deterministic data flow
-- algorithm decomposition and tie-breakers
-- edge-case handling policy
-- observability events and payload fields
-- complexity/limitations and deferred items
-
-Must not redefine normative schema contracts.
-
-## `04_workplan.md` Contract
-Must include:
-- milestone mapping
-- dependency order
-- PR-by-PR tasks with:
-  - scope
-  - touched modules
-  - acceptance checks
-  - required tests
-  - rollback/mitigation notes
-  - exit criteria
-- command checklist and done criteria
+Must not redefine normative behavior already owned by the contract.
 
 ## Optional Contracts
-### `05_test_plan.md`
-- test pyramid
-- fixture and snapshot policy
+### `03_test_plan.md`
+- test matrix
+- fixture/corpus and snapshot policy
 - CI gates and thresholds
-- report/metrics format
+- reporting expectations
 
-### `06_rollout.md`
-- rollout stages
-- success metrics
+### `04_rollout.md`
+- rollout stage gates
+- evidence and success metrics per stage
 - abort/rollback triggers
 - ownership and communication plan
