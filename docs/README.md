@@ -7,9 +7,9 @@ This repository uses a two-layer documentation model:
 
 ## MVP North Star
 
-- [`phase1.md`](./phase1.md): semantic-pipeline MVP contract, component boundaries, invariants, and milestones
+- [`mvp-1.md`](./mvp-1.md): semantic-pipeline MVP contract, component boundaries, invariants, and milestones
 - [`../ARCHITECTURE.md`](../ARCHITECTURE.md): current code map and dependency directions
-- [`PIPELINE.md`](./PIPELINE.md): crosswalk from `phase1.md` components to current code and feature folders
+- [`PIPELINE.md`](./PIPELINE.md): crosswalk from `mvp-1.md` components to current code and feature folders
 
 ## Control-Plane Docs
 

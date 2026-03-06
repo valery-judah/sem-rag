@@ -33,7 +33,7 @@ These files summarize and route. They should stay compact and should not restate
 
 These remain the detailed design and execution layer:
 
-- `docs/phase1.md` for the MVP north star
+- `docs/mvp-1.md` for the MVP north star
 - `docs/00_playbook.md`
 - `docs/01_artifact_contracts.md`
 - `docs/02_quality_gates.md`
@@ -47,7 +47,7 @@ This layer is where feature-specific contracts, design choices, and workplans li
 
 The docs structure is intentionally explicit about who owns what:
 
-- `docs/phase1.md` owns the MVP system shape, major components, invariants, and milestone sequencing.
+- `docs/mvp-1.md` owns the MVP system shape, major components, invariants, and milestone sequencing.
 - `docs/features/*/01_rfc.md` owns feature-local normative behavior.
 - `docs/features/*/00_context.md`, `03_design.md`, and `04_workplan.md` support the RFC with context, implementation detail, and execution slicing.
 - control-plane docs route to those sources; they do not redefine them.
@@ -98,7 +98,7 @@ Architecture prose, pipeline mapping, and plan navigation belong in the new cont
 This change does not:
 
 - move or rename `docs/features/*`
-- decompose `docs/phase1.md` into many smaller canonical docs
+- decompose `docs/mvp-1.md` into many smaller canonical docs
 - invent runtime, database, or `docker-compose` instructions before those surfaces exist
 - replace feature RFCs with summary docs
 
