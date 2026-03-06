@@ -7,6 +7,7 @@ This version optimizes for:
 - high-legibility execution
 - resumable handoff
 - explicit contract authority
+- structured entrypoint procedures for orchestration
 - stronger sections instead of more files
 
 The goal is not "more documents." The goal is to keep the minimum structure that still makes agent work safe.
@@ -162,11 +163,14 @@ It owns:
 - read order
 - dependency/context summary
 - current next step
+- latest decision summary
 - blockers and open questions
 - live execution log
 - latest validation summary
 
 It does **not** own behavioral requirements or invariants.
+
+It is the orchestration entrypoint and must stay parseable as structured Markdown.
 
 ## 3.2 `01_contract.md`
 `01_contract.md` is the normative source of truth for:
@@ -216,6 +220,17 @@ It owns:
 - abort/rollback triggers
 - ownership and comms
 
+## 3.6 Authority by concern
+Use concern ownership, not just file precedence.
+
+| Concern | Authoritative artifact | Supporting artifacts | Non-authority rule |
+|---|---|---|---|
+| Feature status and execution state | `README.md` | `02_design.md`, `03_test_plan.md`, `04_rollout.md` | Supporting docs may reference status, but must not become the source of current execution truth. |
+| Behavior, scope, invariants, and acceptance semantics | `01_contract.md` | `README.md`, `02_design.md`, `03_test_plan.md` | `README.md` may summarize behavior, but cannot redefine it. |
+| Implementation strategy, decomposition, and tie-breakers | `02_design.md` | `README.md`, `01_contract.md` | `02_design.md` may explain behavior, but cannot override the contract. |
+| Deep test strategy and CI thresholds | `03_test_plan.md` | `README.md`, `02_design.md` | Optional validation docs may refine testing, but cannot change contract semantics. |
+| Rollout stages, evidence, and abort rules | `04_rollout.md` | `README.md`, `03_test_plan.md` | Rollout summaries may restate status, but rollout policy lives here. |
+
 ---
 
 # 4) Required sections inside the slimmer artifact set
@@ -258,11 +273,18 @@ Reducing artifact count only works if the remaining files are stronger.
 - Next step:
 - Commands/checks:
 
+## Latest decision
+- Decision ID:
+- Date:
+- Summary:
+- Affected files:
+
 ## Execution log
 - YYYY-MM-DD:
 
 ## Blockers and open questions
-- ...
+- Blocked on:
+- Open questions:
 
 ## Latest validation
 - Last run:
@@ -339,7 +361,7 @@ If documents conflict, resolve them in this order:
 This means:
 - `01_contract.md` wins for behavior, invariants, and acceptance semantics
 - `02_design.md` wins for implementation strategy and tie-breakers
-- `README.md` wins for current status, next step, blockers, and execution history
+- `README.md` wins for current status, next step, blockers, execution history, latest validation, and latest-decision summary
 
 If `README.md` conflicts with `01_contract.md` on behavior, the contract wins until deliberately amended.
 
@@ -354,6 +376,47 @@ Use this rule set:
 - rollout-policy change -> update `04_rollout.md`
 
 Whenever a meaningful post-freeze change is made, add a short dated decision note in the relevant authoritative file.
+
+## 5.3 State machine
+Allowed `State` values:
+- `draft`
+- `active`
+- `blocked`
+- `validating`
+- `rollout`
+- `complete`
+- `obsolete`
+
+Allowed transitions:
+- `draft -> active`
+- `active -> blocked | validating | complete`
+- `blocked -> active | obsolete`
+- `validating -> active | rollout | complete | blocked`
+- `rollout -> complete | blocked`
+- `complete -> active` only when intentionally reopened
+- `obsolete` is terminal
+
+## 5.4 Conflict-resolution procedure
+When two docs disagree:
+1. Identify the conflicting concern, not just the conflicting files.
+2. Resolve authority using the concern matrix.
+3. Treat the authoritative artifact as correct until deliberately amended.
+4. Update downstream summary/supporting docs in the same iteration if they drift.
+5. Record a dated decision note when the authoritative meaning actually changes.
+
+This procedure is mandatory for both agents and human reviewers.
+
+## 5.5 Drift classes and required response
+Classify disagreement before editing:
+
+- **Summary drift**: `README.md` or a summary section lags behind an authoritative file.
+  - Response: update the summary surface only.
+- **Design drift**: `02_design.md` no longer matches the contract or chosen implementation approach.
+  - Response: update `02_design.md`, or escalate if behavior is actually changing.
+- **Execution drift**: `Current step`, `Next step`, blockers, or validation in `README.md` no longer match repo reality.
+  - Response: update `README.md`.
+- **Contract drift**: code or design no longer matches `01_contract.md`.
+  - Response: stop implementation and amend `01_contract.md` first, or escalate.
 
 ---
 
@@ -398,6 +461,16 @@ Every iteration should provide the agent:
 - relevant system-level docs as needed
 - the current scoped task
 
+## 7.1a Entrypoint bootstrap
+Before any work begins:
+1. Open `README.md`.
+2. Parse the required sections and field labels.
+3. Fail fast if `State`, `Track`, `Authoritative Files`, or `Current step` is missing.
+4. Load files in `Read Order`.
+5. Confirm that referenced authoritative files exist.
+6. Use `Track` to determine whether `02_design.md`, `03_test_plan.md`, or `04_rollout.md` are required.
+7. Refuse execution if the entrypoint and required artifacts disagree on existence or authority.
+
 ## 7.2 Required outputs per iteration
 The agent should produce:
 - scoped code changes
@@ -411,9 +484,47 @@ At the end of each iteration:
 - update the current/next step
 - record validation results
 - note blockers and open questions
-- record any meaningful design or contract amendment
+- update latest decision summary if a meaningful contract/design decision was made
 
 The next agent should be able to resume from `README.md` alone.
+
+Amend by concern:
+- behavior/invariant/interface/acceptance change -> amend `01_contract.md` first
+- implementation-only change with same behavior -> amend `02_design.md`
+- sequencing/status/blocker/validation change -> amend `README.md`
+- test-governance change -> amend `03_test_plan.md`
+- rollout-policy change -> amend `04_rollout.md`
+
+Require a short dated decision note whenever:
+- authority changes meaning
+- a conflict is resolved by amendment
+- an intentional override or reopen occurs
+
+## 7.4 Claim, block, handoff, and completion procedures
+At iteration start:
+- set `Owner`
+- set `Last updated`
+- confirm or update `State`
+- confirm `Current step`
+
+When blocked:
+- set `State: blocked`
+- write `Blocked on`
+- move unresolved items into `Open questions`
+- set `Next step` to the unblock action
+- append an `Execution Log` entry describing partial progress and the blocker
+
+When handing off:
+- require `Next step`
+- require `Latest Validation`
+- require a fresh `Execution Log` entry
+- require `Latest Decision` to be updated if contract/design intent changed
+
+When completing:
+- set `State: complete`
+- clear `Blocked on`
+- set `Next step: None`
+- append a final validation/result summary
 
 ---
 
@@ -502,9 +613,19 @@ This playbook uses a simpler operating model:
 - Start with the smallest track that is still safe.
 - Keep one compact entrypoint in `README.md`.
 - Keep the contract separate from live status.
+- Resolve disagreement by concern ownership, not by guessing from filenames.
 - Add design only when implementation complexity requires it.
 - Add test and rollout artifacts only when risk requires them.
 - Use clearer authority rules instead of more files.
 - Preserve resumability through stronger sections, not heavier process.
 
 This is the balance point between under-specified execution and documentation overload.
+
+## Future enforcement hook
+Future doc-lint or validation could check:
+- required authority sections exist
+- forbidden restatement of contract semantics in `README.md`
+- missing decision note after authoritative amendments
+- disagreement between track-required artifacts and entrypoint claims
+
+This is a future enforcement direction, not part of the current required workflow.
