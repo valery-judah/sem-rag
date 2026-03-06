@@ -1,5 +1,3 @@
-
-
 # Routing Rules
 
 ## Purpose
@@ -9,6 +7,21 @@ This document defines the default routing policy from Layer A problem shape to o
 Its purpose is to help an agent choose the dominant current posture for a task slice after intake and during rerouting. It is not a universal workflow specification, not a replacement for judgment, and not a license to blend multiple modes into one label.
 
 The routing policy should stay small, legible, and easy to apply repeatedly.
+
+## Relationship to Layer B mode docs
+
+Use this file to choose the current mode.
+
+Use the detailed Layer B mode files in `docs/harness/concepts/layer-b-modes/` to understand how to operate once a mode is selected.
+
+Recommended sequence:
+1. determine the current slice,
+2. fill or review the Layer A core,
+3. use this routing policy to pick one current mode,
+4. open the detailed mode file for that mode,
+5. continue while keeping Layer C overlays/containers and Layer D lifecycle state separate.
+
+This file should stay lighter than the per-mode specs. It gives routing guidance, not full mode behavior.
 
 ## Scope
 
@@ -32,7 +45,7 @@ Pick **exactly one** current Layer B mode: the one that best describes the domin
 
 The correct question is:
 
-> What is the most important kind of work this slice currently requires?
+> What is the most important kind of work this slice currently requires now?
 
 Not:
 - what the whole initiative is about,
@@ -66,11 +79,12 @@ Routing should use the current task slice and at least the required Layer A core
 
 Routing may also consider:
 - current request wording,
-- current next step,
+- current `next_step`,
 - current failure mode,
 - whether evidence generation is now dominant,
 - whether the work is behavior-preserving or behavior-changing,
-- whether the slice is part of a staged transition.
+- whether the slice is part of a staged transition,
+- whether the current useful output is a contract, implementation change, findings packet, or diagnostic explanation.
 
 ## Default routing table
 
@@ -99,6 +113,9 @@ Typical outputs:
 
 Do not use when the real work is already contract definition, debugging, or evaluation.
 
+Detailed mode file:
+- `docs/harness/concepts/layer-b-modes/research-scout.md`
+
 ### Route to `contract_builder`
 
 Use `contract_builder` when the dominant work is defining scope, interface, behavior, acceptance conditions, schema, API shape, or other executable agreement.
@@ -122,6 +139,9 @@ Typical outputs:
 - implementation boundary.
 
 Do not use when the contract is already clear and the real work is straightforward implementation.
+
+Detailed mode file:
+- `docs/harness/concepts/layer-b-modes/contract-builder.md`
 
 ### Route to `routine_implementer`
 
@@ -147,6 +167,9 @@ Typical outputs:
 
 Do not use when the main issue is unexplained failure, undefined contract, migration sequencing, or optimization diagnosis.
 
+Detailed mode file:
+- `docs/harness/concepts/layer-b-modes/routine-implementer.md`
+
 ### Route to `refactor_surgeon`
 
 Use `refactor_surgeon` when the dominant work is structural change with behavior preservation.
@@ -171,6 +194,9 @@ Typical outputs:
 
 Do not use when the task is actually debugging or behavior-changing feature work.
 
+Detailed mode file:
+- `docs/harness/concepts/layer-b-modes/refactor-surgeon.md`
+
 ### Route to `debug_investigator`
 
 Use `debug_investigator` when behavior is wrong or failing and the dominant work is finding the cause.
@@ -194,6 +220,9 @@ Typical outputs:
 - recommendation for fix slice.
 
 Do not use when the issue is primarily that desired behavior was never clearly specified.
+
+Detailed mode file:
+- `docs/harness/concepts/layer-b-modes/debug-investigator.md`
 
 ### Route to `migration_operator`
 
@@ -220,6 +249,9 @@ Typical outputs:
 
 Do not use for ordinary implementation just because the task touches legacy code.
 
+Detailed mode file:
+- `docs/harness/concepts/layer-b-modes/migration-operator.md`
+
 ### Route to `optimization_tuner`
 
 Use `optimization_tuner` when the dominant work is improving an existing system against measurable objectives such as latency, cost, quality, throughput, relevance, or efficiency.
@@ -242,6 +274,9 @@ Typical outputs:
 - recommendation based on measured deltas.
 
 Do not use when the dominant work is simply evaluation without a concrete optimization move yet.
+
+Detailed mode file:
+- `docs/harness/concepts/layer-b-modes/optimization-tuner.md`
 
 ### Route to `quality_evaluator`
 
@@ -266,6 +301,9 @@ Typical outputs:
 - acceptance recommendation.
 
 Do not use when the main work is still exploring what should be measured or specified.
+
+Detailed mode file:
+- `docs/harness/concepts/layer-b-modes/quality-evaluator.md`
 
 ## Priority rules for ambiguous cases
 
@@ -307,6 +345,18 @@ Use `quality_evaluator` when the main work is evidence generation or assessment.
 
 Use `optimization_tuner` when the main work is making and comparing improvement moves against a metric.
 
+### `debug_investigator` vs `contract_builder`
+
+Use `debug_investigator` if expected behavior is known enough and the main need is causal isolation.
+
+Use `contract_builder` if the observed issue is really a symptom of undefined or disputed expected behavior.
+
+### `research_scout` vs `quality_evaluator`
+
+Use `research_scout` if the task is still clarifying what should be asked or measured.
+
+Use `quality_evaluator` if the evaluation question is already explicit and the main need is evidence.
+
 ## Rerouting rules
 
 Reroute when the actual work has changed shape enough that the current mode no longer describes the dominant posture.
@@ -316,6 +366,7 @@ Common reroutes:
 - `contract_builder -> routine_implementer` when the contract is sufficiently defined,
 - `routine_implementer -> debug_investigator` when unexplained failure becomes dominant,
 - `debug_investigator -> contract_builder` when the real issue is undefined expected behavior,
+- `refactor_surgeon -> quality_evaluator` when preservation evidence becomes the dominant remaining work,
 - `migration_operator -> quality_evaluator` when readiness evidence becomes the main work,
 - `quality_evaluator -> routine_implementer` when findings now support a bounded implementation fix,
 - `optimization_tuner -> quality_evaluator` when a measurement cycle dominates before the next tuning move.
@@ -344,7 +395,7 @@ Use this checklist when choosing or validating a mode.
 
 - What is the current slice trying to accomplish now?
 - What is the dominant kind of work required now?
-- Is the problem still mainly discovery, contract definition, implementation, debugging, migration, tuning, or evaluation?
+- Is the problem still mainly discovery, contract definition, implementation, refactor, debugging, migration, tuning, or evaluation?
 - Does exactly one mode clearly dominate?
 - If not, is the slice too broad and in need of reslicing?
 - Does the current `next_step` match the chosen mode?
@@ -420,4 +471,4 @@ Reason:
 - Prefer improving slice quality over adding new modes.
 - Add a new universal routing rule only when repeated real cases cannot be expressed with the existing set.
 - Do not turn routing into a giant taxonomy.
-- When in doubt, choose the mode that best matches the immediate `next_step`, or reslice if no single mode fits.
+- When in doubt, choose the mode that best matches the immediate `next_step`, then open the detailed mode file, or reslice if no single mode fits.
