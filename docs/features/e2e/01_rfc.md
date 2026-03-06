@@ -13,7 +13,7 @@ This RFC defines a reproducible local harness that:
 This RFC does not change the canonical `ParsedDocument` contract.
 
 ## 2. Determinism and Stability Goals
-Non-negotiables (from `docs/agentic-docs/00_playbook.md`):
+Non-negotiables (from `docs/00_playbook.md`):
 - Stable identity for produced artifacts when inputs and config are unchanged.
 - Provenance from derived artifacts back to source representation.
 - Determinism for identical inputs, code version, engine versions, and config.

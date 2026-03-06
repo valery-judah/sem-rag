@@ -29,9 +29,10 @@ Provide one reusable workflow to design, implement, and validate future pipeline
 - `06_rollout.md` for staged rollout, shadow mode, or A/B deployment plans.
 
 ## Directory Convention
-- Shared rules and templates live under `docs//docs/features/parsers//`.
-- Feature docs live under `docs//docs/features/parsers/ature-name>/`.
-- Existing domain docs (e.g. `docs/parsers/`) may remain as canonical docs during migration.
+- Shared rules live under `docs/`.
+- Templates live under `docs/templates/`.
+- Feature docs live under `docs/features/<feature-name>/`.
+- Existing feature folders remain canonical during migration unless an RFC/workplan explicitly moves them.
 
 ## Definition of Done (Documentation)
 - Feature artifact set exists and is internally consistent.
