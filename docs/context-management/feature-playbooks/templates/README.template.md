@@ -3,6 +3,8 @@
 ## Summary
 <1-2 paragraphs>
 
+Status and execution only. Do not restate or redefine normative behavior here; link back to `01_contract.md` when needed.
+
 ## Status
 - State: `draft | active | blocked | validating | rollout | complete | obsolete`
 - Track: `tiny | standard | high-risk`
@@ -35,11 +37,18 @@ Omit files that do not exist for the chosen track.
 - Next step:
 - Commands/checks:
 
+## Latest Decision
+- Decision ID:
+- Date:
+- Summary:
+- Affected files:
+
 ## Execution Log
 - YYYY-MM-DD:
 
 ## Blockers and Open Questions
-- 
+- Blocked on:
+- Open questions:
 
 ## Latest Validation
 - Last run:
