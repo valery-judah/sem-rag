@@ -1,8 +1,11 @@
 # Architecture Map
 
+**Status:** Verified
+**Last verified:** 2026-03-05
+
 ## Purpose
 
-This file maps the current `docforge` codebase to the semantic-pipeline MVP described in [`docs/phase1.md`](docs/phase1.md). It is a repo map, not a replacement for feature RFCs or schema docs.
+This file maps the current `docforge` codebase to the semantic-pipeline MVP described in [`docs/mvp-1.md`](docs/mvp-1.md). It is a repo map, not a replacement for feature RFCs or schema docs.
 
 ## Current System Shape
 
@@ -35,7 +38,7 @@ In practice:
 
 ## Phase 1 Coverage Map
 
-`docs/phase1.md` describes a broader end-state than the current codebase.
+`docs/mvp-1.md` describes a broader end-state than the current codebase.
 
 - Present in code today: source connectors, structural parsing, PDF-hybrid parsing work, retrieval demo utilities
 - Present mostly in docs today: hierarchical segmentation, augmented views, graph extraction, publishing/index layers
@@ -45,7 +48,7 @@ Use [`docs/PIPELINE.md`](docs/PIPELINE.md) for the detailed crosswalk from Phase
 
 ## Documentation Authority
 
-- `docs/phase1.md` is the MVP north star for system shape and milestone sequencing.
+- `docs/mvp-1.md` is the MVP north star for system shape and milestone sequencing.
 - `docs/features/*/01_rfc.md` is normative for feature-local contracts.
 - `docs/features/*/03_design.md` and `04_workplan.md` define implementation details and execution slices.
 - Control-plane docs such as this file, [`docs/README.md`](docs/README.md), and [`docs/PLANS.md`](docs/PLANS.md) summarize and route; they should not duplicate normative schemas.

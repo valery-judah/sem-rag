@@ -1,6 +1,10 @@
 Below is a build specification for **Phase 1: Knowledge Representation Pipeline** for an internal-document RAG system. It's written as an implementation-oriented spec (logical components; deploy shape is out of scope).
 
 # Phase 1 Specification: Knowledge Representation Pipeline
+
+**Status:** Verified
+**Last verified:** 2026-03-05
+
 ## 1. Purpose
 
 Transform raw internal documents into **multi-view, queryable representations**:

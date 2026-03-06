@@ -248,7 +248,7 @@ A feature is “done” when:
 Use a predictable “agent contract” so results are consistent across features.
 
 ### Inputs to the agent (each iteration)
-- `phase1.md` (pipeline overview + invariants)
+- `mvp-1.md` (pipeline overview + invariants)
 - `docs/<feature>/01_rfc.md`
 - `docs/<feature>/02_user_stories.md`
 - `docs/<feature>/03_design.md`

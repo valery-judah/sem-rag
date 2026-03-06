@@ -1,7 +1,7 @@
 # Context: Structural Parser & Distiller
 
 ## 1. Purpose in Pipeline
-The Structural Parser & Distiller (component 3.2 in `docs/phase1.md`) transforms source-specific raw documents into canonical, structured text with stable anchors.
+The Structural Parser & Distiller (component 3.2 in `docs/mvp-1.md`) transforms source-specific raw documents into canonical, structured text with stable anchors.
 
 - Upstream: Source Connectors (component 3.1).
 - Downstream: Hierarchical Segmenter (component 3.3).
