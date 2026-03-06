@@ -1,22 +1,3 @@
-# Layer B Operating Modes
-
-This directory contains the detailed specifications for the atomic operating modes defined in Layer B of the agentic work model.
-
-Layer B defines the current working posture for an agent. It answers the question: *How should the agent behave now?*
-
-These modes are current-state routing conclusions derived from Layer A classification, not permanent task identities. A task may transition through multiple modes as work progresses.
-
-## Available Modes
-
-1. [Research Scout](./research-scout.md): Reduce uncertainty, gather evidence, compare options, and synthesize findings when the dominant problem is still exploratory.
-2. [Contract Builder](./contract-builder.md): Transform a partly known problem into an implementation-ready contract.
-3. [Routine Implementer](./routine-implementer.md): Execute a clear, bounded, implementation-ready change with normal engineering discipline.
-4. [Refactor Surgeon](./refactor-surgeon.md): Perform behavior-preserving structural change with deliberate control over code shape and regression risk.
-5. [Debug Investigator](./debug-investigator.md): Diagnose known failing behavior when the root cause is not yet isolated.
-6. [Migration Operator](./migration-operator.md): Execute or prepare rollout-sensitive transitions where sequencing, compatibility, reversibility, and operational safety matter.
-7. [Optimization Tuner](./optimization-tuner.md): Improve measurable performance, efficiency, latency, throughput, resource usage, or cost when tuning rather than raw implementation dominates.
-8. [Quality Evaluator](./quality-evaluator.md): Produce or interpret evidence about output quality when correctness cannot be established by ordinary tests alone.
-
 # Layer B Modes
 
 This directory contains the detailed operational references for the canonical atomic operating modes defined by Layer B.
@@ -70,10 +51,10 @@ The following mode files are the canonical detailed references for Layer B.
 
 | Mode | Purpose | Detailed file |
 |---|---|---|
-| Research Scout | Reduce uncertainty through discovery, mapping, and evidence gathering when the main problem is still exploratory. | `research-scout.md` |
-| Contract Builder | Turn a partly known problem into an explicit contract, boundary, schema, or acceptance target that downstream work can execute against. | `contract-builder.md` |
-| Routine Implementer | Execute a clear, bounded change when the implementation path is already sufficiently defined. | `routine-implementer.md` |
-| Refactor Surgeon | Perform behavior-preserving structural change with explicit control over regression risk. | `refactor-surgeon.md` |
+| Research Scout | Reduce uncertainty through bounded discovery, mapping, and findings synthesis. | `research-scout.md` |
+| Contract Builder | Turn a partly known problem into an explicit contract, boundary, or acceptance target. | `contract-builder.md` |
+| Routine Implementer | Execute a clear bounded change against a sufficiently explicit target. | `routine-implementer.md` |
+| Refactor Surgeon | Perform behavior-preserving structural change under explicit regression control. | `refactor-surgeon.md` |
 | Debug Investigator | Diagnose failing or incorrect behavior when the root cause is not yet isolated. | `debug-investigator.md` |
 | Migration Operator | Handle staged transitions where sequencing, compatibility, rollback, and operational safety dominate. | `migration-operator.md` |
 | Optimization Tuner | Improve measurable system behavior when tuning and comparison against metrics dominate. | `optimization-tuner.md` |
