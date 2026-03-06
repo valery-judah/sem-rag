@@ -1,89 +1,60 @@
-# Agent Rules For This Repository
+# Agent Contract For This Repository
 
-These rules are mandatory for all local development and automation in this repo.
+This file is the repo entry point for agents. It is a routing layer, not the full handbook.
 
-## 1) Instruction Precedence
-When instructions conflict, apply this order:
-1. System/developer instructions
-2. `AGENTS.md`
-3. Task-specific docs and plans
+## Repo Purpose
 
-## 2) Mandatory Rules
-### Environment and Commands
+`docforge` is a semantic-pipeline MVP for turning raw internal documents into queryable knowledge artifacts. The current repo contains:
+
+- source-document contracts and connectors in `src/docforge/connectors/`
+- canonical parsing and PDF-hybrid parsing work in `src/docforge/parsers/`
+- a small retrieval demo in `src/docforge/retrieval.py` and `src/docforge/cli.py`
+- feature-spec documentation in `docs/features/`
+
+Start with:
+
+- product/system north star: `docs/phase1.md`
+- repo/code map: `ARCHITECTURE.md`
+- pipeline navigation: `docs/PIPELINE.md`
+
+## Required Commands And Validation Matrix
+
+### Workflow rules
 - Use `uv` for all Python-related commands.
 - Do not use `pip`, `python -m pip`, `poetry`, or `pipenv` directly.
 - Prefer `make` targets when available.
 - If a task is not in `Makefile`, run it via `uv run <tool>`.
 
-### Package and Imports
-- Keep `src/` layout as the source of truth.
-- Tests must validate installed-package behavior (no path hacks).
-- Use editable install (`make install`) for local development and test runs.
-- Do not modify `PYTHONPATH` to bypass package behavior.
-
-### Dependencies and Lockfile
-- Add/remove dependencies via `pyproject.toml` and `uv` workflows only.
-- Keep `uv.lock` committed and up to date after dependency changes.
-- Do not manually edit `uv.lock`.
-
-### Code Quality
-- Prefer small, focused changes.
-- Add or update tests for behavior changes.
-- Preserve backward compatibility for public API contracts unless explicitly requested.
-- Use type annotations for new/changed Python code.
-- Avoid dead code, commented-out blocks, and broad `except Exception` without justification.
-
-### Safe Git Rules
-- Never revert unrelated user changes.
-- Avoid destructive commands unless explicitly requested.
-- Do not use interactive git flows when non-interactive commands are available.
-
-## 3) Command Policy
-Use these command patterns:
-- Dependency sync: `make sync` (fallback: `uv sync`)
-- Editable install: `make install` (fallback: `uv pip install --editable .`)
-- Run app: `make run`
+### Standard commands
+- Sync dependencies: `make sync`
+- Editable install: `make install`
+- Run demo CLI: `make run`
 - Format: `make fmt`
 - Lint: `make lint`
 - Type check: `make type`
 - Tests: `make test`
 
-## 4) Task Matrix
-- Docs-only change:
-  - required: no mandatory test run
-  - recommended: run targeted checks only if docs affect generated artifacts
-- Code change (non-API):
-  - required: `make test`
-- API/schema/logic change:
-  - required: `make fmt`, `make lint`, `make type`, `make test`
-  - also update related docs and tests
+### Validation matrix
+- Docs-only change: no mandatory test run; run targeted checks only if docs affect generated artifacts or commands.
+- Code change without public contract impact: `make test`
+- Parser/schema/logic change: `make fmt`, `make lint`, `make type`, `make test`
 
-## 5) Semantic RAG Contract Discipline
-- For retrieval contract changes, update:
-  - chunking/indexing logic
-  - retrieval/ranking logic
-  - tests that cover ranking behavior
-  - relevant docs in `README.md` or `docs/`
-- Keep typed models explicit for document/chunk/query structures.
-- Preserve deterministic behavior in tests (fixed fixtures and stable ordering rules).
+## Canonical Docs
 
-## 6) Workflow and Done Criteria
-### Default Workflow
-1. `make sync`
-2. Implement change
-3. Run required checks from the task matrix
+- `docs/phase1.md`: MVP semantic-pipeline contract and milestone map
+- `ARCHITECTURE.md`: current repo/module boundaries and dependency directions
+- `docs/README.md`: documentation index
+- `docs/PIPELINE.md`: map from `phase1.md` components to code and feature docs
+- `docs/PLANS.md`: where active execution plans and workplans live
+- `docs/00_playbook.md`: reusable feature-doc workflow
+- `docs/01_artifact_contracts.md`: authority rules for feature artifacts
+- `docs/runbooks/local-dev.md`: future-facing local runtime scaffold
+- `docs/generated/README.md`: reserved location for future generated references
 
-### Definition of Done
-1. Code/docs changes are implemented and readable.
-2. Required checks pass for the task type.
-3. New behavior is covered by tests (if behavior changed).
-4. Relevant docs are updated.
-5. No unrelated files are modified.
+## Hard Constraints
 
-## Appendix A) Review Mode Contract
-When asked to "review":
-- prioritize findings (bugs, regressions, risks, missing tests)
-- order findings by severity
-- include concrete file/line references
-- keep summary brief and secondary
-- if no findings, state that explicitly and mention residual risks/testing gaps
+- Keep `uv.lock` committed and up to date after dependency changes; do not edit it manually.
+- Treat `docs/phase1.md` as the MVP north star for pipeline scope and component boundaries.
+- Treat `docs/features/*/01_rfc.md` as the normative contract for feature-specific behavior.
+- Treat `00_context.md`, `03_design.md`, and `04_workplan.md` as supporting artifacts; do not move contract authority out of the RFC unless the docs are intentionally restructured together.
+- New control-plane docs must summarize and route; they must not redefine schemas already owned by `docs/phase1.md` or feature RFCs.

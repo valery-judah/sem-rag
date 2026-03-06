@@ -5,7 +5,7 @@ Standardize how coding agents execute feature work from design docs to reduce dr
 
 ## Agent Inputs (Per Iteration)
 - `docs/phase1.md` (or applicable phase doc)
-- `docs//docs/features/parsers//00_playbook.md`
+- `docs/00_playbook.md`
 - feature-local `01_rfc.md`, `02_user_stories.md`, `03_design.md`
 - active PR task slice from feature `04_workplan.md`
 
