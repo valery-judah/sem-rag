@@ -1,7 +1,8 @@
 # Layer B: Atomic Operating Modes for Agentic Work
+
 ## Status
 
-Draft v1.0
+Draft v1.1
 
 ## Purpose
 
@@ -45,7 +46,7 @@ The current answer to:
 
 > How should the agent behave now?
 
-Examples:
+Canonical modes:
 
 - Research Scout
 - Contract Builder
@@ -62,9 +63,9 @@ Structures that modify, constrain, or wrap work rather than describing the curre
 
 Examples:
 
-- Review Gatekeeper as reviewer/control overlay,
-- high-control governance overlay,
-- Feature Cell as long-horizon workstream container.
+- `review_gatekeeper` as reviewer/control overlay,
+- `governance_escalation` overlay,
+- `feature_cell` as long-horizon workstream container.
 
 ### Layer D -- Lifecycle control plane
 
@@ -114,11 +115,12 @@ This keeps the model clean in four ways:
 2. **Mode remains operational.**
    Layer B says how to work, not what the work permanently is.
 3. **Containers stay separate.**
-   Long-running workstream structure belongs in Layer C rather than Layer B.
+   Long-running workstream structure belongs in Layer C.
 4. **Control state stays separate.**
    Whether the work can continue, needs a checkpoint, or is waiting on approval belongs in Layer D.
 
 ## Design principles
+
 ### 1. Modes are routing outputs
 
 Layer B modes are selected **from** Layer A. They are not Layer A fields.
@@ -144,7 +146,7 @@ A Layer B mode should capture one dominant way of working now. It should not enc
 The following are **not** Layer B peers:
 
 - Review Gatekeeper,
-- high-control governance overlays,
+- `governance_escalation` overlays,
 - Feature Cell.
 
 These are Layer C constructs. They can constrain or wrap Layer B work, but they do not replace the current atomic mode.
@@ -169,19 +171,19 @@ If a task initially looks executable but core ambiguity remains, the system shou
 A new mode should be introduced only when repeated real tasks cannot be described well by the existing modes and when the distinction materially changes how the agent should behave.
 
 ## Scope and non-scope
-## In scope
+
+### In scope
 
 Layer B defines:
 
 - the canonical set of atomic operating modes,
-- the purpose of each mode,
-- the conditions under which each mode is selected,
-- the expected outputs and evidence shape of each mode,
-- common reroute triggers,
-- common next modes,
-- and the relationship between current mode and surrounding layers.
+- the role of Layer B in the layered model,
+- the system-level routing semantics for selecting a current mode,
+- the transition logic and reroute principles between modes,
+- the relationship between Layer B and Layers A, C, and D,
+- and the minimal schema for recording current mode and mode history.
 
-## Out of scope
+### Out of scope
 
 Layer B does **not** define:
 
@@ -193,7 +195,7 @@ Layer B does **not** define:
 - full workflow microstates,
 - or organization-specific approval policy.
 
-Those belong elsewhere.
+Mode-specific operational depth is also kept out of this umbrella document and lives in the dedicated mode files under `docs/harness/concepts/layer-b-modes/`.
 
 ## Canonical atomic operating modes
 
@@ -209,6 +211,46 @@ Layer B standardizes on the following eight atomic operating modes:
 8. **Quality Evaluator**
 
 These are the canonical routing outputs for the current work slice.
+
+## Canonical mode index
+
+The detailed operational references for each mode live in `docs/harness/concepts/layer-b-modes/`.
+
+| Mode | One-line purpose | Detailed file |
+|---|---|---|
+| Research Scout | Reduce uncertainty through bounded discovery, mapping, and findings synthesis. | `layer-b-modes/research-scout.md` |
+| Contract Builder | Turn a partly known problem into an explicit contract, boundary, or acceptance target. | `layer-b-modes/contract-builder.md` |
+| Routine Implementer | Execute a clear bounded change against a sufficiently explicit target. | `layer-b-modes/routine-implementer.md` |
+| Refactor Surgeon | Perform behavior-preserving structural change under explicit regression control. | `layer-b-modes/refactor-surgeon.md` |
+| Debug Investigator | Diagnose failing or incorrect behavior when the cause is not yet isolated. | `layer-b-modes/debug-investigator.md` |
+| Migration Operator | Handle staged transitions where sequencing, compatibility, and rollback matter. | `layer-b-modes/migration-operator.md` |
+| Optimization Tuner | Improve measurable technical behavior against explicit targets and baselines. | `layer-b-modes/optimization-tuner.md` |
+| Quality Evaluator | Produce or interpret evidence about quality, correctness, readiness, or acceptance. | `layer-b-modes/quality-evaluator.md` |
+
+## How to use this document versus the per-mode files
+
+Use this document when you need to understand:
+
+- what Layer B is,
+- why it is separate from Layers A, C, and D,
+- how routing should work in principle,
+- how rerouting should work over time,
+- what fields should be recorded for current mode and mode history.
+
+Use the per-mode files when you need to know:
+
+- when a specific mode does or does not apply,
+- what outputs to expect from that mode,
+- how the agent should behave inside that mode,
+- common reroute triggers for that mode,
+- mode-specific risks and failure patterns.
+
+In normal operation, the recommended sequence is:
+
+1. classify the current slice with Layer A,
+2. route into one Layer B mode,
+3. open the detailed file for that mode,
+4. then continue with Layer C and Layer D constraints kept separate.
 
 ## Standard mode template
 
@@ -227,713 +269,15 @@ Every Layer B mode should be specified using a consistent template.
 - **Common next modes** -- where the work typically goes next.
 - **Typical risks / failure modes** -- the main way this mode can go wrong.
 
-## Mode definitions
-## 1. Research Scout
-### Purpose
-
-Reduce uncertainty, gather evidence, compare options, and synthesize findings when the dominant problem is still exploratory.
-
-### When to use
-
-Use Research Scout when the primary task is not direct execution but discovery.
-
-Typical situations:
-
-- the path to a solution is unclear,
-- multiple approaches are plausible,
-- external research or scattered internal evidence is needed,
-- the objective is broad enough that option comparison is required,
-- implementation should not start until uncertainty is reduced.
-
-### Typical Layer A signals
-
-Common signals include:
-
-- `intent = research`, or adjacent intent with strong discovery burden,
-- `uncertainty = research_exploration` or `open_ended_investigation`,
-- `knowledge_locality = external_research_required` or `tacit_human_required`,
-- `specification_maturity = vague_idea` or `scoped_problem`,
-- `validation_burden = partial_signals_only`.
-
-### Primary working posture
-
-Research Scout is evidence-first rather than implementation-first.
-
-The agent should:
-
-- frame the question,
-- identify candidate approaches,
-- gather evidence,
-- compare trade-offs,
-- make uncertainties explicit,
-- and produce a recommendation rather than prematurely committing to execution.
-
-### Primary outputs
-
-Typical outputs:
-
-- evidence summary,
-- option comparison,
-- recommendation memo,
-- open-questions list,
-- scoped problem framing,
-- possible inputs to Contract Builder.
-
-### Allowed autonomy pattern
-
-Normally moderate autonomy. The agent should explore, synthesize, and recommend, but should not silently turn research into implementation when the problem is still materially uncertain.
-
-### Typical validation style
-
-Validation is usually based on:
-
-- source quality,
-- completeness of the option set,
-- internal consistency,
-- clarity of recommendation,
-- and human review of findings.
-
-### Common reroute triggers
-
-Reroute away from Research Scout when:
-
-- a clear direction has emerged,
-- the intended behavior can now be bounded,
-- the main remaining work is to define the contract,
-- or the work is now implementable.
-
-### Common next modes
-
-- Contract Builder
-- Quality Evaluator
-- Routine Implementer in rare cases where the solution becomes straightforward
-
-### Typical risks / failure modes
-
-- endless exploration without convergence,
-- weak comparison criteria,
-- over-reliance on external analogies,
-- recommendation without clear decision rationale,
-- drifting into design or implementation without explicit reroute.
-
-## 2. Contract Builder
-### Purpose
-
-Transform a partly known problem into an implementation-ready contract.
-
-### When to use
-
-Use Contract Builder when the objective is broadly known but the implementation contract is not yet mature enough for execution.
-
-Typical situations:
-
-- behavior or acceptance criteria are still ambiguous,
-- trade-offs must be resolved before coding,
-- the work needs decomposition into bounded slices,
-- the current request is underspecified but not open-ended research.
-
-### Typical Layer A signals
-
-Common signals include:
-
-- `specification_maturity = scoped_problem` or `draft_contract`,
-- `uncertainty = local_ambiguity` or `design_heavy`,
-- intent may be `implement`, `refactor`, `review`, or `migrate`,
-- dependency complexity often `cross_module` or greater,
-- knowledge locality often `mostly_local` or `scattered_internal`.
-
-### Primary working posture
-
-Contract Builder is clarification-first and boundary-setting.
-
-The agent should:
-
-- turn vague requests into a bounded contract,
-- make assumptions explicit,
-- separate goals, non-goals, constraints, and open questions,
-- propose interfaces, acceptance criteria, and decomposition,
-- identify what must be decided before implementation starts.
-
-### Primary outputs
-
-Typical outputs:
-
-- scoped contract,
-- acceptance criteria,
-- interface or schema proposal,
-- decomposition into slices,
-- risk notes,
-- explicit open questions,
-- recommendation for next execution mode.
-
-### Allowed autonomy pattern
-
-Moderate autonomy with strong checkpoint discipline. The agent can shape the contract, but material trade-offs or unclear intended behavior often justify checkpoint review.
-
-### Typical validation style
-
-Validation is mostly based on:
-
-- internal consistency,
-- coverage of goals and non-goals,
-- decision clarity,
-- reviewability,
-- and readiness for downstream execution.
-
-### Common reroute triggers
-
-Reroute away from Contract Builder when:
-
-- the contract is frozen or implementation-ready,
-- behavior-preserving restructuring becomes the main task,
-- migration sequencing becomes dominant,
-- or the remaining work is direct execution.
-
-### Common next modes
-
-- Routine Implementer
-- Refactor Surgeon
-- Migration Operator
-- Quality Evaluator for eval-heavy contract definition
-
-### Typical risks / failure modes
-
-- over-designing beyond the needed boundary,
-- pretending ambiguity is resolved when it is not,
-- freezing the contract too early,
-- or producing a document that does not materially guide execution.
-
-## 3. Routine Implementer
-### Purpose
-
-Execute a clear, bounded, implementation-ready change with normal engineering discipline.
-
-### When to use
-
-Use Routine Implementer when the work is ready to be done directly.
-
-Typical situations:
-
-- the spec is clear,
-- the behavior is known,
-- the blast radius is modest,
-- the main work is coding and verification,
-- and standard tests provide strong confidence.
-
-### Typical Layer A signals
-
-Common signals include:
-
-- `intent = implement`,
-- `uncertainty = known_pattern` or limited `local_ambiguity`,
-- `specification_maturity = frozen_contract` or `implementation_ready`,
-- `validation_burden = trivial_local_check` or `tests_strong_confidence`,
-- `blast_radius = local` or modest `subsystem`,
-- `execution_horizon = one_shot` or bounded `multi_step`.
-
-### Primary working posture
-
-Routine Implementer is execution-first.
-
-The agent should:
-
-- plan only as much as needed,
-- implement the change,
-- add or update tests,
-- run verification,
-- and produce a concise implementation summary.
-
-### Primary outputs
-
-Typical outputs:
-
-- code change,
-- tests,
-- short implementation note,
-- updated task status,
-- validation results.
-
-### Allowed autonomy pattern
-
-Usually the highest autonomy among the modes, subject to local operating policy and risk bounds.
-
-### Typical validation style
-
-Validation is usually:
-
-- compile/test,
-- targeted integration checks,
-- and localized reasoning over the changed surface.
-
-### Common reroute triggers
-
-Reroute away from Routine Implementer when:
-
-- core ambiguity appears during execution,
-- the task turns out to be mostly diagnosis,
-- structural refactoring dominates,
-- migration sequencing becomes necessary,
-- or tests are not enough to establish confidence.
-
-### Common next modes
-
-- Refactor Surgeon
-- Debug Investigator
-- Migration Operator
-- Quality Evaluator
-- Contract Builder if the spec proves less mature than expected
-
-### Typical risks / failure modes
-
-- starting execution on a not-actually-clear task,
-- local optimization that breaks wider assumptions,
-- insufficient verification,
-- or silent scope expansion.
-
-## 4. Refactor Surgeon
-### Purpose
-
-Perform behavior-preserving structural change with deliberate control over code shape and regression risk.
-
-### When to use
-
-Use Refactor Surgeon when the main goal is not new user-visible behavior, but improvement to structure, modularity, maintainability, or clarity under behavior-preservation constraints.
-
-Typical situations:
-
-- extracting abstractions,
-- reorganizing modules,
-- renaming and decomposing code paths,
-- reducing duplication,
-- or isolating seams for future work.
-
-### Typical Layer A signals
-
-Common signals include:
-
-- `intent = refactor`,
-- `uncertainty = known_pattern` or `local_ambiguity`,
-- `specification_maturity = frozen_contract` or `implementation_ready`,
-- change scope may still be `cross_module`,
-- validation burden is often `tests_strong_confidence` but may be `partial_signals_only` if legacy coverage is weak.
-
-### Primary working posture
-
-Refactor Surgeon is structure-first with strong invariants.
-
-The agent should:
-
-- identify invariants that must remain true,
-- minimize unnecessary semantic drift,
-- separate mechanical transformation from logical change,
-- preserve behavior unless contractually approved otherwise,
-- and stage risky refactors incrementally when possible.
-
-### Primary outputs
-
-Typical outputs:
-
-- restructured code,
-- clarified boundaries,
-- preserved tests or added regression tests,
-- refactor notes explaining invariants and risk.
-
-### Allowed autonomy pattern
-
-Moderate to high autonomy for local refactors; lower autonomy as the refactor becomes non-local or weakly verifiable.
-
-### Typical validation style
-
-Validation often relies on:
-
-- regression tests,
-- invariant checks,
-- static analysis,
-- and careful review of behavior-preservation assumptions.
-
-### Common reroute triggers
-
-Reroute away from Refactor Surgeon when:
-
-- the work becomes a functional redesign,
-- intended behavior is actually under-specified,
-- diagnosis becomes dominant,
-- migration mechanics emerge,
-- or quality evidence beyond tests becomes necessary.
-
-### Common next modes
-
-- Routine Implementer
-- Contract Builder
-- Debug Investigator
-- Quality Evaluator
-
-### Typical risks / failure modes
-
-- accidental behavior change,
-- hidden coupling,
-- sweeping edits without stable invariants,
-- or underestimating legacy knowledge locality.
-
-## 5. Debug Investigator
-### Purpose
-
-Diagnose known failing behavior when the root cause is not yet isolated.
-
-### When to use
-
-Use Debug Investigator when the dominant problem is diagnosis rather than direct repair.
-
-Typical situations:
-
-- a bug is observed but the cause is unknown,
-- reproduction is partial or unstable,
-- logs, traces, and code inspection must be combined,
-- the issue may involve environment or integration behavior.
-
-### Typical Layer A signals
-
-Common signals include:
-
-- `intent = debug`,
-- uncertainty often `local_ambiguity` or `design_heavy` at the causal level,
-- specification maturity may be clear about expected behavior but not about the defect source,
-- validation burden may be `tests_strong_confidence` if repro exists or `partial_signals_only` if repro is weak,
-- knowledge locality is often `scattered_internal`.
-
-### Primary working posture
-
-Debug Investigator is diagnosis-first.
-
-The agent should:
-
-- reproduce or sharpen the failing behavior,
-- narrow the causal search space,
-- test hypotheses,
-- isolate the root cause,
-- distinguish symptom from cause,
-- and avoid premature fixes before the issue is understood.
-
-### Primary outputs
-
-Typical outputs:
-
-- repro notes,
-- causal hypotheses,
-- narrowed suspect set,
-- root-cause explanation,
-- recommended or implemented fix after reroute.
-
-### Allowed autonomy pattern
-
-Moderate autonomy with iterative loops. Production-adjacent or incident-like debugging may need stricter control overlays.
-
-### Typical validation style
-
-Validation is usually based on:
-
-- reproduction quality,
-- hypothesis elimination,
-- fix confirmation against repro,
-- and regression checks.
-
-### Common reroute triggers
-
-Reroute away from Debug Investigator when:
-
-- the issue is isolated and remaining work is just the fix,
-- the real issue is contract ambiguity rather than defect,
-- evaluation evidence is needed across a wider slice,
-- or migration/rollback risk dominates the repair path.
-
-### Common next modes
-
-- Routine Implementer
-- Contract Builder
-- Quality Evaluator
-- Migration Operator
-
-### Typical risks / failure modes
-
-- patching symptoms,
-- weak reproduction discipline,
-- misreading environmental evidence,
-- or overfitting a fix to one observed manifestation.
-
-## 6. Migration Operator
-### Purpose
-
-Execute or prepare rollout-sensitive transitions where sequencing, compatibility, reversibility, and operational safety matter.
-
-### When to use
-
-Use Migration Operator when the work involves controlled transition rather than ordinary implementation.
-
-Typical situations:
-
-- schema change,
-- data backfill,
-- protocol or contract migration,
-- storage or infrastructure transition,
-- staged cutover,
-- rollback planning,
-- or compatibility-window management.
-
-### Typical Layer A signals
-
-Common signals include:
-
-- `intent = migrate`, or another intent with migration-shaped mechanics,
-- `blast_radius = subsystem`, `cross_service`, or `platform`,
-- `reversibility = hard` or `irreversible`,
-- `sensitivity = data_integrity`, `security`, or `compliance`,
-- `validation_burden = production_confirmation_required` or rehearsal-heavy testing,
-- dependency complexity often `cross_service` or `external_or_multi_party`.
-
-### Primary working posture
-
-Migration Operator is control-first and sequencing-aware.
-
-The agent should:
-
-- define ordered stages,
-- preserve compatibility where necessary,
-- plan rehearsal and rollback,
-- surface irreversible points,
-- specify go/no-go checks,
-- and avoid casual execution on risky transitions.
-
-### Primary outputs
-
-Typical outputs:
-
-- migration plan,
-- stage or phase breakdown,
-- compatibility notes,
-- rollback plan,
-- cutover checklist,
-- rehearsal evidence,
-- controlled implementation slices.
-
-### Allowed autonomy pattern
-
-Usually lower autonomy than ordinary implementation. High-risk migrations should often run inside stronger Layer C governance overlays and may require explicit approval states in Layer D.
-
-### Typical validation style
-
-Validation often relies on:
-
-- migration rehearsal,
-- compatibility checks,
-- staged rollout signals,
-- manual verification,
-- and explicit go/no-go criteria.
-
-### Common reroute triggers
-
-Reroute away from Migration Operator when:
-
-- the risky transition has been fully decomposed and local slices become standard implementation,
-- the dominant remaining problem is contract clarification,
-- or evidence production becomes the main task.
-
-### Common next modes
-
-- Routine Implementer
-- Contract Builder
-- Quality Evaluator
-
-### Typical risks / failure modes
-
-- insufficient rollback planning,
-- hidden coupling across services,
-- underestimating irreversibility,
-- compressing too many risky steps into one move,
-- or treating migration as ordinary coding.
-
-## 7. Optimization Tuner
-### Purpose
-
-Improve measurable performance, efficiency, latency, throughput, resource usage, or cost when tuning rather than raw implementation dominates the slice.
-
-### When to use
-
-Use Optimization Tuner when the system works functionally but can be improved against measurable technical objectives.
-
-Typical situations:
-
-- latency reduction,
-- throughput increase,
-- token or inference cost reduction,
-- cache strategy tuning,
-- query performance work,
-- resource efficiency changes.
-
-### Typical Layer A signals
-
-Common signals include:
-
-- `intent = optimize`,
-- uncertainty often `local_ambiguity` or `design_heavy` around the best tuning path,
-- validation burden often `offline_eval_required` or benchmark-heavy checks,
-- feedback cadence may be medium or slow,
-- the solution may be local even when evidence collection is broader.
-
-### Primary working posture
-
-Optimization Tuner is profile-measure-adjust-repeat.
-
-The agent should:
-
-- define the target metric,
-- establish a baseline,
-- identify candidate levers,
-- run disciplined experiments,
-- compare deltas against baseline,
-- and guard against regressions in non-target dimensions.
-
-### Primary outputs
-
-Typical outputs:
-
-- benchmark plan,
-- baseline measurements,
-- tuned implementation,
-- comparison report,
-- recommendation on whether the change is worth adopting.
-
-### Allowed autonomy pattern
-
-Moderate autonomy with a strong requirement for measurable evidence. Tuning without baseline or without comparison discipline is not acceptable.
-
-### Typical validation style
-
-Validation is generally:
-
-- benchmark-driven,
-- profile-driven,
-- experiment-based,
-- or threshold-based.
-
-### Common reroute triggers
-
-Reroute away from Optimization Tuner when:
-
-- the real blocker is not tuning but contract ambiguity,
-- quality evaluation rather than system performance becomes dominant,
-- the work turns into a migration,
-- or the change becomes ordinary implementation after the key decision is made.
-
-### Common next modes
-
-- Routine Implementer
-- Quality Evaluator
-- Contract Builder
-- Migration Operator
-
-### Typical risks / failure modes
-
-- optimizing the wrong metric,
-- comparing against unstable baselines,
-- hidden regressions,
-- insufficient experimental control,
-- or confusing quality tuning with performance tuning.
-
-## 8. Quality Evaluator
-### Purpose
-
-Produce or interpret evidence about output quality when correctness cannot be established by ordinary tests alone.
-
-### When to use
-
-Use Quality Evaluator when the main problem is epistemic: how to know whether the system is good enough.
-
-Typical situations:
-
-- retrieval quality evaluation,
-- ranking quality comparison,
-- segmentation quality assessment,
-- classifier behavior analysis,
-- threshold definition,
-- benchmark or evaluation harness work,
-- evaluation-driven acceptance decisions.
-
-### Typical Layer A signals
-
-Common signals include:
-
-- `validation_burden = offline_eval_required` or `partial_signals_only`,
-- intent may be `research`, `optimize`, `implement`, or `review`,
-- uncertainty may remain moderate even with a known implementation path,
-- observability of correctness is weaker than normal testable software behavior.
-
-### Primary working posture
-
-Quality Evaluator is evidence-design and evidence-interpretation first.
-
-The agent should:
-
-- define evaluation questions,
-- identify or design benchmarks,
-- choose slices or comparison sets,
-- run comparisons,
-- interpret ambiguous signals carefully,
-- and state confidence and limitations explicitly.
-
-### Primary outputs
-
-Typical outputs:
-
-- evaluation plan,
-- metric definitions,
-- benchmark or slice design,
-- evaluation results,
-- recommendation with threshold reasoning,
-- acceptance or rejection rationale.
-
-### Allowed autonomy pattern
-
-Moderate autonomy. Evaluation usually benefits from explicit review because it shapes acceptance thresholds and can hide assumptions.
-
-### Typical validation style
-
-Validation is based on:
-
-- benchmark design quality,
-- metric validity,
-- result interpretation,
-- consistency across slices,
-- and clarity about uncertainty and limitations.
-
-### Common reroute triggers
-
-Reroute away from Quality Evaluator when:
-
-- the evidence is sufficient and the remaining work is straightforward implementation,
-- the core task becomes research or contract definition,
-- or migration/rollout mechanics become dominant.
-
-### Common next modes
-
-- Routine Implementer
-- Contract Builder
-- Research Scout
-- Migration Operator
-
-### Typical risks / failure modes
-
-- weak benchmark design,
-- optimizing to the eval instead of the true objective,
-- false precision,
-- unexamined slice bias,
-- or overstating confidence from partial signals.
+The dedicated files in `layer-b-modes/` should use this template, even if some sections become more operational over time than the umbrella Layer B document.
 
 ## Routing guidance from Layer A to Layer B
 
 This section provides routing guidance, not a rigid deterministic state machine.
 
-## Core routing logic
-### 1. Start from the dominant question
+### Core routing logic
+
+#### 1. Start from the dominant question
 
 Ask which of these is most true **now**:
 
@@ -947,7 +291,7 @@ Ask which of these is most true **now**:
 
 That question usually determines the initial Layer B mode.
 
-### 2. Use Layer A signals as routing constraints
+#### 2. Use Layer A signals as routing constraints
 
 Layer A fields should constrain the choice.
 
@@ -962,7 +306,7 @@ Typical patterns:
 - performance/cost/latency target + benchmark discipline -> **Optimization Tuner**,
 - heavy evaluation burden or weak ordinary correctness signal -> **Quality Evaluator**.
 
-### 3. Prefer the dominant mode, not a blended label
+#### 3. Prefer the dominant mode, not a blended label
 
 Do not invent composite labels such as:
 
@@ -981,16 +325,17 @@ Pick the dominant current mode, then represent other concerns through:
 
 | Dominant condition now | Typical Layer A pattern | Route to Layer B mode |
 |---|---|---|
-| Solution space is still being discovered | high uncertainty, low spec maturity, low knowledge locality | Research Scout |
+| Solution space is still being discovered | high uncertainty, low spec maturity, weak knowledge locality | Research Scout |
 | Objective is known but contract is still forming | scoped problem, draft contract, local ambiguity or design-heavy | Contract Builder |
 | Clear bounded implementation slice | implementation-ready, known pattern, strong tests | Routine Implementer |
-| Structural cleanup under invariants | intent=refactor, behavior-preserving, regression checkable | Refactor Surgeon |
-| Failing behavior with unknown root cause | intent=debug, repro/hypothesis loop needed | Debug Investigator |
-| Compatibility/cutover/rollback dominates | migrate intent or migration-shaped governance profile | Migration Operator |
+| Structural cleanup under invariants | behavior-preserving internal change, regression checkable | Refactor Surgeon |
+| Failing behavior with unknown root cause | concrete defect, diagnosis loop needed | Debug Investigator |
+| Compatibility/cutover/rollback dominates | migration-shaped risk or transition mechanics dominate | Migration Operator |
 | Measurable technical tuning dominates | optimize intent, benchmark-based improvement target | Optimization Tuner |
 | Output quality evidence dominates | offline eval required, weak ordinary correctness signal | Quality Evaluator |
 
 ## Secondary routing rules
+
 ### Rule A -- Specification maturity overrides raw intent
 
 If a task says `implement` but specification maturity is still `scoped_problem` or `draft_contract`, implementation is not yet the correct operating mode. Prefer **Contract Builder** first.
@@ -1009,18 +354,19 @@ High-risk work does not automatically create a new Layer B mode. It may keep the
 
 ### Rule E -- Horizon affects containment, not atomic mode
 
-If the work is multi-PR or high-handoff, that often justifies a Layer C workstream container such as **Feature Cell**, but the current Layer B mode should still reflect the dominant slice: Research Scout, Contract Builder, Routine Implementer, and so on.
+If the work is multi-PR or `handoff_need = high`, that often justifies a Layer C workstream container such as `feature_cell`, but the current Layer B mode should still reflect the dominant slice.
 
 ## Reclassification and transition rules
 
 Layer B modes should be expected to change over time.
 
-## Transition principles
-### 1. Reclassification is normal
+### Transition principles
+
+#### 1. Reclassification is normal
 
 Tasks and workstreams mature. A task that begins in uncertainty reduction may later become execution-ready. A work item that starts as implementation may be reclassified if hidden ambiguity or evaluation difficulty appears.
 
-### 2. Reclassification should be evidence-based
+#### 2. Reclassification should be evidence-based
 
 Do not reroute casually. A mode change should normally be triggered by one of:
 
@@ -1031,11 +377,12 @@ Do not reroute casually. A mode change should normally be triggered by one of:
 - governance risk surfaced,
 - or horizon expansion.
 
-### 3. Prefer early reroute over late failure
+#### 3. Prefer early reroute over late failure
 
 If the current mode no longer fits, reroute early instead of forcing the work through the wrong posture.
 
 ## Common transition patterns
+
 ### Research Scout -> Contract Builder
 
 When exploratory work has reduced uncertainty enough to define a bounded contract.
@@ -1094,7 +441,7 @@ This allows a higher-layer orchestrator to reason not only from the current snap
 
 Layer C contains overlays and containers. Layer B modes may be modified or wrapped by them, but they should not be collapsed into them.
 
-## Review Gatekeeper as overlay
+### Review Gatekeeper as overlay
 
 Review Gatekeeper should usually be modeled as a **reviewer/control overlay** rather than an atomic operating mode.
 
@@ -1108,7 +455,7 @@ Use it when the primary requirement is:
 
 In practice, Review Gatekeeper often attaches to another mode by constraining continuation or by defining who must sign off.
 
-## High-control governance overlays
+### High-control governance overlays
 
 High-control overlays tighten:
 
@@ -1126,7 +473,7 @@ Examples:
 - Debug Investigator in incident-like conditions with stricter control,
 - Contract Builder under design review checkpoints.
 
-## Feature Cell as workstream container
+### Feature Cell as workstream container
 
 Feature Cell should be modeled as a **long-horizon workstream container**, not as a Layer B peer.
 
@@ -1151,7 +498,7 @@ without contradiction.
 
 Layer D controls whether work may proceed, pause, wait for approval, or finish. Layer B controls how the agent should work inside that control state.
 
-## The separation rule
+### The separation rule
 
 Do not encode Layer B semantics into Layer D state names.
 
@@ -1164,8 +511,9 @@ Examples:
 
 These remain distinct layers.
 
-## Examples
-### Contract Builder across lifecycle states
+### Examples
+
+#### Contract Builder across lifecycle states
 
 A contract-definition slice may look like:
 
@@ -1175,7 +523,7 @@ A contract-definition slice may look like:
 
 The mode remains Contract Builder while control status changes.
 
-### Migration Operator across lifecycle states
+#### Migration Operator across lifecycle states
 
 A migration slice may look like:
 
@@ -1193,7 +541,7 @@ A minimal Layer B record should be compact, explicit, and easy to update.
 
 ```yaml
 current_mode:
-  name: contract_builder | research_scout | routine_implementer | refactor_surgeon | debug_investigator | migration_operator | optimization_tuner | quality_evaluator
+  name: research_scout | contract_builder | routine_implementer | refactor_surgeon | debug_investigator | migration_operator | optimization_tuner | quality_evaluator
   reason: >
     Free-text explanation of why this mode is selected from the current Layer A snapshot.
   entered_at: 2026-03-06
@@ -1222,8 +570,10 @@ mode_history:
 ```
 
 ## Worked examples
-## Example 1 -- Small local feature slice
-### Layer A snapshot
+
+### Example 1 -- Small local feature slice
+
+#### Layer A snapshot
 
 - intent: implement
 - uncertainty: known_pattern
@@ -1232,18 +582,19 @@ mode_history:
 - specification_maturity: implementation_ready
 - validation_burden: tests_strong_confidence
 - blast_radius: local
-- execution_horizon: one_shot
+- execution_horizon: atomic
 
-### Layer B result
+#### Layer B result
 
 **Routine Implementer**
 
-### Notes
+#### Notes
 
 No Layer C workstream container is needed. Lifecycle state is likely `active` with `phase = coding`.
 
-## Example 2 -- Feature request with unclear behavior
-### Layer A snapshot
+### Example 2 -- Feature request with unclear behavior
+
+#### Layer A snapshot
 
 - intent: implement
 - uncertainty: design_heavy
@@ -1251,22 +602,23 @@ No Layer C workstream container is needed. Lifecycle state is likely `active` wi
 - specification_maturity: scoped_problem
 - validation_burden: partial_signals_only
 - execution_horizon: multi_pr
-- handoff need: high
+- handoff_need: high
 
-### Layer B result now
+#### Layer B result now
 
 **Contract Builder**
 
-### Layer C note
+#### Layer C note
 
-Because the horizon is multi-PR and handoff need is high, wrap the work in a **Feature Cell** container.
+Because `execution_horizon = multi_pr` and `handoff_need = high`, wrap the broader effort in a Layer C `feature_cell` container at workstream scope.
 
-### Likely sequence
+#### Likely sequence
 
 Contract Builder -> Routine Implementer -> Quality Evaluator
 
-## Example 3 -- Bug with unknown root cause
-### Layer A snapshot
+### Example 3 -- Bug with unknown root cause
+
+#### Layer A snapshot
 
 - intent: debug
 - uncertainty: local_ambiguity
@@ -1275,16 +627,17 @@ Contract Builder -> Routine Implementer -> Quality Evaluator
 - validation_burden: tests_strong_confidence if repro exists
 - blast_radius: subsystem
 
-### Layer B result
+#### Layer B result
 
 **Debug Investigator**
 
-### Likely transition
+#### Likely transition
 
 Once the cause is isolated, reroute to **Routine Implementer** for the fix.
 
-## Example 4 -- Risky schema transition
-### Layer A snapshot
+### Example 4 -- Risky schema transition
+
+#### Layer A snapshot
 
 - intent: migrate
 - dependency_complexity: cross_service
@@ -1294,16 +647,17 @@ Once the cause is isolated, reroute to **Routine Implementer** for the fix.
 - sensitivity: data_integrity
 - approval_requirement: explicit_gate
 
-### Layer B result
+#### Layer B result
 
 **Migration Operator**
 
-### Layer C / D note
+#### Layer C / D note
 
-Apply stronger governance overlays and expect lifecycle states such as `checkpoint`, `awaiting_approval`, and `validating` during rollout.
+Apply `governance_escalation` and expect lifecycle states such as `checkpoint`, `awaiting_approval`, and `validating` during rollout.
 
-## Example 5 -- Retrieval quality improvement slice
-### Layer A snapshot
+### Example 5 -- Retrieval quality improvement slice
+
+#### Layer A snapshot
 
 - intent: optimize
 - uncertainty: local_ambiguity
@@ -1311,16 +665,16 @@ Apply stronger governance overlays and expect lifecycle states such as `checkpoi
 - knowledge_locality: mostly_local
 - artifact_type: eval_report
 
-### Layer B result now
+#### Layer B result now
 
-**Quality Evaluator** or **Optimization Tuner**, depending on the dominant question.
+**Quality Evaluator**
 
-### Decision rule
+#### Reroute rule
 
-- If the main task is experiment design, benchmark construction, and interpretation, choose **Quality Evaluator**.
-- If the main task is measurable system tuning against an existing benchmark and target metric, choose **Optimization Tuner**.
+- If the slice shifts from generating and interpreting evaluation evidence to measurable tuning against an established benchmark and target metric, reroute to **Optimization Tuner**.
 
 ## Adoption guidance
+
 ### Start with the canonical eight modes
 
 Do not add more Layer B modes at first. Use the eight canonical modes and rely on Layer C overlays and containers before inventing additional work modes.
@@ -1356,7 +710,7 @@ Layer B should remain a compact catalog of **atomic operating modes** with these
 - independent from Layer C overlays and containers,
 - independent from Layer D lifecycle state,
 - current-state rather than permanent identity,
-- and explicit about outputs, validation, and reroute triggers.
+- and explicit about routing, transitions, and mode recording.
 
 The canonical set should remain:
 
@@ -1368,6 +722,8 @@ The canonical set should remain:
 - Migration Operator
 - Optimization Tuner
 - Quality Evaluator
+
+The detailed operational references should live in `docs/harness/concepts/layer-b-modes/`.
 
 This is the right level for answering:
 

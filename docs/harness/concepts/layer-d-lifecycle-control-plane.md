@@ -83,7 +83,7 @@ Structures that **modify, constrain, or wrap** work without changing the underly
 Canonical examples include:
 
 - `review_gatekeeper`,
-- `high_control_governance`,
+- `governance_escalation`,
 - `feature_cell`.
 
 Layer C answers questions such as:
@@ -241,7 +241,7 @@ Layer C overlays and containers change the **conditions** under which work proce
 Examples:
 
 - `checkpoint` is not the same as `review_gatekeeper`.
-- `awaiting_approval` is not the same as `high_control_governance`.
+- `awaiting_approval` is not the same as `governance_escalation`.
 - `active` inside a `feature_cell` is still just `active`.
 
 ### 7. Prefer explicit control boundaries
@@ -343,7 +343,7 @@ Layer D must **not** be used to encode:
 
 - Layer A descriptors such as uncertainty, novelty, dependency complexity, knowledge locality, validation burden, or execution horizon,
 - Layer B modes such as Research Scout, Contract Builder, Routine Implementer, Debug Investigator, Migration Operator, or Quality Evaluator,
-- Layer C constructs such as `review_gatekeeper`, `high_control_governance`, or `feature_cell`,
+- Layer C constructs such as `review_gatekeeper`, `governance_escalation`, or `feature_cell`,
 - deep workflow-specific microstates,
 - detailed technical activity labels when `phase` is sufficient,
 - product or business state transitions.
@@ -353,7 +353,7 @@ The following blurs are explicitly incorrect:
 - `checkpoint` != Contract Builder
 - `validating` != Quality Evaluator
 - `awaiting_approval` != Review Gatekeeper
-- `awaiting_approval` != high-control governance
+- `awaiting_approval` != `governance_escalation`
 - `active` != Routine Implementer
 - `feature_cell` != any lifecycle state
 
@@ -1037,7 +1037,7 @@ They do not create new Layer D state names.
 - `checkpoint`
 - sometimes `awaiting_approval`
 
-`high_control_governance` most often affects:
+`governance_escalation` most often affects:
 
 - stronger evidence requirements,
 - stricter transition preconditions,
@@ -1167,7 +1167,7 @@ Layer C overlays often determine whether a lifecycle state remains autonomous or
 Examples:
 
 - `review_gatekeeper` may turn a normal review boundary into `checkpoint` with required review packet.
-- `high_control_governance` may turn a risky transition into `awaiting_approval` with stricter evidence expectations.
+- `governance_escalation` may turn a risky transition into `awaiting_approval` with stricter evidence expectations.
 - `feature_cell` may standardize where workstream-level checkpoint and approval moments occur across time.
 
 ## Relationship to routing and reclassification
@@ -1444,7 +1444,7 @@ Research itself can remain `active`. The moment requiring reviewable interpretat
 ## Example 3 -- Ambiguous feature / contract-definition slice
 ### Context
 
-- Layer A: implement intent, scoped problem, design-heavy, multi-PR, high handoff need
+- Layer A: implement intent, scoped problem, design-heavy, multi-PR, `handoff_need = high`
 - Layer B: Contract Builder
 - Layer C: `feature_cell`
 
@@ -1513,7 +1513,7 @@ The mode is still Debug Investigator in both cases. What changes is the control 
 
 - Layer A: migrate intent, cross-service dependency, explicit gate, production confirmation required, hard reversibility
 - Layer B: Migration Operator
-- Layer C: `high_control_governance`
+- Layer C: `governance_escalation`
 
 ### During preparation
 
@@ -1587,7 +1587,7 @@ layer_d:
 ## Example 7 -- Long-running feature workstream
 ### Context
 
-- Layer A: multi-PR, high handoff need, mixed uncertainty across slices
+- Layer A: multi-PR, `handoff_need = high`, mixed uncertainty across slices
 - Layer B: changes over time across Contract Builder, Routine Implementer, Quality Evaluator
 - Layer C: `feature_cell`
 

@@ -668,8 +668,9 @@ task:
     knowledge_locality: fully_local | mostly_local | scattered_internal | external_research_required | tacit_human_required
     specification_maturity: vague_idea | scoped_problem | draft_contract | frozen_contract | implementation_ready
     validation_burden: trivial_local_check | tests_strong_confidence | partial_signals_only | offline_eval_required | production_confirmation_required
-    blast_radius: isolated | local_internal | cross_surface | user_visible | system_critical
-    execution_horizon: one_shot | few_steps | multi_pr | milestone_based | long_running
+    blast_radius: local | subsystem | cross_service | platform
+    execution_horizon: atomic | multi_step | multi_pr | long_running_program | ongoing_lane
+    handoff_need: low | medium | high
 
   layer_b:
     current_mode: research_scout | contract_builder | routine_implementer | refactor_surgeon | debug_investigator | migration_operator | optimization_tuner | quality_evaluator
@@ -996,7 +997,7 @@ Do not create long-horizon wrappers until coordination pressure actually exists.
   - `validation_burden = partial_signals_only`
   - `execution_horizon = multi_pr`
 - Route to Layer B `contract_builder`.
-- Apply Layer C `feature_cell` if the work clearly spans several slices and PRs.
+- Apply Layer C `feature_cell` at workstream scope if the work clearly spans several slices and PRs.
 - Possibly apply `review_gatekeeper` if architecture review is needed.
 - Set Layer D:
   - `state = active`
@@ -1032,7 +1033,7 @@ Do not create long-horizon wrappers until coordination pressure actually exists.
 - Layer A indicates migration intent, elevated blast radius, hard reversibility concerns, and production confirmation burden.
 - Route to `migration_operator`.
 - Apply `governance_escalation`.
-- Apply `feature_cell` if the work spans several cutover slices.
+- Apply `feature_cell` at workstream scope if the work spans several cutover slices.
 - Use `checkpoint` for readiness review.
 - Use `awaiting_approval` at explicit go/no-go boundary.
 - Use `validating` during rollout observation.
