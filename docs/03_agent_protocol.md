@@ -5,31 +5,38 @@ Standardize how coding agents execute feature work from design docs to reduce dr
 
 ## Agent Inputs (Per Iteration)
 - `docs/mvp-1.md` (or applicable phase doc)
-- `docs/00_playbook.md`
-- feature-local `01_rfc.md`, `02_user_stories.md`, `03_design.md`
-- active PR task slice from feature `04_workplan.md`
+- `docs/context-management/feature-playbooks/00_playbook.md`
+- feature-local entrypoint `README.md`
+- normative contract `01_contract.md`
+- design file if present `02_design.md`
+- any separate test or rollout artifact required by the feature's chosen track
 
 ## Agent Execution Rules
-- Implement only in-scope PR tasks.
+- Implement only the current scoped step for the feature.
 - Keep changes small and focused.
 - Add/update tests for changed behavior.
-- If design decisions change, update `03_design.md` and `04_workplan.md` in the same iteration.
-- Do not bypass contracts in RFC.
+- If behavior changes, update the authoritative contract first.
+- If design decisions change, update the design file and the feature entrypoint in the same iteration.
+- Record current status, evidence, blockers, and next step back into the feature entrypoint before ending the iteration.
+- Do not bypass the authoritative contract.
 
 ## Agent Outputs (Per Iteration)
 - code/docs limited to PR scope
 - tests and results summary
-- updated checkboxes/status in workplan
-- explicit assumptions recorded when needed
+- updated feature status in the entrypoint
+- execution-log or validation update with evidence
+- explicit assumptions and blockers recorded when needed
 
 ## Review Rubric
-- Contract compliance: does implementation match RFC?
+- Contract compliance: does implementation match the authoritative contract?
 - Behavior coverage: do tests prove acceptance criteria?
 - Determinism: is stable output behavior preserved?
 - Diff discipline: is scope bounded to planned slice?
+- Resume quality: can another agent continue from the feature entrypoint alone?
 
 ## Escalation Conditions
 Escalate to humans when:
 - contract ambiguity blocks implementation
 - invariants conflict across docs
 - deterministic behavior cannot be guaranteed with existing interfaces
+- no safe next step can be identified from the current feature state

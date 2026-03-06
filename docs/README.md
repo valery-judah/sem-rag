@@ -37,25 +37,19 @@ This repository uses a two-layer documentation model:
 
 ## Templates
 
-Create new feature docs from [`templates/`](./templates/):
+Create new feature docs from [`context-management/feature-playbooks/templates/`](./context-management/feature-playbooks/templates/):
 
 1. Create `docs/features/<feature-name>/`
-2. Copy the needed files from `docs/templates/`
+2. Copy the needed files from `docs/context-management/feature-playbooks/templates/`
 3. Rename files by removing `.template`
-4. Fill `01_rfc.md` first, then align the rest of the artifact set to it
+4. Start with `README.md` and `01_contract.md`, then add more artifacts only if the chosen track requires them
 
-Required files:
+Track defaults:
 
-- `00_context.md`
-- `01_rfc.md`
-- `02_user_stories.md`
-- `03_design.md`
-- `04_workplan.md`
+- `Tiny`: `README.md`, `01_contract.md`
+- `Standard`: `README.md`, `01_contract.md`, `02_design.md`
+- `High-risk`: `README.md`, `01_contract.md`, `02_design.md`, `03_test_plan.md`, `04_rollout.md`
 
-Optional files:
-
-- `05_test_plan.md`
-- `06_rollout.md`
 
 ## Future Runtime And Deployment Docs
 
