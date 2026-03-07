@@ -14,6 +14,7 @@ This README is the **entry document** for the harness. It should help a human or
 
 Detailed semantics live elsewhere:
 
+- fast navigation in `operator-map.md`,
 - conceptual definitions in `concepts/`,
 - direct agent operating instructions in `AGENTS.md`,
 - stepwise execution loops in `workflows/`,
@@ -121,15 +122,23 @@ When using the harness for real work, enter it in this order:
 1. Read this `README.md`.
 2. Read `AGENTS.md` for the direct operating rules given to the agent.
 3. If you are entering fresh and no task is preselected, open `indexes/active-tasks.md`, choose from the executable queue, then open the linked authoritative task card in `active/tasks/`.
-4. Open the relevant workflow based on the current situation:
-   new or raw work -> `workflows/intake-loop.md`
-   existing actionable task -> `workflows/task-execution-loop.md`
-   coordinated multi-slice effort -> `workflows/workstream-loop.md`
-   review or approval boundary -> `workflows/checkpoint-review-loop.md`
-   pause, transfer, or resume -> `workflows/handoff-resume-loop.md`
-5. Use the relevant template in `templates/` if a new artifact must be created.
-6. Use `policies/routing-rules.md` if mode selection, repair, or rerouting is needed.
-7. Consult the concepts only when deeper semantics are required.
+4. If the task card is already known, open `operator-map.md` for the shortest jump from `layer_b.current_mode` or `layer_d.state` to the right next doc.
+5. Open the relevant workflow for the current situation. Use `operator-map.md` for the full state-to-workflow lookup.
+6. Use the relevant template in `templates/` if a new artifact must be created.
+7. Use `policies/routing-rules.md` if mode selection, repair, or rerouting is needed.
+8. Consult the concepts only when deeper semantics are required.
+
+## Fast path
+
+Use this route when you want the shortest correct reading path:
+
+1. No task selected -> `indexes/active-tasks.md` -> authoritative task card.
+2. Task selected -> `operator-map.md`.
+3. Need mode-specific guidance -> matching file in `concepts/layer-b-modes/`.
+4. Need the correct workflow for the current state -> use the state-to-workflow lookup in `operator-map.md`.
+5. Before you pause, report, reroute, or close -> refresh the authoritative artifact first.
+
+`README.md` keeps the entry path concise. `operator-map.md` carries the fast lookup tables so this file does not need to restate them in full.
 
 ## Minimum operational artifacts
 
@@ -271,6 +280,10 @@ Before reporting, pausing, rerouting, or closing, refresh the authoritative arti
 
 Direct execution contract for an agent working under the harness.
 
+### `operator-map.md`
+
+Compact jump table for fast operator routing from current task card, current mode, and current state to the next doc.
+
 ### `concepts/`
 
 Durable conceptual specifications for Layers A through D and the operational playbook.
@@ -316,12 +329,13 @@ Reusable stepwise loops for intake, execution, coordination, review, and handoff
 If you are maintaining or evolving the harness itself, read in this order:
 
 1. `README.md`
-2. `concepts/operational-playbook.md`
-3. the layer references in `concepts/`, using `concepts/layer-d/README.md` as the Layer D entrypoint
-4. the workflow documents in `workflows/`
-5. the templates in `templates/`
-6. `policies/routing-rules.md`
-7. relevant examples, schemas, registries, and maintenance docs as needed
+2. `operator-map.md`
+3. `concepts/operational-playbook.md`
+4. the layer references in `concepts/`, using `concepts/layer-d/README.md` as the Layer D entrypoint
+5. the workflow documents in `workflows/`
+6. the templates in `templates/`
+7. `policies/routing-rules.md`
+8. relevant examples, schemas, registries, and maintenance docs as needed
 
 ## Reading path for agents
 
@@ -332,10 +346,11 @@ If you are entering to perform work rather than maintain the harness, read in th
 3. `prompts/startup-task-selector.md` if no task has already been selected and guided startup selection is useful
 4. `indexes/active-tasks.md` if no task has already been selected
 5. the selected authoritative task card in `active/tasks/`
-6. the relevant workflow in `workflows/`
-7. the relevant template in `templates/`
-8. `policies/routing-rules.md` when routing or rerouting is needed
-9. deeper concept docs only when the immediate task requires them
+6. `operator-map.md` for the fastest next-doc lookup from current mode and state
+7. the relevant workflow in `workflows/`
+8. the relevant template in `templates/`
+9. `policies/routing-rules.md` when routing or rerouting is needed
+10. deeper concept docs only when the immediate task requires them
 
 This keeps the active context small while preserving the authoritative routing and control model.
 

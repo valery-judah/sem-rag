@@ -64,6 +64,18 @@ Treat the queue as derivative only:
 - authoritative task cards win on any mismatch,
 - if the queue is stale, missing, or inconsistent, treat that as harness-maintenance debt and fall back to scanning authoritative task cards directly.
 
+## Fast navigation for known tasks
+
+If the authoritative task card is already known, open `operator-map.md` immediately after the card.
+
+Use it for the shortest jump from:
+
+- `layer_b.current_mode` to the matching mode file,
+- `layer_d.state` to the correct workflow or boundary doc,
+- and the current task state to the next required read.
+
+Use `policies/routing-rules.md` only when mode fit is unclear or needs repair.
+
 ## Core operating invariants
 
 ### 1. Always work on a current bounded slice
@@ -163,6 +175,8 @@ This loop is the default. Do not improvise a parallel operating system inside th
 ## Workflow routing by current situation
 
 Use the workflow files for stepwise execution.
+
+Use `operator-map.md` when you need the shortest state-to-workflow lookup from a known task card. Use the workflow files below when you need the procedure itself.
 
 ### New or raw incoming work
 

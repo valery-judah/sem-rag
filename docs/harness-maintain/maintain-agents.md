@@ -127,6 +127,8 @@ It should make clear that:
 - route choice should follow the canonical routing policy,
 - and when no single mode fits, the correct response is usually to **reslice**, not to invent a hybrid label.
 
+`AGENTS.md` should also point agents to `docs/harness/operator-map.md` for the shortest current-mode and current-state navigation path instead of re-teaching full jump tables inline.
+
 ### 4. Force disciplined control behavior
 
 The file should make Layer D operationally binding.
