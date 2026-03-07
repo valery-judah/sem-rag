@@ -122,7 +122,7 @@ It should usually slow down or stop when:
 
 - the cause is already sufficiently clear and the real work is now implementation,
 - expected behavior itself turns out to be underdefined,
-- the issue crosses into a higher-risk review or governance boundary,
+- the issue crosses into a review boundary, approval boundary, or other non-baseline control boundary,
 - broader migration or rollout concerns become dominant,
 - the main remaining work is evidence generation after a change rather than diagnosis.
 
@@ -241,12 +241,11 @@ Useful heuristics in this mode:
 
 ### Relationship to Layer C
 
-`debug_investigator` may interact with:
-- `review_gatekeeper` if diagnostic findings should pause for review before a risky fix,
-- `governance_escalation` if the issue affects a higher-risk boundary,
-- `feature_cell` when the debugging slice is one child task inside a larger workstream.
+`debug_investigator` may run inside a `feature_cell` when the diagnostic slice is one bounded step inside a larger workstream.
 
-But these are overlays/containers, not operating modes.
+It may also run under one or more `control_profile` records when diagnostic findings must cross an explicit review boundary, approval boundary, or other non-baseline control boundary before a risky fix proceeds. Presets such as `reviewed`, `change_controlled`, or `high_assurance` may be relevant when the failure touches a higher-risk boundary.
+
+These Layer C constructs wrap or constrain the work. They do not define the current mode.
 
 ### Relationship to Layer D
 
@@ -256,7 +255,7 @@ A `debug_investigator` task is often:
 - sometimes `blocked` if reproduction or access prerequisites are missing,
 - sometimes `complete` if the slice was only to isolate and document the cause.
 
-The mode can remain `debug_investigator` while the lifecycle state changes.
+The mode can remain `debug_investigator` while the Layer D lifecycle state changes.
 
 ## Example task shapes
 

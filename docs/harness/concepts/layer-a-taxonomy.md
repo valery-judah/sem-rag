@@ -1,29 +1,30 @@
 # Layer A Taxonomy: Orthogonal Classification Axes for Agentic Work
+
 ## Status
 
-Draft v1.0
+Draft v2.0
 
 ## Purpose
 
-This document defines the **final version of Layer A** in the agentic work model: a compact, orthogonal taxonomy for classifying a unit of work **at a point in time**.
+This document defines **Layer A** in the agentic work model: a compact, orthogonal taxonomy for classifying a unit of work **at a point in time**.
 
 Layer A is intentionally narrow. It does **not** define:
 
 - the current operating mode,
 - the lifecycle state,
-- the control overlay,
+- the control profile,
 - or the workstream container.
 
-Instead, it describes the current work slice as observed now so that later layers can make routing and governance decisions consistently.
+Instead, it describes the current work slice as observed now so that later layers can make routing and control decisions consistently.
 
 The design goal is to separate:
 
 - **classification** of the work,
 - **routing** into an operating mode,
-- **overlays / containers** such as review gates or long-horizon orchestration,
+- **Layer C control profiles and containers**,
 - and **lifecycle state** in the control plane.
 
-This keeps the taxonomy stable even when the task changes mode over time.
+This keeps the taxonomy stable even when the task changes mode or control regime over time.
 
 ## Position in the overall model
 
@@ -48,15 +49,21 @@ Examples:
 - Optimization Tuner
 - Quality Evaluator
 
-### Layer C -- Overlays and containers
+### Layer C -- Workstream containers and control profiles
 
 Structures that modify or wrap work rather than describing the problem itself.
 
-Examples:
+Canonical constructs:
 
-- Review Gatekeeper
-- `governance_escalation` overlay
-- Feature Cell as long-horizon workstream pattern
+- `feature_cell`
+- `control_profile`
+
+Typical preset aliases on `control_profile`:
+
+- `baseline`
+- `reviewed`
+- `change_controlled`
+- `high_assurance`
 
 ### Layer D -- Lifecycle control plane
 
@@ -76,28 +83,30 @@ Examples:
 The critical modeling rule is:
 
 > Layer A describes the work. It does not describe how the agent is currently behaving or what the workflow state machine is doing.
+
 ## Why Layer A exists
 
 Without a dedicated classification layer, taxonomy tends to collapse several different things into one bucket:
 
 - work type,
 - execution style,
-- approval pattern,
+- control regime,
 - and lifecycle stage.
 
 That creates confusion such as:
 
-- treating `Feature Cell` as if it were the same kind of thing as `Routine Implementer`,
-- treating `Review Gatekeeper` as if it were a task type rather than a control overlay,
+- treating `feature_cell` as if it were the same kind of thing as `routine_implementer`,
+- treating `reviewed` as if it were a task type rather than a Layer C control profile preset,
 - or treating temporary work modes as permanent identity labels for a task.
 
 Layer A avoids this by answering only one question:
 
 > What is the current shape of this work slice?
 
-That snapshot can later be used to select an operating mode, apply overlays, escalate controls, or upgrade into a long-horizon container.
+That snapshot can later be used to select an operating mode, apply control profiles, or wrap work in a long-horizon container.
 
 ## Design principles
+
 ### 1. Orthogonality first
 
 Each axis should answer one question only.
@@ -114,27 +123,24 @@ A work item may start with:
 - partial specification,
 - and multi-PR horizon,
 
-then later become: work rather than describing the problem itself.
+then later become:
 
-Examples:
-
-- Review Gatekeeper
-- `governance_escalation` overlay
-- Feature Cell as long-horizon workstream pattern
 - low uncertainty,
 - implementation-ready,
 - and narrow local execution.
 
 The classification snapshot should be allowed to change accordingly.
 
-### 3. Routing is downstream
+### 3. Routing and control are downstream
 
-Layer A should contain the information needed for routing, but not the routing result itself.
+Layer A should contain the information needed for routing and control selection, but not the routing or control result itself.
 
 For example:
 
 - `specification_maturity = scoped_problem` does **not** mean the task is `Contract Builder`.
-- `execution_horizon = multi_pr` does **not** mean the task is `Feature Cell`.
+- `execution_horizon = multi_pr` does **not** mean the task is `feature_cell`.
+- `interpretation_burden = human_interpretation_required` does **not** mean the task is `reviewed`.
+- `reversibility = hard` plus `blast_radius = cross_service` does **not** mean the task is automatically `change_controlled`.
 
 Those are downstream conclusions.
 
@@ -152,18 +158,19 @@ Do not encode routing and workflow semantics into lifecycle states.
 
 `active` and `checkpoint` answer control questions.
 
-They do not replace descriptors such as uncertainty, risk, or validation burden.
+They do not replace descriptors such as uncertainty, reversibility, sensitivity, or validation burden.
 
 ### 6. Prefer raw dimensions over flattened composite labels
 
-Avoid a single `risk = high` field as the only representation of control requirements.
+Avoid a single `risk = high` field as the only representation of control needs.
 
 Where possible, keep the components visible:
 
 - blast radius,
 - reversibility,
 - sensitivity,
-- approval requirement.
+- interpretation burden,
+- handoff need.
 
 That makes the model easier to reason about and easier to evolve.
 
@@ -174,12 +181,13 @@ Layer A should classify the **current work slice** along five groups of axes:
 1. task classification,
 2. problem classification,
 3. readiness classification,
-4. governance classification,
+4. control-driving signals,
 5. temporal classification.
 
 These groups are practical rather than metaphysical. They exist to keep the model easy to read and easy to apply.
 
 ## Final taxonomy
+
 # 1. Task classification
 
 This group answers:
@@ -396,7 +404,7 @@ This axis is especially important when deciding whether the work should remain a
 
 This group answers:
 
-> Is this slice ready for direct execution, or does it still need framing, contract work, or stronger evaluation design?
+> Is this slice ready for direct execution, or does it still need framing, contract work, stronger evaluation design, or human interpretation?
 
 ## 3.1 Specification maturity
 
@@ -444,13 +452,35 @@ Guidance:
 
 This axis is critical because tasks often look like implementation but are really evaluation-constrained.
 
-# 4. Governance classification
+## 3.3 Interpretation burden
+
+How much human interpretation is required even if evidence is available?
+
+Allowed values:
+
+- `objective_checks_sufficient`
+- `reviewable_tradeoff`
+- `human_interpretation_required`
+- `human_domain_judgment_required`
+
+Guidance:
+
+- `objective_checks_sufficient` -- available evidence is enough to proceed without extra interpretation.
+- `reviewable_tradeoff` -- the work produces a tradeoff that should be reviewed, but the decision surface is still reasonably legible.
+- `human_interpretation_required` -- the evidence must be interpreted by a human before continuation or acceptance.
+- `human_domain_judgment_required` -- domain judgment is central and cannot be reduced to ordinary checks or routine review.
+
+This field helps explain why a slice may need a reviewed Layer C control profile without encoding that control profile directly in Layer A.
+
+# 4. Control-driving signals
 
 This group answers:
 
-> How tightly should this slice be controlled?
+> Which properties of this slice are likely to drive stronger downstream control selection?
 
-Do not collapse all governance concerns into one unstructured `risk` field.
+These are **inputs to Layer C control selection**, not Layer C decisions themselves.
+
+Do not collapse all control-driving concerns into one unstructured `risk` field.
 
 ## 4.1 Blast radius
 
@@ -505,25 +535,9 @@ Guidance:
 - `security` -- auth, secrets, privilege, security posture, or attack surface is materially involved.
 - `compliance` -- policy, legal, governance, or regulated constraints apply.
 
-## 4.4 Approval requirement
+Note:
 
-What level of human signoff is required before proceeding or shipping?
-
-Allowed values:
-
-- `none`
-- `reviewer`
-- `domain_owner`
-- `explicit_gate`
-
-Guidance:
-
-- `none` -- no special signoff beyond normal workflow.
-- `reviewer` -- standard code/design review is required.
-- `domain_owner` -- a responsible owner must approve.
-- `explicit_gate` -- a deliberate approval checkpoint is mandatory.
-
-This field is helpful because the same blast radius may require different workflow controls in different organizations.
+This group intentionally does **not** include a canonical `approval_requirement` field. Explicit review and approval obligations now belong in Layer C control profiles or repository-local policy, not in the Layer A taxonomy itself.
 
 # 5. Temporal classification
 
@@ -555,7 +569,7 @@ Guidance:
 
 Important note:
 
-This axis may later trigger a container such as `Feature Cell`, but the container itself should not be encoded in Layer A.
+This axis may later justify a container such as `feature_cell`, but the container itself should not be encoded in Layer A.
 
 ## 5.2 Feedback loop speed
 
@@ -617,33 +631,44 @@ Examples:
 - A cross-service change may still be fully documented and `mostly_local`.
 - A local change may be `tacit_human_required` if critical knowledge exists only in practice.
 
-### Rule 3 -- Validation burden is not risk
+### Rule 3 -- Validation burden is not interpretation burden
 
-- **validation burden** is epistemic: how hard it is to know the change worked.
-- **risk** is control-oriented: how costly failure would be.
+- **validation burden** is epistemic: how hard it is to gather meaningful evidence.
+- **interpretation burden** is judgment-oriented: how much a human must interpret that evidence.
 
 Examples:
 
-- A low-risk optimization experiment may require offline evaluation.
-- A high-risk migration may be easy to validate but hard to roll back.
+- A benchmark may be easy to run but hard to interpret.
+- A change may require production confirmation but little human judgment once the signal appears.
 
-### Rule 4 -- Execution horizon is not lifecycle state
+### Rule 4 -- Control-driving signals are not control profiles
+
+- **blast radius**, **reversibility**, and **sensitivity** describe properties of the slice.
+- Layer C describes whether that slice actually runs under `baseline`, `reviewed`, `change_controlled`, `high_assurance`, or another explicit control profile shape.
+
+Examples:
+
+- A work item may have `cross_service` blast radius but still remain under baseline controls in a low-consequence environment.
+- A security-sensitive item may justify `high_assurance`, but that conclusion belongs downstream.
+
+### Rule 5 -- Execution horizon is not lifecycle state
 
 - **execution_horizon** describes the shape of work over time.
 - **lifecycle state** describes current control status such as active, blocked, validating, or awaiting approval.
 
-### Rule 5 -- No axis value may be an operating mode, overlay, or container
+### Rule 6 -- No axis value may be an operating mode, control profile, or container
 
 The following do **not** belong in Layer A values:
 
 - `Research Scout`
 - `Contract Builder`
 - `Routine Implementer`
-- `Review Gatekeeper`
-- `Feature Cell`
-- `high_control`
+- `reviewed`
+- `change_controlled`
+- `high_assurance`
+- `feature_cell`
 
-These are routing or governance constructs from later layers.
+These are routing or control constructs from later layers.
 
 ## What is explicitly out of scope for Layer A
 
@@ -676,15 +701,16 @@ Examples:
 
 These are routing outputs.
 
-### Overlays and containers
+### Control profiles and containers
 
 Examples:
 
-- Review Gatekeeper
-- `governance_escalation` overlay
-- Feature Cell
+- `reviewed`
+- `change_controlled`
+- `high_assurance`
+- `feature_cell`
 
-These are not task descriptors. They are modifiers or orchestration structures.
+These are not task descriptors. They are control or orchestration constructs.
 
 ### Lifecycle state
 
@@ -701,7 +727,7 @@ Examples:
 
 These belong to the control plane.
 
-## Minimal required subset for v1
+## Minimal required subset for v2
 
 If a smaller version is needed, use this required core:
 
@@ -712,15 +738,18 @@ If a smaller version is needed, use this required core:
 - `specification_maturity`
 - `validation_burden`
 - `blast_radius`
+- `reversibility`
+- `sensitivity`
 - `execution_horizon`
+- `handoff_need`
 
-This is the smallest durable subset that still meaningfully affects routing.
+This is the smallest durable subset that still meaningfully affects routing and downstream control selection.
 
 Recommended use:
 
 - make the required core mandatory,
 - keep other fields optional at first,
-- promote optional fields to required only when they repeatedly change routing or governance decisions.
+- promote optional fields to required only when they repeatedly change routing or control decisions.
 
 ## Compact schema
 
@@ -741,12 +770,12 @@ classification_snapshot:
   readiness:
     specification_maturity: vague_idea | scoped_problem | draft_contract | frozen_contract | implementation_ready
     validation_burden: trivial_local_check | tests_strong_confidence | partial_signals_only | offline_eval_required | production_confirmation_required
+    interpretation_burden: objective_checks_sufficient | reviewable_tradeoff | human_interpretation_required | human_domain_judgment_required
 
-  governance:
+  control_signals:
     blast_radius: local | subsystem | cross_service | platform
     reversibility: easy | moderate | hard | irreversible
     sensitivity: none | user_visible | data_integrity | security | compliance
-    approval_requirement: none | reviewer | domain_owner | explicit_gate
 
   temporal:
     execution_horizon: atomic | multi_step | multi_pr | long_running_program | ongoing_lane
@@ -755,6 +784,7 @@ classification_snapshot:
 ```
 
 ## Example classification snapshots
+
 ### Example 1 -- Small local implementation
 
 ```yaml
@@ -772,11 +802,11 @@ classification_snapshot:
   readiness:
     specification_maturity: implementation_ready
     validation_burden: tests_strong_confidence
-  governance:
+    interpretation_burden: objective_checks_sufficient
+  control_signals:
     blast_radius: local
     reversibility: easy
     sensitivity: none
-    approval_requirement: reviewer
   temporal:
     execution_horizon: atomic
     feedback_loop_speed: immediate
@@ -804,11 +834,11 @@ classification_snapshot:
   readiness:
     specification_maturity: scoped_problem
     validation_burden: partial_signals_only
-  governance:
+    interpretation_burden: reviewable_tradeoff
+  control_signals:
     blast_radius: subsystem
     reversibility: moderate
     sensitivity: user_visible
-    approval_requirement: domain_owner
   temporal:
     execution_horizon: multi_pr
     feedback_loop_speed: medium
@@ -817,7 +847,7 @@ classification_snapshot:
 
 Interpretation:
 
-This should **not** be represented as "the task is Feature Cell" or "the task is Contract Builder" inside Layer A.
+This should **not** be represented as "the task is feature_cell" or "the task is Contract Builder" inside Layer A.
 
 Instead, Layer A says:
 
@@ -829,10 +859,10 @@ Instead, Layer A says:
 Downstream routing may then decide to:
 
 - start in `Contract Builder`,
-- apply stronger checkpoints,
-- and wrap the workstream in a `Feature Cell` container later.
+- attach a reviewed control profile if needed,
+- and wrap the workstream in a `feature_cell` later.
 
-### Example 3 -- Migration with strong controls
+### Example 3 -- Migration with strong downstream controls
 
 ```yaml
 classification_snapshot:
@@ -849,11 +879,11 @@ classification_snapshot:
   readiness:
     specification_maturity: draft_contract
     validation_burden: production_confirmation_required
-  governance:
+    interpretation_burden: human_interpretation_required
+  control_signals:
     blast_radius: cross_service
     reversibility: hard
     sensitivity: data_integrity
-    approval_requirement: explicit_gate
   temporal:
     execution_horizon: multi_step
     feedback_loop_speed: slow
@@ -862,7 +892,7 @@ classification_snapshot:
 
 Interpretation:
 
-The classification should likely trigger a migration-oriented operating mode and stronger control overlays, but those remain outside Layer A.
+The classification should likely trigger a migration-oriented operating mode and stronger downstream control selection, but those remain outside Layer A.
 
 ### Example 4 -- Research / evaluation slice
 
@@ -881,11 +911,11 @@ classification_snapshot:
   readiness:
     specification_maturity: scoped_problem
     validation_burden: offline_eval_required
-  governance:
+    interpretation_burden: reviewable_tradeoff
+  control_signals:
     blast_radius: local
     reversibility: easy
     sensitivity: none
-    approval_requirement: reviewer
   temporal:
     execution_horizon: multi_step
     feedback_loop_speed: slow
@@ -909,26 +939,29 @@ Examples:
 - diagnosis-heavy `debug` work may route to `Debug Investigator`
 - heavy evaluation burden may route to `Quality Evaluator`
 
-### Into Layer C -- overlays / containers
+### Into Layer C -- control profiles and containers
 
 Examples:
 
-- high governance requirements may apply stronger approval overlays
-- `execution_horizon = multi_pr` plus `handoff_need = high` may justify a long-horizon workstream container such as `Feature Cell`
-- high sensitivity may require stricter reviewer overlays
+- `execution_horizon = multi_pr` plus `handoff_need = high` may justify a `feature_cell`
+- high `validation_burden` plus high `interpretation_burden` may justify a reviewed control profile
+- high `blast_radius` plus hard `reversibility` may justify change-controlled handling
+- high `sensitivity = security` plus strict downstream policy may justify high-assurance handling
 
 ### Into Layer D -- lifecycle / phase handling
 
 Examples:
 
 - partial specification may imply a `draft` or `checkpoint` phase rather than immediate execution
-- explicit gates may imply `awaiting_approval`
+- an attached downstream approval regime may imply `awaiting_approval`
 - production confirmation may imply a `validating` phase
 
 The key modeling rule is:
 
 > Layer A informs these downstream decisions. It does not absorb them.
+
 ## Adoption guidance
+
 ### Recommended rollout
 
 1. Start with the **minimal required subset**.
@@ -953,20 +986,21 @@ Layer A should stay compact enough that operators can classify work quickly and 
 
 ## Final recommendation
 
-The final taxonomy should remain a **Layer A classification snapshot** with these properties:
+The taxonomy should remain a **Layer A classification snapshot** with these properties:
 
 - orthogonal,
 - current-state descriptive,
 - independent from operating mode,
+- independent from control-profile selection,
 - independent from lifecycle state,
-- and expressive enough to drive routing and governance.
+- and expressive enough to drive routing and downstream control selection.
 
 The five stable groups are:
 
 1. task classification,
 2. problem classification,
 3. readiness classification,
-4. governance classification,
+4. control-driving signals,
 5. temporal classification.
 
 This is the right place to classify a long-running feature at the beginning as:
@@ -976,4 +1010,4 @@ This is the right place to classify a long-running feature at the beginning as:
 - multi-PR,
 - and `handoff_need = high`,
 
-without prematurely calling it `Contract Builder`, `Feature Cell`, or any other downstream construct.
+without prematurely calling it `Contract Builder`, `feature_cell`, `reviewed`, `change_controlled`, or any other downstream construct.

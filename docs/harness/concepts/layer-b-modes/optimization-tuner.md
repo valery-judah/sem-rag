@@ -54,13 +54,15 @@ Do not use this mode as a label for any task involving benchmarks. Use it when o
 - `specification_maturity`: medium-to-high or high enough that improvement targets are already meaningful
 - `dependency_complexity`: medium or high depending on how many subsystems influence the target metric
 - `validation_burden`: medium or high because comparison discipline is required
-- `blast_radius`: variable, often medium if tuning affects shared paths
+- `blast_radius`: variable, often medium or high if tuning affects shared paths
+- `sensitivity`: sometimes medium or high when tuning affects high-consequence or user-visible behavior
 - `execution_horizon`: short-to-medium for the current experiment or tuning slice
 
 Common signals include:
 - there is a known baseline,
 - a target metric or performance concern is explicit,
 - one or more tuning levers are plausible,
+- shared-path or high-consequence tradeoffs may matter alongside the target metric,
 - the current useful output is a changed candidate plus measured comparison.
 
 ## Primary working posture
@@ -243,12 +245,11 @@ Useful heuristics in this mode:
 
 ### Relationship to Layer C
 
-`optimization_tuner` may interact with:
-- `review_gatekeeper` when a tuning result should pause for review before adoption,
-- `feature_cell` when the optimization program spans multiple coordinated slices,
-- sometimes `governance_escalation` if the optimization affects a higher-risk production path.
+`optimization_tuner` may run inside a `feature_cell` when the optimization effort spans multiple coordinated slices.
 
-But these are overlays/containers, not operating modes.
+It may also run under one or more `control_profile` records when tuning results must satisfy explicit review, approval, evidence, traceability, or rollback obligations before adoption. Presets such as `reviewed`, `change_controlled`, or `high_assurance` may be relevant when the tuned path is shared or high-consequence.
+
+These Layer C constructs wrap or constrain the work. They do not define the current mode.
 
 ### Relationship to Layer D
 
@@ -259,7 +260,7 @@ An `optimization_tuner` task is often:
 - sometimes `complete` when the bounded tuning slice has produced a clear adoption or rejection decision,
 - sometimes `blocked` if benchmark infrastructure, representative inputs, or baseline data are missing.
 
-The mode can remain `optimization_tuner` while the lifecycle state changes.
+The mode can remain `optimization_tuner` while the Layer D lifecycle state changes.
 
 ## Example task shapes
 

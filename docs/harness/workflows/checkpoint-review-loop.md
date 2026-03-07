@@ -11,7 +11,7 @@ Its job is not to continue normal execution past that boundary. Its job is to:
 - preserve enough context that another human or agent can evaluate the boundary without replaying the whole work history,
 - record the resulting review outcome in a way that can safely restart, redirect, or terminate the work.
 
-This loop is the default operating loop whenever Layer D is `checkpoint` or when a review-oriented Layer C overlay is active and a boundary has been reached.
+This loop is the default operating loop whenever Layer D is `checkpoint` or when a review-oriented Layer C control profile is active and a boundary has been reached.
 
 ## Outcome
 
@@ -28,7 +28,7 @@ A successful checkpoint / review cycle produces one or more of the following:
 Use the checkpoint / review loop when:
 - a task or workstream has reached a declared review boundary,
 - Layer D is `checkpoint`,
-- Layer C includes `review_gatekeeper` and the pause condition has been met,
+- Layer C includes a reviewed-style non-baseline control profile and the pause condition has been met,
 - the next move requires human interpretation, direction selection, or review of findings,
 - the work should stop until a packet is reviewed or a decision is made.
 
@@ -49,6 +49,8 @@ The checkpoint / review loop expects:
 - any policy or template guidance relevant to the review packet.
 
 The authoritative source remains the task or workstream card, but the review packet is the primary artifact surfaced to the reviewer.
+
+Current task and workstream cards may still express Layer C through legacy `overlays` / `container` frontmatter. Treat those as shorthand for the canonical v2 model rather than as canonical ontology.
 
 ## Core principles
 
@@ -98,7 +100,7 @@ Confirm:
 - what slice or scope is under review,
 - why the checkpoint was reached,
 - what Layer B mode produced the current findings,
-- whether Layer C includes `review_gatekeeper`,
+- whether Layer C includes a reviewed-style control boundary,
 - what state the item is in now,
 - what evidence, decisions, or risks are already linked.
 
@@ -224,7 +226,7 @@ Reassess:
 - current Layer B mode,
 - need for reslicing,
 - need for workstream promotion or retirement,
-- whether `governance_escalation` or `awaiting_approval` now applies.
+- whether a stronger non-baseline `control_profile` or `awaiting_approval` now applies.
 
 Examples:
 - an RFC review may move a task from `contract_builder` to `routine_implementer`,
@@ -342,7 +344,7 @@ Observed:
 Good checkpoint result:
 - workstream-level review packet created,
 - child-task findings summarized at the workstream level,
-- `review_gatekeeper` remains active,
+- the reviewed-style control boundary remains active,
 - workstream Layer D is `checkpoint`,
 - after review, the workstream creates or activates the next child slice aligned with the selected path.
 

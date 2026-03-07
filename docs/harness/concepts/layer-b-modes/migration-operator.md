@@ -52,13 +52,17 @@ Do not use this mode merely because legacy code is involved. Use it when transit
 - `dependency_complexity`: medium-to-high or high, often cross-system or cross-team
 - `specification_maturity`: medium-to-high or high enough that the migration path can be staged explicitly
 - `validation_burden`: high because rehearsal, rollout checks, or production-like confirmation matter
+- `reversibility`: low, mixed, or declining across stages, so rollback and cutover design matter
+- `sensitivity`: often medium or high because data, compatibility, or operational continuity can be affected
 - `blast_radius`: medium, high, or cross-service
 - `execution_horizon`: medium or long for the broader effort, even if the current slice is bounded
 
 Common signals include:
 - a transition boundary already exists,
 - rollback or compatibility matters materially,
-- operational gating is more important than raw local implementation speed,
+- transition mechanics are more important than raw local implementation speed,
+- staged execution, cutover planning, or temporary coexistence is required,
+- a stage may be reversible now but less reversible later,
 - the slice must preserve service continuity or data integrity while moving state.
 
 ## Primary working posture
@@ -122,14 +126,14 @@ Weak `next_step` patterns in this mode include:
 
 It should usually slow down or stop when:
 
-- the next stage crosses a hard approval or governance boundary,
+- the next stage crosses a hard approval boundary or other non-baseline control boundary,
 - the move contains meaningful irreversibility,
 - compatibility assumptions are underdefined and require contract work,
 - the dominant work becomes evidence review rather than transition mechanics,
 - unexpected breakage appears and diagnosis becomes the real task,
 - the workstream needs milestone-level interpretation before continuing.
 
-This mode commonly operates with Layer C overlays, but the overlay is not the mode.
+This mode commonly operates inside explicit Layer C control-profile context, but that context is not the mode.
 
 ## Typical validation style
 
@@ -243,12 +247,11 @@ Useful heuristics in this mode:
 
 ### Relationship to Layer C
 
-`migration_operator` commonly interacts with:
-- `governance_escalation` when the transition has meaningful operational or data risk,
-- `review_gatekeeper` when stage findings or plans should be reviewed before continuation,
-- `feature_cell` when the migration spans multiple coordinated child slices over time.
+`migration_operator` may run inside a `feature_cell` when the migration spans multiple coordinated slices over time.
 
-But these are overlays/containers, not operating modes.
+It may also run under one or more `control_profile` records when the transition carries explicit review, approval, evidence, traceability, or rollback obligations. Presets such as `change_controlled` or `high_assurance` are common examples when cutover, compatibility, or data risk is material.
+
+These Layer C constructs wrap or constrain the work. They do not define the current mode.
 
 ### Relationship to Layer D
 
@@ -260,7 +263,7 @@ A `migration_operator` task is often:
 - `complete` when the bounded transition slice is done,
 - sometimes `blocked` if a prerequisite system or decision is missing.
 
-The mode can remain `migration_operator` while the lifecycle state changes.
+The mode can remain `migration_operator` while the Layer D lifecycle state changes.
 
 ## Example task shapes
 

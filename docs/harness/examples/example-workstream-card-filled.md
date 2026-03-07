@@ -10,6 +10,8 @@ It is intentionally lightweight. The goal is to show:
 - how Layer C and Layer D look at workstream scope,
 - how milestones, shared decisions, and next steps are recorded.
 
+This example keeps the current workstream-card compatibility shape: `container` and `overlays` remain legacy harness-local Layer C shorthand. Canonical Layer C still uses `feature_cell` and `control_profile`.
+
 ```md
 ---
 id: W-2026-03-segmentation
@@ -91,7 +93,7 @@ Task-only tracking became inadequate because the work expanded into multiple coh
 
 ## Layer C rationale
 
-`feature_cell` applies because this effort now spans multiple meaningful child slices and requires shared milestones and resumable coordination. No workstream-scope overlay is active yet because review and governance boundaries are still local to specific child tasks.
+`feature_cell` applies because this effort now spans multiple meaningful child slices and requires shared milestones and resumable coordination. No workstream-scope non-baseline control profile is active yet because review and approval boundaries are still local to specific child tasks.
 
 # Layer D
 

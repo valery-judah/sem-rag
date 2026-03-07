@@ -1,5 +1,3 @@
-
-
 # Operational Harness
 
 This directory contains the minimal operational harness for running long-lived coding and design work with an agent under the Layer A–D model.
@@ -7,7 +5,7 @@ This directory contains the minimal operational harness for running long-lived c
 The harness is designed to make work:
 - classifiable,
 - routable,
-- governable,
+- control-legible,
 - resumable,
 - reviewable,
 - and maintainable across sessions.
@@ -46,7 +44,7 @@ If a task is small and bounded, the harness should remain small and bounded too.
 ## Directory layout
 
 ```text
-.docs/harness/
+docs/harness/
   README.md
   AGENTS.md
 
@@ -133,7 +131,7 @@ A task card is the authoritative record for:
 - the current slice,
 - Layer A snapshot,
 - current Layer B mode,
-- current Layer C workstream wrapper and control profile context,
+- current Layer C container and control-profile context,
 - current Layer D status,
 - current next step,
 - work log and closure context.
@@ -149,7 +147,7 @@ A workstream card coordinates:
 - milestones or sequencing,
 - cross-slice decisions,
 - shared risks,
-- workstream-scope Layer C and Layer D state.
+- workstream-scope Layer C container/control context and Layer D state.
 
 ### 3. Handoff note
 
@@ -208,16 +206,16 @@ Primary result:
 Use this when the effort spans multiple coherent slices and task-only tracking is no longer enough.
 
 Primary result:
-- a coordinated `feature_cell` effort with maintained child tasks, milestones, shared decisions, and workstream-level control state.
+- a coordinated `feature_cell` effort with maintained child tasks, milestones, shared decisions, workstream-level control context, and workstream-level Layer D state.
 
 ### Checkpoint / review loop
 
 `workflows/checkpoint-review-loop.md`
 
-Use this when progress intentionally pauses at a review boundary.
+Use this when progress intentionally pauses at a review or approval boundary.
 
 Primary result:
-- a review packet or equivalent review-ready summary, recorded review outcome, and correct post-review state transition.
+- a review packet or approval-ready summary, recorded outcome, and correct post-boundary state transition.
 
 ### Handoff / resume loop
 
@@ -249,7 +247,9 @@ If more than one mode seems equally necessary, the slice is usually too broad.
 
 ### Keep Layer C sparse
 
-Do not add `control_profile` records or `feature_cell` unless they materially change control or organization.
+Add `feature_cell` only when continuity across slices or sessions is materially needed.
+
+Add `control_profile` only when explicit control obligations differ from baseline.
 
 ### Treat Layer D as authoritative control status
 
@@ -279,11 +279,12 @@ When a new task arrives:
 Create a workstream only when the effort clearly needs long-running multi-slice coordination.
 
 Typical signs:
+- Layer A suggests long-horizon execution, such as `execution_horizon = multi_pr` or longer,
+- Layer A suggests high resumability pressure, such as `handoff_need = high`,
 - multiple child tasks are needed,
 - milestones or sequencing matter,
-- the effort will continue across sessions,
 - the work will likely change modes over time,
-- workstream-scope review or governance is required.
+- or workstream-scope control context is required.
 
 If those conditions are not present, stay at task level.
 
@@ -291,7 +292,7 @@ If those conditions are not present, stay at task level.
 
 Use `policies/routing-rules.md` to map a task slice to one current Layer B mode.
 
-The routing policy is intentionally small and should remain so.
+The routing policy is intentionally small and should remain so; control-profile and workstream decisions should stay in Layer C rather than leaking into routing labels.
 
 When routing or rerouting, ask:
 - what is the dominant kind of work required now,
@@ -355,7 +356,7 @@ If you are unsure what to do next, ask these questions in order:
 1. What is the current slice?
 2. What is the current control state?
 3. What is the one current mode?
-4. Is a review or governance boundary actually present?
+4. Is a review, approval, or workstream-control boundary actually present?
 5. What is the concrete next step?
 
 If you can answer those five questions from the artifacts in this directory, the harness is functioning.
@@ -367,7 +368,7 @@ This harness is intentionally minimal.
 It currently focuses on:
 - markdown-based operational artifacts,
 - explicit workflow loops,
-- light policy guidance,
+- light policy and control guidance,
 - human-readable and agent-readable task/workstream records.
 
 It does not yet require:

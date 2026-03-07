@@ -41,7 +41,7 @@ For a real task slice, the recommended order is:
 2. Read the Layer A snapshot or fill the Layer A core.
 3. Use the routing rules to choose one current Layer B mode.
 4. Read the corresponding mode file in this directory.
-5. Apply the mode guidance while keeping Layer C and Layer D separate.
+5. Apply the mode guidance while keeping Layer C container/control-profile context and Layer D lifecycle state separate.
 
 If no single mode fits cleanly, the task is usually too broad and should be resliced rather than forced into a blended mode.
 
@@ -72,10 +72,15 @@ Layer B describes the current operating posture selected from that shape.
 
 ### Layer B is not Layer C
 
-Layer C adds overlays and containers such as:
-- `review_gatekeeper`
-- `governance_escalation`
+Layer C adds containers and control profiles such as:
 - `feature_cell`
+- `control_profile`
+
+Common `control_profile` preset aliases include:
+- `baseline`
+- `reviewed`
+- `change_controlled`
+- `high_assurance`
 
 Those constructs may constrain or wrap work done in a Layer B mode, but they are not modes themselves.
 
@@ -127,5 +132,5 @@ Use this directory for **mode-specific depth**, not for general harness workflow
 If you need to know:
 - how to route a slice, use the routing rules,
 - how to operate within a mode, use the relevant mode file here,
-- how to handle review, handoff, or workstream coordination, use the workflow documents,
+- how to handle review, approval, handoff, or workstream coordination, use the workflow documents,
 - how to interpret current status, use Layer D.

@@ -59,6 +59,7 @@ Do not use this mode just because code will eventually be written. Use it when d
 - `specification_maturity`: high or sufficiently high
 - `dependency_complexity`: low-to-medium or manageable
 - `validation_burden`: low-to-medium, or high but already well-defined
+- `artifact_type`: often code, config, docs, or another bounded implementation artifact
 - `execution_horizon`: short and bounded for the current slice
 - `blast_radius`: often low-to-medium, though it can be higher if the slice is still clear and controlled
 
@@ -66,6 +67,7 @@ Common signals include:
 - the expected output is explicit,
 - acceptance boundaries are already known,
 - the current slice can be implemented without inventing new major rules,
+- the work may include bounded non-code artifact execution when expectations are already explicit,
 - the next step is concrete enough that another agent could simply execute it.
 
 ## Primary working posture
@@ -128,7 +130,7 @@ It should usually slow down or stop when:
 - the implementation reveals that the contract is not actually sufficient,
 - failure behavior appears and root cause is no longer clear,
 - the slice expands beyond one coherent change,
-- a review, approval, or governance boundary is reached,
+- a review boundary, approval boundary, or other non-baseline control boundary is reached,
 - migration mechanics or rollout risk become the dominant issue,
 - validation/evidence generation becomes the dominant next activity.
 
@@ -247,12 +249,11 @@ Useful heuristics in this mode:
 
 ### Relationship to Layer C
 
-`routine_implementer` may interact with:
-- `review_gatekeeper` when implementation should stop before or after a reviewable change boundary,
-- `governance_escalation` when the implementation touches a higher-risk area,
-- `feature_cell` when the slice is a child task inside a longer multi-slice effort.
+`routine_implementer` may run inside a `feature_cell` when the slice is one bounded step inside a longer multi-slice workstream.
 
-But these are overlays/containers, not operating modes.
+It may also run under one or more `control_profile` records when the implementation must satisfy explicit review, approval, evidence, traceability, or rollback obligations. Presets such as `reviewed`, `change_controlled`, or `high_assurance` may clarify that control context.
+
+These Layer C constructs wrap or constrain the work. They do not define the current mode.
 
 ### Relationship to Layer D
 
@@ -263,7 +264,7 @@ A `routine_implementer` task is often:
 - sometimes `awaiting_approval` if a hard gate must be crossed,
 - `complete` when the bounded implementation slice is done and accepted.
 
-The mode can remain `routine_implementer` while the lifecycle state changes.
+The mode can remain `routine_implementer` while the Layer D lifecycle state changes.
 
 ## Example task shapes
 

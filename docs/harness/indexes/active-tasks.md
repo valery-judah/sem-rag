@@ -33,7 +33,7 @@ Refresh this index when any of the following occur:
 
 | Task ID | Title | Mode | State | Workstream | Next step | Notes |
 |---|---|---|---|---|---|---|
-| `T-2026-03-06-001` | Investigate parser regression in block normalization | `debug_investigator` | `active` |  | Isolate the first normalization stage where nested list structure is lost. | Local debugging slice; no Layer C overlays active. |
+| `T-2026-03-06-001` | Investigate parser regression in block normalization | `debug_investigator` | `active` |  | Isolate the first normalization stage where nested list structure is lost. | Local debugging slice; baseline Layer C only. |
 | `T-2026-03-06-002` | Define intermediate schema acceptance contract | `contract_builder` | `checkpoint` | `W-2026-03-segmentation` | Review the linked contract packet and decide whether the phase-1 schema can be locked with targeted clarifications. | Paused at real review boundary; implementation should not continue yet. |
 | `T-2026-03-06-003` | Outline segmentation logic boundaries for phase 1 | `contract_builder` | `active` | `W-2026-03-segmentation` | Draft the boundary notes describing what segmentation logic belongs in phase 1 versus later phases. | Active child task under segmentation workstream. |
 | `T-2026-03-06-004` | Draft evaluation harness outline for segmentation acceptance | `quality_evaluator` | `draft` | `W-2026-03-segmentation` | Finish shaping the task into an actionable evaluation-planning slice with explicit acceptance scenarios. | Still in draft; not yet ready for full execution. |

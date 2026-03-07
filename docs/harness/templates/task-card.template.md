@@ -6,11 +6,19 @@ Use this template for every non-trivial task slice in the harness.
 
 A task card is the authoritative operational record for a single current slice of work. It should be small enough that one current Layer B mode makes sense and explicit enough that another agent can resume from it without replaying the whole history.
 
+Current task cards still use legacy harness-local Layer C shorthand in frontmatter:
+
+- `container: feature_cell`
+- `overlays: []` for implied baseline control
+- non-empty `overlays` to represent some non-baseline `control_profile`
+
+Canonical Layer C remains the v2 model defined by `feature_cell` and `control_profile`.
+
 ## Usage notes
 
 - Create one file per task in `docs/harness/active/tasks/`.
 - Use the task card as the primary source of truth for the slice.
-- Update the card whenever the slice, mode, overlays, state, or next step changes materially.
+- Update the card whenever the slice, mode, Layer C shorthand, state, or next step changes materially.
 - Keep detailed execution notes in the work log, but keep the top of the card clean enough to function as a control surface.
 - If the task grows beyond one coherent slice, reslice it or promote the larger effort to a workstream rather than turning this card into a catch-all.
 
@@ -84,7 +92,7 @@ container:
 
 ## Layer C rationale
 
-<Why an overlay or container does or does not apply.>
+<Why the current Layer C shorthand does or does not apply.>
 
 # Layer D
 
@@ -204,13 +212,15 @@ Expected values:
 - `quality_evaluator`
 
 #### `overlays`
-Use only when Layer C overlays actually apply.
+This field is legacy harness-local shorthand, not the canonical Layer C schema.
 
-Typical values:
-- `review_gatekeeper`
-- `governance_escalation`
+Use `overlays: []` when baseline control is implied.
 
-Leave empty when no overlay is needed.
+If a non-baseline control regime must be shown in the current card shape, use the existing local values and interpret them as:
+- `review_gatekeeper` -> reviewed-style `control_profile`
+- `governance_escalation` -> change-controlled or high-assurance `control_profile`
+
+Leave empty when no extra control burden is needed.
 
 #### `container`
 Use `feature_cell` only when this task belongs to a workstream that genuinely requires long-running multi-slice coordination.
@@ -263,12 +273,12 @@ Examples:
 
 This section should stay sparse.
 
-Use it only when overlays or the `feature_cell` container materially change how the task is governed or organized.
+Use it only when Layer C materially changes how the task is governed or organized.
 
 Good rationale examples:
-- `review_gatekeeper applied because RFC must be reviewed before implementation begins`
-- `governance_escalation applied because migration step has production rollback risk`
-- `no overlays; current slice can proceed under baseline control`
+- `reviewed-style control applies because the RFC must be reviewed before implementation begins`
+- `change-controlled control applies because the migration step has production rollback risk`
+- `no non-baseline control profile; current slice can proceed under baseline control`
 
 ### Layer D
 
@@ -367,7 +377,7 @@ container: feature_cell
 
 - Every non-terminal task must have a concrete `next_step`.
 - Every task must have exactly one current mode.
-- Do not keep stale overlays, stale blockers, or stale checkpoint reasons.
+- Do not keep stale Layer C shorthand, stale blockers, or stale checkpoint reasons.
 - If the title or summary no longer describes the current slice, reslice the task.
 - If the work clearly spans multiple slices over time, link it to a workstream or promote the larger effort.
 - When a task ends, record closure context rather than silently abandoning it.

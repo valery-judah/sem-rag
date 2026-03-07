@@ -60,13 +60,17 @@ Use exactly one for task slices:
 - `optimization_tuner`
 - `quality_evaluator`
 
-## Allowed Layer C constructs
+## Canonical Layer C constructs
 
-- overlays:
-  - `review_gatekeeper`
-  - `governance_escalation`
-- container:
-  - `feature_cell`
+- `feature_cell`
+- `control_profile`
+- preset aliases such as `reviewed`, `change_controlled`, and `high_assurance` when they clarify likely control context
+
+When updating current task or workstream cards, note that the card frontmatter still uses legacy harness-local shorthand:
+
+- `container: feature_cell`
+- `overlays: []` for implied baseline control
+- non-empty `overlays` as shorthand for some non-baseline `control_profile`
 
 ## Allowed Layer D states
 

@@ -24,7 +24,7 @@ In this layered model:
 
 - **Layer A** classifies the current work slice,
 - **Layer B** records the current atomic operating mode,
-- **Layer C** records overlays and containers that modify governance or wrap work across time,
+- **Layer C** records the `feature_cell` workstream wrapper and `control_profile` records that define control regime,
 - **Layer D** records the current lifecycle gate or control status.
 
 The design target is:
@@ -76,19 +76,19 @@ Examples include:
 
 Layer B is current-state routing, not permanent identity.
 
-### Layer C -- Overlays and containers
+### Layer C -- Workstream wrapper and control regime
 
-Structures that **modify, constrain, or wrap** work without changing the underlying task classification or current operating mode.
+Structures that wrap work across time or impose explicit control obligations without changing the underlying task classification or current operating mode.
 
 Canonical examples include:
 
-- `review_gatekeeper`,
-- `governance_escalation`,
-- `feature_cell`.
+- `feature_cell`,
+- `control_profile`,
+- presets such as `reviewed`, `change_controlled`, and `high_assurance`.
 
 Layer C answers questions such as:
 
-- what additional governance regime applies,
+- what additional control regime applies,
 - what continuation rules or review constraints are in force,
 - whether the work is being wrapped as a long-horizon workstream.
 
@@ -116,7 +116,7 @@ This distinction is strict:
 - Layer C owns the **control regime** under which work proceeds.
 - Layer D owns the **current gate or status** inside that regime.
 
-That means Layer D records whether work is active, paused, blocked, awaiting approval, validating, complete, or cancelled. It does **not** define reviewer roles, approval packet requirements, continuation rules, rollback obligations, or traceability requirements. Those belong to Layer C overlays and related policy artifacts.
+That means Layer D records whether work is active, paused, blocked, awaiting approval, validating, complete, or cancelled. It does **not** define reviewer roles, approval packet requirements, continuation rules, rollback obligations, or traceability requirements. Those belong to Layer C control profiles and related policy artifacts.
 
 ## Why Layer D exists
 
@@ -161,8 +161,8 @@ The intended pattern is:
 
 - one minimal universal lifecycle model,
 - workflow-local `phase` for detailed progression,
-- Layer C overlays for governance modifiers,
-- Layer C containers for long-horizon orchestration,
+- Layer C control profiles for control modifiers,
+- the Layer C `feature_cell` wrapper for long-horizon orchestration,
 - companion fields and linked artifacts for evidence and decisions.
 
 This gives the system one shared answer to the control questions that actually need standardization:
@@ -188,7 +188,7 @@ It should not encode:
 
 - problem shape,
 - operating posture,
-- governance overlay identity,
+- Layer C control-profile identity,
 - workstream wrapper identity,
 - deep technical microstates,
 - product or business workflow transitions.
@@ -236,12 +236,12 @@ A mode may appear across several states. A state may host several modes.
 
 ### 6. Keep Layer C out of Layer D
 
-Layer C overlays and containers change the **conditions** under which work proceeds. They do not replace lifecycle state.
+Layer C records the control regime and workstream wrapper under which work proceeds. It does not replace lifecycle state.
 
 Examples:
 
-- `checkpoint` is not the same as `review_gatekeeper`.
-- `awaiting_approval` is not the same as `governance_escalation`.
+- `checkpoint` is not the same as a reviewed control profile.
+- `awaiting_approval` is not the same as a change-controlled or high-assurance control profile.
 - `active` inside a `feature_cell` is still just `active`.
 
 ### 7. Prefer explicit control boundaries
@@ -275,7 +275,7 @@ Layer D records the **current lifecycle gate or status**.
 
 Layer C records the **governance regime or wrapper** under which that state exists.
 
-That means Layer D may reference governance artifacts, but it should not define fields that properly belong to overlays, such as:
+That means Layer D may reference review or approval artifacts, but it should not define fields that properly belong to control profiles, such as:
 
 - reviewer role,
 - signoff role,
@@ -306,7 +306,7 @@ Layer D does **not** define:
 
 - Layer A taxonomy axes,
 - Layer B operating mode selection,
-- Layer C overlay or container selection,
+- Layer C control-profile or `feature_cell` selection,
 - detailed workflow-specific phase machines,
 - product or business state transitions,
 - organization-specific release methodology,
@@ -343,7 +343,7 @@ Layer D must **not** be used to encode:
 
 - Layer A descriptors such as uncertainty, novelty, dependency complexity, knowledge locality, validation burden, or execution horizon,
 - Layer B modes such as Research Scout, Contract Builder, Routine Implementer, Debug Investigator, Migration Operator, or Quality Evaluator,
-- Layer C constructs such as `review_gatekeeper`, `governance_escalation`, or `feature_cell`,
+- Layer C constructs such as `control_profile` or `feature_cell`,
 - deep workflow-specific microstates,
 - detailed technical activity labels when `phase` is sufficient,
 - product or business state transitions.
@@ -352,8 +352,8 @@ The following blurs are explicitly incorrect:
 
 - `checkpoint` != Contract Builder
 - `validating` != Quality Evaluator
-- `awaiting_approval` != Review Gatekeeper
-- `awaiting_approval` != `governance_escalation`
+- `awaiting_approval` != reviewed control context
+- `awaiting_approval` != change-controlled or high-assurance control context
 - `active` != Routine Implementer
 - `feature_cell` != any lifecycle state
 
@@ -447,7 +447,7 @@ Use `draft` when one or more are true:
 ### 2. `active`
 #### Meaning
 
-The agent may continue working within the current scope, mode, authority boundary, and applicable overlays.
+The agent may continue working within the current scope, mode, authority boundary, and applicable control context.
 
 #### Use when
 
@@ -564,7 +564,7 @@ Use `awaiting_approval` when:
 
 `awaiting_approval` is a **hard gate**. Autonomous continuation past the decision boundary should not occur.
 
-Layer D may reference the relevant approval packet or decision record, but the semantics of who must sign off and what packet is required belong to Layer C overlays and the relevant policy.
+Layer D may reference the relevant approval packet or decision record, but the semantics of who must sign off and what packet is required belong to Layer C control profiles and the relevant policy.
 
 ### 6. `validating`
 #### Meaning
@@ -592,7 +592,7 @@ Use `validating` when:
 
 `validating` is useful because "done building" and "accepted as sufficient" are not the same thing.
 
-`validating` may involve HITL or may remain autonomous, depending on the workflow and overlays. It is a lifecycle state, not a governance regime.
+`validating` may involve HITL or may remain autonomous, depending on the workflow and control profile. It is a lifecycle state, not a governance regime.
 
 ### 7. `complete`
 #### Meaning
@@ -1017,7 +1017,7 @@ Those belong to Layer B.
 
 ## Relationship to Layer C
 
-Layer C remains the layer for **overlays** and **containers**.
+Layer C remains the layer for the `feature_cell` workstream wrapper and `control_profile` records.
 
 Layer D records the current lifecycle status **within** the control regime that Layer C establishes.
 
@@ -1026,18 +1026,18 @@ This separation should be treated as hard.
 ## Core mapping rules
 ### Rule 1 -- Layer C changes how states are entered or exited, not what the states are
 
-Overlays may tighten preconditions, require evidence packets, or introduce additional review obligations.
+Control profiles may tighten preconditions, require evidence packets, or introduce additional review obligations.
 
 They do not create new Layer D state names.
 
-### Rule 2 -- overlays modify continuation conditions
+### Rule 2 -- control profiles modify continuation conditions
 
-`review_gatekeeper` most often affects transitions involving:
+Reviewed-style control most often affects transitions involving:
 
 - `checkpoint`
 - sometimes `awaiting_approval`
 
-`governance_escalation` most often affects:
+Change-controlled or high-assurance control most often affects:
 
 - stronger evidence requirements,
 - stricter transition preconditions,
@@ -1056,7 +1056,7 @@ It does not create a new lifecycle vocabulary. Instead, it means Layer D may nee
 
 Layer D may reference:
 
-- overlay identifiers,
+- control-profile identifiers,
 - relevant review or approval packets,
 - linked decision records,
 - workstream container identifiers.
@@ -1158,23 +1158,23 @@ None of those inherently imply a checkpoint or approval interaction.
 - results require interpretation at checkpoint,
 - acceptance requires explicit signoff.
 
-That depends on workflow type, Layer C overlays, and applicable policy.
+That depends on workflow type, Layer C control context, and applicable policy.
 
-## Role of overlays in HITL
+## Role of Layer C control context in HITL
 
-Layer C overlays often determine whether a lifecycle state remains autonomous or enters a HITL zone.
+Layer C control profiles often determine whether a lifecycle state remains autonomous or enters a HITL zone.
 
 Examples:
 
-- `review_gatekeeper` may turn a normal review boundary into `checkpoint` with required review packet.
-- `governance_escalation` may turn a risky transition into `awaiting_approval` with stricter evidence expectations.
+- a reviewed profile may turn a normal review boundary into `checkpoint` with a required review packet.
+- a change-controlled or high-assurance profile may turn a risky transition into `awaiting_approval` with stricter evidence expectations.
 - `feature_cell` may standardize where workstream-level checkpoint and approval moments occur across time.
 
 ## Relationship to routing and reclassification
 
 Layer D is not the routing layer. It should not decide the operating mode by itself.
 
-Routing belongs primarily to Layer A -> Layer B, with Layer C overlays and containers applied as needed.
+Routing belongs primarily to Layer A -> Layer B, with Layer C control profiles and `feature_cell` applied as needed.
 
 ## How Layer D participates in routing
 
@@ -1378,7 +1378,7 @@ Treat this as a **derived convenience field**, not a source-of-truth lifecycle f
 The true source of truth should be:
 
 - the Layer D state,
-- the applicable Layer C overlays,
+- the applicable Layer C control context,
 - the governing HITL policy.
 
 Do not let a single boolean replace those distinctions.
@@ -1388,7 +1388,7 @@ Do not let a single boolean replace those distinctions.
 Each example below shows the intended composition:
 
 - a brief Layer A / B context,
-- optional Layer C overlay or container context,
+- optional Layer C control-profile or workstream-wrapper context,
 - the correct Layer D representation,
 - why that control-plane representation is right.
 
@@ -1513,7 +1513,7 @@ The mode is still Debug Investigator in both cases. What changes is the control 
 
 - Layer A: migrate intent, cross-service dependency, explicit gate, production confirmation required, hard reversibility
 - Layer B: Migration Operator
-- Layer C: `governance_escalation`
+- Layer C: non-baseline `control_profile`, usually `change_controlled` or `high_assurance`
 
 ### During preparation
 
@@ -1553,14 +1553,14 @@ layer_d:
 
 ### Why this is correct
 
-The overlay makes control stricter, but Layer D remains the same eight-state vocabulary. Governance regime comes from Layer C; current gate comes from Layer D.
+The control profile makes control stricter, but Layer D remains the same eight-state vocabulary. Control regime comes from Layer C; current gate comes from Layer D.
 
 ## Example 6 -- Evaluation-heavy slice
 ### Context
 
 - Layer A: optimize intent, offline evaluation required, artifact type is eval report
 - Layer B: Quality Evaluator
-- Layer C: `review_gatekeeper` may apply if results need human interpretation
+- Layer C: a reviewed `control_profile` may apply if results need human interpretation
 
 ### Normal evaluation run
 
@@ -1631,7 +1631,7 @@ Use:
 
 - the eight canonical states,
 - workflow-local `phase`,
-- Layer C overlays and containers,
+- Layer C control profiles and `feature_cell`,
 - companion fields and linked artifacts.
 
 That combination is usually sufficient.
@@ -1655,7 +1655,7 @@ That is expected.
 
 What should stay shared is the control-plane vocabulary.
 
-## 4. Let overlays carry governance detail
+## 4. Let control profiles carry control detail
 
 If a team wants to record:
 
@@ -1665,7 +1665,7 @@ If a team wants to record:
 - traceability requirement,
 - rollback obligation,
 
-put those in Layer C overlays or related governance artifacts, not in Layer D state semantics.
+put those in Layer C control profiles or related governance artifacts, not in Layer D state semantics.
 
 ## 5. Track both task and workstream lifecycle when work is long-running
 
@@ -1710,7 +1710,7 @@ Layer D should remain a **minimal shared lifecycle control plane** with these pr
 - strictly control-plane in meaning,
 - independent from Layer A classification,
 - independent from Layer B operating mode,
-- independent from Layer C overlays and containers,
+- independent from Layer C control profiles and `feature_cell`,
 - implemented as eight canonical states plus workflow-local `phase`,
 - usable at both task scope and workstream scope,
 - backed by companion fields, evidence references, and decision artifacts.

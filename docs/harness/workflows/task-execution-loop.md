@@ -48,7 +48,7 @@ The execution loop expects an existing task card containing at least:
 - task identity and summary,
 - current Layer A snapshot,
 - one current Layer B mode,
-- any active Layer C overlay or container linkage,
+- any active Layer C control context or workstream linkage,
 - current Layer D status,
 - current `next_step`,
 - relevant references and work log context.
@@ -91,7 +91,7 @@ Confirm:
 - the task summary still reflects the current slice,
 - the Layer A snapshot is still plausible,
 - the Layer B mode still matches the dominant posture,
-- Layer C overlays or container links are understood,
+- Layer C control context or workstream links are understood,
 - the Layer D state permits the kind of work being attempted,
 - the `next_step` is concrete enough to execute.
 
@@ -218,21 +218,15 @@ Layer C should remain sparse during execution.
 
 Evaluate whether execution has revealed the need for:
 
-#### `review_gatekeeper`
+#### a non-baseline `control_profile`
 
-Apply it when continued autonomous work should stop at a human interpretation or review boundary.
+Add or adjust one when continued autonomous work should stop at a review boundary or when the task now requires stronger-than-baseline control.
 
 Examples:
 - multiple architecture options now need selection,
 - an RFC draft is ready for review before implementation,
 - evaluation findings need interpretation,
-- the next move would commit to a direction that should be reviewed first.
-
-#### `governance_escalation`
-
-Apply it when the task now requires stronger-than-baseline control.
-
-Examples:
+- the next move would commit to a direction that should be reviewed first,
 - unexpectedly high blast radius,
 - irreversible migration step,
 - production-sensitive rollout,
@@ -248,6 +242,8 @@ Examples:
 - cross-slice milestones or handoffs have become necessary.
 
 When Layer C changes, update the task card immediately and add any required linked artifact such as a workstream card or review packet.
+
+If the current task card still uses legacy `overlays` / `container` frontmatter, keep that shorthand truthful while treating `feature_cell` and `control_profile` as the canonical Layer C model.
 
 ### Step 9. Transition Layer D when the control status changes
 
@@ -440,7 +436,7 @@ Observed during execution:
 - further progress should pause until the direction is confirmed.
 
 Good execution result:
-- `review_gatekeeper` applied or confirmed,
+- a reviewed-style non-baseline control boundary recorded or confirmed,
 - review packet linked,
 - Layer D transitions to `checkpoint`,
 - `checkpoint_reason` recorded,
