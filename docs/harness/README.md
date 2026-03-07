@@ -52,7 +52,7 @@ The harness is organized around four layers:
 
 - **Layer A** — classification snapshot of the current work slice
 - **Layer B** — current atomic operating mode
-- **Layer C** — overlays and containers
+- **Layer C** — coordination structures and control profiles
 - **Layer D** — lifecycle control plane
 
 This README does not re-specify all four layers in full. It explains how they fit together operationally and how to enter the harness correctly.
@@ -102,7 +102,7 @@ This is the Layer B question. The harness requires one current atomic operating 
 
 ### 3. Does any non-baseline Layer C context materially apply?
 
-This is the Layer C question. Use overlays and containers only when they materially improve control, coordination, or resumability.
+This is the Layer C question. Use Layer C only when `feature_cell` or `control_profile` context materially improves control, coordination, or resumability.
 
 ### 4. What is the current lifecycle control status?
 
@@ -236,7 +236,7 @@ The current mode is not a permanent identity. It may change as the work moves fr
 
 ### Layer C stays sparse
 
-Layer C should only be used when overlays or containers materially change control obligations or organizational structure.
+Layer C should only be used when `feature_cell` or `control_profile` context materially changes control obligations or organizational structure.
 
 Canonical Layer C constructs in this harness are:
 
@@ -270,6 +270,8 @@ Direct execution contract for an agent working under the harness.
 
 Durable conceptual specifications for Layers A through D and the operational playbook.
 
+Layer D now lives under `concepts/layer-d/`: use `concepts/layer-d/README.md` as the overview and `states.md`, `schema.md`, `scope-and-transitions.md`, and `examples.md` as the deeper split references.
+
 ### `examples/`
 
 Reference examples that show what filled artifacts should look like.
@@ -288,7 +290,7 @@ Prompt documents for common operational entry points such as intake, execution, 
 
 ### `registries/`
 
-Structured catalogs for modes, overlays, states, and validation configurations.
+Structured catalogs for modes, control profiles, states, and validation configurations.
 
 ### `schemas/`
 
@@ -308,7 +310,7 @@ If you are maintaining or evolving the harness itself, read in this order:
 
 1. `README.md`
 2. `concepts/operational-playbook.md`
-3. the layer references in `concepts/`
+3. the layer references in `concepts/`, using `concepts/layer-d/README.md` as the Layer D entrypoint
 4. the workflow documents in `workflows/`
 5. the templates in `templates/`
 6. `policies/routing-rules.md`

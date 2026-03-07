@@ -1,418 +1,368 @@
-
-
-# Workstream Card Template
-
-Use this template when an effort has been promoted to a `feature_cell` and task-only tracking is no longer adequate.
-
-A workstream card is the authoritative operational record for a long-running multi-slice effort. It coordinates child tasks, milestones, cross-slice decisions, shared risks, and workstream-scope control status. It is not a replacement for task cards and should not absorb detailed execution that belongs inside individual child tasks.
-
-Current workstream cards still use legacy Layer C frontmatter shorthand.
-
-Canonical Layer C remains the v2 model defined by `feature_cell` and `control_profile`. See `docs/harness-maintain/main.md` for the compatibility mapping and migration policy.
-
-## Usage notes
-
-- Create one file per workstream in `docs/harness/active/workstreams/`.
-- Use a workstream card only when the effort genuinely needs `feature_cell` treatment.
-- Keep the workstream focused on coordination, sequencing, milestones, and cross-slice decisions.
-- Keep detailed implementation, investigation, or evaluation work inside child task cards.
-- If the workstream boundary becomes too broad or incoherent, split or narrow it rather than turning it into a bucket for every related task.
-
-## Copyable template
-
-```md
 ---
 id: W-YYYY-MM-<slug>
 title: <short workstream title>
 created_at: YYYY-MM-DD
 updated_at: YYYY-MM-DD
+owner: <agent-or-human>
+---
+
+# Workstream Card
+
+## Purpose
+
+Use this card only when a **Layer C `feature_cell`** is justified.
+
+This card coordinates a longer-running workstream across multiple task slices. It is not a mega-task and it should not absorb detailed execution that belongs in child task cards.
+
+Use a workstream card when one or more are true:
+
+- `execution_horizon = multi_pr` or longer,
+- `handoff_need = high`,
+- multiple meaningful child slices must be coordinated,
+- milestones or sequencing materially matter,
+- multiple Layer B mode transitions are expected over time,
+- or workstream-scope review / approval control is needed.
+
+Do not create a workstream card merely because:
+
+- the work feels important,
+- there are many notes,
+- the task might grow later,
+- or someone wants to keep options open.
+
+## Goal
+
+State the workstream outcome being pursued.
+
+- What is the intended result?
+- What is the bounded outcome for this workstream?
+- What would count as meaningful completion?
+
+## Scope Boundary
+
+Describe what this workstream includes and excludes.
+
+Include:
+
+- the kinds of child slices that belong here,
+- the main boundaries of coordination,
+- and what should still become a separate workstream or separate task.
+
+## Promotion Reason
+
+Explain why a workstream wrapper is justified now.
+
+Typical reasons:
+
+- staged multi-slice execution,
+- cross-slice dependency,
+- high resumability / handoff pressure,
+- rollout-sensitive coordination,
+- workstream-level checkpoint or approval points,
+- milestone tracking materially improves control.
+
+## Current Structure
+
+List the child tasks or expected child slices.
+
+- active child tasks:
+  - `docs/harness/active/tasks/<task-file>.md`
+- upcoming child tasks:
+  - `docs/harness/active/tasks/<task-file>.md`
+- completed child tasks:
+  - `docs/harness/active/tasks/<task-file>.md`
+
+Use links or stable refs where possible.
+
+## Milestones / Sequencing
+
+Keep this sparse.
+
+Use only the milestones that materially improve coordination.
+
+Example:
+
+- contract frozen
+- implementation slices merged
+- readiness evidence assembled
+- rollout approved
+- rollout validated
+
+## Shared References
+
+Put cross-cutting references here.
+
+Examples:
+
+- RFCs
+- design docs
+- rollout plans
+- dashboards
+- evaluation reports
+- migration runbooks
+- decision logs
+
+## Layer C
+
+Use canonical Layer C structure here.
+
+`control_profiles: []` means no non-baseline workstream-level control profile has been materialized.
+
+```yaml
+layer_c:
+  feature_cell:
+    scope: workstream
+    slug: <stable-workstream-slug>
+    title: <short workstream title>
+    goal: <bounded workstream goal>
+    reason: <why feature_cell is justified>
+    entered_at: YYYY-MM-DD
+
+    status_ref: null
+    operating_package_ref: null
+
+    slices_ref:
+      - docs/harness/active/tasks/<task-file>.md
+
+    milestones:
+      - <milestone>
+
+    decision_log_ref: null
+    handoff_ref: null
+    evidence_refs: []
+    control_profile_refs: []
+    notes: null
+
+  control_profiles: []
+```
+
+### Guidance
+
+- Keep `feature_cell` workstream-scoped.
+- Materialize workstream-level `control_profile` records only when explicit obligations differ from baseline.
+- Do not use legacy `container` / `overlays` shorthand.
+- Do not encode Layer D state inside Layer C.
+
+## Layer D
+
+This is the **workstream-scope** lifecycle record.
+
+Do not derive this mechanically from child task states.
+
+A workstream may be:
+
+- `active` while one child task is `blocked`,
+- `checkpoint` while some child tasks are still `active`,
+- `awaiting_approval` after child implementation tasks are complete,
+- `validating` during rollout observation,
+- `complete` only when the workstream scope is actually done.
+
+```yaml
+layer_d:
+  state: draft | active | blocked | checkpoint | awaiting_approval | validating | complete | cancelled
+  phase: <workflow-local phase or null>
+  next_step: <explicit next coordination step or null>
+  entered_at: YYYY-MM-DD
+  updated_at: YYYY-MM-DD
+
+layer_d_companion:
+  blocking_reason: null
+  unblock_condition: null
+  checkpoint_reason: null
+  approval_ref: null
+  evidence_refs: []
+  decision_ref: null
+  lifecycle_scope: workstream
+```
+
+### Guidance
+
+- `next_step` should be a coordination step, not a child implementation step.
+- `blocked` requires a real `blocking_reason`.
+- `checkpoint` should usually have `checkpoint_reason`.
+- `awaiting_approval` should usually gain `approval_ref` once the approval boundary is live.
+- Use workstream-scope Layer D only when it adds operational clarity.
+
+## Decisions / Risks / Notes
+
+### Decisions
+
+Record only decisions that materially affect coordination.
+
+- YYYY-MM-DD — <decision summary> — ref: <decision ref>
+
+### Risks / Constraints
+
+Keep only active workstream-level risks or constraints.
+
+- <risk or constraint>
+- <required mitigation or dependency>
+
+### Notes
+
+Use sparingly. Prefer links, refs, and explicit fields over narrative bulk.
+
+## Workstream Log
+
+Record only meaningful workstream-level changes.
+
+Examples:
+
+- workstream created
+- new child slice opened
+- workstream control profile added
+- major reroute across slices
+- checkpoint packet prepared
+- approval granted
+- rollout observation started
+- workstream closed
+
+Format:
+
+- YYYY-MM-DD — <event>
+
+## Closure
+
+Use this section only when the workstream is being closed or cancelled.
+
+### Closure summary
+
+- why the workstream is complete or cancelled,
+- what evidence or decision refs support closure,
+- what follow-up work, if any, remains outside this workstream.
+
+### Closure refs
+
+- evidence:
+  - <ref>
+- decisions:
+  - <ref>
+
+## Maintenance Rules
+
+- Keep the workstream card focused on coordination, not detailed execution.
+- Update it at meaningful boundaries, not continuously for show.
+- Keep child task refs current.
+- Keep milestone and decision lists sparse.
+- Keep workstream-scope Layer D truthful.
+- Keep Layer C explicit and canonical.
+- Prefer linked task cards over bloating this file.
+
+## Minimal Example
+
+```md
+---
+id: W-2026-03-parser-block-schema-migration
+title: Parser migration to structured block schema
+created_at: 2026-03-07
+updated_at: 2026-03-07
 owner: agent
-state: active
-phase:
-next_step:
-container: feature_cell
-overlays: []
 ---
 
 # Goal
 
-<What larger effort this workstream is trying to achieve.>
+Migrate parser outputs to the new block schema with validation and safe rollout support.
 
 # Scope Boundary
 
-## In scope
-
-- <what belongs to this effort>
-- <...>
-
-## Out of scope
-
-- <what is intentionally excluded>
-- <...>
-
-## Completion condition
-
-<What it means for the workstream to be complete at effort scope.>
+Includes schema definition, parser model migration, validation, rollout readiness, and rollout observation.
+Excludes unrelated parser cleanup not required for the migration.
 
 # Promotion Reason
 
-<Why task-only tracking became inadequate and why `feature_cell` now applies.>
+Staged multi-slice migration with rollout sensitivity, cross-slice dependency, and high handoff pressure.
 
 # Current Structure
 
-## Active child tasks
-
-- <task id and short role>
-- <...>
-
-## Planned / queued child tasks
-
-- <task id or placeholder if already known>
-- <...>
-
-## Closed / superseded child tasks
-
-- <optional>
-- <...>
+- active child tasks:
+  - docs/harness/active/tasks/define-block-schema.md
+  - docs/harness/active/tasks/refactor-parser-model.md
+- upcoming child tasks:
+  - docs/harness/active/tasks/run-validation.md
+  - docs/harness/active/tasks/prepare-rollout.md
+- completed child tasks:
+  - none
 
 # Milestones / Sequencing
 
-- <current milestone or stage>
-- <next milestone or stage>
-- <important dependency or stage gate>
+- target schema finalized
+- migration evidence assembled
+- rollout approved
+- rollout validated
 
 # Shared References
 
-- <RFC, issue, PR, doc, decision, packet, evidence bundle, etc.>
-- <...>
+- docs/rfcs/parser-schema-migration.md
+- reports/parser-migration-validation.md
+- docs/runbooks/parser-rollback.md
 
 # Layer C
 
-- container: feature_cell
-- overlays:
-  - <optional: review_gatekeeper>
-  - <optional: governance_escalation>
+```yaml
+layer_c:
+  feature_cell:
+    scope: workstream
+    slug: parser-block-schema-migration
+    title: Parser migration to structured block schema
+    goal: migrate parser outputs to the new block schema with validation and safe rollout support
+    reason: staged multi-slice migration with rollout sensitivity and high handoff pressure
+    entered_at: 2026-03-07
+    status_ref: null
+    operating_package_ref: null
+    slices_ref:
+      - docs/harness/active/tasks/define-block-schema.md
+      - docs/harness/active/tasks/refactor-parser-model.md
+      - docs/harness/active/tasks/run-validation.md
+      - docs/harness/active/tasks/prepare-rollout.md
+    milestones:
+      - target schema finalized
+      - migration evidence assembled
+      - rollout approved
+      - rollout validated
+    decision_log_ref: docs/harness/active/workstreams/parser-block-schema-migration-decision-log.md
+    handoff_ref: null
+    evidence_refs:
+      - reports/parser-migration-validation.md
+    control_profile_refs:
+      - docs/harness/active/control-profiles/parser-migration-change-controlled.yaml
+    notes: null
 
-## Layer C rationale
-
-<Why workstream-scope Layer C shorthand does or does not apply.>
+  control_profiles: []
+```
 
 # Layer D
 
-- state:
-- phase:
-- next_step:
-- blocking_reason:
-- unblock_condition:
-- checkpoint_reason:
-- approval_ref:
-- evidence_refs:
-  - <optional>
-  - <optional>
-- decision_ref:
-- lifecycle_scope: workstream
+```yaml
+layer_d:
+  state: active
+  phase: coordinated_execution
+  next_step: complete active child slices and prepare readiness packet for rollout gate
+  entered_at: 2026-03-07
+  updated_at: 2026-03-07
 
-## Current control condition
-
-<Describe the current workstream-level control status in plain language if useful.>
+layer_d_companion:
+  blocking_reason: null
+  unblock_condition: null
+  checkpoint_reason: null
+  approval_ref: null
+  evidence_refs:
+    - reports/parser-migration-validation.md
+  decision_ref: null
+  lifecycle_scope: workstream
+```
 
 # Decisions / Risks / Notes
 
-## Shared decisions
+## Decisions
 
-- <decision or linked decision record>
-- <...>
+- 2026-03-07 — migration will use staged rollout with rollback packet — ref: decisions/parser-migration-rollout-approach.md
 
-## Shared risks
+## Risks / Constraints
 
-- <risk affecting multiple child tasks>
-- <...>
-
-## Handoff / coordination notes
-
-- <note for future sessions or agents>
-- <...>
+- rollout must preserve downstream compatibility during cutover
+- rollback plan must remain current before approval boundary
 
 # Workstream Log
 
-## YYYY-MM-DD
-
-- <coordination action taken>
-- <milestone or routing change>
-- <child task created / closed / redirected>
-- <what should happen next>
-
-# Closure
-
-## Acceptance basis
-
-<How workstream completion will be established: all child slices complete, validation accepted, milestone approved, rollout approved, etc.>
-
-## Closure notes
-
-<Record final completion or cancellation context when the workstream ends.>
+- 2026-03-07 — workstream created
 ```
-
-## Field guidance
-
-### Frontmatter fields
-
-#### `id`
-Use a stable unique workstream identifier.
-
-Recommended pattern:
-- `W-YYYY-MM-<slug>`
-
-Examples:
-- `W-2026-03-segmentation`
-- `W-2026-03-parser-migration`
-
-#### `title`
-The title should name the larger coordinated effort, not a single child slice.
-
-Good:
-- `Hierarchical segmentation feature development`
-- `Hybrid parser migration`
-- `Evaluation harness rollout`
-
-Bad:
-- `Fix parser bug`
-- `Write one RFC section`
-- `Run evaluation once`
-
-#### `state`
-Use only the Layer D lifecycle states defined by the harness.
-
-Expected values:
-- `draft`
-- `active`
-- `blocked`
-- `checkpoint`
-- `awaiting_approval`
-- `validating`
-- `complete`
-- `cancelled`
-
-At workstream scope, these describe the control status of the effort as a whole.
-
-#### `phase`
-Use a short freeform description of the current effort-stage if useful.
-
-Examples:
-- `discovery coordination`
-- `contract formation`
-- `implementation sequencing`
-- `cross-slice validation`
-- `milestone review`
-
-Do not turn `phase` into a rigid universal plan.
-
-#### `next_step`
-This should describe the next workstream-level coordination move or clearly point to the next child task to advance.
-
-Good examples:
-- `Create child task for intermediate schema definition and link it to milestone: contract formation.`
-- `Pause at checkpoint and prepare workstream review packet comparing architecture paths.`
-- `Activate evaluation child task after contract approval is recorded.`
-
-#### `container`
-For this template, `container` should remain `feature_cell`.
-
-If the effort no longer needs workstream treatment, retire the workstream rather than changing the container value.
-
-#### `overlays`
-This field is legacy harness-local shorthand, not the canonical Layer C schema. See `docs/harness-maintain/main.md` for migration policy.
-
-Use `overlays: []` when baseline control is implied at workstream scope.
-
-If a non-baseline control regime must be shown in the current card shape, use the existing local values and interpret them as:
-- use the compatibility mapping in `docs/harness-maintain/main.md`
-
-Do not mirror task-scope control context automatically.
-
-### Goal
-
-This should state the larger outcome the coordinated effort is pursuing.
-
-A good goal helps answer whether a child task belongs in the workstream at all.
-
-### Scope Boundary
-
-This is critical.
-
-Use it to define:
-- what belongs in the workstream,
-- what does not,
-- what completion means.
-
-If this boundary becomes vague, the workstream is likely too broad.
-
-### Promotion Reason
-
-State why the work was promoted from task-only tracking.
-
-Common reasons:
-- multiple coherent child slices exist,
-- staged delivery or sequencing matters,
-- the effort spans multiple sessions or agents,
-- workstream-level review or governance is needed,
-- durable milestones or cross-slice decisions now matter.
-
-### Current Structure
-
-This section should make the workstream legible.
-
-At a glance, another agent should be able to see:
-- which child tasks are active,
-- which are planned,
-- which are done or obsolete.
-
-Do not let old task links accumulate without maintenance.
-
-### Milestones / Sequencing
-
-Keep this lightweight but useful.
-
-You do not need a full project plan. You do need enough structure to answer:
-- what stage the effort is in,
-- what comes next,
-- what decisions or dependencies gate the next stage.
-
-Good milestone examples:
-- `discovery complete`
-- `contract approved`
-- `implementation slice 1 complete`
-- `cross-slice validation complete`
-- `rollout approval pending`
-
-### Shared References
-
-Use this for artifacts that matter at workstream scope.
-
-Typical items:
-- architecture RFC,
-- parent issue,
-- workstream review packet,
-- approval packet,
-- readiness evidence bundle,
-- linked decision records,
-- milestone-specific notes.
-
-### Layer C
-
-At workstream scope, `feature_cell` is already the container.
-
-Add non-baseline control context only when it affects the effort as a whole.
-
-Good rationale examples:
-- `reviewed-style control applies because milestone 2 requires architecture review before any new child implementation tasks proceed`
-- `change-controlled control applies because migration rollout requires signoff at workstream scope`
-- `no workstream-scope non-baseline control profile; control boundaries remain local to child tasks`
-
-### Layer D
-
-This is the control surface for the workstream itself.
-
-Use it to answer:
-- can the larger effort continue,
-- is it paused for milestone review,
-- is approval pending,
-- is it blocked at effort scope,
-- is cross-slice validation now dominant,
-- is the effort complete.
-
-Important:
-- do not derive this mechanically from child task states,
-- a blocked child task does not always mean a blocked workstream,
-- a completed workstream requires closure at effort scope, not just many closed child tasks.
-
-Companion field guidance:
-- fill `blocking_reason` and preferably `unblock_condition` when `state = blocked`
-- fill `checkpoint_reason` when `state = checkpoint`
-- fill `approval_ref` when approval exists or is pending through a linked artifact
-- fill `evidence_refs` when readiness, validation, or completion depends on cross-slice evidence
-- fill `decision_ref` when a meaningful workstream decision changed the route or closed the effort
-
-### Decisions / Risks / Notes
-
-This section is for context that affects multiple child tasks.
-
-Use it for:
-- architecture direction,
-- shared tradeoffs,
-- effort-level risks,
-- coordination notes,
-- handoff notes for future agents.
-
-Do not duplicate detailed child-task logs here.
-
-### Workstream Log
-
-Append short entries at meaningful coordination boundaries.
-
-Good entries record:
-- new child task created,
-- milestone reached,
-- milestone blocked,
-- review requested,
-- approval recorded,
-- workstream scope narrowed or split,
-- next coordination move.
-
-### Closure
-
-Record both the expected acceptance basis and final closure notes.
-
-Examples of acceptance basis:
-- all required child tasks closed with accepted outputs,
-- cross-slice validation completed and accepted,
-- workstream-level approval recorded,
-- rollout or migration stage accepted,
-- workstream superseded by replacement structure.
-
-## Minimal examples
-
-### Example 1: feature development workstream
-
-```md
----
-id: W-2026-03-segmentation
-title: Hierarchical segmentation feature development
-created_at: 2026-03-06
-updated_at: 2026-03-06
-owner: agent
-state: active
-phase: contract formation
-next_step: Create child task for intermediate schema definition and link it to milestone: contract approval.
-container: feature_cell
-overlays: []
----
-```
-
-### Example 2: migration workstream with governance
-
-```md
----
-id: W-2026-03-parser-migration
-title: Hybrid parser migration
-created_at: 2026-03-06
-updated_at: 2026-03-06
-owner: agent
-state: awaiting_approval
-phase: stage-2 migration gate
-next_step: Wait for approval outcome; if approved, activate rollout-readiness child task.
-container: feature_cell
-overlays:
-  - governance_escalation
----
-```
-
-## Maintenance rules
-
-- Use a workstream card only when `feature_cell` is genuinely justified.
-- Keep child task lists current.
-- Do not let the workstream become a mega-task or a dumping ground.
-- Keep milestones and next steps current enough to guide action.
-- Do not derive workstream state mechanically from child task states.
-- Record workstream-scope decisions, risks, and approvals at the workstream level.
-- When the effort ends or is superseded, record closure context rather than silently abandoning the workstream.

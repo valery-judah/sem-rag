@@ -1,21 +1,20 @@
 
-
 # Task Card Template
 
 Use this template for every non-trivial task slice in the harness.
 
 A task card is the authoritative operational record for a single current slice of work. It should be small enough that one current Layer B mode makes sense and explicit enough that another agent can resume from it without replaying the whole history.
 
-Current task cards still use legacy Layer C frontmatter shorthand.
+The frontmatter is the authoritative structured control surface for the task. The markdown body provides narrative context, references, and history. Do not duplicate the Layer A-D fields in prose unless a short rationale is operationally useful.
 
-Canonical Layer C remains the v2 model defined by `feature_cell` and `control_profile`. See `docs/harness-maintain/main.md` for the compatibility mapping and migration policy.
+Task cards now use canonical Layer C fields directly. If a task belongs to a workstream, link it through `layer_c.feature_cell_ref`. Workstream cards use their own canonical `layer_c.feature_cell`, `layer_c.control_profiles`, `layer_d`, and `layer_d_companion` structures.
 
 ## Usage notes
 
 - Create one file per task in `docs/harness/active/tasks/`.
 - Use the task card as the primary source of truth for the slice.
-- Update the card whenever the slice, mode, Layer C shorthand, state, or next step changes materially.
-- Keep detailed execution notes in the work log, but keep the top of the card clean enough to function as a control surface.
+- Update the card whenever the slice, mode, Layer C context, state, or next step changes materially.
+- Keep detailed execution notes in the work log, but keep the frontmatter clean enough to function as a control surface.
 - If the task grows beyond one coherent slice, reslice it or promote the larger effort to a workstream rather than turning this card into a catch-all.
 
 ## Copyable template
@@ -27,13 +26,36 @@ title: <short title for the current slice>
 created_at: YYYY-MM-DD
 updated_at: YYYY-MM-DD
 owner: agent
-workstream_id:
-state: draft
-phase:
-next_step:
-current_mode:
-overlays: []
-container:
+layer_a:
+  intent:
+  problem_uncertainty:
+  dependency_complexity:
+  knowledge_locality:
+  specification_maturity:
+  validation_burden:
+  blast_radius:
+  execution_horizon:
+layer_b:
+  current_mode:
+  reason:
+  reroute_triggers: []
+layer_c:
+  feature_cell_ref: null
+  control_profiles: []
+layer_d:
+  state: draft
+  phase:
+  next_step:
+  entered_at:
+  updated_at:
+layer_d_companion:
+  blocking_reason:
+  unblock_condition:
+  checkpoint_reason:
+  approval_ref:
+  evidence_refs: []
+  decision_ref:
+  lifecycle_scope: task
 ---
 
 # Summary
@@ -55,55 +77,15 @@ container:
 - <repo path, issue, PR, doc, note, or other relevant artifact>
 - <...>
 
-# Layer A Snapshot
+# Notes
 
-- intent:
-- problem_uncertainty:
-- dependency_complexity:
-- knowledge_locality:
-- specification_maturity:
-- validation_burden:
-- blast_radius:
-- execution_horizon:
+## Classification notes
 
-## Notes on classification
-
-<Record any uncertainty or short rationale if useful.>
-
-# Layer B
-
-- current_mode:
-- reason:
-- reroute_triggers:
-  - <optional>
-  - <optional>
-
-# Layer C
-
-- overlays:
-  - <optional: review_gatekeeper>
-  - <optional: governance_escalation>
-- container:
-  <optional: feature_cell>
+<Record any uncertainty or short classification rationale if useful.>
 
 ## Layer C rationale
 
-<Why the current Layer C shorthand does or does not apply.>
-
-# Layer D
-
-- state:
-- phase:
-- next_step:
-- blocking_reason:
-- unblock_condition:
-- checkpoint_reason:
-- approval_ref:
-- evidence_refs:
-  - <optional>
-  - <optional>
-- decision_ref:
-- lifecycle_scope: task
+<Why the current feature-cell link or control profiles do or do not apply.>
 
 ## Current control condition
 
@@ -136,9 +118,29 @@ container:
 
 ## Field guidance
 
-### Frontmatter fields
+### Frontmatter is authoritative
 
-#### `id`
+The frontmatter is the canonical task record.
+
+Use it for:
+- Layer A classification,
+- Layer B routing,
+- Layer C task-local control context,
+- Layer D lifecycle state,
+- and the Layer D companion fields.
+
+Use the body for:
+- the task summary,
+- supporting rationale,
+- references,
+- work log history,
+- open questions,
+- and closure context.
+
+Do not mirror the frontmatter values into body bullet lists just to keep them visible twice.
+
+### `id`
+
 Use a stable unique task identifier.
 
 Recommended pattern:
@@ -147,7 +149,8 @@ Recommended pattern:
 Example:
 - `T-2026-03-06-001`
 
-#### `title`
+### `title`
+
 The title should describe the current slice, not the whole initiative.
 
 Good:
@@ -160,41 +163,31 @@ Bad:
 - `Fix RAG`
 - `Build segmentation feature`
 
-#### `state`
-Use only the Layer D lifecycle states defined by the harness.
+### Top-level timestamps
 
-Expected values:
-- `draft`
-- `active`
-- `blocked`
-- `checkpoint`
-- `awaiting_approval`
-- `validating`
-- `complete`
-- `cancelled`
+Use:
+- `created_at` for card creation date,
+- `updated_at` for latest card update date.
 
-#### `phase`
-Use a short freeform description of the current local phase if helpful.
+These are card-level timestamps.
 
-Examples:
-- `reproduction`
-- `contract drafting`
-- `implementation`
-- `evaluation pass`
-- `review packet preparation`
+### `layer_a`
 
-Do not turn `phase` into a second state machine.
+Fill at least the required Layer A core fields:
 
-#### `next_step`
-This is mandatory for every non-terminal task.
+- `intent`
+- `problem_uncertainty`
+- `dependency_complexity`
+- `knowledge_locality`
+- `specification_maturity`
+- `validation_burden`
+- `blast_radius`
+- `execution_horizon`
 
-A good `next_step` is:
-- concrete,
-- local to the current slice,
-- executable by another agent,
-- consistent with the current mode and state.
+Use Layer A to capture the current problem shape, not long-term identity.
 
-#### `current_mode`
+### `layer_b.current_mode`
+
 Use exactly one current Layer B operating mode.
 
 Expected values:
@@ -207,18 +200,134 @@ Expected values:
 - `optimization_tuner`
 - `quality_evaluator`
 
-#### `overlays`
-This field is legacy harness-local shorthand, not the canonical Layer C schema. See `docs/harness-maintain/main.md` for migration policy.
+### `layer_b.reason`
 
-Use `overlays: []` when baseline control is implied.
+Explain why this mode is dominant now.
 
-If a non-baseline control regime must be shown in the current card shape, use the existing local values and interpret them as:
-- use the compatibility mapping in `docs/harness-maintain/main.md`
+Keep it short and operational.
 
-Leave empty when no extra control burden is needed.
+### `layer_b.reroute_triggers`
 
-#### `container`
-Use `feature_cell` only when this task belongs to a workstream that genuinely requires long-running multi-slice coordination.
+Capture the conditions that would justify changing posture.
+
+Examples:
+- `If root cause is identified and implementation path becomes clear, reroute to routine_implementer.`
+- `If issue is actually undefined contract behavior, reroute to contract_builder.`
+
+### `layer_c.feature_cell_ref`
+
+Use a workstream identifier or file ref when this task belongs to a `feature_cell`.
+
+Use `null` when the task is not part of a workstream.
+
+This is the repository-local task-card representation of workstream membership. Do not copy the full `feature_cell` object into the task card.
+
+### `layer_c.control_profiles`
+
+Keep this list empty unless non-baseline control is materially active for the task.
+
+Use `[]` when baseline control is implied.
+
+Each item should use the canonical Layer C `control_profile` fields. For task cards, profiles should usually be slice-scoped.
+
+Minimal reviewed-profile example:
+
+```yaml
+layer_c:
+  feature_cell_ref: W-2026-03-segmentation
+  control_profiles:
+    - scope: slice
+      reason: contract acceptance requires human interpretation before implementation
+      entered_at: 2026-03-06
+      preset_refs: [reviewed]
+      review:
+        required: true
+        trigger_classes: [acceptance_interpretation]
+      approval:
+        required: false
+        trigger_classes: []
+      evidence:
+        level: elevated
+      traceability:
+        level: standard
+        decision_log_required: false
+      rollback:
+        required: false
+        rollback_ref: null
+      policy_refs:
+        policy_profile_ref: null
+        packet_template_ref: templates/review-packet.template.md
+        review_protocol_ref: null
+        approval_protocol_ref: null
+      notes: null
+```
+
+### `layer_d`
+
+`layer_d` is the control surface for the task.
+
+Use it to answer:
+- can work continue,
+- is the task blocked,
+- is it paused for review,
+- is approval pending,
+- is validation now dominant,
+- is the slice done.
+
+#### `layer_d.state`
+
+Use only the Layer D lifecycle states defined by the harness.
+
+Expected values:
+- `draft`
+- `active`
+- `blocked`
+- `checkpoint`
+- `awaiting_approval`
+- `validating`
+- `complete`
+- `cancelled`
+
+#### `layer_d.phase`
+
+Use a short freeform description of the current local phase if helpful.
+
+Examples:
+- `reproduction`
+- `contract drafting`
+- `implementation`
+- `evaluation pass`
+- `review packet preparation`
+
+Do not turn `phase` into a second state machine.
+
+#### `layer_d.next_step`
+
+This is mandatory for every non-terminal task.
+
+A good `next_step` is:
+- concrete,
+- local to the current slice,
+- executable by another agent,
+- consistent with the current mode and state.
+
+#### `layer_d.entered_at`
+
+Record when the task entered the current Layer D state.
+
+#### `layer_d.updated_at`
+
+Record the last time the Layer D record itself changed.
+
+### `layer_d_companion`
+
+Companion field guidance:
+- fill `blocking_reason` and preferably `unblock_condition` when `layer_d.state = blocked`
+- fill `checkpoint_reason` when `layer_d.state = checkpoint`
+- fill `approval_ref` when approval exists or is pending through a linked artifact
+- fill `evidence_refs` when validation, checkpoint, or completion depends on evidence
+- fill `decision_ref` when a meaningful decision changed the route or closed the task
+- keep `lifecycle_scope: task`
 
 ### Summary section
 
@@ -244,55 +353,19 @@ Typical items:
 - evidence bundles,
 - related task/workstream links.
 
-### Layer A Snapshot
+### Notes
 
-Fill at least the required Layer A core fields.
+Use the notes section for concise rationale that does not belong inside the structured fields.
 
-Use this section to capture the current problem shape, not long-term identity.
+Good uses:
+- explaining uncertainty in the Layer A classification,
+- explaining why no `feature_cell` or `control_profile` is active,
+- describing the current control condition in plain language.
 
-Update it only when the shape materially changes.
-
-### Layer B
-
-This section explains why the task is currently being approached in one specific mode.
-
-`reason` should explain why this mode is dominant now.
-
-`reroute_triggers` should capture the conditions that would justify changing posture.
-
-Examples:
-- `If root cause is identified and implementation path becomes clear, reroute to routine_implementer.`
-- `If issue is actually undefined contract behavior, reroute to contract_builder.`
-
-### Layer C
-
-This section should stay sparse.
-
-Use it only when Layer C materially changes how the task is governed or organized.
-
-Good rationale examples:
-- `reviewed-style control applies because the RFC must be reviewed before implementation begins`
-- `change-controlled control applies because the migration step has production rollback risk`
-- `no non-baseline control profile; current slice can proceed under baseline control`
-
-### Layer D
-
-This is the control surface for the task.
-
-Use it to answer:
-- can work continue,
-- is the task blocked,
-- is it paused for review,
-- is approval pending,
-- is validation now dominant,
-- is the slice done.
-
-Companion field guidance:
-- fill `blocking_reason` and preferably `unblock_condition` when `state = blocked`
-- fill `checkpoint_reason` when `state = checkpoint`
-- fill `approval_ref` when approval exists or is pending through a linked artifact
-- fill `evidence_refs` when validation, checkpoint, or completion depends on evidence
-- fill `decision_ref` when a meaningful decision changed the route or closed the task
+Bad uses:
+- restating `layer_b.current_mode`,
+- copying `layer_d.state`,
+- listing `layer_c.control_profiles` again in prose.
 
 ### Work Log
 
@@ -304,7 +377,7 @@ A good work log entry records:
 - effect on understanding or routing,
 - resulting next move.
 
-Do not let the work log replace the summary, mode, state, or next-step fields at the top of the card.
+Do not let the work log replace the summary or the frontmatter control fields.
 
 ### Open Questions / Risks
 
@@ -338,13 +411,37 @@ title: Investigate parser regression in block normalization
 created_at: 2026-03-06
 updated_at: 2026-03-06
 owner: agent
-workstream_id:
-state: active
-phase: reproduction
-next_step: Isolate the first normalization stage where nested list structure is lost.
-current_mode: debug_investigator
-overlays: []
-container:
+layer_a:
+  intent: debug
+  problem_uncertainty: medium
+  dependency_complexity: medium
+  knowledge_locality: mostly_local
+  specification_maturity: high
+  validation_burden: medium
+  blast_radius: medium
+  execution_horizon: short
+layer_b:
+  current_mode: debug_investigator
+  reason: Root-cause isolation is the dominant current work.
+  reroute_triggers:
+    - If the failing transformation is isolated and the fix is obvious, reroute to routine_implementer.
+layer_c:
+  feature_cell_ref: null
+  control_profiles: []
+layer_d:
+  state: active
+  phase: reproduction
+  next_step: Isolate the first normalization stage where nested list structure is lost.
+  entered_at: 2026-03-06
+  updated_at: 2026-03-06
+layer_d_companion:
+  blocking_reason: null
+  unblock_condition: null
+  checkpoint_reason: null
+  approval_ref: null
+  evidence_refs: []
+  decision_ref: null
+  lifecycle_scope: task
 ---
 ```
 
@@ -357,22 +454,70 @@ title: Define intermediate schema acceptance contract
 created_at: 2026-03-06
 updated_at: 2026-03-06
 owner: agent
-workstream_id: W-2026-03-segmentation
-state: checkpoint
-phase: contract draft ready for review
-next_step: Review the linked contract packet and decide whether stage-1 schema can be locked.
-current_mode: contract_builder
-overlays:
-  - review_gatekeeper
-container: feature_cell
+layer_a:
+  intent: review
+  problem_uncertainty: medium
+  dependency_complexity: medium
+  knowledge_locality: scattered_internal
+  specification_maturity: scoped_problem
+  validation_burden: high
+  blast_radius: medium
+  execution_horizon: multi_pr
+layer_b:
+  current_mode: contract_builder
+  reason: The dominant work is defining the contract and preparing it for review.
+  reroute_triggers:
+    - If the contract is accepted and implementation becomes clear, reroute to routine_implementer.
+layer_c:
+  feature_cell_ref: W-2026-03-segmentation
+  control_profiles:
+    - scope: slice
+      reason: Contract acceptance requires human interpretation before implementation.
+      entered_at: 2026-03-06
+      preset_refs: [reviewed]
+      review:
+        required: true
+        trigger_classes: [acceptance_interpretation]
+      approval:
+        required: false
+        trigger_classes: []
+      evidence:
+        level: elevated
+      traceability:
+        level: standard
+        decision_log_required: false
+      rollback:
+        required: false
+        rollback_ref: null
+      policy_refs:
+        policy_profile_ref: null
+        packet_template_ref: templates/review-packet.template.md
+        review_protocol_ref: null
+        approval_protocol_ref: null
+      notes: null
+layer_d:
+  state: checkpoint
+  phase: contract draft ready for review
+  next_step: Review the linked contract packet and decide whether stage-1 schema can be locked.
+  entered_at: 2026-03-06
+  updated_at: 2026-03-06
+layer_d_companion:
+  blocking_reason: null
+  unblock_condition: null
+  checkpoint_reason: Contract draft is complete enough for acceptance review.
+  approval_ref: null
+  evidence_refs:
+    - docs/harness/reviews/stage-1-schema-contract.md
+  decision_ref: null
+  lifecycle_scope: task
 ---
 ```
 
 ## Maintenance rules
 
-- Every non-terminal task must have a concrete `next_step`.
-- Every task must have exactly one current mode.
-- Do not keep stale Layer C shorthand, stale blockers, or stale checkpoint reasons.
+- Every non-terminal task must have a concrete `layer_d.next_step`.
+- Every task must have exactly one current `layer_b.current_mode`.
+- Do not keep stale `layer_c.feature_cell_ref`, stale `layer_c.control_profiles`, stale blockers, or stale checkpoint reasons.
 - If the title or summary no longer describes the current slice, reslice the task.
 - If the work clearly spans multiple slices over time, link it to a workstream or promote the larger effort.
 - When a task ends, record closure context rather than silently abandoning it.

@@ -1,16 +1,13 @@
 
-
 # Example Filled Task Card
 
 This example shows what a filled task card can look like for one bounded active slice.
 
 It is intentionally concrete and moderately detailed. The goal is to show:
 - how a single task stays scoped to one current slice,
-- how Layer A–D appear together in one operational artifact,
+- how canonical Layer A-D frontmatter appears together in one operational artifact,
 - how the current mode, current state, and current next step remain explicit,
 - how the work log supports resumability without replacing the control fields.
-
-This example keeps the current task-card compatibility shape: `container` and `overlays` remain legacy Layer C shorthand. See `docs/harness-maintain/main.md` for the canonical model and migration status.
 
 ```md
 ---
@@ -19,13 +16,39 @@ title: Investigate parser regression in block normalization
 created_at: 2026-03-06
 updated_at: 2026-03-06
 owner: agent
-workstream_id:
-state: active
-phase: reproduction
-next_step: Isolate the first normalization stage where nested list structure is lost.
-current_mode: debug_investigator
-overlays: []
-container:
+layer_a:
+  intent: debug
+  problem_uncertainty: medium
+  dependency_complexity: medium
+  knowledge_locality: mostly_local
+  specification_maturity: high
+  validation_burden: medium
+  blast_radius: medium
+  execution_horizon: short
+layer_b:
+  current_mode: debug_investigator
+  reason: The dominant work is reproduction, isolation, and root-cause identification for the regression.
+  reroute_triggers:
+    - If the first failing transformation is isolated and the corrective change is obvious, reroute to routine_implementer.
+    - If the regression is caused by undefined expected block-shape behavior, reroute to contract_builder.
+layer_c:
+  feature_cell_ref: null
+  control_profiles: []
+layer_d:
+  state: active
+  phase: reproduction
+  next_step: Isolate the first normalization stage where nested list structure is lost.
+  entered_at: 2026-03-06
+  updated_at: 2026-03-06
+layer_d_companion:
+  blocking_reason: null
+  unblock_condition: null
+  checkpoint_reason: null
+  approval_ref: null
+  evidence_refs:
+    - failing fixture output comparison to expected nested-list structure
+  decision_ref: null
+  lifecycle_scope: task
 ---
 
 # Summary
@@ -52,51 +75,15 @@ This task covers reproduction and causal isolation of the regression in block no
 - reproduced failing input fixture: `tests/fixtures/nested_list_regression.md`
 - recent refactor PR touching normalization path
 
-# Layer A Snapshot
+# Notes
 
-- intent: defect correction
-- problem_uncertainty: medium
-- dependency_complexity: medium
-- knowledge_locality: mostly local
-- specification_maturity: high
-- validation_burden: medium
-- blast_radius: medium
-- execution_horizon: short
-
-## Notes on classification
+## Classification notes
 
 The expected behavior is mostly known because the task is framed as a regression, but the cause is not yet established. The likely code path is local to normalization, though shared parser behavior raises moderate blast-radius concern.
 
-# Layer B
-
-- current_mode: debug_investigator
-- reason: The dominant work is not implementation yet; it is reproduction, isolation, and root-cause identification for the regression.
-- reroute_triggers:
-  - If the first failing transformation is isolated and the corrective change is obvious, reroute to `routine_implementer`.
-  - If the regression is caused by undefined expected block-shape behavior, reroute to `contract_builder`.
-
-# Layer C
-
-- overlays:
-- container:
-
 ## Layer C rationale
 
-No non-baseline control profile is active. The slice can proceed under baseline control, and there is no current need for workstream coordination, mandatory review pause, or stronger approval/evidence obligations.
-
-# Layer D
-
-- state: active
-- phase: reproduction
-- next_step: Isolate the first normalization stage where nested list structure is lost.
-- blocking_reason:
-- unblock_condition:
-- checkpoint_reason:
-- approval_ref:
-- evidence_refs:
-  - failing fixture output comparison to expected nested-list structure
-- decision_ref:
-- lifecycle_scope: task
+No non-baseline control profile is active. The slice can proceed under baseline control, and there is no current need for workstream coordination, mandatory review pause, or stronger approval or evidence obligations.
 
 ## Current control condition
 
@@ -134,8 +121,8 @@ Not yet complete.
 
 A few things are deliberate here:
 
+- The frontmatter is the authoritative control surface, so Layer A-D fields are not repeated as body checklists.
 - The title describes the current slice, not the whole parser problem space.
-- Layer A captures the current problem shape without trying to describe long-term identity.
 - Layer B is one mode only: `debug_investigator`.
 - Layer C is empty because no special control profile or workstream wrapper is needed yet.
 - Layer D makes the task executable by exposing `state`, `phase`, and one concrete `next_step`.

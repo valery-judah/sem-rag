@@ -50,7 +50,9 @@ The checkpoint / review loop expects:
 
 The authoritative source remains the task or workstream card, but the review packet is the primary artifact surfaced to the reviewer.
 
-Current task and workstream cards may still express Layer C through legacy `overlays` / `container` frontmatter. Treat those as shorthand for the canonical v2 model and use `docs/harness-maintain/main.md` for the full compatibility mapping and migration status.
+Use the canonical card structures directly:
+- task cards: `layer_c.feature_cell_ref`, `layer_c.control_profiles`, `layer_d`, `layer_d_companion`
+- workstream cards: `layer_c.feature_cell`, `layer_c.control_profiles`, `layer_d`, `layer_d_companion`
 
 ## Core principles
 
