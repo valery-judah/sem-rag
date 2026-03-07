@@ -289,7 +289,7 @@ Default rules for routing, evidence, review, governance, and closure.
 
 ### `prompts/`
 
-Prompt documents for common operational entry points such as intake, execution, resume, and review.
+Prompt documents for common operational entry points such as startup task selection, intake, execution, resume, and review.
 
 ### `registries/`
 
@@ -325,12 +325,13 @@ If you are entering to perform work rather than maintain the harness, read in th
 
 1. `README.md`
 2. `AGENTS.md`
-3. `indexes/active-tasks.md` if no task has already been selected
-4. the selected authoritative task card in `active/tasks/`
-5. the relevant workflow in `workflows/`
-6. the relevant template in `templates/`
-7. `policies/routing-rules.md` when routing or rerouting is needed
-8. deeper concept docs only when the immediate task requires them
+3. `prompts/startup-task-selector.md` if no task has already been selected and guided startup selection is useful
+4. `indexes/active-tasks.md` if no task has already been selected
+5. the selected authoritative task card in `active/tasks/`
+6. the relevant workflow in `workflows/`
+7. the relevant template in `templates/`
+8. `policies/routing-rules.md` when routing or rerouting is needed
+9. deeper concept docs only when the immediate task requires them
 
 This keeps the active context small while preserving the authoritative routing and control model.
 

@@ -1,169 +1,142 @@
-# Harness clarity and alignment proposals
+# Harness clarity and alignment follow-up proposals
 
 ## Context
 
-This note was produced while using the harness to create a real task card for parser-contract work.
+The main March 7 alignment pass already landed in the live harness.
 
-The concrete flow was:
+That pass made the startup path explicit, tightened `docs/harness/indexes/active-tasks.md` into an executable-task queue, aligned maintainer docs to current Layer C and Layer D canon, retired legacy Layer C shorthand from live operator docs, and added lightweight Layer A starter-value guidance during task authoring.
 
-1. read `docs/harness/README.md`,
-2. follow the intake and task-shaping guidance,
-3. choose the appropriate Layer B mode,
-4. create a task card in `docs/harness/active/tasks/`,
-5. update `docs/harness/indexes/active-tasks.md`.
+This note should therefore not pretend that the broad clarity pass is still pending. Its purpose is narrower:
 
-The goal of this note is to record where the harness felt ambiguous, stale, or internally misaligned during actual use, and to propose targeted follow-up clarifications.
+- capture the aligned baseline that now exists,
+- identify the remaining places where drift can reappear,
+- and propose the next implementation work to harden the harness against that drift.
 
-## What was clear enough to operate
+## Current aligned baseline
 
-Several parts of the harness were clear and usable:
+The live harness now already assumes the following operating model:
 
-- the top-level harness entry flow was good enough to operate from,
-- task-first, workstream-later guidance was clear,
-- `contract_builder` was a clear Layer B fit for the parser-contract slice,
-- the task card frontmatter model is now mostly coherent across the top-level README, intake loop, and task template.
+- fresh agents start from `docs/harness/indexes/active-tasks.md`,
+- the active-task index is a derivative executable-work queue,
+- authoritative task cards in `docs/harness/active/tasks/` win on mismatch,
+- live Layer C vocabulary is `feature_cell` plus `control_profile`,
+- task authoring uses lightweight canonical starter values for key Layer A fields,
+- and early contract work stays baseline until it reaches a real review boundary.
 
-This note is therefore not a claim that the harness is unusable. It is a record of the places where real operation still required avoidable interpretation.
+Those decisions should remain stable. The follow-up proposals below are about keeping that baseline trustworthy over time.
 
-## Friction observed during real use
+## Remaining implementation gaps
 
-### 1. Live vs illustrative artifact ambiguity
+### 1. Queue trust still depends on manual discipline
 
-`docs/harness/indexes/active-tasks.md` already contained active entries, while `docs/harness/active/tasks/` was empty at the time the new task was created.
+The active-task queue is now correctly defined, but nothing in the harness currently makes queue/card drift especially visible when maintainers forget to update the derivative index.
 
-That created immediate uncertainty about whether the index was:
+That leaves the harness vulnerable to regressing into the same trust problem that triggered the original alignment work:
 
-- a live operational summary,
-- an illustrative example,
-- or a placeholder that had never been wired to real task cards.
+- queue entries that no longer correspond to real task cards,
+- real executable task cards missing from the queue,
+- or queue state/mode summaries drifting away from the authoritative cards.
 
-This matters because the harness positions indexes as lightweight live views, but a user cannot trust that role if the entries do not clearly correspond to real authoritative artifacts.
+### 2. Historical Layer C shorthand still appears in broad maintainer guidance
 
-Related maintainer guidance currently says that empty indexes are acceptable placeholders when the repository is not yet maintaining that view actively. That makes sense for an intentionally unused index, but it weakens operator confidence once an index contains concrete entries.
+The main operator-facing docs now use canonical Layer C language, but maintainer-facing docs still mention legacy shorthand in a few places that are broader than a strict historical-pointer role.
 
-### 2. Maintainer docs are behind the current Layer C and Layer D canon
+That is lower risk than before, but it still leaves room for maintainers to treat the old terms as active comparison vocabulary instead of narrowly historical compatibility language.
 
-`docs/harness-maintain/main.md` still contains compatibility guidance describing task and workstream cards in legacy Layer C shorthand terms such as `container` and `overlays`, even though the active templates and examples were already moved to canonical nested Layer C fields.
+### 3. Layer A normalization is guidance-only, not maintained as a live normalization practice
 
-The same maintainer file still references `docs/harness/concepts/layer-d-lifecycle-control-plane.md`, even though Layer D now lives under `docs/harness/concepts/layer-d/`.
+The template and intake guidance now show starter values for `intent`, `knowledge_locality`, and `dependency_complexity`, which is an improvement.
 
-This creates a specific maintainer problem: the file that is supposed to explain harness evolution policy still reinforces outdated assumptions about what is canonical now versus what is merely historical compatibility context.
+The remaining gap is operational rather than conceptual:
 
-### 3. Terminology drift around Layer C
+- there is no maintainer-facing check that live task cards continue to use the preferred values,
+- examples can drift quietly,
+- and future cards can reintroduce ad hoc local variants without a clear repair loop.
 
-The harness has improved its canonical Layer C language, but not all documents are aligned on the same vocabulary.
+### 4. Startup discovery is documented, but not yet maintained as a first-class maintenance scenario
 
-Some live docs still talk in terms of `container` and `containers`, while newer surfaces emphasize `feature_cell` and `control_profile`.
+The startup route for fresh agents is now explicit in the operator docs, but the harness does not yet treat "fresh-agent startup discovery" as a recurring maintenance scenario that should be rechecked whenever indexes, prompts, or workflows change.
 
-The issue is broader than legacy card frontmatter. It affects explanatory language across the harness and maintainer surfaces.
+That makes it possible for future harness edits to reintroduce implicit assumptions that the task is already known.
 
-This matters because a reader currently has to infer whether `container` is still a canonical concept term, an acceptable synonym, or a historical label that should only appear in migration context.
+## Proposed implementation work
 
-### 4. Value normalization is weak at card-authoring time
+### Proposal A. Add an explicit queue-integrity maintenance check
 
-The harness explains the meaning of Layer A fields well enough to fill a task card, but it does not make the allowed or preferred value sets especially clear during authoring.
+The harness should gain one small, explicit maintenance rule for queue integrity.
 
-This was most noticeable for fields such as:
+Recommended shape:
 
-- `intent`
-- `knowledge_locality`
-- `dependency_complexity`
+- add a short "queue integrity check" procedure to `docs/harness-maintain/main.md`,
+- require maintainers to verify that every default-queue entry maps to a real task card,
+- require maintainers to verify that every executable task card is represented in the queue,
+- and make this check part of any edit that changes task-card semantics, active-task index semantics, or fresh-agent startup guidance.
 
-The semantics are understandable, but the docs do not make it obvious whether a chosen value is canonical, merely conventional, or ad hoc.
+This remains manual prose guidance for now. It does not require machine validation in the same pass.
 
-That means real card authoring still depends on local interpretation rather than a light but visible normalization rule.
+### Proposal B. Tighten where historical Layer C shorthand is allowed
 
-### 5. Control-profile activation is still somewhat judgment-heavy
+The harness should narrow legacy terminology to explicit compatibility contexts only.
 
-The specific ambiguity encountered during task creation was whether a contract-definition task should immediately carry a reviewed-style control profile, or whether it should remain baseline until a true review boundary exists.
+Recommended shape:
 
-The docs correctly emphasize sparse Layer C usage and correctly describe review boundaries conceptually. What is still missing is a short operational decision rule for early contract work:
+- keep `docs/harness/concepts/layer-c-overlays-containers.md` as the primary historical pointer,
+- keep brief historical mapping notes where needed in maintainer docs,
+- remove or tighten broader checklist/reference mentions that can make `container` / `overlay` feel like live vocabulary,
+- and use canonical Layer C terms everywhere else, including maintainer validation checklists.
 
-- draft under baseline control while shaping the contract,
-- then add `reviewed` when the slice should pause at a real review boundary before further implementation-aligned progress.
+The goal is not to erase history. The goal is to make the allowed location of historical terms much more predictable.
 
-Without that explicit rule, the operator still has to improvise slightly when classifying contract-heavy slices.
+### Proposal C. Add a lightweight live-card normalization audit for Layer A values
 
-## Proposed follow-up decisions
+The harness should treat canonical Layer A starter values as a maintained normalization target, not just authoring advice.
 
-### Proposal A. Make index status explicit
+Recommended shape:
 
-Each index should explicitly declare whether it is:
+- add a short maintainer rule that live task cards should be repaired to canonical values when touched,
+- add one small checklist item for examples and templates that use `intent`, `knowledge_locality`, and `dependency_complexity`,
+- and explicitly route any future registry or schema work to mirror the live prose guidance rather than redefining it.
 
-- a live derivative summary, or
-- a placeholder / illustrative view.
+This keeps the normalization light and author-friendly while reducing silent drift.
 
-If an index contains entries, those entries should correspond to real authoritative artifacts.
+### Proposal D. Add fresh-agent startup discovery to the maintainer regression checklist
 
-A short status line near the top of each index would reduce ambiguity without changing the harness model.
+The harness should treat startup discovery as a stability contract, not just a one-time docs fix.
 
-### Proposal B. Update `docs/harness-maintain/` to current canon
+Recommended shape:
 
-`docs/harness-maintain/main.md` should be realigned with current harness canon.
+- add "fresh agent with no preselected task" to maintainer review scenarios,
+- require that scenario to route through `README.md` -> `AGENTS.md` -> `indexes/active-tasks.md` -> authoritative task card -> execution or resume workflow,
+- and recheck prompts/workflows whenever those surfaces are edited so they do not regress to assuming the task is already known.
 
-That includes:
-
-- removing or rewriting outdated Layer C shorthand guidance as current practice,
-- replacing stale Layer D monolith references with the `docs/harness/concepts/layer-d/` reference set,
-- checking `maintain-readme.md` and `maintain-agents.md` for older overlays/containers framing and aligning them with current usage.
-
-The maintainer docs should not lag behind the operator-facing docs on what is canonical now.
-
-### Proposal C. Decide whether `container` remains a live conceptual term
-
-The harness should make an explicit choice:
-
-- either keep `container` as an accepted explanatory term for `feature_cell`,
-- or retire it from live docs and keep it only in historical / compatibility notes.
-
-The important thing is not which choice wins. The important thing is that README, playbook, policies, templates, and maintainer docs all use the same choice consistently.
-
-### Proposal D. Add light value-normalization guidance for card authors
-
-The harness should provide lightweight normalization help for commonly authored Layer A values.
-
-This does not require full schema enforcement in the same pass. It can be as small as:
-
-- canonical example values,
-- a short registry-style note,
-- or direct field guidance in templates and workflows.
-
-The goal is to reduce author improvisation without expanding the taxonomy unnecessarily.
-
-### Proposal E. Clarify when to add a reviewed control profile
-
-The harness should add one short rule in intake and execution guidance:
-
-- baseline while drafting,
-- add `reviewed` when progress should pause at a real review boundary before implementation or downstream continuation.
-
-This keeps Layer C sparse while making review-control activation more predictable.
-
-## Reasoning behind the proposals
-
-These proposals come from real harness usage rather than abstract cleanup. The friction appeared while trying to create and index a real task card, not while reading the docs passively.
-
-The main concern is operator confidence. A harness should make it obvious:
-
-- which docs are authoritative,
-- which terms are current,
-- which derivative artifacts can be trusted,
-- and when control context should be activated.
-
-None of these proposals require expanding the harness model. They are mainly about reducing stale wording, clarifying live-vs-historical status, and lowering interpretation load for routine operation.
+This gives the startup flow a durable maintenance home instead of leaving it as an incidental docs improvement.
 
 ## Suggested implementation order
 
-1. Update `docs/harness-maintain/main.md` so maintainer policy stops reinforcing outdated assumptions.
-2. Align maintainer docs and top-level live docs on Layer C terminology.
-3. Tighten index-status guidance so derivative artifacts are easier to trust.
-4. Add lightweight normalization and control-profile clarification for card authors.
+1. Add queue-integrity and startup-discovery checks to maintainer guidance.
+2. Tighten the remaining maintainer-scope legacy Layer C wording.
+3. Add the lightweight live-card normalization audit rule.
+4. Re-run a short terminology and startup-routing review across the touched docs.
+
+This order improves trust first, then reduces vocabulary drift, then hardens authoring consistency.
+
+## Non-goals
+
+This follow-up pass should not:
+
+- redesign Layers A through D,
+- introduce a new artifact type,
+- implement machine-readable schema or registry enforcement,
+- replace the active-task queue with automation,
+- or expand the harness into a heavier workflow system.
+
+The point is to harden the already-aligned operating model, not replace it.
 
 ## Expected outcome
 
-After these changes, a maintainer or agent should be able to create a real task card without needing to infer:
+After this follow-up work, the harness should be harder to regress accidentally:
 
-- whether indexes are trustworthy,
-- whether legacy Layer C card shorthand is still canonical,
-- whether `container` is current terminology or historical language,
-- or when a reviewed control profile should be activated.
+- the executable-task queue remains trustworthy,
+- historical Layer C terms stay confined to predictable compatibility contexts,
+- live task cards and examples stay closer to canonical Layer A values,
+- and future harness edits preserve the fresh-agent startup path instead of silently assuming a preselected task.

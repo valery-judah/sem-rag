@@ -56,6 +56,8 @@ If you are entering the harness without a preselected task, start from `indexes/
 
 Use that file as the discovery surface for executable task work, then open the selected authoritative task card in `active/tasks/` before entering execution or resume.
 
+If you want a guided prompt surface for this startup-selection step, use `prompts/startup-task-selector.md` before entering execution or resume.
+
 Treat the queue as derivative only:
 
 - every queue entry should correspond to a real task card,
@@ -281,6 +283,8 @@ Use them to understand the intended artifact shape. Do not treat them as live op
 Files in `prompts/` are guided entry surfaces for agent use.
 
 They support correct operation, but they do not override the harness rules in `README.md`, `AGENTS.md`, workflows, policies, or live artifacts.
+
+Use `prompts/startup-task-selector.md` when no task has yet been selected and the immediate need is to choose one executable task from the live queue before execution or resume.
 
 ## Boundary and gate behavior
 
