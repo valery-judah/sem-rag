@@ -47,6 +47,7 @@ If a task is small and bounded, the harness should remain small and bounded too.
 docs/harness/
   README.md
   AGENTS.md
+  maintainining.md
 
   concepts/
     layer-a-taxonomy.md
@@ -310,6 +311,7 @@ If you are maintaining or extending the harness itself, read in this order:
 4. the five workflow documents in `workflows/`
 5. the templates in `templates/`
 6. `policies/routing-rules.md`
+7. `maintainining.md`
 
 ## Recommended reading path for agents
 
@@ -379,12 +381,15 @@ It does not yet require:
 
 Those can be added later if the operating model proves stable.
 
-## Maintenance guidance
+## Harness maintenance
 
-When evolving this harness:
-- prefer improving slice quality over adding new universal concepts,
-- prefer tightening templates and workflow docs over expanding ontology,
-- prefer explicit operational rules over abstract new categories,
-- and prefer a small set of stable artifacts over a large unmaintained tree.
+If you are changing the harness itself rather than operating within it, use `docs/harness/maintainining.md`.
 
-The harness is working when it remains easy to enter, easy to resume, and hard to misunderstand.
+That guide owns:
+- harness-wide change policy,
+- compatibility and migration status,
+- cross-file synchronization rules,
+- validation checks,
+- and deferred automation guidance.
+
+The harness is healthy when it remains easy to enter, easy to resume, and hard to misunderstand.

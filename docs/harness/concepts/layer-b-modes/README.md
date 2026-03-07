@@ -110,6 +110,8 @@ They may eventually include:
 
 What should remain stable is the canonical set of modes and the rule that a task slice should have exactly one current Layer B mode at a time.
 
+Use `docs/harness/maintainining.md` for the threshold to add or remove a canonical mode and for the list of other harness surfaces that must be updated when Layer B changes.
+
 ## Recommended reading path
 
 If you are entering Layer B fresh:

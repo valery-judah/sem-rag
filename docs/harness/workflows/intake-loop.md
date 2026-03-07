@@ -23,7 +23,7 @@ A successful intake produces:
 - one task card in `docs/harness/active/tasks/`,
 - a filled Layer A core snapshot,
 - exactly one current Layer B mode,
-- any required Layer C overlay or container decision,
+- any required Layer C control-profile or workstream-wrapper decision,
 - an initialized Layer D record with `state`, `phase`, and `next_step`,
 - links to the relevant inputs and references,
 - a short work log entry describing the intake decision.
@@ -69,7 +69,7 @@ Layer B is current posture, not identity, not workflow type, and not long-term o
 
 ### 4. Keep Layer C sparse
 
-Apply overlays and containers only when they materially change how the work must be governed or organized.
+Apply control profiles and workstream wrappers only when they materially change how the work must be governed or organized.
 
 ### 5. Never leave a task without a next step
 
@@ -167,8 +167,7 @@ Do not assign multiple modes during intake. If the task later changes shape, rer
 Evaluate Layer C in this order:
 
 1. `feature_cell`
-2. `review_gatekeeper`
-3. `governance_escalation`
+2. non-baseline `control_profile`
 
 #### Apply `feature_cell` only if the task already needs workstream treatment
 
@@ -177,7 +176,7 @@ If yes:
 - link the task card to that workstream,
 - treat the current task as the first child slice.
 
-#### Apply `review_gatekeeper` only if continued progress should pause at an interpretation or review boundary
+#### Apply a reviewed-style `control_profile` only if continued progress should pause at an interpretation or review boundary
 
 Typical examples:
 - architecture options need human selection,
@@ -185,7 +184,7 @@ Typical examples:
 - evaluation findings must be interpreted before the next move,
 - the task should stop after producing a review packet.
 
-#### Apply `governance_escalation` only if stronger-than-baseline control is required
+#### Apply a change-controlled or high-assurance `control_profile` only if stronger-than-baseline control is required
 
 Typical examples:
 - high blast radius,
@@ -195,6 +194,8 @@ Typical examples:
 - rollout-sensitive operational change.
 
 If none apply, leave Layer C empty.
+
+If the current card shape still uses legacy `overlays` / `container` frontmatter, keep that shorthand truthful but treat `feature_cell` and `control_profile` as the canonical Layer C model. Use `docs/harness/maintainining.md` for the compatibility mapping.
 
 ### Step 7. Initialize Layer D
 
@@ -287,7 +288,7 @@ Pick one current mode.
 
 ### Premature Layer C usage
 
-Do not apply `feature_cell`, `review_gatekeeper`, or `governance_escalation` just because the work feels important.
+Do not apply `feature_cell` or a non-baseline `control_profile` just because the work feels important.
 
 ### Empty next step
 
@@ -326,7 +327,7 @@ Good intake result:
 - Layer B mode set to `debug_investigator`,
 - Layer D state set to `active`,
 - next step set to inspect the failing normalization stage,
-- no Layer C overlays yet.
+- no non-baseline Layer C context yet.
 
 ### Example 2: broad feature request
 
@@ -349,7 +350,7 @@ Incoming request:
 Good intake result:
 - task card created for migration plan drafting,
 - current mode set to `migration_operator` or `contract_builder` depending on slice shape,
-- `review_gatekeeper` applied,
+- reviewed-style `control_profile` selected if the drafted plan must stop for review,
 - initial Layer D state may still be `active` if drafting can proceed now,
 - later transition to `checkpoint` when the review packet is ready.
 

@@ -749,7 +749,7 @@ Recommended use:
 
 - make the required core mandatory,
 - keep other fields optional at first,
-- promote optional fields to required only when they repeatedly change routing or control decisions.
+- and use `docs/harness/maintainining.md` for harness-wide policy on promoting optional fields or adding new axes.
 
 ## Compact schema
 

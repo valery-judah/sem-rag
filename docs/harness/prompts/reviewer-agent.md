@@ -66,7 +66,7 @@ Use `checkpoint` only if the item is still genuinely paused at a review boundary
 
 A real review boundary usually exists when:
 - a task or workstream is already in `checkpoint`,
-- `review_gatekeeper` applies and the pause condition has been reached,
+- a reviewed-style `control_profile` applies and the pause condition has been reached,
 - further progress depends on interpretation of findings,
 - multiple viable options require selection,
 - a contract, RFC section, design boundary, or architecture choice is ready for review,
@@ -226,7 +226,7 @@ Do not return only abstract feedback. Update the harness artifacts.
 Use this prompt when:
 - a task is in `checkpoint`,
 - a workstream is paused for milestone review,
-- `review_gatekeeper` is active and the pause condition has been reached,
+- a reviewed-style `control_profile` is active and the pause condition has been reached,
 - a review packet exists and needs interpretation,
 - a reviewer-role agent is supposed to decide what happens next.
 

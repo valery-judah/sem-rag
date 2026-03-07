@@ -83,7 +83,7 @@ Before handing off, read the current task card or workstream card in full.
 Confirm:
 - what the current slice or effort is,
 - what Layer B mode is current,
-- what Layer C overlays or container apply,
+- what Layer C control context or workstream wrapper applies,
 - what Layer D state is current,
 - what the current `next_step` is,
 - what decisions, evidence, and risks are already linked.

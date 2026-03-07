@@ -54,7 +54,7 @@ The workstream loop expects:
 
 The workstream card is the control surface for the effort at workstream scope.
 
-Current workstream cards still use legacy harness-local `container` / `overlays` frontmatter as shorthand. Interpret those fields through the v2 Layer C model: `container: feature_cell` means the workstream wrapper applies, `overlays: []` means baseline control is implied, and non-empty `overlays` means some non-baseline `control_profile` is being represented in legacy form.
+Current workstream cards still use legacy `container` / `overlays` frontmatter as shorthand. Interpret those fields through the v2 Layer C model and use `docs/harness/maintainining.md` for the full compatibility mapping and migration status.
 
 ## Core principles
 

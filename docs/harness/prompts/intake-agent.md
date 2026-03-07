@@ -70,11 +70,17 @@ Use exactly one:
 
 ## Allowed Layer C constructs
 
-- overlays:
-  - `review_gatekeeper`
-  - `governance_escalation`
-- container:
-  - `feature_cell`
+- `feature_cell`
+- `control_profile`
+- preset aliases such as `reviewed`, `change_controlled`, and `high_assurance` when they clarify likely control context
+
+When updating current task or workstream cards, note that the card frontmatter may still use legacy shorthand:
+
+- `container: feature_cell`
+- `overlays: []` for implied baseline control
+- non-empty `overlays` as shorthand for some non-baseline `control_profile`
+
+See `docs/harness/maintainining.md` for the current compatibility policy and migration status.
 
 ## Allowed Layer D states
 
@@ -112,7 +118,7 @@ Create a workstream only if one or more of these are already clearly true:
 - the effort will likely require multiple sessions or handoffs,
 - milestones or sequencing matter at effort scope,
 - the effort will likely change modes over time,
-- workstream-level review or governance is already needed.
+- workstream-level review or stronger control context is already needed.
 
 If this is not yet clear, do not create a workstream.
 
@@ -129,7 +135,7 @@ At the end of intake, the harness should make these answers clear:
 1. What is the current slice?
 2. What is the one current mode?
 3. What is the current control state?
-4. Is there a real review/governance/workstream boundary?
+4. Is there a real review/control/workstream boundary?
 5. What is the concrete next step?
 
 If those answers are not clear in the created or updated artifacts, intake is incomplete.
@@ -186,6 +192,7 @@ A good intake-agent run should usually result in:
 Do not use this prompt to:
 - perform the entire feature implementation during intake,
 - create a workstream for every large-sounding request,
+- teach legacy overlay terms as if they were the canonical Layer C model,
 - leave Layer A mostly empty,
 - select two modes at once,
 - leave `next_step` vague,
