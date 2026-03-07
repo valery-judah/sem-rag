@@ -8,6 +8,14 @@ Use this mode when the dominant work is not implementing the fix yet, but isolat
 
 This mode is appropriate when execution would be premature because the system does not yet know what is actually wrong.
 
+## Common next doc
+
+If the task card already says `layer_b.current_mode: debug_investigator`, use this file for mode-specific guidance.
+
+If mode fit is unclear, use `docs/harness/policies/routing-rules.md`.
+If the mode is confirmed and `layer_d.state` permits forward work, continue with `docs/harness/workflows/task-execution-loop.md`.
+If the current state is paused or terminal, use `docs/harness/operator-map.md` to jump to the correct boundary doc.
+
 ## Core question
 
 When operating in `debug_investigator`, the central question is:

@@ -10,6 +10,14 @@ Use this mode when the dominant work is no longer broad discovery, contract form
 
 This mode is the default execution posture for ordinary implementation slices that do not require a more specialized mode.
 
+## Common next doc
+
+If the task card already says `layer_b.current_mode: routine_implementer`, use this file for mode-specific guidance.
+
+If mode fit is unclear, use `docs/harness/policies/routing-rules.md`.
+If the mode is confirmed and `layer_d.state` permits forward work, continue with `docs/harness/workflows/task-execution-loop.md`.
+If the current state is paused or terminal, use `docs/harness/operator-map.md` to jump to the correct boundary doc.
+
 ## Core question
 
 When operating in `routine_implementer`, the central question is:

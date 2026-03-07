@@ -6,6 +6,11 @@
 
 This workplan is parser-scoped (component 3.2) and uses [01_rfc.md](./01_rfc.md) as the contract source.
 
+Current contract delta note:
+- The parser RFC now explicitly distinguishes `anchor_completeness=document_only` from `anchor_completeness=full`.
+- The current non-PDF parser path is allowed to remain `document_only` until the follow-on anchor-enforcement slice lands.
+- Follow-on implementation must also make degraded-output metadata explicit and truthful.
+
 ## 2. Dependency Order
 1. ~~PR1 contract scaffolding~~ (Done)
 2. ~~PR2 canonicalization~~ (Done)
@@ -46,6 +51,7 @@ Exit criteria:
 Scope:
 - Implement deterministic canonicalization by content type.
 - Preserve code/table semantics during conversion.
+- Establish the baseline degraded-output path for unsupported or non-textual inputs.
 
 Touched modules:
 - `src/docforge/parsers/canonicalize.py`
@@ -55,7 +61,7 @@ Touched modules:
 Acceptance checks:
 - `canonical_text` UTF-8 correctness.
 - Non-empty output for parser-eligible textual docs.
-- Non-textual docs deterministically emit empty `canonical_text` with metadata flag.
+- Non-textual docs deterministically emit empty `canonical_text` with truthful degraded-output metadata.
 
 Required tests:
 - HTML/Markdown/plain-text unit fixtures.
@@ -98,6 +104,7 @@ Exit criteria:
 Scope:
 - Implement block range derivation and anchor generation.
 - Enforce duplicate heading tie-breakers and malformed table fallback policy.
+- Graduate the non-PDF parser path from `anchor_completeness=document_only` to `anchor_completeness=full`.
 
 Touched modules:
 - `src/docforge/parsers/ranges.py`
@@ -106,11 +113,13 @@ Touched modules:
 
 Acceptance checks:
 - Every emitted block range resolves in `canonical_text`.
-- Anchor uniqueness and determinism within document.
+- `anchor_completeness` is truthful for every parser output.
+- Anchor uniqueness and determinism within document when `anchor_completeness=full`.
 
 Required tests:
 - Range resolvability property tests.
 - Deterministic anchor tests with duplicate headings.
+- Transitional-vs-full anchor completeness tests.
 - Malformed-table fallback unit tests.
 
 Rollback/mitigation:
@@ -118,6 +127,7 @@ Rollback/mitigation:
 
 Exit criteria:
 - Anchor/range test suite passes.
+- Non-PDF textual parsing no longer relies on implicit empty anchor arrays.
 - Cross-check with user story AC mappings is complete.
 
 ### PR5: Determinism, Observability, and Quality Gates (M2)
@@ -150,7 +160,7 @@ Exit criteria:
 - Unit tests: canonicalization, table/code handling, fallback paths.
 - Property tests: hierarchy integrity, anchor/range resolvability.
 - Snapshot tests: deterministic full-document outputs over fixed corpus.
-- Corpus quality checks: parser success rate and non-empty-output KPI.
+- Corpus quality checks: parser success rate, non-empty-output KPI, and truthful metadata-state coverage.
 
 ## 5. Risks and Mitigations
 - Risk: HTML conversion drift due to parser/backend upgrades.

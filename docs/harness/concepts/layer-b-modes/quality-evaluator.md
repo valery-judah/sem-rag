@@ -10,6 +10,14 @@ Use this mode when the dominant work is not defining the contract and not direct
 
 This mode is appropriate when evidence becomes the primary work product.
 
+## Common next doc
+
+If the task card already says `layer_b.current_mode: quality_evaluator`, use this file for mode-specific guidance.
+
+If mode fit is unclear, use `docs/harness/policies/routing-rules.md`.
+If the mode is confirmed and `layer_d.state` permits forward work, continue with `docs/harness/workflows/task-execution-loop.md`.
+If the current state is paused or terminal, use `docs/harness/operator-map.md` to jump to the correct boundary doc.
+
 ## Core question
 
 When operating in `quality_evaluator`, the central question is:

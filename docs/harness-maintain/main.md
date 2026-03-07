@@ -11,6 +11,8 @@ Use it when you are:
 
 Use `README.md` and `AGENTS.md` for day-to-day operation. Use this file for harness evolution policy.
 
+`docs/harness/operator-map.md` is the fast routing surface for known task cards. Keep it short, operator-facing, and free of workflow-procedure prose.
+
 ## Recommended maintainer reading path
 
 When maintaining or extending the harness, read in this order:
@@ -156,6 +158,8 @@ Add a new artifact type, index, or registry only when it does one of:
 
 Do not add artifacts that merely restate authoritative cards in another place.
 
+The operator map is the exception only in the narrow sense that it is a jump table rather than a second source of truth. It should point to the canonical docs, not restate them in full.
+
 Keep the operational playbook task-first by default. Add workflow burden, artifact types, or machine-readable enforcement only when they improve resumability or control clarity in real use.
 
 ## Current compatibility status
@@ -247,10 +251,20 @@ Synchronize:
 - prompts and workflows that assume the old artifact shape
 - any future schema files for those artifacts
 
+### If you change startup or routing surfaces
+
+Synchronize:
+- `docs/harness/README.md`
+- `docs/harness/AGENTS.md`
+- `docs/harness/operator-map.md`
+- any prompts that point agents into the harness
+- any workflows whose entry assumptions changed
+
 ### If you change workflows or prompts
 
 Synchronize:
 - the corresponding operator-facing guidance in `README.md` or `AGENTS.md` when affected
+- `docs/harness/operator-map.md` when the fast path or state-to-workflow lookup changed
 - any template fields or examples referenced by the workflow
 - layer concept docs if the workflow started teaching ontology instead of consuming it
 
@@ -267,10 +281,16 @@ After a harness change:
 3. Spot-check one workflow, one prompt, one template, and one example.
    Confirm they teach the same Layer B, Layer C, and Layer D boundaries.
 
-4. Confirm authoritative-vs-derivative boundaries remain clear.
+4. Walk the fresh-agent startup path.
+   Confirm `README.md` -> `AGENTS.md` -> `indexes/active-tasks.md` -> authoritative task card -> `operator-map.md` -> next workflow still works without guesswork.
+
+5. Walk the known-task operator path.
+   Confirm a reader with only `layer_b.current_mode` and `layer_d.state` can reach the right mode file and workflow from the task card plus `operator-map.md`.
+
+6. Confirm authoritative-vs-derivative boundaries remain clear.
    Task/workstream cards must still be primary; indexes and handoff notes must remain secondary.
 
-5. If machine-readable files were changed, verify they now reflect the prose contract rather than placeholder state.
+7. If machine-readable files were changed, verify they now reflect the prose contract rather than placeholder state.
 
 ## Deferred work
 

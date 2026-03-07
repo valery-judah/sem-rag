@@ -17,6 +17,7 @@ Task cards now use canonical Layer C fields directly. If a task belongs to a wor
 - Refresh the card whenever the slice, mode, Layer C context, state, next step, or linked evidence or decision refs change materially.
 - Treat these as the default maintenance surfaces during write-back: `updated_at`, `layer_b.*`, `layer_d.*`, relevant `layer_d_companion.*` fields, and the work log.
 - Keep detailed execution notes in the work log, but keep the frontmatter clean enough to function as a control surface.
+- Make it easy for the next reader to jump from `layer_b.current_mode` to the matching mode file and from `layer_d.state` to the correct workflow or control doc.
 - If the task grows beyond one coherent slice, reslice it or promote the larger effort to a workstream rather than turning this card into a catch-all.
 
 ## Copyable template
@@ -73,6 +74,12 @@ layer_d_companion:
 ## Out of scope for this slice
 
 <What is intentionally excluded from this task.>
+
+## Operator navigation
+
+- Mode guide: <mode file path or short pointer>
+- Workflow / boundary guide: <workflow path or short pointer based on current state>
+- Optional local routing note: <only when the next read is not obvious from mode and state alone>
 
 # Inputs / References
 
@@ -141,6 +148,17 @@ Use the body for:
 
 Do not mirror the frontmatter values into body bullet lists just to keep them visible twice.
 Do not let the work log or final response become more current than the frontmatter control surface.
+
+### Optional `Operator navigation` section
+
+Use this short body section only to reduce document hops for the next operator.
+
+Good uses:
+- point from `layer_b.current_mode` to the matching mode file,
+- point from `layer_d.state` to the next workflow or boundary doc,
+- add one local routing note when the correct next read would otherwise be easy to miss.
+
+Do not use it to duplicate the full frontmatter or restate general harness rules.
 
 ### `id`
 

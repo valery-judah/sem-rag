@@ -10,6 +10,14 @@ Use this mode when the system already works in a baseline sense and the dominant
 
 This mode is appropriate when the core task is not merely to measure quality, but to change the system in a disciplined way to improve a measurable outcome.
 
+## Common next doc
+
+If the task card already says `layer_b.current_mode: optimization_tuner`, use this file for mode-specific guidance.
+
+If mode fit is unclear, use `docs/harness/policies/routing-rules.md`.
+If the mode is confirmed and `layer_d.state` permits forward work, continue with `docs/harness/workflows/task-execution-loop.md`.
+If the current state is paused or terminal, use `docs/harness/operator-map.md` to jump to the correct boundary doc.
+
 ## Core question
 
 When operating in `optimization_tuner`, the central question is:

@@ -33,6 +33,15 @@ Keep the architectural meaning of Layer B in:
 Keep the routing policy that maps task slices into one current mode in:
 - `docs/harness/policies/routing-rules.md`
 
+## Task-card fast path
+
+If the task card already says `layer_b.current_mode = X`, open the matching mode file in this directory now.
+
+Use `docs/harness/policies/routing-rules.md` only when:
+- the current mode looks wrong,
+- the slice no longer fits one mode cleanly,
+- or rerouting is under consideration.
+
 ## How to use these mode files
 
 For a real task slice, the recommended order is:

@@ -68,6 +68,12 @@ This task covers reproduction and causal isolation of the regression in block no
 - full migration of parser architecture
 - downstream retrieval-quality evaluation
 
+## Operator navigation
+
+- Mode guide: `docs/harness/concepts/layer-b-modes/debug-investigator.md`
+- Workflow / boundary guide: `docs/harness/workflows/task-execution-loop.md`
+- Optional local routing note: Use `docs/harness/policies/routing-rules.md` only if the task stops being primarily diagnostic and needs explicit rerouting.
+
 # Inputs / References
 
 - `src/parsing/normalization.py`
@@ -134,6 +140,7 @@ This example is a good reference when:
 - the task is active and bounded,
 - the expected behavior is mostly known but the cause is not,
 - the task does not yet justify a workstream,
+- the next reader should be able to jump straight from mode and state to the right next doc,
 - the next agent should be able to resume directly from the card.
 
 ## Possible evolution from this example

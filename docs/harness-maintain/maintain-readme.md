@@ -139,6 +139,8 @@ It should tell a reader where to go next depending on context, for example:
 - pause or transfer → handoff-resume loop,
 - agent entering fresh → `AGENTS.md`.
 
+It should also point known-task operators to `docs/harness/operator-map.md` rather than trying to carry the full fast-path lookup tables itself.
+
 The maintainer should treat this routing function as one of the most important jobs of the file.
 
 ### 4. Define the minimum operational surface
@@ -218,6 +220,16 @@ It should reference policies and constraints, but detailed routing logic and gov
 ### 5. A duplicate of `AGENTS.md`
 
 `README.md` is the entry contract. `AGENTS.md` is the direct operating instruction layer for the agent. The two should be aligned but not collapsed into one document.
+
+### 6. A duplicate of the operator map
+
+`README.md` should announce the fast path and point to `docs/harness/operator-map.md`.
+
+It should not absorb:
+
+- the full state-to-workflow lookup table,
+- the full mode-to-file lookup table,
+- or repeated operator jump-table prose that belongs in the operator map.
 
 ### 6. A giant directory manifest with no operating guidance
 
@@ -1019,4 +1031,3 @@ If I compress that into a recommended final outline, it would look like this:
 18. Maintenance guidance
 
 My main recommendation is structural: move the **five operating questions** much earlier and make them part of the README’s central framing. They are the cleanest bridge between context modeling and operational use. Right now they are effectively the best summary of the harness, and they deserve to function as the README’s backbone rather than as a closing note.  
-
