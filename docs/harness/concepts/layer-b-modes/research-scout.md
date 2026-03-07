@@ -237,12 +237,11 @@ Useful heuristics in this mode:
 
 ### Relationship to Layer C
 
-`research_scout` may interact with:
-- `feature_cell` when the exploratory slice is part of a broader multi-slice effort,
-- `review_gatekeeper` if findings should pause for interpretation before the next route is chosen,
-- occasionally `governance_escalation` if the exploratory outcome affects a higher-risk boundary.
+`research_scout` may run inside a `feature_cell` when the exploratory slice is part of a broader multi-slice workstream.
 
-But these are overlays/containers, not modes.
+It may also run under one or more `control_profile` records when findings must cross an explicit review boundary, approval boundary, or other non-baseline control boundary before the next slice is chosen. In that context, presets such as `reviewed`, `change_controlled`, or `high_assurance` may be relevant.
+
+These Layer C constructs wrap or constrain the work. They do not define the current mode.
 
 ### Relationship to Layer D
 
@@ -252,7 +251,7 @@ A `research_scout` task is often:
 - sometimes `blocked` if required sources or context are unavailable,
 - sometimes `complete` when the current exploratory question has been answered and the next route is clear.
 
-The mode can remain `research_scout` while the lifecycle state changes.
+The mode can remain `research_scout` while the Layer D lifecycle state changes.
 
 ## Example task shapes
 

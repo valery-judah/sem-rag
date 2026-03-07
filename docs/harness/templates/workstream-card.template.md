@@ -6,6 +6,14 @@ Use this template when an effort has been promoted to a `feature_cell` and task-
 
 A workstream card is the authoritative operational record for a long-running multi-slice effort. It coordinates child tasks, milestones, cross-slice decisions, shared risks, and workstream-scope control status. It is not a replacement for task cards and should not absorb detailed execution that belongs inside individual child tasks.
 
+Current workstream cards still use legacy harness-local Layer C shorthand in frontmatter:
+
+- `container: feature_cell`
+- `overlays: []` for implied baseline control
+- non-empty `overlays` to represent some non-baseline `control_profile`
+
+Canonical Layer C remains the v2 model defined by `feature_cell` and `control_profile`.
+
 ## Usage notes
 
 - Create one file per workstream in `docs/harness/active/workstreams/`.
@@ -91,7 +99,7 @@ overlays: []
 
 ## Layer C rationale
 
-<Why workstream-scope overlays do or do not apply.>
+<Why workstream-scope Layer C shorthand does or does not apply.>
 
 # Layer D
 
@@ -217,13 +225,15 @@ For this template, `container` should remain `feature_cell`.
 If the effort no longer needs workstream treatment, retire the workstream rather than changing the container value.
 
 #### `overlays`
-Use only when workstream-scope overlays truly apply.
+This field is legacy harness-local shorthand, not the canonical Layer C schema.
 
-Typical values:
-- `review_gatekeeper`
-- `governance_escalation`
+Use `overlays: []` when baseline control is implied at workstream scope.
 
-Do not mirror task-scope overlays automatically.
+If a non-baseline control regime must be shown in the current card shape, use the existing local values and interpret them as:
+- `review_gatekeeper` -> reviewed-style `control_profile`
+- `governance_escalation` -> change-controlled or high-assurance `control_profile`
+
+Do not mirror task-scope control context automatically.
 
 ### Goal
 
@@ -297,12 +307,12 @@ Typical items:
 
 At workstream scope, `feature_cell` is already the container.
 
-Add overlays only when they affect the effort as a whole.
+Add non-baseline control context only when it affects the effort as a whole.
 
 Good rationale examples:
-- `review_gatekeeper applied because milestone 2 requires architecture review before any new child implementation tasks proceed`
-- `governance_escalation applied because migration rollout requires signoff at workstream scope`
-- `no workstream-scope overlays; control boundaries remain local to child tasks`
+- `reviewed-style control applies because milestone 2 requires architecture review before any new child implementation tasks proceed`
+- `change-controlled control applies because migration rollout requires signoff at workstream scope`
+- `no workstream-scope non-baseline control profile; control boundaries remain local to child tasks`
 
 ### Layer D
 

@@ -11,7 +11,7 @@ Its job is not to replace task execution. Its job is to:
 - keep task-level work aligned to the workstream goal and current milestones,
 - decide when to create, update, pause, or close child task slices,
 - track workstream-level decisions, risks, and handoff points,
-- apply workstream-scope overlays when review or governance must operate above individual tasks,
+- apply workstream-scope control context when review or approval obligations must operate above individual tasks,
 - keep the effort resumable across sessions, agents, and delivery stages.
 
 This loop is the default operating loop for any effort that can no longer be managed cleanly as a single task card.
@@ -22,7 +22,7 @@ A successful workstream cycle produces one or more of the following:
 - a current and coherent workstream card,
 - one or more created, updated, or closed child task cards,
 - refreshed milestones, priorities, or execution sequencing,
-- workstream-scope Layer C overlays when needed,
+- workstream-scope Layer C control context when needed,
 - a workstream-scope Layer D status that matches the current control condition,
 - linked decisions, evidence, and handoff notes,
 - a clear next step either for the workstream itself or for a specific child task.
@@ -53,6 +53,8 @@ The workstream loop expects:
 - relevant decision, evidence, and handoff references.
 
 The workstream card is the control surface for the effort at workstream scope.
+
+Current workstream cards still use legacy harness-local `container` / `overlays` frontmatter as shorthand. Interpret those fields through the v2 Layer C model: `container: feature_cell` means the workstream wrapper applies, `overlays: []` means baseline control is implied, and non-empty `overlays` means some non-baseline `control_profile` is being represented in legacy form.
 
 ## Core principles
 
@@ -92,7 +94,7 @@ Confirm:
 - the scope boundary is still coherent,
 - the listed child tasks still represent the effort accurately,
 - current milestones or phases still make sense,
-- Layer C overlays at workstream scope are still justified,
+- Layer C control context at workstream scope is still justified,
 - Layer D at workstream scope matches the current control situation.
 
 Then inspect any active or recently changed child tasks relevant to the current cycle.
@@ -106,7 +108,7 @@ Keep workstream treatment when one or more of these remain true:
 - sequencing across slices matters,
 - milestones or staged delivery matter,
 - resumability across sessions or agents matters,
-- workstream-scope review or governance is required.
+- workstream-scope review or approval/control boundaries are required.
 
 If those conditions no longer apply, consider retiring the workstream after closing or unlinking remaining child tasks and recording the decision.
 
@@ -170,24 +172,24 @@ If milestone language becomes noisy, simplify it rather than multiplying labels.
 At workstream scope, Layer C usually matters more than at single-task scope.
 
 Evaluate in this order:
-1. `review_gatekeeper`
-2. `governance_escalation`
+1. whether `feature_cell` still applies
+2. whether a workstream-scope non-baseline `control_profile` applies
 
-`feature_cell` is already the container assumption for this loop.
+`feature_cell` is already the workstream-wrapper assumption for this loop.
 
-#### Apply or retain `review_gatekeeper` at workstream scope when:
+#### Apply or retain a reviewed-style workstream control profile when:
 - a cross-slice design or architecture decision is pending,
 - a milestone requires human interpretation before new child tasks should proceed,
 - the workstream should pause after producing a packet or milestone artifact,
 - workstream direction depends on review of findings across multiple tasks.
 
-#### Apply or retain `governance_escalation` at workstream scope when:
+#### Apply or retain a change-controlled or high-assurance workstream control profile when:
 - the workstream has high blast radius overall,
 - staged release or migration governance is required,
 - explicit signoff is needed before crossing a milestone,
 - risk management must operate at effort scope rather than within one task.
 
-Do not automatically mirror task-scope overlays at workstream scope. Apply them only when the boundary is genuinely workstream-wide.
+Do not automatically mirror task-scope control context at workstream scope. Apply it only when the boundary is genuinely workstream-wide.
 
 ### Step 7. Reassess workstream-scope Layer D
 
@@ -364,7 +366,7 @@ Observed:
 - the next stage should not proceed until a direction is reviewed.
 
 Good workstream result:
-- `review_gatekeeper` is applied at workstream scope,
+- a reviewed-style non-baseline control boundary is recorded at workstream scope,
 - a review packet is linked,
 - the workstream Layer D moves to `checkpoint`,
 - child tasks are not allowed to continue into the next stage autonomously.

@@ -60,13 +60,17 @@ Use exactly one:
 - `optimization_tuner`
 - `quality_evaluator`
 
-## Allowed Layer C constructs
+## Canonical Layer C constructs
 
-- overlays:
-  - `review_gatekeeper`
-  - `governance_escalation`
-- container:
-  - `feature_cell`
+- `feature_cell`
+- `control_profile`
+- preset aliases such as `reviewed`, `change_controlled`, and `high_assurance` when they clarify likely control context
+
+When updating current task or workstream cards, note that the card frontmatter still uses legacy harness-local shorthand:
+
+- `container: feature_cell`
+- `overlays: []` for implied baseline control
+- non-empty `overlays` as shorthand for some non-baseline `control_profile`
 
 ## Allowed Layer D states
 
@@ -119,11 +123,12 @@ If no single mode fits, the slice is too broad. Reslice it.
 Keep Layer C sparse.
 
 Only update it when a real boundary emerged:
-- apply `review_gatekeeper` if continued progress should stop at a review boundary,
-- apply `governance_escalation` if stronger-than-baseline control is now required,
+- add or adjust a non-baseline `control_profile` if continued progress should stop at a review boundary or must cross a stronger approval/evidence/traceability/rollback boundary,
 - promote to `feature_cell` only if task-only tracking is now clearly inadequate.
 
-Do not add overlays or a workstream just because the task feels important.
+When the current card uses legacy `overlays` frontmatter, keep that shorthand truthful but interpret it through the v2 Layer C model.
+
+Do not add extra control context or a workstream just because the task feels important.
 
 ## How to handle Layer D transitions
 

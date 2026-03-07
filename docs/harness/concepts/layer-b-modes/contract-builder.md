@@ -60,13 +60,17 @@ Do not use this mode as a vague synonym for “planning.” It should produce a 
 - `problem_uncertainty`: low-to-medium or medium
 - `specification_maturity`: medium and rising, but not yet high enough for safe execution
 - `validation_burden`: medium or high because acceptance must be explicit
+- `interpretation_burden`: often medium or high because tradeoffs, exclusions, or acceptance shape require judgment
 - `dependency_complexity`: often medium or higher if multiple later slices depend on the same boundary
+- `artifact_type`: often schema, RFC, interface, acceptance criteria, or another contract artifact
 - `execution_horizon`: short or medium for the current slice, even if the broader effort is larger
 
 Common signals include:
 - a bounded scope exists, but the contract inside it is still loose,
 - implementation risks rework because expected behavior is underspecified,
 - multiple later consumers depend on a shared explicit interface or schema,
+- the specification is mature enough to define the boundary but not yet mature enough to execute safely,
+- human judgment is needed to make acceptance, invariants, or exclusions explicit,
 - the current useful output is a draft that can be reviewed and then executed against.
 
 ## Primary working posture
@@ -132,10 +136,10 @@ It should usually slow down or stop when:
 
 - a real choice among materially different directions requires review,
 - a milestone contract must be accepted before downstream execution,
-- governance or approval is required before locking the boundary,
+- a non-baseline control boundary or explicit approval boundary must be crossed before locking the boundary,
 - evidence is needed to validate the contract assumptions.
 
-This means `contract_builder` often works productively with `review_gatekeeper`, but the overlay remains Layer C, not Layer B.
+This means `contract_builder` often operates inside explicit Layer C control-profile context, but that context remains separate from the mode itself.
 
 ## Typical validation style
 
@@ -243,12 +247,11 @@ Useful heuristics in this mode:
 
 ### Relationship to Layer C
 
-`contract_builder` commonly interacts with:
-- `review_gatekeeper` when a contract must be reviewed before downstream execution,
-- `feature_cell` when the contract is one child slice inside a larger multi-slice effort,
-- sometimes `governance_escalation` if the contract locks a high-risk boundary.
+`contract_builder` may run inside a `feature_cell` when the contract slice belongs to a broader multi-slice workstream.
 
-But those are overlays/containers, not modes.
+It may also run under one or more `control_profile` records when the contract must satisfy explicit review, approval, evidence, traceability, or rollback obligations before downstream execution. Presets such as `reviewed`, `change_controlled`, or `high_assurance` are common examples of that control context.
+
+These Layer C constructs wrap or constrain the work. They do not define the current mode.
 
 ### Relationship to Layer D
 
@@ -258,7 +261,7 @@ A `contract_builder` task is often:
 - sometimes `awaiting_approval` if the contract requires signoff,
 - sometimes `complete` if the current slice was only to define and deliver the contract.
 
-The mode can stay `contract_builder` while the lifecycle state changes.
+The mode can stay `contract_builder` while the Layer D lifecycle state changes.
 
 ## Example task shapes
 

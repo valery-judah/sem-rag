@@ -57,15 +57,15 @@ Canonical modes:
 - Optimization Tuner
 - Quality Evaluator
 
-### Layer C -- Overlays and containers
+### Layer C -- Workstream wrapper and control regime
 
-Structures that modify, constrain, or wrap work rather than describing the current problem-solving posture.
+Structures that wrap work across time or impose explicit control obligations without changing the current problem-solving posture.
 
 Examples:
 
-- `review_gatekeeper` as reviewer/control overlay,
-- `governance_escalation` overlay,
-- `feature_cell` as long-horizon workstream container.
+- `feature_cell` as the long-horizon workstream wrapper,
+- `control_profile` as the canonical control object,
+- preset aliases such as `reviewed`, `change_controlled`, or `high_assurance` as ergonomic summaries of common non-baseline control contexts.
 
 ### Layer D -- Lifecycle control plane
 
@@ -128,7 +128,7 @@ Layer B modes are selected **from** Layer A. They are not Layer A fields.
 For example:
 
 - `specification_maturity = scoped_problem` does not itself mean `Contract Builder`,
-- `execution_horizon = multi_pr` does not itself mean `Feature Cell`,
+- `execution_horizon = multi_pr` does not itself mean `feature_cell`,
 - `validation_burden = offline_eval_required` does not itself mean `Quality Evaluator` in every case.
 
 Those are downstream routing conclusions.
@@ -141,13 +141,13 @@ A task may start in uncertainty-reduction mode and later become implementation-r
 
 A Layer B mode should capture one dominant way of working now. It should not encode an entire multi-stage delivery topology.
 
-### 4. Keep overlays and containers out of Layer B
+### 4. Keep Layer C constructs out of Layer B
 
 The following are **not** Layer B peers:
 
-- Review Gatekeeper,
-- `governance_escalation` overlays,
-- Feature Cell.
+- `control_profile`,
+- preset summaries such as `reviewed` or `change_controlled`,
+- `feature_cell`.
 
 These are Layer C constructs. They can constrain or wrap Layer B work, but they do not replace the current atomic mode.
 
@@ -188,7 +188,7 @@ Layer B defines:
 Layer B does **not** define:
 
 - Layer A classification axes,
-- Layer C overlays and containers,
+- Layer C control profiles and workstream wrappers,
 - Layer D lifecycle state,
 - detailed playbook procedures,
 - agent configuration internals such as tool authority or instruction regime,
@@ -317,8 +317,8 @@ Do not invent composite labels such as:
 Pick the dominant current mode, then represent other concerns through:
 
 - reroute triggers,
-- Layer C overlays,
-- Layer C workstream containers,
+- Layer C control profiles,
+- the Layer C `feature_cell` wrapper,
 - and Layer D state/phase.
 
 ## Practical mapping matrix
@@ -348,9 +348,9 @@ If a bug fix is requested but the root cause is still unknown, prefer **Debug In
 
 If correctness cannot be established by ordinary tests, reroute toward **Quality Evaluator** or, for rollout-sensitive changes, **Migration Operator**.
 
-### Rule D -- Governance can constrain but not redefine the mode
+### Rule D -- Control context can constrain but not redefine the mode
 
-High-risk work does not automatically create a new Layer B mode. It may keep the same mode while adding Layer C control overlays and stricter Layer D checkpoints.
+High-risk or high-consequence work does not automatically create a new Layer B mode. It may keep the same mode while adding a non-baseline Layer C `control_profile` and stricter Layer D checkpoints.
 
 ### Rule E -- Horizon affects containment, not atomic mode
 
@@ -439,43 +439,31 @@ This allows a higher-layer orchestrator to reason not only from the current snap
 
 ## Relationship to Layer C
 
-Layer C contains overlays and containers. Layer B modes may be modified or wrapped by them, but they should not be collapsed into them.
+Layer C contains the `feature_cell` workstream wrapper and `control_profile` records. Layer B modes may be constrained or wrapped by them, but they should not be collapsed into them.
 
-### Review Gatekeeper as overlay
+### `control_profile` as control context
 
-Review Gatekeeper should usually be modeled as a **reviewer/control overlay** rather than an atomic operating mode.
+A `control_profile` records explicit review, approval, evidence, traceability, or rollback obligations that sit around the current mode.
 
 Use it when the primary requirement is:
 
-- critique,
-- policy interpretation,
-- approval review,
-- architecture review,
-- or conformance checking.
+- review before continuation,
+- approval before crossing a gate,
+- stronger evidence or traceability,
+- stronger rollback discipline,
+- or another explicit non-baseline control burden.
 
-In practice, Review Gatekeeper often attaches to another mode by constraining continuation or by defining who must sign off.
-
-### High-control governance overlays
-
-High-control overlays tighten:
-
-- checkpoint requirements,
-- approval requirements,
-- rollback expectations,
-- traceability discipline,
-- and amendment rules.
-
-They do not necessarily change the underlying Layer B mode.
+That control context does not necessarily change the underlying Layer B mode. A task may remain in the same mode while moving from baseline to `reviewed`, `change_controlled`, or `high_assurance` handling.
 
 Examples:
 
-- Migration Operator with explicit approval overlay,
-- Debug Investigator in incident-like conditions with stricter control,
-- Contract Builder under design review checkpoints.
+- Migration Operator under a change-controlled profile,
+- Debug Investigator under a reviewed profile,
+- Contract Builder under a reviewed or high-assurance profile.
 
-### Feature Cell as workstream container
+### `feature_cell` as workstream container
 
-Feature Cell should be modeled as a **long-horizon workstream container**, not as a Layer B peer.
+`feature_cell` should be modeled as a long-horizon workstream wrapper, not as a Layer B peer.
 
 Use it when:
 
@@ -484,7 +472,7 @@ Use it when:
 - several Layer B modes will likely occur over time,
 - planning, tracking, and traceability are required.
 
-A Feature Cell may contain a sequence such as:
+A `feature_cell` may contain a sequence such as:
 
 - Research Scout,
 - Contract Builder,
@@ -507,7 +495,7 @@ Examples:
 - `active` does not mean Routine Implementer,
 - `checkpoint` does not mean Contract Builder,
 - `validating` does not mean Quality Evaluator,
-- `awaiting_approval` does not mean Review Gatekeeper.
+- `awaiting_approval` does not mean a reviewed or change-controlled control context.
 
 These remain distinct layers.
 
@@ -653,7 +641,7 @@ Once the cause is isolated, reroute to **Routine Implementer** for the fix.
 
 #### Layer C / D note
 
-Apply `governance_escalation` and expect lifecycle states such as `checkpoint`, `awaiting_approval`, and `validating` during rollout.
+Apply a non-baseline `control_profile`, typically a `change_controlled` or `high_assurance` profile, and expect lifecycle states such as `checkpoint`, `awaiting_approval`, and `validating` during rollout.
 
 ### Example 5 -- Retrieval quality improvement slice
 
@@ -677,7 +665,7 @@ Apply `governance_escalation` and expect lifecycle states such as `checkpoint`, 
 
 ### Start with the canonical eight modes
 
-Do not add more Layer B modes at first. Use the eight canonical modes and rely on Layer C overlays and containers before inventing additional work modes.
+Do not add more Layer B modes at first. Use the eight canonical modes and rely on Layer C control profiles and the `feature_cell` wrapper before inventing additional work modes.
 
 ### Prefer routing rules over rigid hard state machines
 
@@ -695,7 +683,7 @@ Add a new Layer B mode only if:
 
 - the distinction appears repeatedly in real work,
 - it changes agent behavior materially,
-- it cannot be represented by current modes plus Layer C overlays/containers,
+- it cannot be represented by current modes plus Layer C control profiles or `feature_cell`,
 - and operators can select it consistently.
 
 ### Keep mode definitions operational
@@ -707,7 +695,7 @@ A Layer B mode definition should always be useful at execution time. If a sectio
 Layer B should remain a compact catalog of **atomic operating modes** with these properties:
 
 - downstream from Layer A,
-- independent from Layer C overlays and containers,
+- independent from Layer C control profiles and workstream wrappers,
 - independent from Layer D lifecycle state,
 - current-state rather than permanent identity,
 - and explicit about routing, transitions, and mode recording.

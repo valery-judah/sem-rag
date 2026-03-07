@@ -1,7 +1,9 @@
+
 # Operational Playbook for Layered Agentic Work
+
 ## Status
 
-Draft v1.0
+Draft v2.0
 
 ## Purpose
 
@@ -11,7 +13,7 @@ It is designed to work **with** the existing layered architecture rather than re
 
 - **Layer A** classifies the current work slice.
 - **Layer B** selects the current atomic operating mode.
-- **Layer C** applies overlays and containers.
+- **Layer C** provides workstream containers and control profiles.
 - **Layer D** records lifecycle control status.
 
 The playbook answers a narrower question:
@@ -31,18 +33,19 @@ Without an operational playbook, several failure modes appear quickly:
 - long-running work is tracked as one oversized task instead of as a workstream,
 - review and approval behavior is improvised rather than modeled,
 - lifecycle state becomes overloaded with routing meaning,
-- handoff quality degrades because the "next step" and decision context are not maintained.
+- handoff quality degrades because the `next_step` and decision context are not maintained.
 
 This playbook exists to prevent those failures while keeping process overhead low.
 
 ## Design goals
+
 ### 1. Stay aligned with the layer boundaries
 
 The playbook must preserve the separation between:
 
 - classification,
 - operating posture,
-- overlays / containers,
+- Layer C container/control context,
 - and lifecycle state.
 
 ### 2. Remain minimal
@@ -63,7 +66,7 @@ At any point, another human or agent should be able to answer:
 
 - what this task is,
 - how it should be worked now,
-- what extra control regime applies,
+- what extra control context applies,
 - whether it can proceed,
 - and what the next concrete action is.
 
@@ -91,7 +94,7 @@ For every incoming item, the system should be able to answer five questions:
 
 1. **What is this current work slice?**
 2. **How should the agent work on it now?**
-3. **Does it require extra governance or a long-horizon wrapper?**
+3. **Does it require a non-baseline control profile or a long-horizon wrapper?**
 4. **What is its current lifecycle control status?**
 5. **What is the next executable step?**
 
@@ -121,6 +124,7 @@ The playbook is built around one repeatable loop:
 This loop should be lightweight enough to use on ordinary tasks and structured enough to support larger workstreams.
 
 ## Operational entities
+
 ### 1. Task slice
 
 The default operational unit.
@@ -145,19 +149,20 @@ A workstream should usually be represented through a **Layer C `feature_cell` co
 
 A point at which continuation depends on reviewer interpretation or disposition.
 
-This is usually expressed through a Layer C `review_gatekeeper` overlay and a Layer D state such as `checkpoint` or, in stronger cases, `awaiting_approval`.
+This is usually represented through a **Layer C `control_profile`** with review obligations and a Layer D state such as `checkpoint`.
 
 ### 4. Approval boundary
 
 A stronger control point where continuation requires explicit signoff.
 
-This is often associated with Layer C `governance_escalation` and Layer D `awaiting_approval`.
+This is usually represented through a **Layer C `control_profile`** with approval obligations and a Layer D state such as `awaiting_approval`.
 
 ## Canonical minimal artifact set
 
 The playbook should keep the artifact set deliberately small.
 
 ### Mandatory for all work
+
 #### 1. Task card
 
 Every incoming request should be represented by a task card.
@@ -165,6 +170,7 @@ Every incoming request should be represented by a task card.
 This is the primary operational record.
 
 ### Required only when applicable
+
 #### 2. Workstream card
 
 Required when the work is promoted into a `feature_cell` or equivalent long-horizon wrapper.
@@ -198,7 +204,7 @@ This prevents premature operational overhead and keeps small tasks cheap to hand
 
 ### Promote to a workstream when one or more are true
 
-- `execution_horizon` is clearly multi-PR or long-running,
+- `execution_horizon` is clearly `multi_pr` or longer,
 - multiple Layer B mode transitions are expected,
 - sparse but explicit HITL points are needed over time,
 - multiple linked tasks must be coordinated,
@@ -267,7 +273,15 @@ Before active execution, fill the minimum Layer A subset:
 - `specification_maturity`
 - `validation_burden`
 - `blast_radius`
+- `reversibility`
+- `sensitivity`
 - `execution_horizon`
+- `handoff_need`
+
+Strongly consider also filling:
+
+- `interpretation_burden`
+- `artifact_type`
 
 This is the minimum classification required to make reliable downstream decisions.
 
@@ -287,15 +301,24 @@ Use the dominant question:
 - optimize against a measurable target,
 - or produce quality evidence?
 
+Use the routing rules document as the canonical routing policy.
+
 ### Step 5. Apply Layer C in fixed order
 
 Evaluate Layer C in this order:
 
 1. Does the work need a `feature_cell` container?
-2. Does it need a `review_gatekeeper` overlay?
-3. Does it need a `governance_escalation` overlay?
+2. Does the work need a non-baseline `control_profile`?
+3. If yes, which obligations actually apply?
+   - review,
+   - approval,
+   - elevated evidence,
+   - elevated traceability,
+   - rollback expectations.
+4. Does the control profile apply at slice or workstream scope?
+5. If workstream-scoped, is inheritance to child slices explicit?
 
-This order keeps orchestration concerns separate from review and governance concerns.
+This order keeps container decisions separate from control-profile decisions.
 
 ### Step 6. Set Layer D
 
@@ -324,7 +347,7 @@ Do not try to classify the whole program if only one bounded slice is being work
 
 ### Rule 2. Use the required core for all non-trivial tasks
 
-Optional fields remain optional unless local practice proves they repeatedly change routing or governance.
+Optional fields remain optional unless local practice proves they repeatedly change routing or control decisions.
 
 ### Rule 3. Reclassify when the shape changes materially
 
@@ -335,16 +358,18 @@ Layer A is not permanent identity. Reclassification is expected when:
 - validation burden increases,
 - blast radius becomes clearer,
 - the execution horizon expands,
+- handoff pressure grows,
 - or the current slice changes altogether.
 
-### Rule 4. Do not encode mode, state, or overlays in Layer A
+### Rule 4. Do not encode mode, state, or Layer C identity in Layer A
 
 Layer A should not contain:
 
 - current operating mode,
 - lifecycle state,
-- overlay identity,
-- or workstream container identity.
+- `feature_cell`,
+- `control_profile`,
+- or preset names such as `reviewed`, `change_controlled`, `high_assurance`.
 
 ## Routing discipline for Layer B in operations
 
@@ -354,7 +379,9 @@ Layer B answers only one question:
 
 ### Routing guide
 
-Use the following practical mapping.
+Use the canonical routing policy in `docs/harness/policies/routing-rules.md`.
+
+As a practical shorthand:
 
 | Dominant condition now | Typical route |
 |---|---|
@@ -368,6 +395,7 @@ Use the following practical mapping.
 | Quality evidence or evaluation dominates | `quality_evaluator` |
 
 ### Routing rules
+
 #### Rule A. Specification maturity overrides raw intent
 
 If the request says "implement" but the contract is still immature, route to `contract_builder` first.
@@ -380,9 +408,9 @@ If a bug is known but root cause is not, route to `debug_investigator` rather th
 
 When ordinary tests are not sufficient, `quality_evaluator` may be the correct current mode even if implementation recently finished.
 
-#### Rule D. Governance does not redefine mode
+#### Rule D. Layer C does not redefine mode
 
-High-risk work may keep the same Layer B mode while adding Layer C overlays and stronger Layer D gates.
+High-risk or review-heavy work may keep the same Layer B mode while adding Layer C control profiles and stronger Layer D gates.
 
 #### Rule E. Horizon affects containment, not atomic mode
 
@@ -396,7 +424,7 @@ The task card should explicitly record reroute triggers when useful, such as:
 - contract frozen,
 - root cause isolated,
 - benchmark requirement surfaced,
-- approval requirement surfaced,
+- explicit control obligations surfaced,
 - work expanded into multi-slice coordination.
 
 ## Layer C application rules in operations
@@ -408,8 +436,8 @@ Layer C modifies or wraps work. It is not a status model.
 Always evaluate Layer C in this order:
 
 1. container need,
-2. review need,
-3. governance need.
+2. control-profile need,
+3. scope and inheritance need.
 
 ### 1. `feature_cell`
 
@@ -433,9 +461,9 @@ Apply when the work should no longer be treated as a one-shot task.
 - preserve resumability and handoff clarity,
 - optionally track workstream-scope Layer D alongside task-scope Layer D.
 
-### 2. `review_gatekeeper`
+### 2. `control_profile`
 
-Apply when reviewer interpretation or critique is a real continuation condition.
+Apply when the work proceeds under explicit control obligations that differ from baseline.
 
 #### Typical triggers
 
@@ -443,36 +471,34 @@ Apply when reviewer interpretation or critique is a real continuation condition.
 - a design trade-off needs review,
 - conformance or acceptance depends on judgment,
 - architecture or policy review is required,
-- evidence exists but must be reviewed before continuation.
+- evidence exists but must be reviewed before continuation,
+- blast radius or reversibility implies stronger transition control,
+- security, privacy, integrity, or public-contract sensitivity is material,
+- explicit approval is required,
+- rollout-sensitive or migration-sensitive transition is involved.
+
+#### Common preset aliases
+
+Use preset aliases only as summaries. The actual obligations remain authoritative.
+
+Common presets:
+
+- `baseline`
+- `reviewed`
+- `change_controlled`
+- `high_assurance`
 
 #### Operational implications
 
-- prepare review-ready summary or packet,
+- keep the control-profile rationale concrete,
+- prepare review-ready or approval-ready packets when needed,
 - keep evidence references current,
-- route to `checkpoint` or `awaiting_approval` when the control boundary is active,
-- capture review outcome in decision references or notes.
-
-### 3. `governance_escalation`
-
-Apply when the work proceeds under stricter-than-baseline control obligations.
-
-#### Typical triggers
-
-- large blast radius,
-- hard or irreversible reversibility profile,
-- security, privacy, integrity, or public-contract sensitivity,
-- explicit approval requirement,
-- rollout-sensitive or migration-sensitive transition.
-
-#### Operational implications
-
-- strengthen evidence discipline,
-- record readiness and risk more explicitly,
+- strengthen traceability when required,
 - attach rollback or recovery context when relevant,
-- use approval references and decision records,
-- expect stronger Layer D boundaries such as `checkpoint`, `awaiting_approval`, or `validating`.
+- keep Layer D truthful when a review or approval boundary becomes active.
 
 ### Scope rules
+
 #### Slice scope
 
 Use when the construct applies only to the current task slice.
@@ -483,7 +509,7 @@ Use when the construct applies across the longer-running workstream.
 
 #### Inheritance
 
-Workstream-level overlays may influence child tasks, but inheritance should be explicit rather than assumed.
+Workstream-level control profiles may influence child tasks, but inheritance should be explicit rather than assumed.
 
 Record inheritance when local practice needs it, for example:
 
@@ -493,46 +519,29 @@ Record inheritance when local practice needs it, for example:
 ### Composition rules
 
 - At most one container per scope.
-- Overlays may stack.
+- More than one control profile may apply when the semantics are genuinely distinct.
+- Prefer explicit obligations over inventing new Layer C constructs.
 - The stricter obligation wins when obligations conflict.
 
 ## Layer D operating rules
 
 Layer D is the shared control plane. Operational discipline matters here because status drift is the fastest way to lose workflow clarity.
 
+For canonical lifecycle semantics, use the dedicated Layer D specification. This playbook focuses on operational usage rules.
+
 ### Canonical state meanings
+
 #### `draft`
 
 The work item exists but is not yet fully actionable.
-
-Use when:
-
-- the task has been captured but not fully framed,
-- classification is incomplete,
-- essential context is still missing,
-- or the first actionable slice has not yet been established.
 
 #### `active`
 
 The task may proceed now.
 
-Use when:
-
-- no blocking dependency prevents work,
-- no required checkpoint is active,
-- no explicit approval gate is currently holding continuation,
-- and the next step is executable.
-
 #### `blocked`
 
 The task cannot proceed because a dependency or condition prevents continuation.
-
-Use when:
-
-- required context is missing after the task had become actionable,
-- an external dependency is unavailable,
-- a prerequisite deliverable has not landed,
-- a technical blocker prevents continuation.
 
 Always record `blocking_reason`, and preferably `unblock_condition`.
 
@@ -540,24 +549,11 @@ Always record `blocking_reason`, and preferably `unblock_condition`.
 
 Work is paused at a review or control boundary before continuation.
 
-Use when:
-
-- a review packet is ready,
-- design trade-offs need interpretation,
-- findings must be dispositioned,
-- a required checkpoint review is active.
-
 Always record a meaningful `checkpoint_reason`.
 
 #### `awaiting_approval`
 
 Work is waiting on explicit signoff.
-
-Use when:
-
-- the control regime requires formal approval,
-- the go/no-go boundary has been reached,
-- continuation is not permitted without signoff.
 
 Store the approval or decision reference when available.
 
@@ -565,37 +561,16 @@ Store the approval or decision reference when available.
 
 Execution is largely done, and validation or observation is now the dominant activity.
 
-Use when:
-
-- test execution dominates,
-- offline evaluation dominates,
-- rollout observation dominates,
-- acceptance evidence collection dominates.
-
-Validation is not merely "some tests exist"; it is the dominant current posture of the slice.
-
 #### `complete`
 
 The scoped work is done.
-
-Use when:
-
-- the slice objective has been satisfied,
-- required evidence has passed,
-- required acceptance has occurred,
-- and no further execution remains inside the current scope.
 
 #### `cancelled`
 
 The work was intentionally stopped and will not continue in this scope.
 
-Use when:
-
-- the task is explicitly dropped,
-- superseded by another slice,
-- or closed by decision rather than completion.
-
 ### Layer D schema in the playbook
+
 #### Core
 
 ```yaml
@@ -621,6 +596,7 @@ layer_d_companion:
 ```
 
 ### State discipline rules
+
 #### Rule 1. Every non-terminal item should have `next_step`
 
 If a task is active, blocked, at checkpoint, awaiting approval, or validating, the next action should be clear.
@@ -635,9 +611,9 @@ Use `checkpoint` for review or interpretation boundaries.
 
 Use `awaiting_approval` for explicit signoff boundaries.
 
-#### Rule 4. Do not encode overlays into state
+#### Rule 4. Do not encode Layer C into state
 
-`review_gatekeeper` and `governance_escalation` remain Layer C constructs even when they make `checkpoint` or `awaiting_approval` more likely.
+`control_profile` remains Layer C even when it makes `checkpoint` or `awaiting_approval` more likely.
 
 #### Rule 5. Workstream and task scopes may both exist
 
@@ -668,7 +644,10 @@ task:
     knowledge_locality: fully_local | mostly_local | scattered_internal | external_research_required | tacit_human_required
     specification_maturity: vague_idea | scoped_problem | draft_contract | frozen_contract | implementation_ready
     validation_burden: trivial_local_check | tests_strong_confidence | partial_signals_only | offline_eval_required | production_confirmation_required
+    interpretation_burden: objective_checks_sufficient | reviewable_tradeoff | human_interpretation_required | human_domain_judgment_required
     blast_radius: local | subsystem | cross_service | platform
+    reversibility: easy | moderate | hard | irreversible
+    sensitivity: none | user_visible | data_integrity | security | compliance
     execution_horizon: atomic | multi_step | multi_pr | long_running_program | ongoing_lane
     handoff_need: low | medium | high
 
@@ -678,8 +657,8 @@ task:
     reroute_triggers: []
 
   layer_c:
-    container: null
-    overlays: []
+    feature_cell: null
+    control_profiles: []
 
   layer_d:
     state: draft | active | blocked | checkpoint | awaiting_approval | validating | complete | cancelled
@@ -703,6 +682,7 @@ task:
 - Only fill what is necessary for the current slice.
 - Use linked artifacts rather than bloating the card body.
 - Keep `reason` and `next_step` concrete.
+- Materialize `control_profiles` only when the control regime differs from baseline.
 
 ## Workstream card template
 
@@ -720,11 +700,11 @@ workstream:
   updated_at: ...
 
   layer_c:
-    container:
-      name: feature_cell
+    feature_cell:
       scope: workstream
+      slug: ...
       reason: ...
-    overlays: []
+    control_profiles: []
 
   layer_d:
     state: draft | active | blocked | checkpoint | awaiting_approval | validating | complete | cancelled
@@ -758,6 +738,7 @@ A workstream commonly maintains:
 Not every workstream needs a heavy packet set. The package should stay as small as the control needs allow.
 
 ## Execution rules
+
 ### Rule 1. Execute from the current gate only
 
 Do not proceed as if the task were active when the current state is actually:
@@ -773,6 +754,7 @@ Update the task or workstream record when one of the following happens:
 - the current slice changes,
 - the mode changes,
 - a review packet is produced,
+- an approval packet is produced,
 - a blocker appears or clears,
 - a decision is made,
 - validation becomes dominant,
@@ -797,9 +779,10 @@ Record:
 as appropriate.
 
 ## Review and approval handling
+
 ### Review handling
 
-When `review_gatekeeper` applies:
+When a control profile includes review obligations:
 
 1. keep the active work moving until the review boundary is actually reached,
 2. prepare the relevant review-ready packet,
@@ -809,7 +792,7 @@ When `review_gatekeeper` applies:
 
 ### Approval handling
 
-When `governance_escalation` implies explicit signoff:
+When a control profile includes explicit approval obligations:
 
 1. assemble readiness evidence,
 2. record rollback or recovery context when relevant,
@@ -819,9 +802,9 @@ When `governance_escalation` implies explicit signoff:
 
 ### Important distinction
 
-A task may have a review overlay without currently being at a checkpoint.
+A task may have a review-bearing control profile without currently being at a checkpoint.
 
-A task may have a governance overlay without currently awaiting approval.
+A task may have an approval-bearing control profile without currently awaiting approval.
 
 Layer C indicates the **regime**. Layer D indicates the **current gate**.
 
@@ -870,7 +853,7 @@ At handoff time, another operator should be able to answer:
 
 - what the task is,
 - why the current mode was chosen,
-- what overlays or container apply,
+- what control profile or container applies,
 - what the current state is,
 - what the next step is,
 - what decisions have already been made,
@@ -896,7 +879,7 @@ When resuming work:
 1. read Layer A, Layer B, Layer C, and Layer D,
 2. confirm that the current slice is still the right slice,
 3. confirm that the current mode is still the right mode,
-4. check whether overlays or workstream conditions changed,
+4. check whether control-profile or workstream conditions changed,
 5. execute from `next_step` or reclassify if reality has changed.
 
 ## Maintenance cadence
@@ -904,6 +887,7 @@ When resuming work:
 The playbook should define a lightweight maintenance discipline.
 
 ### Continuous maintenance rules
+
 #### Rule 1. Every active item should remain actionable
 
 If `state = active`, the next action should not be ambiguous.
@@ -948,7 +932,7 @@ Do not create giant custom states such as:
 Use:
 
 - Layer B for operating posture,
-- Layer C for overlays and containers,
+- Layer C for containers and control profiles,
 - Layer D for control status,
 - and local `phase` for detail.
 
@@ -960,13 +944,13 @@ A task is not "a debug task forever" merely because one slice required `debug_in
 
 It is a container, not an operating posture.
 
-### 4. Treating `review_gatekeeper` as a state
+### 4. Treating a control profile as a state
 
-It is an overlay, not a current gate.
+It is a regime, not a current gate.
 
-### 5. Treating `governance_escalation` as synonymous with approval
+### 5. Treating approval-bearing control profiles as synonymous with approval state
 
-It is a regime, not the current status.
+They define obligations, not current status.
 
 ### 6. Keeping oversized tasks that should be re-sliced
 
@@ -981,7 +965,9 @@ If one card needs several simultaneous modes, it is probably too large.
 Do not create long-horizon wrappers until coordination pressure actually exists.
 
 ## Worked examples
+
 ### Example 1. Ambiguous implementation request
+
 #### Incoming request
 
 "Build the first version of the segmentation pipeline."
@@ -996,15 +982,17 @@ Do not create long-horizon wrappers until coordination pressure actually exists.
   - `specification_maturity = scoped_problem`
   - `validation_burden = partial_signals_only`
   - `execution_horizon = multi_pr`
+  - `handoff_need = high`
 - Route to Layer B `contract_builder`.
 - Apply Layer C `feature_cell` at workstream scope if the work clearly spans several slices and PRs.
-- Possibly apply `review_gatekeeper` if architecture review is needed.
+- Apply a non-baseline `control_profile` only if review or approval obligations are real.
 - Set Layer D:
   - `state = active`
   - `phase = contract_drafting`
   - `next_step = produce initial contract with boundaries, assumptions, and acceptance criteria`
 
 ### Example 2. Regression with unknown cause
+
 #### Incoming request
 
 "Fix the failing parser output for tables in the PDF ingestion pipeline."
@@ -1015,7 +1003,7 @@ Do not create long-horizon wrappers until coordination pressure actually exists.
 - Bound the first slice as repro and root-cause isolation.
 - Layer A core suggests `intent = debug`, unknown cause, moderate dependency complexity.
 - Route to `debug_investigator`.
-- Keep Layer C empty unless review or governance demands surface.
+- Keep Layer C empty unless non-baseline control obligations or workstream pressure surface.
 - Set Layer D:
   - `state = active`
   - `phase = reproduction_and_isolation`
@@ -1023,6 +1011,7 @@ Do not create long-horizon wrappers until coordination pressure actually exists.
 - After root cause is found, reroute to `routine_implementer` or `refactor_surgeon` as appropriate.
 
 ### Example 3. Rollout-sensitive migration
+
 #### Incoming request
 
 "Move the schema and cut traffic to the new contract without downtime."
@@ -1032,7 +1021,7 @@ Do not create long-horizon wrappers until coordination pressure actually exists.
 - Create task card or workstream if clearly multi-slice.
 - Layer A indicates migration intent, elevated blast radius, hard reversibility concerns, and production confirmation burden.
 - Route to `migration_operator`.
-- Apply `governance_escalation`.
+- Apply a non-baseline control profile, likely change-controlled or stronger, if explicit approval and rollback discipline are real.
 - Apply `feature_cell` at workstream scope if the work spans several cutover slices.
 - Use `checkpoint` for readiness review.
 - Use `awaiting_approval` at explicit go/no-go boundary.
@@ -1057,7 +1046,7 @@ To keep rollout simple, start with a narrow mandatory baseline.
 
 - reroute trigger tracking,
 - workstream-level lifecycle alongside task lifecycle,
-- inheritance flags for workstream overlays,
+- inheritance flags for workstream control profiles,
 - milestone list,
 - handoff notes,
 - evidence bundles beyond linked references.
@@ -1072,6 +1061,7 @@ To keep rollout simple, start with a narrow mandatory baseline.
 - dashboards derived from Layer D plus selected Layer A fields.
 
 ## Compressed operator checklist
+
 ### Intake checklist
 
 - Create task card.
@@ -1079,8 +1069,7 @@ To keep rollout simple, start with a narrow mandatory baseline.
 - Fill Layer A required core.
 - Pick one Layer B mode.
 - Evaluate `feature_cell`.
-- Evaluate `review_gatekeeper`.
-- Evaluate `governance_escalation`.
+- Evaluate whether a non-baseline `control_profile` is needed.
 - Set Layer D `state`, `phase`, `next_step`.
 - Begin execution only from the current gate.
 
@@ -1088,7 +1077,7 @@ To keep rollout simple, start with a narrow mandatory baseline.
 
 - Did the current slice change?
 - Is the current mode still right?
-- Did a new overlay or workstream need appear?
+- Did a new control-profile or workstream need appear?
 - Is the current state still accurate?
 - Does `next_step` still reflect reality?
 - Do new evidence or decision references need to be attached?
@@ -1108,7 +1097,7 @@ This playbook should be interpreted conservatively:
 - keep the shared model small,
 - keep the task slice current,
 - keep the operating mode singular,
-- keep overlays and containers explicit,
+- keep containers and control profiles explicit,
 - keep lifecycle state clean,
 - and keep `next_step` concrete.
 

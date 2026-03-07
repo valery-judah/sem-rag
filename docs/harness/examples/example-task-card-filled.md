@@ -10,6 +10,8 @@ It is intentionally concrete and moderately detailed. The goal is to show:
 - how the current mode, current state, and current next step remain explicit,
 - how the work log supports resumability without replacing the control fields.
 
+This example keeps the current task-card compatibility shape: `container` and `overlays` remain legacy harness-local Layer C shorthand. Canonical Layer C still uses `feature_cell` and `control_profile`.
+
 ```md
 ---
 id: T-2026-03-06-001
@@ -80,7 +82,7 @@ The expected behavior is mostly known because the task is framed as a regression
 
 ## Layer C rationale
 
-No overlay is active. The slice can proceed under baseline control, and there is no current need for workstream coordination, mandatory review pause, or escalated governance.
+No non-baseline control profile is active. The slice can proceed under baseline control, and there is no current need for workstream coordination, mandatory review pause, or stronger approval/evidence obligations.
 
 # Layer D
 
@@ -135,7 +137,7 @@ A few things are deliberate here:
 - The title describes the current slice, not the whole parser problem space.
 - Layer A captures the current problem shape without trying to describe long-term identity.
 - Layer B is one mode only: `debug_investigator`.
-- Layer C is empty because no special review, governance, or workstream wrapper is needed yet.
+- Layer C is empty because no special control profile or workstream wrapper is needed yet.
 - Layer D makes the task executable by exposing `state`, `phase`, and one concrete `next_step`.
 - The work log records progress, but the control fields at the top still carry the operational truth.
 

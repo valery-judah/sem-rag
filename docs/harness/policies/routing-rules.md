@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document defines the default routing policy from Layer A problem shape to one current Layer B operating mode.
+This document defines the default routing policy from the Layer A classification snapshot to one current Layer B operating mode.
 
 Its purpose is to help an agent choose the dominant current posture for a task slice after intake and during rerouting. It is not a universal workflow specification, not a replacement for judgment, and not a license to blend multiple modes into one label.
 
@@ -19,7 +19,7 @@ Recommended sequence:
 2. fill or review the Layer A core,
 3. use this routing policy to pick one current mode,
 4. open the detailed mode file for that mode,
-5. continue while keeping Layer C overlays/containers and Layer D lifecycle state separate.
+5. continue while keeping Layer C container/control-profile context and Layer D lifecycle state separate.
 
 This file should stay lighter than the per-mode specs. It gives routing guidance, not full mode behavior.
 
@@ -35,7 +35,7 @@ Use this policy when:
 
 Do not use this document to:
 - derive Layer D state,
-- choose Layer C overlays directly,
+- choose Layer C control profiles or containers directly,
 - classify whole initiatives instead of the current slice,
 - create blended modes like `research + implementation`.
 
@@ -52,6 +52,8 @@ Not:
 - what the work might become later,
 - what secondary activity is also present,
 - what role the agent prefers.
+
+When classification signals are mixed, prefer the mode that best matches the immediate `next_step` and the dominant current output artifact.
 
 ## Allowed Layer B modes
 
@@ -75,7 +77,15 @@ Routing should use the current task slice and at least the required Layer A core
 - `specification_maturity`
 - `validation_burden`
 - `blast_radius`
+- `reversibility`
+- `sensitivity`
 - `execution_horizon`
+- `handoff_need`
+
+Routing should strongly consider these additional Layer A signals when available:
+- `interpretation_burden`
+- `artifact_type`
+- `technical_surface`
 
 Routing may also consider:
 - current request wording,
@@ -84,7 +94,18 @@ Routing may also consider:
 - whether evidence generation is now dominant,
 - whether the work is behavior-preserving or behavior-changing,
 - whether the slice is part of a staged transition,
-- whether the current useful output is a contract, implementation change, findings packet, or diagnostic explanation.
+- whether the current useful output is a contract, implementation change, findings packet, diagnostic explanation, evaluation packet, or migration step.
+
+## Boundary with Layer C and Layer D
+
+Routing selects one current Layer B mode.
+
+Routing does **not** decide:
+- whether the slice should run under `reviewed`, `change_controlled`, `high_assurance`, or another Layer C control-profile shape,
+- whether a `feature_cell` should exist,
+- or what the current Layer D state should be.
+
+Layer A signals may strongly suggest those downstream choices, but routing itself should remain focused on the current working posture.
 
 ## Default routing table
 
@@ -129,7 +150,8 @@ Typical signs:
 Common Layer A profile:
 - moderate `problem_uncertainty`,
 - rising `specification_maturity`,
-- meaningful `validation_burden` because acceptance must be defined.
+- meaningful `validation_burden` because acceptance must be defined,
+- elevated `interpretation_burden` when human judgment is needed on tradeoffs or acceptance shape.
 
 Typical outputs:
 - contract draft,
@@ -238,7 +260,8 @@ Common Layer A profile:
 - higher `dependency_complexity`,
 - meaningful `blast_radius`,
 - longer `execution_horizon`,
-- strong sensitivity to coordination and validation.
+- stronger `reversibility` constraints,
+- elevated `sensitivity` when integrity, security, or compliance boundaries are affected.
 
 Typical outputs:
 - migration plan slice,
@@ -291,7 +314,8 @@ Typical signs:
 Common Layer A profile:
 - higher `validation_burden`,
 - specification may be stable enough to evaluate,
-- uncertainty may be localized to whether the result is good enough.
+- uncertainty may be localized to whether the result is good enough,
+- elevated `interpretation_burden` when the main challenge is judging evidence rather than gathering it.
 
 Typical outputs:
 - evaluation summary,
@@ -320,6 +344,18 @@ Use `contract_builder` if the work has narrowed enough that the main value is de
 Use `contract_builder` if unclear behavior, boundary, or acceptance would make implementation premature.
 
 Use `routine_implementer` if the contract is already good enough and the main work is to execute the change.
+
+### `contract_builder` vs `quality_evaluator`
+
+Use `contract_builder` if the main unresolved issue is what should count as correct, acceptable, or in scope.
+
+Use `quality_evaluator` if those criteria are already explicit enough and the main work is generating or interpreting evidence against them.
+
+### `contract_builder` vs `migration_operator`
+
+Use `contract_builder` if the current slice is primarily defining transition contracts, compatibility rules, or acceptance boundaries.
+
+Use `migration_operator` if the current slice is primarily executing or sequencing a staged transition step.
 
 ### `routine_implementer` vs `debug_investigator`
 
@@ -364,6 +400,8 @@ Reroute when the actual work has changed shape enough that the current mode no l
 Common reroutes:
 - `research_scout -> contract_builder` when discovery narrows into explicit contract formation,
 - `contract_builder -> routine_implementer` when the contract is sufficiently defined,
+- `contract_builder -> quality_evaluator` when the contract is stable and evidence generation becomes the dominant next move,
+- `contract_builder -> migration_operator` when transition execution and sequencing become dominant,
 - `routine_implementer -> debug_investigator` when unexplained failure becomes dominant,
 - `debug_investigator -> contract_builder` when the real issue is undefined expected behavior,
 - `refactor_surgeon -> quality_evaluator` when preservation evidence becomes the dominant remaining work,
@@ -383,7 +421,7 @@ When rerouting:
 Routing must not:
 - select multiple current modes,
 - encode Layer D state,
-- decide workstream promotion by itself,
+- decide Layer C control profiles or `feature_cell` by itself,
 - replace human judgment when a slice is badly formed,
 - hide the need to reslice.
 
@@ -399,6 +437,7 @@ Use this checklist when choosing or validating a mode.
 - Does exactly one mode clearly dominate?
 - If not, is the slice too broad and in need of reslicing?
 - Does the current `next_step` match the chosen mode?
+- Does the dominant current output artifact match the chosen mode?
 - Would another agent looking only at the task card find this routing choice plausible?
 
 ## Minimal examples
@@ -471,4 +510,4 @@ Reason:
 - Prefer improving slice quality over adding new modes.
 - Add a new universal routing rule only when repeated real cases cannot be expressed with the existing set.
 - Do not turn routing into a giant taxonomy.
-- When in doubt, choose the mode that best matches the immediate `next_step`, then open the detailed mode file, or reslice if no single mode fits.
+- When in doubt, choose the mode that best matches the immediate `next_step` and dominant current output, then open the detailed mode file, or reslice if no single mode fits.

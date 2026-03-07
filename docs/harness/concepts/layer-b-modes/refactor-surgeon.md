@@ -124,7 +124,7 @@ It should usually slow down or stop when:
 - the preserved boundary is not actually clear enough,
 - the work reveals a concrete failure that requires diagnosis,
 - the slice expands into a larger migration or compatibility problem,
-- a review or governance boundary should be crossed before proceeding further,
+- a review boundary, approval boundary, or other non-baseline control boundary should be crossed before proceeding further,
 - the dominant work becomes evidence generation rather than structural change.
 
 This mode should not absorb hidden redesign or delivery work just because the refactor touches those areas.
@@ -241,12 +241,11 @@ Useful heuristics in this mode:
 
 ### Relationship to Layer C
 
-`refactor_surgeon` may interact with:
-- `review_gatekeeper` when structural change should pause for review before wider adoption,
-- `governance_escalation` when the refactor touches a higher-risk shared boundary,
-- `feature_cell` when the refactor is one child slice inside a larger effort.
+`refactor_surgeon` may run inside a `feature_cell` when the refactor is one bounded slice inside a broader multi-slice workstream.
 
-But these are overlays/containers, not operating modes.
+It may also run under one or more `control_profile` records when structural change must satisfy explicit review, approval, evidence, traceability, or rollback obligations before wider adoption. Presets such as `reviewed`, `change_controlled`, or `high_assurance` may be relevant when the touched boundary is shared or high-consequence.
+
+These Layer C constructs wrap or constrain the work. They do not define the current mode.
 
 ### Relationship to Layer D
 
@@ -257,7 +256,7 @@ A `refactor_surgeon` task is often:
 - sometimes `complete` when the bounded structural slice is finished and preservation is satisfied,
 - sometimes `blocked` if dependencies or preservation criteria are missing.
 
-The mode can remain `refactor_surgeon` while the lifecycle state changes.
+The mode can remain `refactor_surgeon` while the Layer D lifecycle state changes.
 
 ## Example task shapes
 

@@ -52,13 +52,17 @@ Do not use this mode as a catch-all synonym for “tests exist.” Use it when e
 - `validation_burden`: high
 - `specification_maturity`: medium-to-high or high enough that evaluation questions can be framed explicitly
 - `problem_uncertainty`: often lower about what should be checked, but still uncertain about whether the current result is sufficient
+- `interpretation_burden`: often medium or high when judging evidence is harder than gathering it
 - `dependency_complexity`: variable, often medium or high if evidence must cover multiple interactions
+- `artifact_type`: often findings packet, evaluation summary, readiness note, or acceptance recommendation
 - `blast_radius`: often medium or high when readiness judgment matters operationally
 - `execution_horizon`: short-to-medium for the current evaluation slice
 
 Common signals include:
 - acceptance depends on evidence rather than assertion,
+- the specification is stable enough to frame the evaluation question explicitly,
 - the candidate result exists but is not yet trusted,
+- interpretation of the evidence may be harder than collecting raw outputs,
 - comparison across scenarios or baselines matters,
 - the output should be a findings-based recommendation rather than a code artifact.
 
@@ -127,7 +131,7 @@ It should usually slow down or stop when:
 - optimization work becomes the main activity instead of evaluation,
 - the slice begins to sprawl into redesign rather than evidence-based judgment.
 
-This mode often works closely with `review_gatekeeper`, but the overlay remains Layer C, not Layer B.
+This mode often operates inside explicit Layer C control-profile context, but that context remains separate from the mode itself.
 
 ## Typical validation style
 
@@ -241,12 +245,11 @@ Useful heuristics in this mode:
 
 ### Relationship to Layer C
 
-`quality_evaluator` commonly interacts with:
-- `review_gatekeeper` when findings should pause for interpretation or acceptance review,
-- `feature_cell` when evaluation is one child slice in a larger workstream,
-- sometimes `governance_escalation` when readiness evidence is part of a higher-risk decision boundary.
+`quality_evaluator` may run inside a `feature_cell` when evaluation is one bounded slice in a larger workstream.
 
-But these are overlays/containers, not modes.
+It may also run under one or more `control_profile` records when findings must satisfy explicit review, approval, evidence, traceability, or rollback obligations before a decision is made. Presets such as `reviewed`, `change_controlled`, or `high_assurance` may be relevant when readiness evidence feeds a higher-risk decision boundary.
+
+These Layer C constructs wrap or constrain the work. They do not define the current mode.
 
 ### Relationship to Layer D
 
@@ -257,7 +260,7 @@ A `quality_evaluator` task is often:
 - sometimes `complete` when the evaluation slice has produced its full decision-ready output,
 - sometimes `blocked` if required evidence inputs or scenarios are missing.
 
-The mode can remain `quality_evaluator` while the lifecycle state changes.
+The mode can remain `quality_evaluator` while the Layer D lifecycle state changes.
 
 ## Example task shapes
 

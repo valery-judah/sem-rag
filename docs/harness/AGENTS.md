@@ -1,5 +1,3 @@
-
-
 # Harness Agent Instructions
 
 This file contains the direct operating instructions for any coding or design agent working inside `docs/harness/`.
@@ -66,14 +64,21 @@ Use `docs/harness/policies/routing-rules.md` when selecting or repairing the mod
 
 Apply Layer C only when it materially changes control or organization.
 
-Allowed Layer C constructs in this harness:
-- overlays:
-  - `review_gatekeeper`
-  - `governance_escalation`
-- container:
-  - `feature_cell`
+Canonical Layer C constructs in this harness:
+- `feature_cell`
+- `control_profile`
 
-Do not add overlays or containers casually.
+Common `control_profile` preset aliases:
+- `baseline`
+- `reviewed`
+- `change_controlled`
+- `high_assurance`
+
+Use `feature_cell` only when continuity across slices or sessions materially matters.
+
+Use a non-baseline `control_profile` only when explicit control obligations differ from baseline.
+
+Do not add Layer C constructs casually.
 
 ### 4. Treat Layer D as authoritative control status
 
@@ -121,7 +126,7 @@ When new work appears:
 4. Create a task card in `docs/harness/active/tasks/` using `templates/task-card.template.md`.
 5. Fill the required Layer A core.
 6. Choose exactly one current Layer B mode.
-7. Apply Layer C only if justified.
+7. Apply Layer C only if justified: add `feature_cell` only for real workstream coordination needs, and add a non-baseline `control_profile` only when explicit control obligations differ from baseline.
 8. Set Layer D `state`, `phase`, and concrete `next_step`.
 9. Continue with the appropriate next loop.
 
@@ -143,15 +148,15 @@ If the effort already has a `feature_cell` workstream:
 1. Read the workstream card first.
 2. Then read the relevant active child task cards.
 3. Use `workflows/workstream-loop.md` for cross-slice coordination.
-4. Keep child task lists, milestones, and workstream-level state current.
+4. Keep child task lists, milestones, workstream-level control context, and workstream-level Layer D state current.
 5. Do not turn the workstream card into a mega-task.
 
 ## Required behavior at review boundaries
 
-If work reaches a real review boundary:
+If work reaches a real review or approval boundary:
 
 1. Stop normal forward execution.
-2. Use `workflows/checkpoint-review-loop.md`.
+2. Use docs/harness/workflows/checkpoint-review-loop.md for checkpoint review boundaries, and use the same control discipline for approval boundaries.
 3. Prepare or update the review packet.
 4. Record `checkpoint_reason` and keep Layer D truthful.
 5. Do not continue beyond the boundary until the review outcome is recorded.
@@ -192,10 +197,12 @@ A task card is mandatory for non-trivial work.
 Create a workstream card only when task-only tracking is inadequate.
 
 Typical reasons:
+- Layer A suggests long-horizon execution, such as `execution_horizon = multi_pr` or longer,
+- Layer A suggests high resumability pressure, such as `handoff_need = high`,
 - multiple meaningful child slices exist,
 - the effort spans multiple sessions,
 - milestones or sequencing matter,
-- workstream-level review or governance is needed.
+- workstream-level review or approval control is needed.
 
 Create in:
 - `docs/harness/active/workstreams/`
@@ -299,7 +306,7 @@ If uncertain:
 2. identify the current slice,
 3. identify the current control state,
 4. identify the one current mode,
-5. check whether a review/governance boundary is actually present,
+5. check whether a review, approval, or workstream-control boundary is actually present,
 6. repair the artifact if needed,
 7. then continue through the correct workflow loop.
 
@@ -323,7 +330,7 @@ For any item in this harness, be able to answer:
 1. What is the current slice or effort?
 2. What is the current control state?
 3. What is the one current mode?
-4. Is there a real review or governance boundary?
+4. Is there a real review, approval, or workstream-control boundary?
 5. What is the concrete next step?
 
 If those five answers are clear in the artifacts, the harness is healthy.
