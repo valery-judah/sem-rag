@@ -88,6 +88,6 @@ Use this section for lightweight operational reminders.
 
 ## Maintenance guidance
 
-Use `docs/harness/maintainining.md` for harness-wide index policy.
+Use `docs/harness-maintain/main.md` for harness-wide index policy.
 
 This file should remain a short derivative summary of the authoritative task cards, not a second source of truth.

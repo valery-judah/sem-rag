@@ -749,7 +749,7 @@ Recommended use:
 
 - make the required core mandatory,
 - keep other fields optional at first,
-- and use `docs/harness/maintainining.md` for harness-wide policy on promoting optional fields or adding new axes.
+- and use `docs/harness-maintain/main.md` for harness-wide policy on promoting optional fields or adding new axes.
 
 ## Compact schema
 

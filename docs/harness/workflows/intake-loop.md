@@ -195,7 +195,7 @@ Typical examples:
 
 If none apply, leave Layer C empty.
 
-If the current card shape still uses legacy `overlays` / `container` frontmatter, keep that shorthand truthful but treat `feature_cell` and `control_profile` as the canonical Layer C model. Use `docs/harness/maintainining.md` for the compatibility mapping.
+If the current card shape still uses legacy `overlays` / `container` frontmatter, keep that shorthand truthful but treat `feature_cell` and `control_profile` as the canonical Layer C model. Use `docs/harness-maintain/main.md` for the compatibility mapping.
 
 ### Step 7. Initialize Layer D
 

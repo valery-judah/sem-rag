@@ -511,4 +511,4 @@ Reason:
 - Add a new universal routing rule only when repeated real cases cannot be expressed with the existing set.
 - Do not turn routing into a giant taxonomy.
 - When in doubt, choose the mode that best matches the immediate `next_step` and dominant current output, then open the detailed mode file, or reslice if no single mode fits.
-- Use `docs/harness/maintainining.md` for harness-wide policy on changing the canonical mode set and the files that must stay synchronized when Layer B changes.
+- Use `docs/harness-maintain/main.md` for harness-wide policy on changing the canonical mode set and the files that must stay synchronized when Layer B changes.

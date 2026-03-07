@@ -54,7 +54,7 @@ The workstream loop expects:
 
 The workstream card is the control surface for the effort at workstream scope.
 
-Current workstream cards still use legacy `container` / `overlays` frontmatter as shorthand. Interpret those fields through the v2 Layer C model and use `docs/harness/maintainining.md` for the full compatibility mapping and migration status.
+Current workstream cards still use legacy `container` / `overlays` frontmatter as shorthand. Interpret those fields through the v2 Layer C model and use `docs/harness-maintain/main.md` for the full compatibility mapping and migration status.
 
 ## Core principles
 

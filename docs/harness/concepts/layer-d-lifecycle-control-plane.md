@@ -1630,7 +1630,7 @@ Keep Layer D small:
 - let Layer C carry control-regime detail,
 - and use linked evidence or decisions for richer transition context.
 
-For harness-wide policy on adding universal states, evolving Layer D adoption, and synchronizing other docs when Layer D changes, use `docs/harness/maintainining.md`.
+For harness-wide policy on adding universal states, evolving Layer D adoption, and synchronizing other docs when Layer D changes, use `docs/harness-maintain/main.md`.
 
 ## Final recommendation
 

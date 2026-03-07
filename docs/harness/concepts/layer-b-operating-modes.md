@@ -254,7 +254,7 @@ In normal operation, the recommended sequence is:
 
 ## Standard mode template
 
-The detailed mode files should stay structurally consistent, but the shared authoring contract for maintaining that structure now lives in `docs/harness/maintainining.md`.
+The detailed mode files should stay structurally consistent, but the shared authoring contract for maintaining that structure now lives in `docs/harness-maintain/main.md`.
 
 Use this umbrella Layer B document for semantics and routing boundaries. Use the maintainer guide when changing the canonical mode set or the shared mode-file structure.
 

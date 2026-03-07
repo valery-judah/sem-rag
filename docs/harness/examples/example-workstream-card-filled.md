@@ -10,7 +10,7 @@ It is intentionally lightweight. The goal is to show:
 - how Layer C and Layer D look at workstream scope,
 - how milestones, shared decisions, and next steps are recorded.
 
-This example keeps the current workstream-card compatibility shape: `container` and `overlays` remain legacy Layer C shorthand. See `docs/harness/maintainining.md` for the canonical model and migration status.
+This example keeps the current workstream-card compatibility shape: `container` and `overlays` remain legacy Layer C shorthand. See `docs/harness-maintain/main.md` for the canonical model and migration status.
 
 ```md
 ---

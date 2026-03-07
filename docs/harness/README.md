@@ -1,395 +1,389 @@
 # Operational Harness
 
-This directory contains the minimal operational harness for running long-lived coding and design work with an agent under the Layer A–D model.
+This directory contains the common operational harness for running long-lived agentic work in a way that stays classifiable, routable, control-legible, resumable, reviewable, and maintainable across sessions.
 
-The harness is designed to make work:
-- classifiable,
-- routable,
-- control-legible,
-- resumable,
-- reviewable,
-- and maintainable across sessions.
+The harness is intentionally smaller than a full project-management system. It does not try to encode every workflow detail, every organizational policy, or every possible delivery methodology. Its purpose is narrower: provide a stable operating surface for taking in work, shaping it into bounded slices, routing it into the correct current posture, maintaining control status, and preserving resumable context over time.
 
-It is intentionally smaller than a full project-management system. Its purpose is not to model every workflow detail. Its purpose is to give the agent and the human operator a stable operating surface for incoming tasks, active execution, workstream coordination, review boundaries, and handoffs.
+This README is the **entry document** for the harness. It should help a human or agent understand:
+
+- what the harness is for,
+- how the layered model is used operationally,
+- which artifacts are authoritative,
+- which workflow to open next,
+- and which constraints keep the harness coherent.
+
+Detailed semantics live elsewhere:
+
+- conceptual definitions in `concepts/`,
+- direct agent operating instructions in `AGENTS.md`,
+- stepwise execution loops in `workflows/`,
+- default rules in `policies/`,
+- and concrete schemas, templates, examples, and registries in their respective directories.
+
+## Purpose
+
+The harness exists to make ordinary and long-running agentic work operable without turning the repository into a vague pile of notes or an over-engineered workflow system.
+
+A good harness should make it easy to answer five operational questions at any time:
+
+1. What is the current work slice?
+2. How should the agent work on it now?
+3. Does any non-baseline Layer C context materially apply?
+4. What is the current lifecycle control status?
+5. What is the next executable step?
+
+Those five questions are the backbone of the layered model in practice.
 
 ## What this harness is
 
 At a high level, this harness provides:
-- a shared conceptual model in `concepts/`,
-- operational loops in `workflows/`,
-- reusable artifact templates in `templates/`,
-- default policies in `policies/`,
-- live operating state in `active/`,
-- and prompt fragments in `prompts/`.
 
-The harness is built around four layers:
+- a shared conceptual model in `concepts/`,
+- direct execution guidance in `AGENTS.md`,
+- reusable workflow loops in `workflows/`,
+- templates for stable operational artifacts in `templates/`,
+- default rules and routing discipline in `policies/`,
+- examples for reference in `examples/`,
+- indexes for live visibility in `indexes/`,
+- schemas and registries for structured consistency,
+- and prompt documents for guided agent use in `prompts/`.
+
+The harness is organized around four layers:
+
 - **Layer A** — classification snapshot of the current work slice
 - **Layer B** — current atomic operating mode
-- **Layer C** — workstream containers and control profiles
+- **Layer C** — overlays and containers
 - **Layer D** — lifecycle control plane
 
-Those concepts are defined in the `concepts/` directory. This README explains how to use them operationally.
+This README does not re-specify all four layers in full. It explains how they fit together operationally and how to enter the harness correctly.
 
 ## What this harness is not
 
 This harness is not:
+
 - a giant workflow engine,
-- a universal state machine for all work,
-- a replacement for judgment,
-- a guarantee that every task needs a workstream,
+- a universal state machine for every kind of work,
+- a replacement for engineering judgment,
+- a requirement that every effort become a workstream,
+- a substitute for local technical standards,
 - or a heavy project-management stack.
 
 If a task is small and bounded, the harness should remain small and bounded too.
 
-## Directory layout
+## Core operating idea
 
-```text
-docs/harness/
-  README.md
-  AGENTS.md
-  maintainining.md
+The harness operates on **current bounded slices of work**, not on vague whole initiatives.
 
-  concepts/
-    layer-a-taxonomy.md
-    layer-b-operating-modes.md
-    layer-c/
-      README.md
-      feature-cell.md
-      control-profiles.md
-      presets.md
-      schema.md
-      examples.md
-    layer-d-lifecycle-control-plane.md
-    operational-playbook.md
+The default operating loop is:
 
-  workflows/
-    intake-loop.md
-    task-execution-loop.md
-    workstream-loop.md
-    checkpoint-review-loop.md
-    handoff-resume-loop.md
-
-  templates/
-    task-card.template.md
-    workstream-card.template.md
-    handoff-note.template.md
-
-  policies/
-    routing-rules.md
-
-  active/
-    inbox/
-    tasks/
-    workstreams/
-    archive/
-
-  prompts/
-    intake-agent.md
-    execution-agent.md
-    resume-agent.md
-```
-
-If the actual tree evolves, treat this layout as the intended operating structure.
-
-## The core operating idea
-
-The harness operates on **current slices of work**, not on vague whole initiatives.
-
-The default flow is:
-1. normalize incoming work into a task slice,
-2. classify the current slice with Layer A,
-3. choose exactly one current Layer B mode,
-4. apply Layer C only when needed,
-5. record Layer D status and concrete next step,
-6. execute or pause according to the current boundary,
-7. reslice, reroute, review, hand off, or close as needed.
+1. intake the request,
+2. define the current slice,
+3. classify it with Layer A,
+4. choose exactly one current Layer B mode,
+5. apply Layer C only if it materially changes organization or control,
+6. set Layer D status and a concrete `next_step`,
+7. execute the current slice,
+8. update the authoritative artifacts at meaningful boundaries,
+9. reclassify, reroute, promote, hand off, validate, or close when the shape changes.
 
 This is the central discipline of the harness.
 
+## The five operating questions
+
+The harness is healthiest when its artifacts make the following answers obvious.
+
+### 1. What is the current work slice?
+
+This is primarily a Layer A question. The slice should be narrow enough that one dominant current posture is meaningful.
+
+### 2. How should the agent work on it now?
+
+This is the Layer B question. The harness requires one current atomic operating mode rather than blended labels.
+
+### 3. Does any non-baseline Layer C context materially apply?
+
+This is the Layer C question. Use overlays and containers only when they materially improve control, coordination, or resumability.
+
+### 4. What is the current lifecycle control status?
+
+This is the Layer D question. The control plane should say whether the work can proceed, is blocked, is paused at checkpoint, is awaiting approval, is validating, or is terminal.
+
+### 5. What is the next executable step?
+
+This is the mandatory operational discipline attached to every non-terminal item. The `next_step` must be concrete enough that a human or agent can resume cleanly.
+
 ## Start here
 
-When using this harness for real work, start in this order:
+When using the harness for real work, enter it in this order:
 
 1. Read this `README.md`.
-2. Read `AGENTS.md` for the direct operating instructions given to the coding agent.
-3. If the work is new or raw, use `workflows/intake-loop.md`.
-4. If a task card already exists and is actionable, use `workflows/task-execution-loop.md`.
-5. If the effort has multiple coherent slices and requires `feature_cell`, use `workflows/workstream-loop.md`.
-6. If work is paused for review, use `workflows/checkpoint-review-loop.md`.
-7. If work is being paused or transferred, use `workflows/handoff-resume-loop.md`.
+2. Read `AGENTS.md` for the direct operating rules given to the agent.
+3. Open the relevant workflow based on the current situation:
+   new or raw work -> `workflows/intake-loop.md`
+   existing actionable task -> `workflows/task-execution-loop.md`
+   coordinated multi-slice effort -> `workflows/workstream-loop.md`
+   review or approval boundary -> `workflows/checkpoint-review-loop.md`
+   pause, transfer, or resume -> `workflows/handoff-resume-loop.md`
+4. Use the relevant template in `templates/` if a new artifact must be created.
+5. Use `policies/routing-rules.md` if mode selection, repair, or rerouting is needed.
+6. Consult the concepts only when deeper semantics are required.
 
 ## Minimum operational artifacts
 
-The harness is designed to work with a very small artifact set.
+The harness should work with a deliberately small artifact set.
 
-### 1. Task card
+### Task card
 
-This is the default operational artifact.
+The task card is the default operational artifact.
 
 Use `templates/task-card.template.md` for every non-trivial task slice.
 
 A task card is the authoritative record for:
+
 - the current slice,
-- Layer A snapshot,
-- current Layer B mode,
-- current Layer C container and control-profile context,
-- current Layer D status,
-- current next step,
+- the Layer A snapshot,
+- the current Layer B mode,
+- any applicable Layer C context,
+- the Layer D control status,
+- the concrete `next_step`,
+- relevant references,
 - work log and closure context.
 
-If you only adopt one artifact from this harness, adopt the task card.
+If you adopt only one artifact from the harness, adopt the task card.
 
-### 2. Workstream card
+### Workstream card
 
-Use `templates/workstream-card.template.md` only when task-only tracking is no longer adequate and the effort has been promoted into a `feature_cell`.
+Use `templates/workstream-card.template.md` only when task-only tracking is no longer sufficient and the effort genuinely requires a workstream container such as `feature_cell`.
 
 A workstream card coordinates:
-- multiple child task slices,
-- milestones or sequencing,
-- cross-slice decisions,
-- shared risks,
-- workstream-scope Layer C container/control context and Layer D state.
 
-### 3. Handoff note
+- multiple related task slices,
+- workstream-level scope and goals,
+- sequencing or milestones,
+- shared decisions and risks,
+- and workstream-level control state.
 
-Use `templates/handoff-note.template.md` whenever work is intentionally paused or transferred.
+### Handoff note
 
-A handoff note is not authoritative. It is a resumability aid layered on top of an up-to-date task or workstream card.
+Use `templates/handoff-note.template.md` when work is intentionally paused or transferred.
 
-## Live operating directories
+A handoff note is a resumability aid. It is not the primary source of truth. The authoritative task or workstream card must remain more current than the handoff note.
 
-### `active/inbox/`
+### Review, approval, and evidence artifacts
 
-Use this for raw incoming work that has not yet been normalized.
+Introduce review packets, approval packets, evidence bundles, and decision-log entries when control, validation, or governance clarity requires them.
 
-Nothing should stay here for long. Inbox items should be converted into task cards.
+Do not introduce them merely for ceremony.
 
-### `active/tasks/`
+## Default operating sequence for new work
 
-This is the main live operating area.
+For a new incoming request, the recommended path is:
 
-Each file should represent one current task slice.
+1. capture the request and place it in the inbox if it is still raw,
+2. run the intake loop when the request has not yet been normalized,
+3. define the current bounded slice,
+4. create a task card,
+5. fill the Layer A core,
+6. choose one current Layer B mode,
+7. apply Layer C only if justified,
+8. set Layer D status,
+9. record a concrete `next_step`,
+10. continue via the appropriate execution, review, or handoff workflow.
 
-### `active/workstreams/`
+The default assumption is **task-first, workstream-later**.
 
-Use this only for efforts that genuinely require `feature_cell` treatment.
+## When to create a workstream
 
-### `active/archive/`
+Do not create a workstream merely because the effort sounds important or may grow later.
 
-Move completed or cancelled artifacts here when they are no longer active.
+Promote into a workstream only when one or more are true:
 
-## The workflow set
+- the effort clearly spans multiple coherent slices,
+- multiple Layer B mode transitions are expected over time,
+- multiple linked tasks must be coordinated,
+- resumability and handoff pressure are high,
+- milestone tracking materially improves control,
+- workstream-level decisions and risks need a stable home,
+- or long-horizon visibility genuinely matters.
 
-The harness defines five core workflow loops.
+Until that threshold is crossed, keep the work as a task.
 
-### Intake loop
+## Routing guidance
 
-`workflows/intake-loop.md`
+Routing discipline is a core harness constraint.
 
-Use this when work is new, raw, or needs to be reshaped into a proper task slice.
+### Use one current atomic mode
 
-Primary result:
-- a usable task card with Layer A core, one current mode, and a concrete next step.
+Every active task slice should have exactly one current Layer B mode.
 
-### Task execution loop
+Do not use blended labels such as:
 
-`workflows/task-execution-loop.md`
-
-Use this when a task card already exists and the current Layer D state permits bounded progress.
-
-Primary result:
-- forward progress on the current slice with updated mode, state, next step, and work log as needed.
-
-### Workstream loop
-
-`workflows/workstream-loop.md`
-
-Use this when the effort spans multiple coherent slices and task-only tracking is no longer enough.
-
-Primary result:
-- a coordinated `feature_cell` effort with maintained child tasks, milestones, shared decisions, workstream-level control context, and workstream-level Layer D state.
-
-### Checkpoint / review loop
-
-`workflows/checkpoint-review-loop.md`
-
-Use this when progress intentionally pauses at a review or approval boundary.
-
-Primary result:
-- a review packet or approval-ready summary, recorded outcome, and correct post-boundary state transition.
-
-### Handoff / resume loop
-
-`workflows/handoff-resume-loop.md`
-
-Use this when work is paused, transferred, or resumed.
-
-Primary result:
-- preserved control boundary, concise resumability context, and a concrete next step for the next executor.
-
-## The minimum operating discipline
-
-To use this harness correctly, the agent should follow a few rules consistently.
-
-### Always work on a slice
-
-Do not operate on vague broad initiatives when a bounded slice can be defined.
-
-### Always choose one current mode
-
-Layer B is a current posture, not a blended label.
-
-Do not write:
 - `research + implementation`
 - `debug/refactor`
 - `planning/execution`
 
-If more than one mode seems equally necessary, the slice is usually too broad.
+If more than one mode seems equally necessary, the slice is probably too broad and should be resliced.
 
-### Keep Layer C sparse
+### Use routing rules rather than improvised labels
 
-Add `feature_cell` only when continuity across slices or sessions is materially needed.
+Mode choice should be repaired through `policies/routing-rules.md`, not through local naming inventions.
 
-Add `control_profile` only when explicit control obligations differ from baseline.
+### Reclassify when the work changes
 
-### Treat Layer D as authoritative control status
+The current mode is not a permanent identity. It may change as the work moves from investigation to execution, from execution to evaluation, or from remediation to migration.
 
-Layer D answers whether work can continue, is blocked, is paused for review, is awaiting approval, is validating, or is done.
+## Control and state guidance
 
-Do not turn Layer D into a custom workflow taxonomy.
+### Layer C stays sparse
 
-### Always leave a concrete next step
+Layer C should only be used when overlays or containers materially change control obligations or organizational structure.
 
-Every non-terminal active artifact should expose a concrete next move.
+Canonical Layer C constructs in this harness are:
 
-## Default operating sequence for new work
+- `feature_cell`
+- `control_profile`
 
-When a new task arrives:
+Use them because they improve control and coordination clarity, not because they sound architecturally complete.
 
-1. Put the raw request in `active/inbox/` if needed.
-2. Run the intake loop.
-3. Create a task card in `active/tasks/`.
-4. Fill the Layer A core.
-5. Choose exactly one current Layer B mode using `policies/routing-rules.md`.
-6. Apply Layer C only if justified.
-7. Set Layer D state, phase, and concrete `next_step`.
-8. Continue with the task execution loop or stop at a review/handoff boundary if appropriate.
+### Layer D is authoritative control status
 
-## When to create a workstream
+Layer D answers whether work is:
 
-Create a workstream only when the effort clearly needs long-running multi-slice coordination.
+- `draft`
+- `active`
+- `blocked`
+- `checkpoint`
+- `awaiting_approval`
+- `validating`
+- `complete`
+- `cancelled`
 
-Typical signs:
-- Layer A suggests long-horizon execution, such as `execution_horizon = multi_pr` or longer,
-- Layer A suggests high resumability pressure, such as `handoff_need = high`,
-- multiple child tasks are needed,
-- milestones or sequencing matter,
-- the work will likely change modes over time,
-- or workstream-scope control context is required.
+Do not invent local state names. Do not overload state with routing meaning or governance detail. Keep workflow semantics in the workflow, local fields, linked artifacts, and the actual `next_step`.
 
-If those conditions are not present, stay at task level.
+## Directory map
 
-## Routing guidance
+### `AGENTS.md`
 
-Use `policies/routing-rules.md` to map a task slice to one current Layer B mode.
+Direct execution contract for an agent working under the harness.
 
-The routing policy is intentionally small and should remain so; control-profile and workstream decisions should stay in Layer C rather than leaking into routing labels.
+### `concepts/`
 
-When routing or rerouting, ask:
-- what is the dominant kind of work required now,
-- what does the current `next_step` actually demand,
-- does one mode clearly dominate,
-- or is the slice malformed and in need of reslicing.
+Durable conceptual specifications for Layers A through D and the operational playbook.
 
-## Recommended reading path for humans
+### `examples/`
 
-If you are maintaining or extending the harness itself, read in this order:
+Reference examples that show what filled artifacts should look like.
+
+### `indexes/`
+
+Live visibility views for active tasks, active workstreams, blocked items, and pending approvals.
+
+### `policies/`
+
+Default rules for routing, evidence, review, governance, and closure.
+
+### `prompts/`
+
+Prompt documents for common operational entry points such as intake, execution, resume, and review.
+
+### `registries/`
+
+Structured catalogs for modes, overlays, states, and validation configurations.
+
+### `schemas/`
+
+Machine-readable schemas for core harness artifacts.
+
+### `templates/`
+
+Canonical markdown templates for the small set of operational artifacts.
+
+### `workflows/`
+
+Reusable stepwise loops for intake, execution, coordination, review, and handoff.
+
+## Reading path for humans
+
+If you are maintaining or evolving the harness itself, read in this order:
 
 1. `README.md`
 2. `concepts/operational-playbook.md`
 3. the layer references in `concepts/`
-4. the five workflow documents in `workflows/`
+4. the workflow documents in `workflows/`
 5. the templates in `templates/`
 6. `policies/routing-rules.md`
-7. `maintainining.md`
+7. relevant examples, schemas, registries, and maintenance docs as needed
 
-## Recommended reading path for agents
+## Reading path for agents
 
-If an agent is entering the harness fresh, the minimum useful sequence is:
+If you are entering to perform work rather than maintain the harness, read in this order:
 
 1. `README.md`
 2. `AGENTS.md`
-3. the workflow file relevant to the current operation
-4. the template relevant to the artifact being created or updated
-5. `policies/routing-rules.md` when a mode must be chosen or repaired
+3. the relevant workflow in `workflows/`
+4. the relevant template in `templates/`
+5. `policies/routing-rules.md` when routing or rerouting is needed
+6. deeper concept docs only when the immediate task requires them
+
+This keeps the active context small while preserving the authoritative routing and control model.
 
 ## Anti-patterns
 
-Avoid these failure modes:
+The following patterns usually indicate harness drift or misuse.
 
-### Treating the harness as a giant process layer
+### Process theater
 
-The harness should clarify and stabilize work, not bury it under ceremony.
+Creating artifacts that do not improve control, resumability, or review clarity.
 
-### Creating workstreams too early
+### Premature workstreams
 
-Do not promote broad-sounding work into `feature_cell` unless real coordination pressure exists.
+Promoting work into a workstream before there is real coordination pressure.
 
-### Letting the task card go stale
+### Stale authoritative artifacts
 
-The task card is the primary operational record. If it is stale, the harness stops being trustworthy.
+Allowing task cards or workstream cards to fall behind chat history or handoff notes.
 
-### Letting handoff notes replace authoritative cards
+### Blended modes
 
-Handoff notes are secondary aids, not the source of truth.
+Using multiple current Layer B modes instead of reslicing the work.
 
-### Using custom states or blended modes
+### Custom local states
 
-Do not introduce local state taxonomies or blended Layer B labels when the problem is really poor slicing.
+Inventing new Layer D labels instead of using the shared control plane.
 
-### Forgetting closure
+### Layer mixing
 
-Completed or cancelled work should be explicitly closed or archived rather than silently abandoned.
+Encoding routing semantics inside state, or using Layer C as a vague status bucket.
+
+### Vague next steps
+
+Leaving `next_step` values such as `continue`, `work on it`, or `finish later`.
+
+### Forgotten closure
+
+Completing or cancelling work without updating the authoritative artifact and closure context.
 
 ## Practical rule of thumb
 
-If you are unsure what to do next, ask these questions in order:
+The harness is operationally healthy when a fresh human or agent can open the current artifacts and answer, without guesswork:
 
-1. What is the current slice?
-2. What is the current control state?
-3. What is the one current mode?
-4. Is a review, approval, or workstream-control boundary actually present?
-5. What is the concrete next step?
+- what the current slice is,
+- how the agent should work on it now,
+- whether any non-baseline Layer C context materially applies,
+- what the current lifecycle control status is,
+- and what the next concrete step is.
 
-If you can answer those five questions from the artifacts in this directory, the harness is functioning.
+If those answers are obvious, the harness is doing its job.
 
-## Current status of this harness
+## Current status and maintenance guidance
 
-This harness is intentionally minimal.
+This harness is intentionally minimal. Maintain it with the following constraints:
 
-It currently focuses on:
-- markdown-based operational artifacts,
-- explicit workflow loops,
-- light policy and control guidance,
-- human-readable and agent-readable task/workstream records.
+- prefer sharper slicing over more categories,
+- prefer explicit routing rules over improvised labels,
+- prefer a small artifact set over documentation sprawl,
+- keep Layer C sparse,
+- keep Layer D truthful and shared,
+- and update this README when the live harness structure or entry logic changes.
 
-It does not yet require:
-- machine-enforced schemas,
-- automatic linting,
-- dashboard generation,
-- or complex orchestration.
-
-Those can be added later if the operating model proves stable.
-
-## Harness maintenance
-
-If you are changing the harness itself rather than operating within it, use `docs/harness/maintainining.md`.
-
-That guide owns:
-- harness-wide change policy,
-- compatibility and migration status,
-- cross-file synchronization rules,
-- validation checks,
-- and deferred automation guidance.
-
-The harness is healthy when it remains easy to enter, easy to resume, and hard to misunderstand.
+The README should remain an **entry-and-routing document**. It should not absorb the full playbook, replace the concepts, or duplicate detailed workflow instructions. When in doubt, keep it clear, minimal, and operational.

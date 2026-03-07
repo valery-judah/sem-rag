@@ -1,336 +1,422 @@
 # Harness Agent Instructions
 
-This file contains the direct operating instructions for any coding or design agent working inside `docs/harness/`.
+This file contains the direct operating instructions for any agent working inside this harness.
 
-Read this file after `docs/harness/README.md` and before creating or updating any live operational artifact.
+Read this file after `README.md` and before creating, updating, or relying on any live operational artifact.
 
-## Primary role
+## Purpose of this file
+
+This file exists to translate the harness model into direct agent behavior.
 
 When operating under this harness, your job is to:
-- convert incoming work into a well-formed current slice,
+
+- convert incoming work into a bounded current slice,
 - choose the correct current operating posture,
-- maintain accurate control status,
+- maintain truthful control status,
 - keep work resumable across sessions,
-- stop at real review or approval boundaries,
-- avoid turning the harness into a vague note pile.
+- stop at real review, approval, and blocker boundaries,
+- and preserve a small set of authoritative artifacts instead of letting context dissolve into chat history or loose notes.
 
-You are not here to improvise a new workflow ontology. You are here to operate cleanly within the existing one.
+This file is an execution contract. It tells you how to behave inside the harness.
 
-## Authoritative files
+## What this file does not do
 
-Treat these files as authoritative in this order:
+This file does not:
 
-1. `docs/harness/README.md`
-2. this `docs/harness/AGENTS.md`
-3. the relevant workflow file in `docs/harness/workflows/`
-4. the relevant template in `docs/harness/templates/`
-5. `docs/harness/policies/routing-rules.md`
-6. the relevant live artifact in `docs/harness/active/`
+- redefine the full layered architecture,
+- replace the conceptual documents in `concepts/`,
+- replace the workflow loops in `workflows/`,
+- replace schemas, registries, or templates,
+- authorize invention of new local ontology,
+- or turn the harness into a second playbook.
 
-If a task or workstream card exists, it is the authoritative operational record for that item.
+Use this file for direct operating behavior. Use the deeper docs only when more detail is actually needed.
 
-Handoff notes are resumability aids, not primary source of truth.
+## Authority order and context loading
 
-## Core operating rules
+Treat the harness sources as authoritative in this order.
 
-### 1. Always work on a current slice
+1. `README.md`
+2. this `AGENTS.md`
+3. the current authoritative task or workstream artifact for the live item
+4. the relevant workflow in `workflows/`
+5. the relevant template in `templates/`
+6. `policies/routing-rules.md` when selecting, repairing, or changing the current mode
+7. supporting packets, handoff notes, examples, and related references
 
-Do not operate on a vague broad initiative if you can define a bounded current slice.
+When an authoritative task card or workstream card exists, read it first.
 
-If the work is too broad for one current mode to make sense, reslice it.
+A handoff note is a resumability aid, not the primary source of truth.
+
+Indexes, registries, schemas, and examples support operation, but they do not override the authoritative record for a specific live item.
+
+## Core operating invariants
+
+### 1. Always work on a current bounded slice
+
+Do not operate on a vague broad initiative when a narrower current slice can be defined.
+
+If the work is too broad for one current operating mode to make sense, reslice it.
 
 ### 2. Always choose exactly one current Layer B mode
 
-Use only one current operating mode for a task slice.
-
-Allowed modes:
-- `research_scout`
-- `contract_builder`
-- `routine_implementer`
-- `refactor_surgeon`
-- `debug_investigator`
-- `migration_operator`
-- `optimization_tuner`
-- `quality_evaluator`
+Every active task slice must have one current atomic operating mode.
 
 Do not use blended labels such as:
+
 - `research + implementation`
 - `debug/refactor`
 - `planning/execution`
 
-Use `docs/harness/policies/routing-rules.md` when selecting or repairing the mode.
+When the dominant work changes, reroute the slice.
+
+When no single mode clearly dominates, the slice is probably too broad and should be repaired before continuing.
 
 ### 3. Keep Layer C sparse
 
-Apply Layer C only when it materially changes control or organization.
+Use Layer C only when it materially changes organization or control.
 
-Canonical Layer C constructs in this harness:
+In this harness, the canonical Layer C constructs are:
+
 - `feature_cell`
 - `control_profile`
 
-Common `control_profile` preset aliases:
-- `baseline`
-- `reviewed`
-- `change_controlled`
-- `high_assurance`
-
-Use `feature_cell` only when continuity across slices or sessions materially matters.
+Use `feature_cell` only when task-only tracking is no longer enough.
 
 Use a non-baseline `control_profile` only when explicit control obligations differ from baseline.
 
-Do not add Layer C constructs casually.
+Do not add Layer C context casually.
 
-### 4. Treat Layer D as authoritative control status
+### 4. Treat Layer D as the authoritative control plane
 
-Use Layer D to represent whether the item is:
-- `draft`
-- `active`
-- `blocked`
-- `checkpoint`
-- `awaiting_approval`
-- `validating`
-- `complete`
-- `cancelled`
+Layer D says whether work can proceed.
+
+Use only the canonical lifecycle control states defined by the harness.
 
 Do not invent custom state names.
-Do not encode workflow semantics into state labels.
+Do not encode routing semantics into state labels.
 Do not continue execution through a real blocker, checkpoint, or approval boundary.
 
-### 5. Always leave a concrete next step
+### 5. Every non-terminal item must expose a concrete `next_step`
 
-Every non-terminal active artifact must expose one concrete `next_step`.
+`next_step` must be specific enough that another agent or a human can resume work without reconstructing intent from chat history.
 
 Weak examples:
+
 - `continue`
 - `work on it`
 - `finish task`
 
 Strong examples:
-- `Write the failing regression test for the isolated nested-list reproduction case.`
+
+- `Write the failing regression test for the nested-list rendering case.`
 - `Draft the schema acceptance section with explicit required fields and invariants.`
 - `Prepare the review packet comparing the three migration options.`
 
 ### 6. Keep authoritative artifacts current
 
-Before stopping, handing off, or switching modes, update the relevant task card or workstream card.
+Before pausing, handing off, rerouting, or closing work, update the authoritative task card or workstream card.
 
-Do not let chat history or handoff notes become more accurate than the authoritative card.
+Do not let chat history, side notes, or handoff notes become more accurate than the authoritative artifact.
 
-## Required operating sequence for new work
+### 7. Prefer task-first operation
 
-When new work appears:
+A task card is the default operational unit.
 
-1. Read `docs/harness/README.md`.
-2. If needed, place the raw item in `docs/harness/active/inbox/`.
-3. Run `docs/harness/workflows/intake-loop.md`.
-4. Create a task card in `docs/harness/active/tasks/` using `templates/task-card.template.md`.
-5. Fill the required Layer A core.
-6. Choose exactly one current Layer B mode.
-7. Apply Layer C only if justified: add `feature_cell` only for real workstream coordination needs, and add a non-baseline `control_profile` only when explicit control obligations differ from baseline.
-8. Set Layer D `state`, `phase`, and concrete `next_step`.
-9. Continue with the appropriate next loop.
+Do not create a workstream just because an effort sounds important or may become large later.
 
-## Required behavior for active tasks
+Promote into `feature_cell` only when coordination pressure, resumability pressure, or workstream-level control needs are real.
 
-If a task card already exists:
+## Default agent loop
 
-1. Read the task card first.
-2. Treat it as the current operational truth.
-3. Verify that the Layer D state permits the intended work.
-4. Continue through `workflows/task-execution-loop.md`.
-5. Update the work log and control fields after meaningful progress.
-6. Reroute or reslice if the current slice no longer matches the real work.
+For ordinary harness operation, use this loop.
 
-## Required behavior for workstreams
+1. Read the authoritative artifact if one exists. If none exists, intake the raw request.
+2. Define or verify the current bounded slice.
+3. Verify that the Layer A core is present or repair it.
+4. Verify exactly one current Layer B mode.
+5. Verify whether any Layer C context materially applies.
+6. Verify the current Layer D state and whether it permits the intended work.
+7. Verify that `next_step` is concrete.
+8. Perform the current slice of work through the appropriate workflow.
+9. Update the authoritative artifact at the relevant boundary.
+10. Reslice, reroute, promote, hand off, validate, or close when the work shape changes.
 
-If the effort already has a `feature_cell` workstream:
+This loop is the default. Do not improvise a parallel operating system inside the harness.
 
-1. Read the workstream card first.
-2. Then read the relevant active child task cards.
-3. Use `workflows/workstream-loop.md` for cross-slice coordination.
-4. Keep child task lists, milestones, workstream-level control context, and workstream-level Layer D state current.
-5. Do not turn the workstream card into a mega-task.
+## Workflow routing by current situation
 
-## Required behavior at review boundaries
+Use the workflow files for stepwise execution.
 
-If work reaches a real review or approval boundary:
-
-1. Stop normal forward execution.
-2. Use docs/harness/workflows/checkpoint-review-loop.md for checkpoint review boundaries, and use the same control discipline for approval boundaries.
-3. Prepare or update the review packet.
-4. Record `checkpoint_reason` and keep Layer D truthful.
-5. Do not continue beyond the boundary until the review outcome is recorded.
-
-If the result becomes a hard signoff gate, transition to `awaiting_approval`.
-
-## Required behavior for handoff and resume
-
-When stopping or transferring work:
-
-1. Update the authoritative task or workstream card first.
-2. Use `workflows/handoff-resume-loop.md`.
-3. Write or update a handoff note only after the authoritative card is current.
-4. Preserve the exact current control condition.
-5. Expose the smallest useful set of linked artifacts and one concrete next step.
-
-When resuming:
-
-1. Read the authoritative card first.
-2. Read the handoff note second.
-3. Check whether any decision, approval, review, or evidence changed since the note was written.
-4. Resume only if the current Layer D state permits the intended work.
-
-## Artifact creation rules
-
-### Task cards
-
-Create one file per non-trivial task slice in:
-- `docs/harness/active/tasks/`
+### New or raw incoming work
 
 Use:
-- `docs/harness/templates/task-card.template.md`
 
-A task card is mandatory for non-trivial work.
+- `workflows/intake-loop.md`
 
-### Workstream cards
+Expected outcome:
 
-Create a workstream card only when task-only tracking is inadequate.
+- a bounded current slice,
+- a task card,
+- an initial Layer A core,
+- one current Layer B mode,
+- truthful Layer D status,
+- and a concrete `next_step`.
 
-Typical reasons:
-- Layer A suggests long-horizon execution, such as `execution_horizon = multi_pr` or longer,
-- Layer A suggests high resumability pressure, such as `handoff_need = high`,
-- multiple meaningful child slices exist,
-- the effort spans multiple sessions,
-- milestones or sequencing matter,
-- workstream-level review or approval control is needed.
-
-Create in:
-- `docs/harness/active/workstreams/`
+### Active task execution
 
 Use:
-- `docs/harness/templates/workstream-card.template.md`
 
-### Handoff notes
+- `workflows/task-execution-loop.md`
 
-Create or update handoff notes only when work is intentionally paused or transferred.
+Use this when a task card already exists and the current Layer D state permits forward work.
+
+### Multi-slice coordinated effort
 
 Use:
-- `docs/harness/templates/handoff-note.template.md`
 
-Remember: handoff notes are secondary to authoritative cards.
+- `workflows/workstream-loop.md`
 
-## Routing discipline
+Use this only when the effort has legitimately been promoted into a workstream container.
 
-When choosing a mode, ask:
-- what is the current slice,
-- what is the dominant kind of work required now,
-- what does the current `next_step` actually demand,
-- whether exactly one mode dominates,
-- whether the slice should be resliced instead of forcing a blended route.
+### Review or approval boundary
 
-Use the routing rules file rather than improvising local routing conventions.
+Use:
 
-## Control discipline
+- `workflows/checkpoint-review-loop.md`
 
-Before taking action, ask:
-- what is the current Layer D state,
-- does this state permit the work I am about to do,
-- is this actually a blocker, checkpoint, approval gate, validation phase, or active step,
-- what exact next step should remain after I act.
+Use this when normal execution must stop because the work has reached a review, checkpoint, or signoff boundary.
 
-If the answer is unclear, repair the artifact before continuing.
+### Pause, transfer, or resume
 
-## Minimum required fields for a usable task
+Use:
 
-A non-trivial active task is not usable unless it has at least:
-- a meaningful `title`,
-- a current slice summary,
-- the Layer A core,
-- exactly one `current_mode`,
-- a truthful Layer D `state`,
-- a concrete `next_step`,
+- `workflows/handoff-resume-loop.md`
+
+Use this when work is intentionally paused, moved between sessions, or transferred between agents.
+
+## Artifact authority and update rules
+
+### Task card
+
+The task card is the default authoritative artifact for a non-trivial task slice.
+
+Use:
+
+- `templates/task-card.template.md`
+
+The task card should carry the operational truth for the item.
+
+### Workstream card
+
+The workstream card is authoritative for a real workstream container, not for an ordinary task.
+
+Use:
+
+- `templates/workstream-card.template.md`
+
+A workstream card coordinates multiple related task slices. It should not become a mega-task.
+
+### Handoff note
+
+Use:
+
+- `templates/handoff-note.template.md`
+
+Write or update a handoff note only after the authoritative task or workstream artifact is current.
+
+### Review, approval, evidence, and decision artifacts
+
+Use the relevant templates when review, governance, validation, or traceability requires them:
+
+- `templates/review-packet.template.md`
+- `templates/approval-packet.template.md`
+- `templates/evidence-bundle.template.md`
+- `templates/decision-log-entry.template.md`
+
+Introduce these artifacts when they materially improve control clarity. Do not create them for ceremony.
+
+## Role of indexes, registries, schemas, examples, and prompts
+
+### Indexes
+
+Files in `indexes/` provide visibility across live work.
+
+Use them to track and surface status, not as substitutes for authoritative cards.
+
+### Registries
+
+Files in `registries/` define canonical controlled vocabularies and related machine-readable catalog data.
+
+Use them to avoid vocabulary drift.
+
+### Schemas
+
+Files in `schemas/` define structural validity.
+
+Schema-valid is necessary but not sufficient. An artifact can be structurally valid and still be operationally stale, misleading, or incomplete.
+
+### Examples
+
+Files in `examples/` are reference material.
+
+Use them to understand the intended artifact shape. Do not treat them as live operational truth.
+
+### Prompts
+
+Files in `prompts/` are guided entry surfaces for agent use.
+
+They support correct operation, but they do not override the harness rules in `README.md`, `AGENTS.md`, workflows, policies, or live artifacts.
+
+## Boundary and gate behavior
+
+### `blocked`
+
+Stop forward execution.
+
+Record the blocker concretely and leave a useful `next_step` that reflects the actual blocked condition.
+
+Do not pretend blocked work is active.
+
+### `checkpoint`
+
+Stop normal execution and prepare the work for review or checkpoint evaluation.
+
+Make the reason for the checkpoint explicit.
+
+### `awaiting_approval`
+
+Stop forward execution until the required approval or signoff condition is satisfied.
+
+Do not silently continue through the gate.
+
+### `validating`
+
+Use this when evidence gathering, verification, or interpretation has become the dominant current activity.
+
+Treat validation as real work with its own control status, not as a comment attached to unrelated execution.
+
+### `complete` and `cancelled`
+
+These are terminal states.
+
+When work becomes terminal, close it cleanly and keep the artifact truthful.
+
+## Reslice, reroute, and promote rules
+
+### Reslice when the current unit of work is too broad
+
+Reslice when:
+
+- one current mode no longer makes sense,
+- the `next_step` is vague because the slice is too large,
+- the task has implicitly split into multiple meaningful subproblems,
+- or the artifact is trying to represent multiple different kinds of work at once.
+
+### Reroute when the dominant work changes
+
+The current mode is not a permanent identity.
+
+Reroute when the dominant work has changed, for example from:
+
+- investigation to implementation,
+- execution to evaluation,
+- debugging to refactoring,
+- or remediation to migration.
+
+### Promote to workstream only when coordination pressure is real
+
+Promote into `feature_cell` when one or more of the following are true:
+
+- multiple child task slices exist,
+- sequencing or milestones materially matter,
+- resumability and handoff pressure are high,
+- workstream-level decisions or risks need a stable home,
+- or the effort clearly requires long-horizon coordination.
+
+Do not treat long duration alone as sufficient reason to create a workstream.
+
+## Minimum quality bars for live artifacts
+
+### A usable task card must make these items clear
+
+- the current slice,
+- the relevant Layer A core,
+- exactly one current Layer B mode,
+- any applicable Layer C context,
+- truthful Layer D state,
+- one concrete `next_step`,
 - relevant references,
-- and a current work log entry when meaningful progress has occurred.
+- and current work log or closure context when applicable.
 
-## Minimum required fields for a usable workstream
+### A usable workstream card must make these items clear
 
-A workstream is not usable unless it has at least:
-- a workstream `title`,
-- a clear goal,
-- a scope boundary,
-- a promotion reason,
-- current child task structure,
-- current workstream Layer D state,
-- a workstream-level `next_step`,
-- and current shared references or decisions when relevant.
+- workstream title and goal,
+- scope boundary,
+- promotion reason,
+- child task structure,
+- current workstream Layer D status,
+- workstream-level `next_step`,
+- shared decisions, risks, and references,
+- and current milestone or sequencing context when applicable.
+
+### Operational truth matters more than decorative completeness
+
+A shorter truthful artifact is better than a fuller but stale one.
+
+Do not optimize for template filling. Optimize for operational clarity.
+
+## What to do when uncertain
+
+When uncertain, do not invent new local process.
+
+Instead:
+
+1. reread the authoritative artifact,
+2. identify the current slice,
+3. identify the current Layer D state,
+4. identify the one dominant current mode,
+5. check whether a real Layer C construct materially applies,
+6. decide whether the work should proceed, pause, reroute, or reslice,
+7. repair the artifact if the truth is unclear,
+8. continue only through the correct workflow.
+
+If the artifact and the real work disagree, repair the artifact before pretending the work is well-routed.
+
+## Stop and handoff checklist
+
+Before you stop work, hand it off, or end a session, ensure that:
+
+- the authoritative task or workstream artifact is updated,
+- Layer D reflects the true current control condition,
+- `next_step` is concrete,
+- any material decision, review, blocker, or evidence state is recorded,
+- the smallest useful linked artifact set is exposed,
+- and the handoff note, if one exists, is secondary to the authoritative artifact.
 
 ## Anti-patterns
 
-Avoid these behaviors.
+Do not:
 
-### 1. Using the harness as a dumping ground
-
-Do not accumulate vague notes, stale task cards, and outdated handoff summaries without maintaining the control fields.
-
-### 2. Creating workstreams too early
-
-Do not promote broad-sounding work into `feature_cell` unless the coordination need is real.
-
-### 3. Letting cards go stale
-
-A stale authoritative card breaks resumability and routing.
-
-### 4. Continuing through a boundary
-
-Do not continue implementation or migration through:
-- `blocked`
-- `checkpoint`
-- `awaiting_approval`
-
-unless the correct loop explicitly changes that condition.
-
-### 5. Inventing local ontology
-
-Do not add new state names, blended modes, or new universal layer constructs just because one slice is awkward.
-
-Usually the correct action is to improve slicing, routing, or note quality.
-
-### 6. Leaving terminal work unclosed
-
-Do not leave completed or cancelled work indefinitely in active directories with no closure context.
-
-## Preferred behavior when uncertain
-
-If uncertain:
-1. read the current authoritative artifact again,
-2. identify the current slice,
-3. identify the current control state,
-4. identify the one current mode,
-5. check whether a review, approval, or workstream-control boundary is actually present,
-6. repair the artifact if needed,
-7. then continue through the correct workflow loop.
-
-When no single mode fits, reslice.
-When no action is permitted by current state, stop and record the true boundary.
-
-## Minimal checklist before stopping
-
-Before ending a session or yielding control, confirm:
-- the authoritative task/workstream card is current,
-- the Layer D state is truthful,
-- the current mode is still correct,
-- stale blockers/checkpoint reasons were removed or updated,
-- the `next_step` is concrete,
-- important refs are linked,
-- and any handoff note matches the authoritative card.
+- use the harness as a vague note dump,
+- create workstreams too early,
+- let task cards or workstream cards go stale,
+- allow handoff notes to become more accurate than the authoritative artifact,
+- continue through real blocked, checkpoint, or approval boundaries,
+- invent custom states or blended modes,
+- encode multiple unrelated slices into one artifact,
+- use schema validity as a substitute for operational truth,
+- or leave terminal work unclosed.
 
 ## Practical shorthand
 
-For any item in this harness, be able to answer:
-1. What is the current slice or effort?
+For any live item, the harness should make five answers obvious:
+
+1. What is the current slice?
 2. What is the current control state?
 3. What is the one current mode?
 4. Is there a real review, approval, or workstream-control boundary?
 5. What is the concrete next step?
 
-If those five answers are clear in the artifacts, the harness is healthy.
+If those answers are clear, the harness is likely healthy.
+If they are unclear, repair the artifact and routing before doing more work.
