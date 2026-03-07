@@ -1,4 +1,4 @@
-# Layer C: Workstream Containers and Control Profiles
+# Layer C: Workstream Wrappers and Control Profiles
 
 This directory is the canonical **Layer C v2** reference for the harness model.
 
@@ -21,7 +21,7 @@ The older [`layer-c-overlays-containers.md`](../layer-c-overlays-containers.md) 
 
 Layer C keeps two concerns explicit and separate:
 
-1. **Workstream wrapper**: whether the work should be carried through time as a coherent container.
+1. **Workstream wrapper**: whether the work should be carried through time as a coherent `feature_cell`.
 2. **Control regime**: what explicit review, approval, evidence, traceability, or rollback obligations constrain that work.
 
 The canonical Layer C constructs are:
@@ -29,7 +29,7 @@ The canonical Layer C constructs are:
 - `feature_cell`
 - `control_profile`
 
-`feature_cell` is the canonical workstream container.
+`feature_cell` is the canonical workstream wrapper.
 
 `control_profile` is the canonical control object.
 
@@ -205,7 +205,7 @@ then do that instead of inventing another Layer C construct or preset.
 
 ## File guide
 
-- `feature-cell.md`: container semantics and workstream-wrapper guidance
+- `feature-cell.md`: workstream-wrapper semantics and guidance
 - `control-profiles.md`: normalized control model and invariants
 - `presets.md`: preset aliases and default expansions
 - `schema.md`: canonical structure and validation rules

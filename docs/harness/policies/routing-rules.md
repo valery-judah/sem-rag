@@ -19,7 +19,7 @@ Recommended sequence:
 2. fill or review the Layer A core,
 3. use this routing policy to pick one current mode,
 4. open the detailed mode file for that mode,
-5. continue while keeping Layer C container/control-profile context and Layer D lifecycle state separate.
+5. continue while keeping Layer C `feature_cell` / `control_profile` context and Layer D lifecycle state separate.
 
 This file should stay lighter than the per-mode specs. It gives routing guidance, not full mode behavior.
 
@@ -35,7 +35,7 @@ Use this policy when:
 
 Do not use this document to:
 - derive Layer D state,
-- choose Layer C control profiles or containers directly,
+- choose Layer C control profiles or `feature_cell` usage directly,
 - classify whole initiatives instead of the current slice,
 - create blended modes like `research + implementation`.
 

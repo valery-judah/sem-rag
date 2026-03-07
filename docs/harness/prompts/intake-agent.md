@@ -196,7 +196,7 @@ A good intake-agent run should usually result in:
 Do not use this prompt to:
 - perform the entire feature implementation during intake,
 - create a workstream for every large-sounding request,
-- teach legacy overlay terms as if they were the canonical Layer C model,
+- teach legacy Layer C shorthand as if it were the canonical model,
 - leave Layer A mostly empty,
 - select two modes at once,
 - leave `next_step` vague,

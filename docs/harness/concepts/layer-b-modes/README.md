@@ -41,7 +41,7 @@ For a real task slice, the recommended order is:
 2. Read the Layer A snapshot or fill the Layer A core.
 3. Use the routing rules to choose one current Layer B mode.
 4. Read the corresponding mode file in this directory.
-5. Apply the mode guidance while keeping Layer C container/control-profile context and Layer D lifecycle state separate.
+5. Apply the mode guidance while keeping Layer C `feature_cell` / `control_profile` context and Layer D lifecycle state separate.
 
 If no single mode fits cleanly, the task is usually too broad and should be resliced rather than forced into a blended mode.
 
@@ -72,7 +72,7 @@ Layer B describes the current operating posture selected from that shape.
 
 ### Layer B is not Layer C
 
-Layer C adds containers and control profiles such as:
+Layer C adds workstream-wrapper and control-profile context such as:
 - `feature_cell`
 - `control_profile`
 

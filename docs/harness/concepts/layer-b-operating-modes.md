@@ -341,7 +341,7 @@ High-risk or high-consequence work does not automatically create a new Layer B m
 
 ### Rule E -- Horizon affects containment, not atomic mode
 
-If the work is multi-PR or `handoff_need = high`, that often justifies a Layer C workstream container such as `feature_cell`, but the current Layer B mode should still reflect the dominant slice.
+If the work is multi-PR or `handoff_need = high`, that often justifies a Layer C `feature_cell` workstream wrapper, but the current Layer B mode should still reflect the dominant slice.
 
 ## Reclassification and transition rules
 
@@ -448,7 +448,7 @@ Examples:
 - Debug Investigator under a reviewed profile,
 - Contract Builder under a reviewed or high-assurance profile.
 
-### `feature_cell` as workstream container
+### `feature_cell` as workstream wrapper
 
 `feature_cell` should be modeled as a long-horizon workstream wrapper, not as a Layer B peer.
 
@@ -565,7 +565,7 @@ mode_history:
 
 #### Notes
 
-No Layer C workstream container is needed. Lifecycle state is likely `active` with `phase = coding`.
+No Layer C `feature_cell` workstream wrapper is needed. Lifecycle state is likely `active` with `phase = coding`.
 
 ### Example 2 -- Feature request with unclear behavior
 
@@ -585,7 +585,7 @@ No Layer C workstream container is needed. Lifecycle state is likely `active` wi
 
 #### Layer C note
 
-Because `execution_horizon = multi_pr` and `handoff_need = high`, wrap the broader effort in a Layer C `feature_cell` container at workstream scope.
+Because `execution_horizon = multi_pr` and `handoff_need = high`, wrap the broader effort in a Layer C `feature_cell` workstream wrapper at workstream scope.
 
 #### Likely sequence
 

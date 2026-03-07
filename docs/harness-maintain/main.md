@@ -138,7 +138,7 @@ Add a new universal state only when:
 - and the result improves cross-workflow clarity.
 
 When Layer D changes:
-- update `concepts/layer-d-lifecycle-control-plane.md`,
+- update `concepts/layer-d/README.md`, `concepts/layer-d/states.md`, `concepts/layer-d/schema.md`, and `concepts/layer-d/scope-and-transitions.md` as needed,
 - update workflows and prompts that gate execution by state,
 - update templates and examples that enumerate allowed states,
 - update indexes that summarize state,
@@ -160,24 +160,18 @@ Keep the operational playbook task-first by default. Add workflow burden, artifa
 
 ## Current compatibility status
 
-### Layer C card shorthand
+### Layer C historical shorthand
 
 The canonical Layer C model is v2 and lives in `docs/harness/concepts/layer-c/`.
 
-Current task and workstream cards still use a compatibility frontmatter shape:
+Live task and workstream templates now use canonical Layer C fields directly. Legacy shorthand such as:
 - `container: feature_cell`
 - `overlays: []`
-- non-empty `overlays` as shorthand for a non-baseline `control_profile`
+- overlay-era labels such as `review_gatekeeper`
 
-Interpret that compatibility layer as:
-- `container: feature_cell` -> workstream wrapper applies
-- `overlays: []` -> baseline control implied
-- `review_gatekeeper` -> reviewed-style `control_profile`
-- `governance_escalation` -> change-controlled or high-assurance `control_profile`
+belongs only in historical notes, older artifacts, or explicit compatibility references.
 
-This shorthand is still supported, but it is not the canonical Layer C schema.
-
-Use canonical Layer C vocabulary in workflows, prompts, and concept docs even while this frontmatter shorthand remains supported in cards.
+Do not teach that shorthand as current card-authoring practice.
 
 ### Historical Layer C reference
 
@@ -207,9 +201,11 @@ Indexes are derivative operating summaries, not the source of truth.
 They are healthy when:
 - they are shorter than the underlying authoritative cards,
 - their state/mode summaries match the cards,
-- and stale or terminal items are removed promptly.
+- and every concrete entry corresponds to a real authoritative artifact.
 
-Empty indexes are acceptable placeholders when the repository is not yet maintaining that view actively.
+If an index contains concrete entries, it should be treated as a live maintained view rather than an illustrative placeholder.
+
+For startup discovery, `docs/harness/indexes/active-tasks.md` should function as the executable-task queue. If it is stale or incomplete, repair it or fall back to authoritative task cards directly.
 
 ## Synchronization matrix
 
@@ -235,7 +231,10 @@ Synchronize:
 ### If you change Layer D
 
 Synchronize:
-- `docs/harness/concepts/layer-d-lifecycle-control-plane.md`
+- `docs/harness/concepts/layer-d/README.md`
+- `docs/harness/concepts/layer-d/states.md`
+- `docs/harness/concepts/layer-d/schema.md`
+- `docs/harness/concepts/layer-d/scope-and-transitions.md`
 - execution, review, resume, and workstream workflows
 - prompts that gate action by state
 - templates and examples that enumerate states or companion fields
@@ -260,7 +259,7 @@ Synchronize:
 After a harness change:
 
 1. Check vocabulary consistency with `rg`.
-   Review terms like `feature_cell`, `control_profile`, `checkpoint`, `awaiting_approval`, `review_gatekeeper`, `governance_escalation`, `overlay`, and `overlays`.
+   Review terms like `feature_cell`, `control_profile`, `checkpoint`, `awaiting_approval`, `review_gatekeeper`, `governance_escalation`, `overlay`, `overlays`, and `container`.
 
 2. Verify remaining legacy terms are intentional.
    They should be either explicit compatibility references or historical notes, not accidental live ontology.
@@ -284,7 +283,7 @@ The harness intentionally does not yet require:
 That can change later, but only after the prose operating model is stable enough that automation is enforcing settled rules rather than freezing churn.
 
 Good next steps for future maintainers are:
-- decide whether to migrate card frontmatter fully from legacy Layer C shorthand,
 - implement real JSON schemas only after the markdown artifact shape is stable,
+- keep reducing remaining historical Layer C shorthand references,
 - decide whether currently empty indexes should become maintained summaries or be removed,
 - and keep reducing duplicated compatibility notes when the underlying migration is complete.

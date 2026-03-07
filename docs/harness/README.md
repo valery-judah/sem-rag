@@ -118,15 +118,16 @@ When using the harness for real work, enter it in this order:
 
 1. Read this `README.md`.
 2. Read `AGENTS.md` for the direct operating rules given to the agent.
-3. Open the relevant workflow based on the current situation:
+3. If you are entering fresh and no task is preselected, open `indexes/active-tasks.md`, choose from the executable queue, then open the linked authoritative task card in `active/tasks/`.
+4. Open the relevant workflow based on the current situation:
    new or raw work -> `workflows/intake-loop.md`
    existing actionable task -> `workflows/task-execution-loop.md`
    coordinated multi-slice effort -> `workflows/workstream-loop.md`
    review or approval boundary -> `workflows/checkpoint-review-loop.md`
    pause, transfer, or resume -> `workflows/handoff-resume-loop.md`
-4. Use the relevant template in `templates/` if a new artifact must be created.
-5. Use `policies/routing-rules.md` if mode selection, repair, or rerouting is needed.
-6. Consult the concepts only when deeper semantics are required.
+5. Use the relevant template in `templates/` if a new artifact must be created.
+6. Use `policies/routing-rules.md` if mode selection, repair, or rerouting is needed.
+7. Consult the concepts only when deeper semantics are required.
 
 ## Minimum operational artifacts
 
@@ -153,7 +154,7 @@ If you adopt only one artifact from the harness, adopt the task card.
 
 ### Workstream card
 
-Use `templates/workstream-card.template.md` only when task-only tracking is no longer sufficient and the effort genuinely requires a workstream container such as `feature_cell`.
+Use `templates/workstream-card.template.md` only when task-only tracking is no longer sufficient and the effort genuinely requires a `feature_cell` workstream wrapper.
 
 A workstream card coordinates:
 
@@ -280,6 +281,8 @@ Reference examples that show what filled artifacts should look like.
 
 Live visibility views for active tasks, active workstreams, blocked items, and pending approvals.
 
+Use `indexes/active-tasks.md` as the default discovery surface for executable task work when a fresh agent is entering without a preselected task.
+
 ### `policies/`
 
 Default rules for routing, evidence, review, governance, and closure.
@@ -322,10 +325,12 @@ If you are entering to perform work rather than maintain the harness, read in th
 
 1. `README.md`
 2. `AGENTS.md`
-3. the relevant workflow in `workflows/`
-4. the relevant template in `templates/`
-5. `policies/routing-rules.md` when routing or rerouting is needed
-6. deeper concept docs only when the immediate task requires them
+3. `indexes/active-tasks.md` if no task has already been selected
+4. the selected authoritative task card in `active/tasks/`
+5. the relevant workflow in `workflows/`
+6. the relevant template in `templates/`
+7. `policies/routing-rules.md` when routing or rerouting is needed
+8. deeper concept docs only when the immediate task requires them
 
 This keeps the active context small while preserving the authoritative routing and control model.
 

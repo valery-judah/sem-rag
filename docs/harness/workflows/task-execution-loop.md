@@ -32,6 +32,7 @@ A successful execution cycle produces one or more of the following:
 
 Use the task execution loop when:
 - a task card already exists,
+- the task has already been selected from the active queue or by direct authoritative-card lookup,
 - the task has passed intake,
 - the task is currently actionable or ready for bounded continuation,
 - the goal is to make progress on the current slice rather than normalize a new request.
@@ -222,6 +223,8 @@ Evaluate whether execution has revealed the need for:
 
 Add or adjust one when continued autonomous work should stop at a review boundary or when the task now requires stronger-than-baseline control.
 
+For early contract-definition work, keep baseline control while shaping the contract itself. Add a reviewed-style `control_profile` only when the slice has reached a real interpretation or acceptance boundary and progress should pause for review before further implementation-aligned work.
+
 Examples:
 - multiple architecture options now need selection,
 - an RFC draft is ready for review before implementation,
@@ -234,7 +237,7 @@ Examples:
 
 #### `feature_cell`
 
-Promote to workstream container only when task-level tracking is no longer adequate.
+Promote to a `feature_cell` workstream wrapper only when task-level tracking is no longer adequate.
 
 Examples:
 - multiple linked child slices are now required,
