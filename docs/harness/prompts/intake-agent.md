@@ -74,13 +74,17 @@ Use exactly one:
 - `control_profile`
 - preset aliases such as `reviewed`, `change_controlled`, and `high_assurance` when they clarify likely control context
 
-When updating current task or workstream cards, note that the card frontmatter may still use legacy shorthand:
+Task cards now use canonical Layer C frontmatter:
 
-- `container: feature_cell`
-- `overlays: []` for implied baseline control
-- non-empty `overlays` as shorthand for some non-baseline `control_profile`
+- `layer_c.feature_cell_ref`
+- `layer_c.control_profiles`
 
-See `docs/harness-maintain/main.md` for the current compatibility policy and migration status.
+Workstream cards use canonical Layer C and Layer D structures directly:
+
+- `layer_c.feature_cell`
+- `layer_c.control_profiles`
+- `layer_d`
+- `layer_d_companion`
 
 ## Allowed Layer D states
 

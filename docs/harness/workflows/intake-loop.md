@@ -106,15 +106,23 @@ If those conditions are not yet clear, create only a task card.
 
 Create a new task file in `docs/harness/active/tasks/` using `task-card.template.md`.
 
+Task cards store the operational Layer A-D record in structured frontmatter. Treat that frontmatter as authoritative.
+
 Minimum required fields at creation time:
 - `id`
 - `title`
 - `created_at`
 - `updated_at`
-- `state`
-- `current_mode`
-- Layer A core fields
-- `next_step`
+- `layer_a` core fields
+- `layer_b.current_mode`
+- `layer_b.reason`
+- `layer_c.feature_cell_ref`
+- `layer_c.control_profiles`
+- `layer_d.state`
+- `layer_d.next_step`
+- `layer_d.entered_at`
+- `layer_d.updated_at`
+- `layer_d_companion.lifecycle_scope`
 
 The title should describe the current slice, not the entire possible future effort.
 
@@ -195,7 +203,11 @@ Typical examples:
 
 If none apply, leave Layer C empty.
 
-If the current card shape still uses legacy `overlays` / `container` frontmatter, keep that shorthand truthful but treat `feature_cell` and `control_profile` as the canonical Layer C model. Use `docs/harness-maintain/main.md` for the compatibility mapping.
+Task cards now use canonical Layer C fields directly:
+- `layer_c.feature_cell_ref`
+- `layer_c.control_profiles`
+
+If a linked workstream card is created, use its canonical `layer_c.feature_cell`, `layer_c.control_profiles`, `layer_d`, and `layer_d_companion` fields directly.
 
 ### Step 7. Initialize Layer D
 
@@ -209,11 +221,13 @@ Use these defaults:
 - `blocked` only if a concrete blocker is already known.
 
 Also set:
-- `phase`
-- `next_step`
-- `blocking_reason` if blocked
-- `checkpoint_reason` if checkpoint
-- `lifecycle_scope: task`
+- `layer_d.phase`
+- `layer_d.next_step`
+- `layer_d.entered_at`
+- `layer_d.updated_at`
+- `layer_d_companion.blocking_reason` if blocked
+- `layer_d_companion.checkpoint_reason` if checkpoint
+- `layer_d_companion.lifecycle_scope: task`
 
 The `next_step` must be concrete enough that another agent can resume without reinterpretation.
 

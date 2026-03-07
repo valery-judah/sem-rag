@@ -10,8 +10,6 @@ It is intentionally lightweight. The goal is to show:
 - how Layer C and Layer D look at workstream scope,
 - how milestones, shared decisions, and next steps are recorded.
 
-This example keeps the current workstream-card compatibility shape: `container` and `overlays` remain legacy Layer C shorthand. See `docs/harness-maintain/main.md` for the canonical model and migration status.
-
 ```md
 ---
 id: W-2026-03-segmentation
@@ -19,11 +17,44 @@ title: Hierarchical segmentation feature development
 created_at: 2026-03-06
 updated_at: 2026-03-06
 owner: agent
-state: active
-phase: contract formation
-next_step: Create child task for intermediate schema definition and link it to milestone: contract approval.
-container: feature_cell
-overlays: []
+layer_c:
+  feature_cell:
+    scope: workstream
+    slug: hierarchical-segmentation
+    title: Hierarchical segmentation feature development
+    goal: Define, validate, and stage the first operational version of hierarchical segmentation for the retrieval pipeline.
+    reason: Task-only tracking became inadequate because the effort expanded into multiple coherent slices with shared milestones and resumability pressure.
+    entered_at: 2026-03-06
+    status_ref: null
+    operating_package_ref: null
+    slices_ref:
+      - docs/harness/active/tasks/T-2026-03-06-002-define-intermediate-schema-acceptance-contract.md
+      - docs/harness/active/tasks/T-2026-03-06-003-outline-segmentation-logic-boundaries-phase-1.md
+      - docs/harness/active/tasks/T-2026-03-06-004-draft-evaluation-harness-outline-segmentation-acceptance.md
+      - docs/harness/active/tasks/T-2026-03-06-005-prepare-review-packet-phase-1-contract-approval.md
+    milestones:
+      - phase-1 contract definition in progress
+      - contract approved for implementation-aligned slices
+    decision_log_ref: null
+    handoff_ref: null
+    evidence_refs: []
+    control_profile_refs: []
+    notes: intermediate schema review must happen before implementation child tasks begin
+  control_profiles: []
+layer_d:
+  state: active
+  phase: contract formation
+  next_step: Create child task for intermediate schema definition and link it to milestone: contract approval.
+  entered_at: 2026-03-06
+  updated_at: 2026-03-06
+layer_d_companion:
+  blocking_reason: null
+  unblock_condition: null
+  checkpoint_reason: null
+  approval_ref: null
+  evidence_refs: []
+  decision_ref: null
+  lifecycle_scope: workstream
 ---
 
 # Goal
@@ -88,25 +119,56 @@ Task-only tracking became inadequate because the work expanded into multiple coh
 
 # Layer C
 
-- container: feature_cell
-- overlays:
+```yaml
+layer_c:
+  feature_cell:
+    scope: workstream
+    slug: hierarchical-segmentation
+    title: Hierarchical segmentation feature development
+    goal: Define, validate, and stage the first operational version of hierarchical segmentation for the retrieval pipeline.
+    reason: Task-only tracking became inadequate because the effort expanded into multiple coherent slices with shared milestones and resumability pressure.
+    entered_at: 2026-03-06
+    status_ref: null
+    operating_package_ref: null
+    slices_ref:
+      - docs/harness/active/tasks/T-2026-03-06-002-define-intermediate-schema-acceptance-contract.md
+      - docs/harness/active/tasks/T-2026-03-06-003-outline-segmentation-logic-boundaries-phase-1.md
+      - docs/harness/active/tasks/T-2026-03-06-004-draft-evaluation-harness-outline-segmentation-acceptance.md
+      - docs/harness/active/tasks/T-2026-03-06-005-prepare-review-packet-phase-1-contract-approval.md
+    milestones:
+      - phase-1 contract definition in progress
+      - contract approved for implementation-aligned slices
+    decision_log_ref: null
+    handoff_ref: null
+    evidence_refs: []
+    control_profile_refs: []
+    notes: intermediate schema review must happen before implementation child tasks begin
+  control_profiles: []
+```
 
 ## Layer C rationale
 
-`feature_cell` applies because this effort now spans multiple meaningful child slices and requires shared milestones and resumable coordination. No workstream-scope non-baseline control profile is active yet because review and approval boundaries are still local to specific child tasks.
+`feature_cell` applies because this effort now spans multiple meaningful child slices and requires shared milestones and resumable coordination. No workstream-scope non-baseline `control_profile` is active yet because review and approval boundaries are still local to specific child tasks.
 
 # Layer D
 
-- state: active
-- phase: contract formation
-- next_step: Create child task for intermediate schema definition and link it to milestone: contract approval.
-- blocking_reason:
-- unblock_condition:
-- checkpoint_reason:
-- approval_ref:
-- evidence_refs:
-- decision_ref:
-- lifecycle_scope: workstream
+```yaml
+layer_d:
+  state: active
+  phase: contract formation
+  next_step: Create child task for intermediate schema definition and link it to milestone: contract approval.
+  entered_at: 2026-03-06
+  updated_at: 2026-03-06
+
+layer_d_companion:
+  blocking_reason: null
+  unblock_condition: null
+  checkpoint_reason: null
+  approval_ref: null
+  evidence_refs: []
+  decision_ref: null
+  lifecycle_scope: workstream
+```
 
 ## Current control condition
 
@@ -157,7 +219,7 @@ A few things are deliberate here:
 
 - The workstream card does not try to duplicate detailed child-task logs.
 - The goal and scope boundary are explicit, so another agent can tell what belongs here.
-- Layer C is minimal: only the `feature_cell` container is active.
+- Layer C is minimal: only the `feature_cell` workstream structure is active.
 - Layer D is workstream-scoped and answers only the control question for the larger effort.
 - The next step is coordination-oriented rather than implementation-oriented.
 

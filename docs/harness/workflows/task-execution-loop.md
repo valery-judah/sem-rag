@@ -47,10 +47,10 @@ Do not use this loop for:
 The execution loop expects an existing task card containing at least:
 - task identity and summary,
 - current Layer A snapshot,
-- one current Layer B mode,
-- any active Layer C control context or workstream linkage,
-- current Layer D status,
-- current `next_step`,
+- one current `layer_b.current_mode`,
+- any active `layer_c.control_profiles` and any `layer_c.feature_cell_ref`,
+- current `layer_d` status,
+- current `layer_d.next_step`,
 - relevant references and work log context.
 
 The task card is the primary source of truth for execution.
@@ -205,10 +205,10 @@ Typical reroutes:
 - `migration_operator -> quality_evaluator` when the dominant work becomes evidence generation and comparison.
 
 If the mode changes:
-- update `current_mode`,
-- record the reason,
-- record any reroute trigger if your task format supports it,
-- ensure the `next_step` matches the new posture.
+- update `layer_b.current_mode`,
+- update `layer_b.reason`,
+- update `layer_b.reroute_triggers` if they changed,
+- ensure `layer_d.next_step` matches the new posture.
 
 Do not keep an obsolete mode for convenience.
 
@@ -243,7 +243,7 @@ Examples:
 
 When Layer C changes, update the task card immediately and add any required linked artifact such as a workstream card or review packet.
 
-If the current task card still uses legacy `overlays` / `container` frontmatter, keep that shorthand truthful while treating `feature_cell` and `control_profile` as the canonical Layer C model.
+Task cards now use canonical Layer C fields directly. If a linked workstream card also needs an update, use its canonical `layer_c.feature_cell`, `layer_c.control_profiles`, `layer_d`, and `layer_d_companion` fields directly.
 
 ### Step 9. Transition Layer D when the control status changes
 
@@ -260,12 +260,12 @@ Common transitions:
 - `active -> cancelled` when the task is intentionally terminated.
 
 For every non-trivial transition, update the relevant companion fields:
-- `blocking_reason`
-- `unblock_condition`
-- `checkpoint_reason`
-- `approval_ref`
-- `evidence_refs`
-- `decision_ref`
+- `layer_d_companion.blocking_reason`
+- `layer_d_companion.unblock_condition`
+- `layer_d_companion.checkpoint_reason`
+- `layer_d_companion.approval_ref`
+- `layer_d_companion.evidence_refs`
+- `layer_d_companion.decision_ref`
 
 Never change state without updating the task narrative enough to explain why.
 
@@ -385,9 +385,9 @@ Do not mark a task `complete`, `checkpoint`, or `awaiting_approval` without enou
 
 The work log can be detailed, but the task card must still clearly expose:
 - what this slice is,
-- what mode it is in,
-- what state it is in,
-- what happens next.
+- what `layer_b.current_mode` it is in,
+- what `layer_d.state` it is in,
+- what `layer_d.next_step` is.
 
 ## Execution checklist
 
@@ -436,7 +436,7 @@ Observed during execution:
 - further progress should pause until the direction is confirmed.
 
 Good execution result:
-- a reviewed-style non-baseline control boundary recorded or confirmed,
+- a review-oriented slice `control_profile` recorded or confirmed,
 - review packet linked,
 - Layer D transitions to `checkpoint`,
 - `checkpoint_reason` recorded,

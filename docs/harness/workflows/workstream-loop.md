@@ -4,7 +4,7 @@
 
 ## Purpose
 
-The workstream loop governs how an agent operates when a long-running effort has been promoted into a `feature_cell` container.
+The workstream loop governs how an agent operates when a long-running effort has been promoted into a `feature_cell` workstream.
 
 Its job is not to replace task execution. Its job is to:
 - maintain the workstream as a coherent multi-slice effort,
@@ -54,7 +54,7 @@ The workstream loop expects:
 
 The workstream card is the control surface for the effort at workstream scope.
 
-Current workstream cards still use legacy `container` / `overlays` frontmatter as shorthand. Interpret those fields through the v2 Layer C model and use `docs/harness-maintain/main.md` for the full compatibility mapping and migration status.
+Use the canonical workstream-card structure: `layer_c.feature_cell`, `layer_c.control_profiles`, `layer_d`, and `layer_d_companion`.
 
 ## Core principles
 

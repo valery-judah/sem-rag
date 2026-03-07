@@ -66,13 +66,12 @@ Use exactly one:
 - `control_profile`
 - preset aliases such as `reviewed`, `change_controlled`, and `high_assurance` when they clarify likely control context
 
-When updating current task or workstream cards, note that the card frontmatter still uses legacy harness-local shorthand:
+Task cards now use canonical Layer C frontmatter:
 
-- `container: feature_cell`
-- `overlays: []` for implied baseline control
-- non-empty `overlays` as shorthand for some non-baseline `control_profile`
+- `layer_c.feature_cell_ref`
+- `layer_c.control_profiles`
 
-See `docs/harness-maintain/main.md` for the current compatibility policy and migration status.
+If you also update a linked workstream card, use its canonical `layer_c.feature_cell`, `layer_c.control_profiles`, `layer_d`, and `layer_d_companion` fields directly.
 
 ## Allowed Layer D states
 
@@ -128,7 +127,9 @@ Only update it when a real boundary emerged:
 - add or adjust a non-baseline `control_profile` if continued progress should stop at a review boundary or must cross a stronger approval/evidence/traceability/rollback boundary,
 - promote to `feature_cell` only if task-only tracking is now clearly inadequate.
 
-When the current card uses legacy `overlays` frontmatter, keep that shorthand truthful but interpret it through the v2 Layer C model described in `docs/harness-maintain/main.md`.
+When updating a task card, use its canonical `layer_c.feature_cell_ref` and `layer_c.control_profiles` fields directly.
+
+If the task is linked to a workstream and that workstream card also needs an update, use the workstream card's canonical Layer C and Layer D fields directly.
 
 Do not add extra control context or a workstream just because the task feels important.
 
