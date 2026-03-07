@@ -6,13 +6,9 @@ Use this template when an effort has been promoted to a `feature_cell` and task-
 
 A workstream card is the authoritative operational record for a long-running multi-slice effort. It coordinates child tasks, milestones, cross-slice decisions, shared risks, and workstream-scope control status. It is not a replacement for task cards and should not absorb detailed execution that belongs inside individual child tasks.
 
-Current workstream cards still use legacy harness-local Layer C shorthand in frontmatter:
+Current workstream cards still use legacy Layer C frontmatter shorthand.
 
-- `container: feature_cell`
-- `overlays: []` for implied baseline control
-- non-empty `overlays` to represent some non-baseline `control_profile`
-
-Canonical Layer C remains the v2 model defined by `feature_cell` and `control_profile`.
+Canonical Layer C remains the v2 model defined by `feature_cell` and `control_profile`. See `docs/harness/maintainining.md` for the compatibility mapping and migration policy.
 
 ## Usage notes
 
@@ -225,13 +221,12 @@ For this template, `container` should remain `feature_cell`.
 If the effort no longer needs workstream treatment, retire the workstream rather than changing the container value.
 
 #### `overlays`
-This field is legacy harness-local shorthand, not the canonical Layer C schema.
+This field is legacy harness-local shorthand, not the canonical Layer C schema. See `docs/harness/maintainining.md` for migration policy.
 
 Use `overlays: []` when baseline control is implied at workstream scope.
 
 If a non-baseline control regime must be shown in the current card shape, use the existing local values and interpret them as:
-- `review_gatekeeper` -> reviewed-style `control_profile`
-- `governance_escalation` -> change-controlled or high-assurance `control_profile`
+- use the compatibility mapping in `docs/harness/maintainining.md`
 
 Do not mirror task-scope control context automatically.
 

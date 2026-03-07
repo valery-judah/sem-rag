@@ -72,6 +72,8 @@ When updating current task or workstream cards, note that the card frontmatter s
 - `overlays: []` for implied baseline control
 - non-empty `overlays` as shorthand for some non-baseline `control_profile`
 
+See `docs/harness/maintainining.md` for the current compatibility policy and migration status.
+
 ## Allowed Layer D states
 
 - `draft`
@@ -126,7 +128,7 @@ Only update it when a real boundary emerged:
 - add or adjust a non-baseline `control_profile` if continued progress should stop at a review boundary or must cross a stronger approval/evidence/traceability/rollback boundary,
 - promote to `feature_cell` only if task-only tracking is now clearly inadequate.
 
-When the current card uses legacy `overlays` frontmatter, keep that shorthand truthful but interpret it through the v2 Layer C model.
+When the current card uses legacy `overlays` frontmatter, keep that shorthand truthful but interpret it through the v2 Layer C model described in `docs/harness/maintainining.md`.
 
 Do not add extra control context or a workstream just because the task feels important.
 

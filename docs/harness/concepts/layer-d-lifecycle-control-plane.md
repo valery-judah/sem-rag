@@ -1623,84 +1623,14 @@ layer_d:
 The workstream-level control status is not mechanically reducible to child-task states. The container introduces long-horizon coordination, not a new lifecycle vocabulary.
 
 ## Adoption and governance guidance
-## 1. Start with the canonical eight states
 
-Do not add more universal lifecycle states at first.
+Keep Layer D small:
+- start with the canonical eight states,
+- use workflow-local `phase` for local progression,
+- let Layer C carry control-regime detail,
+- and use linked evidence or decisions for richer transition context.
 
-Use:
-
-- the eight canonical states,
-- workflow-local `phase`,
-- Layer C control profiles and `feature_cell`,
-- companion fields and linked artifacts.
-
-That combination is usually sufficient.
-
-## 2. Keep Layer D implementation hard but small
-
-Implement Layer D as:
-
-- a small hard lifecycle model,
-- explicit transitions,
-- optional workflow-local `phase`,
-- compact companion fields.
-
-Do **not** implement it as a giant workflow-specific top-level state machine.
-
-## 3. Let workflow families vary through `phase`, not top-level state inflation
-
-Different workflows will legitimately use different `phase` vocabularies.
-
-That is expected.
-
-What should stay shared is the control-plane vocabulary.
-
-## 4. Let control profiles carry control detail
-
-If a team wants to record:
-
-- reviewer role,
-- signoff role,
-- approval packet requirement,
-- traceability requirement,
-- rollback obligation,
-
-put those in Layer C control profiles or related governance artifacts, not in Layer D state semantics.
-
-## 5. Track both task and workstream lifecycle when work is long-running
-
-For one-shot work, task-level lifecycle is usually enough.
-
-For long-running work inside a `feature_cell`, record:
-
-- workstream-level Layer D,
-- task-level Layer D for current slices,
-- linked task/workstream identifiers,
-- decision references at major gates.
-
-## 6. Use decision logs and evidence references aggressively
-
-Layer D is more useful when key transitions are backed by:
-
-- checkpoint notes,
-- decision records,
-- approval references,
-- evidence bundles,
-- acceptance notes.
-
-This is especially important for resumability and handoff.
-
-## 7. Add a new universal state only under strong governance
-
-A new Layer D state should be added only when:
-
-- the distinction appears repeatedly in real work,
-- it changes control behavior materially across many workflows,
-- existing states plus `phase` cannot model it clearly,
-- operators can apply it consistently,
-- the added state improves rather than harms cross-workflow clarity.
-
-This threshold should be enforced deliberately.
+For harness-wide policy on adding universal states, evolving Layer D adoption, and synchronizing other docs when Layer D changes, use `docs/harness/maintainining.md`.
 
 ## Final recommendation
 

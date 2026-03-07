@@ -6,13 +6,9 @@ Use this template for every non-trivial task slice in the harness.
 
 A task card is the authoritative operational record for a single current slice of work. It should be small enough that one current Layer B mode makes sense and explicit enough that another agent can resume from it without replaying the whole history.
 
-Current task cards still use legacy harness-local Layer C shorthand in frontmatter:
+Current task cards still use legacy Layer C frontmatter shorthand.
 
-- `container: feature_cell`
-- `overlays: []` for implied baseline control
-- non-empty `overlays` to represent some non-baseline `control_profile`
-
-Canonical Layer C remains the v2 model defined by `feature_cell` and `control_profile`.
+Canonical Layer C remains the v2 model defined by `feature_cell` and `control_profile`. See `docs/harness/maintainining.md` for the compatibility mapping and migration policy.
 
 ## Usage notes
 
@@ -212,13 +208,12 @@ Expected values:
 - `quality_evaluator`
 
 #### `overlays`
-This field is legacy harness-local shorthand, not the canonical Layer C schema.
+This field is legacy harness-local shorthand, not the canonical Layer C schema. See `docs/harness/maintainining.md` for migration policy.
 
 Use `overlays: []` when baseline control is implied.
 
 If a non-baseline control regime must be shown in the current card shape, use the existing local values and interpret them as:
-- `review_gatekeeper` -> reviewed-style `control_profile`
-- `governance_escalation` -> change-controlled or high-assurance `control_profile`
+- use the compatibility mapping in `docs/harness/maintainining.md`
 
 Leave empty when no extra control burden is needed.
 

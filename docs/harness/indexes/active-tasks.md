@@ -88,15 +88,6 @@ Use this section for lightweight operational reminders.
 
 ## Maintenance guidance
 
-This index is healthy when:
-- it is short enough to scan quickly,
-- each entry clearly points to a real current task slice,
-- mode and state match the authoritative task cards,
-- the `next_step` field is concrete enough to support triage,
-- and stale tasks are removed promptly.
+Use `docs/harness/maintainining.md` for harness-wide index policy.
 
-This index is unhealthy when:
-- it becomes more detailed than the actual task cards,
-- task mode/state here diverges from authoritative artifacts,
-- completed or cancelled tasks linger as if active,
-- or it starts functioning as a second source of truth.
+This file should remain a short derivative summary of the authoritative task cards, not a second source of truth.

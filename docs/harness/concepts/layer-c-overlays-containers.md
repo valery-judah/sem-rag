@@ -17,36 +17,6 @@ Layer C v2 is defined in:
 
 ## Why this file still exists
 
-This file documented the older v1.1 Layer C framing built around overlay labels such as `review_gatekeeper` and `governance_escalation`.
+This file remains only to explain older references that used overlay-era Layer C labels.
 
-That framing is no longer the canonical model.
-
-The current Layer C v2 model uses:
-
-- `feature_cell` as the canonical workstream wrapper
-- `control_profile` as the canonical control object
-- a small preset vocabulary (`baseline`, `reviewed`, `change_controlled`, `high_assurance`) as ergonomic aliases
-
-## Migration summary
-
-Use the v2 docs when reading or editing live harness guidance.
-
-Interpret older v1.1 references as historical shorthand only:
-
-- `review_gatekeeper` -> usually a reviewed-style `control_profile`
-- `governance_escalation` -> usually a change-controlled or high-assurance `control_profile`
-- `feature_cell` -> remains the canonical workstream wrapper
-
-## Boundary reminder
-
-Layer C defines the workstream wrapper and control regime.
-
-It does not define:
-
-- Layer A problem shape
-- Layer B current operating mode
-- Layer D current lifecycle state
-
-## Historical note
-
-The older overlay/container framing was useful during early harness iteration, but it has been superseded by the v2 mini-spec because the v2 model is smaller, more explicit, and more mechanically legible.
+That framing is no longer canonical. Use the v2 Layer C docs for live guidance and use `docs/harness/maintainining.md` for the compatibility mapping and historical-policy summary.

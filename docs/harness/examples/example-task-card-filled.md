@@ -10,7 +10,7 @@ It is intentionally concrete and moderately detailed. The goal is to show:
 - how the current mode, current state, and current next step remain explicit,
 - how the work log supports resumability without replacing the control fields.
 
-This example keeps the current task-card compatibility shape: `container` and `overlays` remain legacy harness-local Layer C shorthand. Canonical Layer C still uses `feature_cell` and `control_profile`.
+This example keeps the current task-card compatibility shape: `container` and `overlays` remain legacy Layer C shorthand. See `docs/harness/maintainining.md` for the canonical model and migration status.
 
 ```md
 ---

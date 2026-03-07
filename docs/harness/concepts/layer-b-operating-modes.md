@@ -254,22 +254,9 @@ In normal operation, the recommended sequence is:
 
 ## Standard mode template
 
-Every Layer B mode should be specified using a consistent template.
+The detailed mode files should stay structurally consistent, but the shared authoring contract for maintaining that structure now lives in `docs/harness/maintainining.md`.
 
-### Mode fields
-
-- **Purpose** -- what this mode is fundamentally for.
-- **When to use** -- the dominant condition that should trigger this mode.
-- **Typical Layer A signals** -- the Layer A patterns that commonly route here.
-- **Primary working posture** -- how the agent should think and operate.
-- **Primary outputs** -- the expected artifacts or outcomes.
-- **Allowed autonomy pattern** -- the normal execution envelope for the mode.
-- **Typical validation style** -- how confidence is built in this mode.
-- **Common reroute triggers** -- what should cause transition to another mode.
-- **Common next modes** -- where the work typically goes next.
-- **Typical risks / failure modes** -- the main way this mode can go wrong.
-
-The dedicated files in `layer-b-modes/` should use this template, even if some sections become more operational over time than the umbrella Layer B document.
+Use this umbrella Layer B document for semantics and routing boundaries. Use the maintainer guide when changing the canonical mode set or the shared mode-file structure.
 
 ## Routing guidance from Layer A to Layer B
 
