@@ -27,7 +27,7 @@ At a high level, this harness provides:
 The harness is built around four layers:
 - **Layer A** — classification snapshot of the current work slice
 - **Layer B** — current atomic operating mode
-- **Layer C** — overlays and containers
+- **Layer C** — workstream containers and control profiles
 - **Layer D** — lifecycle control plane
 
 Those concepts are defined in the `concepts/` directory. This README explains how to use them operationally.
@@ -53,7 +53,13 @@ If a task is small and bounded, the harness should remain small and bounded too.
   concepts/
     layer-a-taxonomy.md
     layer-b-operating-modes.md
-    layer-c-overlays-containers.md
+    layer-c/
+      README.md
+      feature-cell.md
+      control-profiles.md
+      presets.md
+      schema.md
+      examples.md
     layer-d-lifecycle-control-plane.md
     operational-playbook.md
 
@@ -127,7 +133,7 @@ A task card is the authoritative record for:
 - the current slice,
 - Layer A snapshot,
 - current Layer B mode,
-- current Layer C overlays/container,
+- current Layer C workstream wrapper and control profile context,
 - current Layer D status,
 - current next step,
 - work log and closure context.
@@ -243,7 +249,7 @@ If more than one mode seems equally necessary, the slice is usually too broad.
 
 ### Keep Layer C sparse
 
-Do not add overlays or `feature_cell` unless they materially change control or organization.
+Do not add `control_profile` records or `feature_cell` unless they materially change control or organization.
 
 ### Treat Layer D as authoritative control status
 
@@ -299,7 +305,7 @@ If you are maintaining or extending the harness itself, read in this order:
 
 1. `README.md`
 2. `concepts/operational-playbook.md`
-3. the four layer documents in `concepts/`
+3. the layer references in `concepts/`
 4. the five workflow documents in `workflows/`
 5. the templates in `templates/`
 6. `policies/routing-rules.md`
