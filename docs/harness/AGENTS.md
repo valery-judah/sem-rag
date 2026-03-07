@@ -129,9 +129,11 @@ Strong examples:
 
 ### 6. Keep authoritative artifacts current
 
-Before pausing, handing off, rerouting, or closing work, update the authoritative task card or workstream card.
+After meaningful progress, update the authoritative task card or workstream card before reporting, pausing, handing off, rerouting, or closing work.
 
 Do not let chat history, side notes, or handoff notes become more accurate than the authoritative artifact.
+Do not let the final response become more current than the authoritative artifact.
+If work changed the truth, write the truth back first.
 
 ### 7. Prefer task-first operation
 
@@ -153,7 +155,7 @@ For ordinary harness operation, use this loop.
 6. Verify the current Layer D state and whether it permits the intended work.
 7. Verify that `next_step` is concrete.
 8. Perform the current slice of work through the appropriate workflow.
-9. Update the authoritative artifact at the relevant boundary.
+9. Hit the write-back boundary: refresh the authoritative artifact before reporting or stopping.
 10. Reslice, reroute, promote, hand off, validate, or close when the work shape changes.
 
 This loop is the default. Do not improvise a parallel operating system inside the harness.

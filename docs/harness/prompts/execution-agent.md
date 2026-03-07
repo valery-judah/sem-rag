@@ -35,8 +35,9 @@ For the target task:
 6. keep exactly one truthful current Layer B mode,
 7. apply or update Layer C only if a real boundary emerged,
 8. update Layer D to match the real current control condition,
-9. refresh the concrete `next_step` or close/pause the task correctly,
-10. create or update linked artifacts only when the work actually crossed into review, governance, handoff, or workstream territory.
+9. hit the write-back boundary before reporting, pausing, rerouting, or closing,
+10. refresh the concrete `next_step` or close/pause the task correctly,
+11. create or update linked artifacts only when the work actually crossed into review, governance, handoff, or workstream territory.
 
 ## Hard rules
 
@@ -47,8 +48,11 @@ For the target task:
 - Do not invent new Layer D states.
 - Do not silently expand scope just because adjacent work is nearby.
 - If the slice no longer fits one mode cleanly, reslice or reroute it.
+- After meaningful progress, update the authoritative artifact before reporting, pausing, rerouting, or closing the cycle.
 - Do not leave a non-terminal task without a concrete `next_step`.
 - Do not let the work log become more accurate than the control fields at the top of the task card.
+- Do not let the final response become more current than the task card.
+- Before ending the cycle, check `layer_b.current_mode`, `layer_d.state`, `layer_d.next_step`, relevant `layer_d_companion` refs, and work-log recency.
 
 ## Allowed Layer B modes
 
@@ -158,6 +162,7 @@ When changing state, also update the needed companion fields such as:
 - `decision_ref`
 
 Do not change state without also making the task card intelligible to the next agent.
+State changes are incomplete until the required companion fields are updated.
 
 ## Expected artifact updates
 
@@ -165,6 +170,8 @@ You should typically do the following:
 - update the target task card in `docs/harness/active/tasks/`,
 - optionally update a linked workstream card if task-level progress changes workstream coordination,
 - optionally create or update a review packet, handoff note, or other linked artifact only if the work actually reached that boundary.
+
+Before you stop, make sure the updated artifact already contains the latest mode, state, `next_step`, and linked refs.
 
 ## Required quality bar
 
@@ -176,6 +183,7 @@ At the end of the execution cycle, the harness should make these answers clear:
 5. What is the concrete next step now?
 
 If those answers are not clear in the updated artifacts, execution is incomplete.
+If the final response says something newer than the task card, execution is incomplete.
 
 ## Response behavior
 

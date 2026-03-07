@@ -83,10 +83,12 @@ The default operating loop is:
 5. apply Layer C only if it materially changes organization or control,
 6. set Layer D status and a concrete `next_step`,
 7. execute the current slice,
-8. update the authoritative artifacts at meaningful boundaries,
+8. refresh the authoritative artifact immediately after meaningful progress and before reporting, pausing, or closing,
 9. reclassify, reroute, promote, hand off, validate, or close when the shape changes.
 
 This is the central discipline of the harness.
+
+If work changed the truth, write the truth back first.
 
 ## The five operating questions
 
@@ -260,6 +262,8 @@ Layer D answers whether work is:
 - `cancelled`
 
 Do not invent local state names. Do not overload state with routing meaning or governance detail. Keep workflow semantics in the workflow, local fields, linked artifacts, and the actual `next_step`.
+
+Before reporting, pausing, rerouting, or closing, refresh the authoritative artifact so the final response does not become more current than the card.
 
 ## Directory map
 

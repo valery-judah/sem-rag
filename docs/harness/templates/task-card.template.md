@@ -13,7 +13,9 @@ Task cards now use canonical Layer C fields directly. If a task belongs to a wor
 
 - Create one file per task in `docs/harness/active/tasks/`.
 - Use the task card as the primary source of truth for the slice.
-- Update the card whenever the slice, mode, Layer C context, state, or next step changes materially.
+- After meaningful progress, update the card before reporting, pausing, handing off, rerouting, or closing the cycle.
+- Refresh the card whenever the slice, mode, Layer C context, state, next step, or linked evidence or decision refs change materially.
+- Treat these as the default maintenance surfaces during write-back: `updated_at`, `layer_b.*`, `layer_d.*`, relevant `layer_d_companion.*` fields, and the work log.
 - Keep detailed execution notes in the work log, but keep the frontmatter clean enough to function as a control surface.
 - If the task grows beyond one coherent slice, reslice it or promote the larger effort to a workstream rather than turning this card into a catch-all.
 
@@ -138,6 +140,7 @@ Use the body for:
 - and closure context.
 
 Do not mirror the frontmatter values into body bullet lists just to keep them visible twice.
+Do not let the work log or final response become more current than the frontmatter control surface.
 
 ### `id`
 
@@ -170,6 +173,7 @@ Use:
 - `updated_at` for latest card update date.
 
 These are card-level timestamps.
+Refresh `updated_at` whenever a meaningful write-back changes the card.
 
 ### `layer_a`
 
@@ -327,13 +331,17 @@ Record when the task entered the current Layer D state.
 #### `layer_d.updated_at`
 
 Record the last time the Layer D record itself changed.
+Refresh this whenever `layer_d.state`, `phase`, or `next_step` is rewritten to match current reality.
 
 ### `layer_d_companion`
 
 Companion field guidance:
-- fill `blocking_reason` and preferably `unblock_condition` when `layer_d.state = blocked`
-- fill `checkpoint_reason` when `layer_d.state = checkpoint`
-- fill `approval_ref` when approval exists or is pending through a linked artifact
+- state changes are incomplete until the required companion fields are updated
+- `blocked` requires `blocking_reason` and a useful `unblock_condition`
+- `checkpoint` requires `checkpoint_reason` and linked review material when present
+- `awaiting_approval` requires `approval_ref` or an explicit approval dependency
+- `validating` should accumulate `evidence_refs`
+- `complete` should leave a concrete acceptance basis in closure context and any supporting refs
 - fill `evidence_refs` when validation, checkpoint, or completion depends on evidence
 - fill `decision_ref` when a meaningful decision changed the route or closed the task
 - keep `lifecycle_scope: task`
@@ -387,6 +395,7 @@ A good work log entry records:
 - resulting next move.
 
 Do not let the work log replace the summary or the frontmatter control fields.
+Refresh the work log in the same write-back pass that refreshes mode, state, `next_step`, and companion refs.
 
 ### Open Questions / Risks
 

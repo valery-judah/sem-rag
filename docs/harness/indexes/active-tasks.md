@@ -36,13 +36,13 @@ Refresh this index when any of the following occur:
 
 | Task ID | Title | Mode | State | Workstream | Next step | Notes |
 |---|---|---|---|---|---|---|
-| `T-2026-03-07-001` | Define explicit parser contract for canonical output and degraded behavior | `contract_builder` | `active` |  | Draft the parser contract delta covering anchor completeness, metadata schema, supported content-type behavior, and degraded-output rules. | Bounded parser contract-definition slice; baseline Layer C only. |
+| `T-2026-03-07-001` | Define explicit parser contract for canonical output and degraded behavior | `contract_builder` | `active` |  | Turn the drafted parser contract delta into implementation-facing acceptance rules for metadata fields, anchor completeness, and degraded-output behavior. | Bounded parser contract-definition slice; baseline Layer C only. |
 
 ## Suggested ordering
 
 Use this section to express lightweight priority or execution ordering within the executable queue without turning the index into a project plan.
 
-1. `T-2026-03-07-001` — active parser contract-definition slice that can proceed immediately and should clarify the next parser enforcement task.
+1. `T-2026-03-07-001` — active parser contract-definition slice that can proceed immediately and should now convert the drafted delta into implementation-ready acceptance rules.
 
 ## Secondary non-executable views
 
