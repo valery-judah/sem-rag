@@ -5,14 +5,14 @@ created_at: 2026-03-07
 updated_at: 2026-03-07
 owner: agent
 layer_a:
-  intent: define_contract
-  problem_uncertainty: medium
-  dependency_complexity: medium_high
-  knowledge_locality: mixed
-  specification_maturity: medium
-  validation_burden: high
-  blast_radius: medium_high
-  execution_horizon: short
+  intent: research
+  problem_uncertainty: design_heavy
+  dependency_complexity: cross_module
+  knowledge_locality: scattered_internal
+  specification_maturity: draft_contract
+  validation_burden: partial_signals_only
+  blast_radius: subsystem
+  execution_horizon: multi_step
 layer_b:
   current_mode: contract_builder
   reason: The dominant work is turning the parser's partly specified behavior into an explicit contract that downstream implementation and tests can rely on.

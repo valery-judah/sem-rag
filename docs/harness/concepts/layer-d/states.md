@@ -436,7 +436,7 @@ Use:
 
 - Layer A for work shape,
 - Layer B for operating posture,
-- Layer C for workstream containers and control profiles,
+- Layer C for workstream wrappers and control profiles,
 - Layer D for current lifecycle gate/status.
 
 ## Minimal examples
@@ -496,4 +496,4 @@ Keep the state set small, use companion fields for specificity, use `phase` for 
 
 - Layer A classification,
 - Layer B operating mode,
-- and Layer C control-profile / container context.
+- and Layer C control-profile / `feature_cell` context.

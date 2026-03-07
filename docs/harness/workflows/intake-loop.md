@@ -154,6 +154,13 @@ This is enough to support routing without overloading intake.
 
 If some values are ambiguous, choose the best grounded current value and record the uncertainty in the task summary or open questions section.
 
+Preferred starter values for commonly improvised fields:
+- `intent`: `implement`, `refactor`, `debug`, `research`, `review`, `migrate`, `optimize`
+- `dependency_complexity`: `self_contained`, `few_local_dependencies`, `cross_module`, `cross_service`, `external_or_multi_party`
+- `knowledge_locality`: `fully_local`, `mostly_local`, `scattered_internal`, `external_research_required`, `tacit_human_required`
+
+Use `research` for contract-definition or uncertainty-reduction slices when the dominant work is making the boundary explicit. Use `review` when critique, assessment, approval, or interpretation is the main requested outcome. If none is perfect, choose the closest canonical value and explain the nuance in notes rather than inventing a new value.
+
 ### Step 5. Choose exactly one Layer B current mode
 
 Choose the dominant operating posture for the current slice.
@@ -191,6 +198,8 @@ Typical examples:
 - RFC or contract must be reviewed before implementation,
 - evaluation findings must be interpreted before the next move,
 - the task should stop after producing a review packet.
+
+Keep baseline control while drafting or shaping the contract itself. Add `reviewed` only when the slice has reached a real review boundary and should stop there before implementation-aligned continuation.
 
 #### Apply a change-controlled or high-assurance `control_profile` only if stronger-than-baseline control is required
 

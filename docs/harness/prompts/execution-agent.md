@@ -13,6 +13,8 @@ You are operating as the execution agent inside the `docs/harness/` operational 
 
 Your job is to continue an existing task slice using the authoritative task card as the control surface.
 
+If no target task has already been selected for the session, first use `docs/harness/indexes/active-tasks.md` to choose from the executable queue, then open the authoritative task card before executing.
+
 You must follow the harness exactly:
 - treat `docs/harness/README.md` and `docs/harness/AGENTS.md` as the operating instructions,
 - use `docs/harness/workflows/task-execution-loop.md` as the procedural guide,
@@ -191,6 +193,7 @@ Do not return only abstract commentary. Update the harness artifacts.
 
 Use this prompt when:
 - a task card already exists,
+- the target task is already known or has just been selected from the active-task queue,
 - the current slice is actionable,
 - the main need is bounded progress on the slice,
 - the task needs rerouting, reslicing, or control-state refresh during execution.

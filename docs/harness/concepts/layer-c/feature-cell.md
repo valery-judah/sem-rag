@@ -1,6 +1,6 @@
 # Feature Cell
 
-This document defines **`feature_cell`** as the canonical Layer C workstream container.
+This document defines **`feature_cell`** as the canonical Layer C workstream wrapper.
 
 A `feature_cell` is a lightweight wrapper for **long-horizon, multi-slice work** that needs continuity, visibility, and resumability across time. It does not define the current operating mode, and it is not a lifecycle state.
 
@@ -153,7 +153,7 @@ Good examples:
 - hierarchical segmentation phase 1
 - eval domain centralization rollout
 
-### 2. Keep the container lightweight
+### 2. Keep the workstream wrapper lightweight
 
 A `feature_cell` should carry the minimum structure needed for continuity and control.
 
@@ -178,7 +178,7 @@ Each child slice may also have its own Layer D record.
 
 Do not collapse these into one undifferentiated status line.
 
-### 5. Control semantics stay outside the container
+### 5. Control semantics stay outside the workstream wrapper
 
 Use linked `control_profile` records when control obligations matter.
 
@@ -291,7 +291,7 @@ Links to major evidence artifacts relevant at workstream scope.
 
 References to linked Layer C `control_profile` records.
 
-These refs let the container compose with the control regime without absorbing those semantics.
+These refs let the workstream wrapper compose with the control regime without absorbing those semantics.
 
 ### `notes`
 
@@ -377,7 +377,7 @@ Typical components:
 - next-step pointer,
 - linked `control_profile` refs.
 
-These are typical defaults, not the semantic definition of the container.
+These are typical defaults, not the semantic definition of the workstream wrapper.
 
 ## Validation rules
 

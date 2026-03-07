@@ -39,6 +39,11 @@ Do not use this loop for:
 - checkpoint packaging itself,
 - workstream coordination that is not actually pausing or transferring the work.
 
+If a fresh agent is entering without a preselected task, do discovery before this loop:
+- use `indexes/active-tasks.md` for executable task discovery,
+- or use the linked authoritative paused item already identified by the relevant handoff, review, or approval artifact,
+- then open the authoritative task or workstream card before resuming.
+
 ## Inputs
 
 The handoff / resume loop expects:

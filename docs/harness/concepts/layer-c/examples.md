@@ -210,7 +210,7 @@ layer_c:
 
 ### Important boundary note
 
-Do not infer stronger control semantics from the mere presence of a `feature_cell`. The container exists because the work spans time and slices, not because it is blocked or high-assurance.
+Do not infer stronger control semantics from the mere presence of a `feature_cell`. The workstream wrapper exists because the work spans time and slices, not because it is blocked or high-assurance.
 
 ---
 
@@ -412,7 +412,7 @@ layer_c:
 
 You do not need a special construct like `evaluation_supervision` or `migration_review_gate`. The combined semantics are already captured by:
 
-- one container
+- one `feature_cell` workstream wrapper
 - one workstream-level control profile
 - one slice-level strengthening profile
 
@@ -572,12 +572,12 @@ Use `high_assurance` only when the actual discipline is materially stronger.
 
 These examples show the main Layer C patterns:
 
-- no container + baseline control
-- no container + reviewed slice
+- no `feature_cell` wrapper + baseline control
+- no `feature_cell` wrapper + reviewed slice
 - feature cell + implicit baseline
 - feature cell + workstream-level change control
 - feature cell + workstream control + slice-local strengthening
-- no container + high-assurance slice
+- no `feature_cell` wrapper + high-assurance slice
 - explicit mixed profiles without preset proliferation
 
 The general rule is:

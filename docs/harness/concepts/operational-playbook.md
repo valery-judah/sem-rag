@@ -13,7 +13,7 @@ It is designed to work **with** the existing layered architecture rather than re
 
 - **Layer A** classifies the current work slice.
 - **Layer B** selects the current atomic operating mode.
-- **Layer C** provides workstream containers and control profiles.
+- **Layer C** provides `feature_cell` workstream wrappers and control profiles.
 - **Layer D** records lifecycle control status.
 
 The playbook answers a narrower question:
@@ -45,7 +45,7 @@ The playbook must preserve the separation between:
 
 - classification,
 - operating posture,
-- Layer C container/control context,
+- Layer C `feature_cell` / `control_profile` context,
 - and lifecycle state.
 
 ### 2. Remain minimal
@@ -58,7 +58,7 @@ The default path should work for small tasks, not only for large programs.
 
 ### 4. Scale to long-running work
 
-The same playbook should support promotion into a workstream container when needed.
+The same playbook should support promotion into a `feature_cell` workstream wrapper when needed.
 
 ### 5. Optimize for resumability and handoff
 
@@ -137,7 +137,7 @@ A task slice is the default entry point for all incoming work.
 
 A longer-running coordinated unit containing multiple task slices across time.
 
-A workstream should usually be represented through a **Layer C `feature_cell` container** when:
+A workstream should usually be represented through a **Layer C `feature_cell` workstream wrapper** when:
 
 - the work spans multiple slices,
 - multiple mode changes are expected,
@@ -307,7 +307,7 @@ Use the routing rules document as the canonical routing policy.
 
 Evaluate Layer C in this order:
 
-1. Does the work need a `feature_cell` container?
+1. Does the work need a `feature_cell` workstream wrapper?
 2. Does the work need a non-baseline `control_profile`?
 3. If yes, which obligations actually apply?
    - review,
@@ -318,7 +318,7 @@ Evaluate Layer C in this order:
 4. Does the control profile apply at slice or workstream scope?
 5. If workstream-scoped, is inheritance to child slices explicit?
 
-This order keeps container decisions separate from control-profile decisions.
+This order keeps `feature_cell` decisions separate from control-profile decisions.
 
 ### Step 6. Set Layer D
 
@@ -435,7 +435,7 @@ Layer C modifies or wraps work. It is not a status model.
 
 Always evaluate Layer C in this order:
 
-1. container need,
+1. `feature_cell` need,
 2. control-profile need,
 3. scope and inheritance need.
 
@@ -518,7 +518,7 @@ Record inheritance when local practice needs it, for example:
 
 ### Composition rules
 
-- At most one container per scope.
+- At most one `feature_cell` workstream wrapper per scope.
 - More than one control profile may apply when the semantics are genuinely distinct.
 - Prefer explicit obligations over inventing new Layer C constructs.
 - The stricter obligation wins when obligations conflict.
@@ -853,7 +853,7 @@ At handoff time, another operator should be able to answer:
 
 - what the task is,
 - why the current mode was chosen,
-- what control profile or container applies,
+- what control profile or `feature_cell` context applies,
 - what the current state is,
 - what the next step is,
 - what decisions have already been made,
@@ -932,7 +932,7 @@ Do not create giant custom states such as:
 Use:
 
 - Layer B for operating posture,
-- Layer C for containers and control profiles,
+- Layer C for `feature_cell` wrappers and control profiles,
 - Layer D for control status,
 - and local `phase` for detail.
 
@@ -942,7 +942,7 @@ A task is not "a debug task forever" merely because one slice required `debug_in
 
 ### 3. Treating `feature_cell` as a mode
 
-It is a container, not an operating posture.
+It is a workstream wrapper, not an operating posture.
 
 ### 4. Treating a control profile as a state
 
@@ -1097,7 +1097,7 @@ This playbook should be interpreted conservatively:
 - keep the shared model small,
 - keep the task slice current,
 - keep the operating mode singular,
-- keep containers and control profiles explicit,
+- keep `feature_cell` wrappers and control profiles explicit,
 - keep lifecycle state clean,
 - and keep `next_step` concrete.
 

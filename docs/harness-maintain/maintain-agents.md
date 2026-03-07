@@ -543,7 +543,7 @@ When editing or reviewing the file, use this checklist.
 ### Workstream discipline
 
 - Does it still prevent premature workstream creation?
-- Does it still keep `feature_cell` as a container rather than a mode or state?
+- Does it still keep `feature_cell` as a workstream wrapper rather than a mode or state?
 - Does it still treat workstream cards as coordination wrappers rather than mega-tasks?
 
 ### Resumability
@@ -622,11 +622,12 @@ Examples:
 A light review can use these questions:
 
 1. Are agents still entering the harness correctly?
-2. Are they updating authoritative artifacts first?
-3. Are they using one current mode reliably?
-4. Are they respecting Layer D boundaries?
-5. Are handoffs preserving resumability?
-6. Are known anti-patterns increasing or decreasing?
+2. Are fresh agents discovering work through the executable queue before execution?
+3. Are they updating authoritative artifacts first?
+4. Are they using one current mode reliably?
+5. Are they respecting Layer D boundaries?
+6. Are handoffs preserving resumability?
+7. Are known anti-patterns increasing or decreasing?
 
 The goal is not ceremony.
 
@@ -716,7 +717,7 @@ The sixth is **resumability as a first-class requirement**.
 The playbook defines resumability and handoff as a main design goal, and the AGENTS file already reflects that. The final design should keep that strong: another agent should be able to resume from the maintained artifacts with minimal reconstruction.  
 
 The seventh is **task-first, workstream-later**.
-`feature_cell` should remain an escalation, not a default. The playbook and `feature-cell.md` are explicit that the container exists only when multi-slice coordination, resumability pressure, or workstream-level visibility/control is actually needed.  
+`feature_cell` should remain an escalation, not a default. The playbook and `feature-cell.md` are explicit that the workstream wrapper exists only when multi-slice coordination, resumability pressure, or workstream-level visibility/control is actually needed.  
 
 ## What `AGENTS.md` should contain
 
@@ -907,5 +908,3 @@ I would write the new `AGENTS.md` like this:
 That gives you a document that is small, directive, and faithful to the rest of the harness.
 
 The main design rule is this: **README orients, playbook explains, AGENTS executes**. The current docs already support that separation; the new AGENTS should lean into it harder.   
-
-

@@ -18,13 +18,13 @@ updated_at: 2026-03-06
 owner: agent
 layer_a:
   intent: debug
-  problem_uncertainty: medium
-  dependency_complexity: medium
+  problem_uncertainty: local_ambiguity
+  dependency_complexity: few_local_dependencies
   knowledge_locality: mostly_local
-  specification_maturity: high
-  validation_burden: medium
-  blast_radius: medium
-  execution_horizon: short
+  specification_maturity: frozen_contract
+  validation_burden: tests_strong_confidence
+  blast_radius: subsystem
+  execution_horizon: atomic
 layer_b:
   current_mode: debug_investigator
   reason: The dominant work is reproduction, isolation, and root-cause identification for the regression.

@@ -13,7 +13,7 @@ Layer A is intentionally narrow. It does **not** define:
 - the current operating mode,
 - the lifecycle state,
 - the control profile,
-- or the workstream container.
+- or the `feature_cell` workstream wrapper.
 
 Instead, it describes the current work slice as observed now so that later layers can make routing and control decisions consistently.
 
@@ -21,7 +21,7 @@ The design goal is to separate:
 
 - **classification** of the work,
 - **routing** into an operating mode,
-- **Layer C control profiles and containers**,
+- **Layer C control profiles and `feature_cell` wrappers**,
 - and **lifecycle state** in the control plane.
 
 This keeps the taxonomy stable even when the task changes mode or control regime over time.
@@ -49,7 +49,7 @@ Examples:
 - Optimization Tuner
 - Quality Evaluator
 
-### Layer C -- Workstream containers and control profiles
+### Layer C -- Workstream wrappers and control profiles
 
 Structures that modify or wrap work rather than describing the problem itself.
 
@@ -103,7 +103,7 @@ Layer A avoids this by answering only one question:
 
 > What is the current shape of this work slice?
 
-That snapshot can later be used to select an operating mode, apply control profiles, or wrap work in a long-horizon container.
+That snapshot can later be used to select an operating mode, apply control profiles, or wrap work in a long-horizon `feature_cell`.
 
 ## Design principles
 
@@ -569,7 +569,7 @@ Guidance:
 
 Important note:
 
-This axis may later justify a container such as `feature_cell`, but the container itself should not be encoded in Layer A.
+This axis may later justify a `feature_cell` workstream wrapper, but that wrapper itself should not be encoded in Layer A.
 
 ## 5.2 Feedback loop speed
 
@@ -656,7 +656,7 @@ Examples:
 - **execution_horizon** describes the shape of work over time.
 - **lifecycle state** describes current control status such as active, blocked, validating, or awaiting approval.
 
-### Rule 6 -- No axis value may be an operating mode, control profile, or container
+### Rule 6 -- No axis value may be an operating mode, control profile, or workstream wrapper
 
 The following do **not** belong in Layer A values:
 
@@ -701,7 +701,7 @@ Examples:
 
 These are routing outputs.
 
-### Control profiles and containers
+### Control profiles and workstream wrappers
 
 Examples:
 
@@ -939,7 +939,7 @@ Examples:
 - diagnosis-heavy `debug` work may route to `Debug Investigator`
 - heavy evaluation burden may route to `Quality Evaluator`
 
-### Into Layer C -- control profiles and containers
+### Into Layer C -- control profiles and workstream wrappers
 
 Examples:
 

@@ -111,7 +111,7 @@ At minimum, the file should orient the reader to:
 
 - **Layer A** as classification of the current work slice,
 - **Layer B** as the one current operating mode,
-- **Layer C** as overlays/containers applied only when justified,
+- **Layer C** as `feature_cell` / `control_profile` context applied only when justified,
 - **Layer D** as lifecycle/control status.
 
 It should also explain the default operational flow:
@@ -132,6 +132,7 @@ The top-level `README.md` should function as a router.
 It should tell a reader where to go next depending on context, for example:
 
 - new/raw work → intake loop,
+- fresh agent with no selected task → active executable-task queue, then authoritative task card,
 - existing actionable task → task execution loop,
 - multi-slice coordinated effort → workstream loop,
 - review/approval boundary → checkpoint-review loop,
@@ -264,7 +265,7 @@ The `README.md` should preserve the separation between:
 
 - Layer A classification,
 - Layer B current operating posture,
-- Layer C overlays/containers,
+- Layer C `feature_cell` / `control_profile` context,
 - Layer D control status.
 
 Any wording that causes these layers to collapse into one another should be corrected.
@@ -586,7 +587,7 @@ Check whether the wording preserves the separation between:
 
 - classification,
 - current posture,
-- overlays/containers,
+- `feature_cell` / `control_profile` context,
 - lifecycle/control state.
 
 If the wording collapses those together, fix it.
@@ -1018,5 +1019,4 @@ If I compress that into a recommended final outline, it would look like this:
 18. Maintenance guidance
 
 My main recommendation is structural: move the **five operating questions** much earlier and make them part of the README’s central framing. They are the cleanest bridge between context modeling and operational use. Right now they are effectively the best summary of the harness, and they deserve to function as the README’s backbone rather than as a closing note.  
-
 

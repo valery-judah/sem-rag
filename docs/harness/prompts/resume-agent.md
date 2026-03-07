@@ -11,6 +11,10 @@ You are operating as the resume agent inside the `docs/harness/` operational har
 
 Your job is to safely resume work from existing harness artifacts after a pause, transfer, or interruption.
 
+If no target item has already been selected for the session, first identify it from the relevant live harness surface:
+- use `docs/harness/indexes/active-tasks.md` for executable task work,
+- or use the linked authoritative paused item already named by a handoff, review, or approval artifact.
+
 You must follow the harness exactly:
 - treat `docs/harness/README.md` and `docs/harness/AGENTS.md` as the operating instructions,
 - use `docs/harness/workflows/handoff-resume-loop.md` as the primary procedural guide,
@@ -204,7 +208,8 @@ Use this prompt when:
 - an interrupted task needs safe continuation,
 - a workstream is being re-entered after a pause,
 - the next agent must verify whether paused work is truly resumable,
-- a handoff note exists and must be checked against the current authoritative artifact.
+- a handoff note exists and must be checked against the current authoritative artifact,
+- or a fresh agent has already identified the target item and now needs to verify that resume is actually correct.
 
 Do not use this prompt when:
 - the work is brand new and has not gone through intake,

@@ -186,6 +186,13 @@ Fill at least the required Layer A core fields:
 
 Use Layer A to capture the current problem shape, not long-term identity.
 
+Preferred starter values for commonly improvised Layer A fields:
+- `intent`: `implement`, `refactor`, `debug`, `research`, `review`, `migrate`, `optimize`
+- `dependency_complexity`: `self_contained`, `few_local_dependencies`, `cross_module`, `cross_service`, `external_or_multi_party`
+- `knowledge_locality`: `fully_local`, `mostly_local`, `scattered_internal`, `external_research_required`, `tacit_human_required`
+
+Use the closest canonical value and explain nuance in notes rather than inventing local variants such as task-specific synonyms or ad hoc severity bands.
+
 ### `layer_b.current_mode`
 
 Use exactly one current Layer B operating mode.
@@ -229,6 +236,8 @@ Keep this list empty unless non-baseline control is materially active for the ta
 Use `[]` when baseline control is implied.
 
 Each item should use the canonical Layer C `control_profile` fields. For task cards, profiles should usually be slice-scoped.
+
+For early contract-definition work, keep baseline control while the contract is still being drafted. Add a reviewed-style `control_profile` only when the slice has reached a real review or interpretation boundary and progress should pause there before implementation-aligned continuation.
 
 Minimal reviewed-profile example:
 
@@ -413,13 +422,13 @@ updated_at: 2026-03-06
 owner: agent
 layer_a:
   intent: debug
-  problem_uncertainty: medium
-  dependency_complexity: medium
+  problem_uncertainty: local_ambiguity
+  dependency_complexity: few_local_dependencies
   knowledge_locality: mostly_local
-  specification_maturity: high
-  validation_burden: medium
-  blast_radius: medium
-  execution_horizon: short
+  specification_maturity: frozen_contract
+  validation_burden: tests_strong_confidence
+  blast_radius: subsystem
+  execution_horizon: atomic
 layer_b:
   current_mode: debug_investigator
   reason: Root-cause isolation is the dominant current work.
@@ -455,13 +464,13 @@ created_at: 2026-03-06
 updated_at: 2026-03-06
 owner: agent
 layer_a:
-  intent: review
-  problem_uncertainty: medium
-  dependency_complexity: medium
+  intent: research
+  problem_uncertainty: design_heavy
+  dependency_complexity: cross_module
   knowledge_locality: scattered_internal
   specification_maturity: scoped_problem
-  validation_burden: high
-  blast_radius: medium
+  validation_burden: partial_signals_only
+  blast_radius: subsystem
   execution_horizon: multi_pr
 layer_b:
   current_mode: contract_builder

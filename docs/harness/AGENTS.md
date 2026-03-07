@@ -50,6 +50,18 @@ A handoff note is a resumability aid, not the primary source of truth.
 
 Indexes, registries, schemas, and examples support operation, but they do not override the authoritative record for a specific live item.
 
+## Startup discovery for fresh agents
+
+If you are entering the harness without a preselected task, start from `indexes/active-tasks.md`.
+
+Use that file as the discovery surface for executable task work, then open the selected authoritative task card in `active/tasks/` before entering execution or resume.
+
+Treat the queue as derivative only:
+
+- every queue entry should correspond to a real task card,
+- authoritative task cards win on any mismatch,
+- if the queue is stale, missing, or inconsistent, treat that as harness-maintenance debt and fall back to scanning authoritative task cards directly.
+
 ## Core operating invariants
 
 ### 1. Always work on a current bounded slice
@@ -169,7 +181,7 @@ Use:
 
 - `workflows/task-execution-loop.md`
 
-Use this when a task card already exists and the current Layer D state permits forward work.
+Use this when a task card has already been selected and the current Layer D state permits forward work.
 
 ### Multi-slice coordinated effort
 
@@ -177,7 +189,7 @@ Use:
 
 - `workflows/workstream-loop.md`
 
-Use this only when the effort has legitimately been promoted into a workstream container.
+Use this only when the effort has legitimately been promoted into a `feature_cell` workstream wrapper.
 
 ### Review or approval boundary
 
@@ -209,7 +221,7 @@ The task card should carry the operational truth for the item.
 
 ### Workstream card
 
-The workstream card is authoritative for a real workstream container, not for an ordinary task.
+The workstream card is authoritative for a real `feature_cell` workstream wrapper, not for an ordinary task.
 
 Use:
 
@@ -243,6 +255,8 @@ Introduce these artifacts when they materially improve control clarity. Do not c
 Files in `indexes/` provide visibility across live work.
 
 Use them to track and surface status, not as substitutes for authoritative cards.
+
+For fresh task discovery, use `indexes/active-tasks.md` first. It should expose only executable default-queue items in its primary section.
 
 ### Registries
 

@@ -140,7 +140,7 @@ layer_c:
 
 - Keep `feature_cell` workstream-scoped.
 - Materialize workstream-level `control_profile` records only when explicit obligations differ from baseline.
-- Do not use legacy `container` / `overlays` shorthand.
+- Do not use legacy Layer C shorthand.
 - Do not encode Layer D state inside Layer C.
 
 ## Layer D

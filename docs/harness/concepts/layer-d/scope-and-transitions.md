@@ -30,7 +30,7 @@ In the layered model:
 
 - **Layer A** describes the current work slice.
 - **Layer B** selects the current operating mode.
-- **Layer C** defines workstream containers and control profiles.
+- **Layer C** defines workstream wrappers and control profiles.
 - **Layer D** records the current lifecycle gate/status inside that context.
 
 A useful shorthand:
@@ -153,7 +153,7 @@ Layer C and Layer D must remain sharply separated.
 
 Layer C may indicate:
 
-- a `feature_cell` workstream container,
+- a `feature_cell` workstream wrapper,
 - a non-baseline `control_profile`,
 - review obligations,
 - approval obligations,
