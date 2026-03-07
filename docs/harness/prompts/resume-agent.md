@@ -72,7 +72,7 @@ When updating current task or workstream cards, note that the card frontmatter s
 - `overlays: []` for implied baseline control
 - non-empty `overlays` as shorthand for some non-baseline `control_profile`
 
-See `docs/harness/maintainining.md` for the current compatibility policy and migration status.
+See `docs/harness-maintain/main.md` for the current compatibility policy and migration status.
 
 ## Allowed Layer D states
 

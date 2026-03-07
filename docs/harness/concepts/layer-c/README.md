@@ -15,7 +15,7 @@ It answers questions such as:
 - whether rollback expectations must be visible,
 - whether work should be wrapped as a long-horizon workstream.
 
-The older [`layer-c-overlays-containers.md`](../layer-c-overlays-containers.md) remains as a historical pointer for the v1.1 model. Use this directory as the current reference, and use `docs/harness/maintainining.md` for ongoing compatibility and migration policy.
+The older [`layer-c-overlays-containers.md`](../layer-c-overlays-containers.md) remains as a historical pointer for the v1.1 model. Use this directory as the current reference, and use `docs/harness-maintain/main.md` for ongoing compatibility and migration policy.
 
 ## What Layer C does
 
@@ -224,4 +224,4 @@ Recommended reading order:
 
 The older Layer C v1.1 model used overlay-era labels such as `review_gatekeeper` and `governance_escalation`.
 
-In v2, live Layer C guidance should use `feature_cell` plus `control_profile` semantics instead. Use `docs/harness/maintainining.md` for the historical mapping and compatibility policy while the repository still carries legacy card shorthand.
+In v2, live Layer C guidance should use `feature_cell` plus `control_profile` semantics instead. Use `docs/harness-maintain/main.md` for the historical mapping and compatibility policy while the repository still carries legacy card shorthand.

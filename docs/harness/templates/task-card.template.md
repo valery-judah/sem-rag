@@ -8,7 +8,7 @@ A task card is the authoritative operational record for a single current slice o
 
 Current task cards still use legacy Layer C frontmatter shorthand.
 
-Canonical Layer C remains the v2 model defined by `feature_cell` and `control_profile`. See `docs/harness/maintainining.md` for the compatibility mapping and migration policy.
+Canonical Layer C remains the v2 model defined by `feature_cell` and `control_profile`. See `docs/harness-maintain/main.md` for the compatibility mapping and migration policy.
 
 ## Usage notes
 
@@ -208,12 +208,12 @@ Expected values:
 - `quality_evaluator`
 
 #### `overlays`
-This field is legacy harness-local shorthand, not the canonical Layer C schema. See `docs/harness/maintainining.md` for migration policy.
+This field is legacy harness-local shorthand, not the canonical Layer C schema. See `docs/harness-maintain/main.md` for migration policy.
 
 Use `overlays: []` when baseline control is implied.
 
 If a non-baseline control regime must be shown in the current card shape, use the existing local values and interpret them as:
-- use the compatibility mapping in `docs/harness/maintainining.md`
+- use the compatibility mapping in `docs/harness-maintain/main.md`
 
 Leave empty when no extra control burden is needed.
 

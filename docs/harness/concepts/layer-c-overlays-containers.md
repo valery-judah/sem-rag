@@ -19,4 +19,4 @@ Layer C v2 is defined in:
 
 This file remains only to explain older references that used overlay-era Layer C labels.
 
-That framing is no longer canonical. Use the v2 Layer C docs for live guidance and use `docs/harness/maintainining.md` for the compatibility mapping and historical-policy summary.
+That framing is no longer canonical. Use the v2 Layer C docs for live guidance and use `docs/harness-maintain/main.md` for the compatibility mapping and historical-policy summary.

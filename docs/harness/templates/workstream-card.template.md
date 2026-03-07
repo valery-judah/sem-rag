@@ -8,7 +8,7 @@ A workstream card is the authoritative operational record for a long-running mul
 
 Current workstream cards still use legacy Layer C frontmatter shorthand.
 
-Canonical Layer C remains the v2 model defined by `feature_cell` and `control_profile`. See `docs/harness/maintainining.md` for the compatibility mapping and migration policy.
+Canonical Layer C remains the v2 model defined by `feature_cell` and `control_profile`. See `docs/harness-maintain/main.md` for the compatibility mapping and migration policy.
 
 ## Usage notes
 
@@ -221,12 +221,12 @@ For this template, `container` should remain `feature_cell`.
 If the effort no longer needs workstream treatment, retire the workstream rather than changing the container value.
 
 #### `overlays`
-This field is legacy harness-local shorthand, not the canonical Layer C schema. See `docs/harness/maintainining.md` for migration policy.
+This field is legacy harness-local shorthand, not the canonical Layer C schema. See `docs/harness-maintain/main.md` for migration policy.
 
 Use `overlays: []` when baseline control is implied at workstream scope.
 
 If a non-baseline control regime must be shown in the current card shape, use the existing local values and interpret them as:
-- use the compatibility mapping in `docs/harness/maintainining.md`
+- use the compatibility mapping in `docs/harness-maintain/main.md`
 
 Do not mirror task-scope control context automatically.
 
