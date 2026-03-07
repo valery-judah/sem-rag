@@ -271,12 +271,22 @@ For every non-trivial transition, update the relevant companion fields:
 - `layer_d_companion.decision_ref`
 
 Never change state without updating the task narrative enough to explain why.
+State changes are incomplete until the required companion fields are updated.
 
-### Step 10. Refresh `next_step` or close the task
+### Step 10. Hit the write-back boundary before reporting or stopping
 
-At the end of the execution cycle, do one of two things:
-- set a fresh concrete `next_step`, or
-- move the task into a terminal or paused state with the required boundary context.
+Before reporting progress, pausing, rerouting, handing off, or closing the cycle, refresh the task card.
+
+At this boundary:
+- refresh `updated_at` for the card when the card changed,
+- refresh `layer_b.current_mode`, `layer_b.reason`, and reroute context if the posture changed,
+- refresh `layer_d.state`, `layer_d.phase`, `layer_d.next_step`, and `layer_d.updated_at` to match reality,
+- update the relevant `layer_d_companion` fields for the current boundary,
+- link evidence or decision refs when they became real,
+- set a fresh concrete `next_step`, or move the task into a terminal or paused state with the required boundary context,
+- ensure the final response will be downstream of the refreshed card rather than a substitute for it.
+
+Do not leave this boundary with stale control fields at the top of the task card.
 
 A good `next_step` is:
 - specific,
@@ -384,6 +394,10 @@ Do not leave the old `next_step` in place after it has already been completed or
 
 Do not mark a task `complete`, `checkpoint`, or `awaiting_approval` without enough narrative, evidence, or references to make the boundary intelligible.
 
+### Final response more current than the task card
+
+Do not leave the latest mode, state, `next_step`, or linked refs only in the final response.
+
 ### Using the task card as a diary instead of a control surface
 
 The work log can be detailed, but the task card must still clearly expose:
@@ -400,11 +414,13 @@ Use this checklist during or at the end of each execution cycle.
 - The current Layer D state permits the attempted work.
 - The current `next_step` was either executed or deliberately replaced.
 - The work log captures what changed.
+- The write-back boundary was completed before reporting or stopping.
 - Layer A was reassessed if the slice materially changed.
 - Layer B still reflects the dominant posture.
 - Layer C was updated only if a real boundary emerged.
 - Layer D matches the real control condition.
-- Evidence, decision, blocker, or approval references were linked if relevant.
+- Evidence, decision, blocker, approval, and review references were linked if relevant.
+- Required Layer D companion fields were refreshed for the current boundary.
 - The task now has a fresh `next_step` or a well-formed paused/terminal state.
 
 ## Minimal examples
@@ -476,8 +492,8 @@ When operating as an execution agent:
 1. read the current task card,
 2. verify that Layer D allows the intended work,
 3. execute the current bounded step,
-4. update the work log and references,
+4. update the work log and reassess whether the slice changed shape,
 5. reclassify Layer A or reroute Layer B if the slice changed shape,
 6. apply Layer C only if a real control boundary emerged,
-7. update Layer D to match reality,
-8. leave a concrete next step or a well-formed paused/terminal state.
+7. update Layer D to match reality and companion fields,
+8. hit the write-back boundary before reporting or stopping, leaving a concrete next step or a well-formed paused or terminal state.

@@ -36,9 +36,10 @@ For the target item:
 5. confirm the current Layer D boundary,
 6. confirm the current Layer B mode if the item is a task,
 7. determine whether normal execution may resume, must stay paused, or should move into another loop,
-8. update the authoritative artifact if the recorded state or next step is stale,
-9. continue only if the current state truly permits it,
-10. leave the item with a truthful state and a concrete next step.
+8. repair the authoritative artifact first if the recorded state, mode, next step, or linked refs are stale,
+9. hit the write-back boundary before declaring resumed work or continued pause,
+10. continue only if the current state truly permits it,
+11. leave the item with a truthful state and a concrete next step.
 
 ## Hard rules
 
@@ -50,7 +51,10 @@ For the target item:
 - Do not invent new Layer C constructs.
 - Do not invent new Layer D states.
 - Do not silently change the slice just because the handoff was vague; repair the artifact first.
+- If resumption changes the recorded truth, update the authoritative artifact before reporting whether work resumed or remained paused.
 - Do not leave the item in an ambiguous resumed state without a concrete next step.
+- Do not let the final response become more current than the authoritative artifact.
+- Before ending the cycle, check `layer_b.current_mode` when applicable, `layer_d.state`, `layer_d.next_step`, relevant `layer_d_companion` refs, and work-log recency if meaningful progress occurred.
 
 ## Allowed Layer B modes
 
@@ -173,9 +177,11 @@ If additional work is needed, create or route to a new slice or decision trail.
 ## Expected artifact updates
 
 You should typically do the following:
-- update the authoritative task or workstream card if the recorded state, next step, or linked refs are stale,
+- update the authoritative task or workstream card if the recorded state, mode, next step, or linked refs are stale,
 - optionally update or supersede the handoff note if it is stale or has been consumed,
 - continue into the correct workflow only if the current state truly permits it.
+
+Before you stop, make sure the authoritative artifact already contains the latest resume decision and boundary state.
 
 ## Required quality bar
 
@@ -187,6 +193,7 @@ At the end of the resume cycle, the harness should make these answers clear:
 5. What is the concrete next step now?
 
 If those answers are not clear in the updated artifacts, resume is incomplete.
+If the final response says something newer than the authoritative artifact, resume is incomplete.
 
 ## Response behavior
 

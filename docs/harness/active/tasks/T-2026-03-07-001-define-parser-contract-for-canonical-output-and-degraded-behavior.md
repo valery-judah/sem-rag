@@ -15,7 +15,7 @@ layer_a:
   execution_horizon: multi_step
 layer_b:
   current_mode: contract_builder
-  reason: The dominant work is turning the parser's partly specified behavior into an explicit contract that downstream implementation and tests can rely on.
+  reason: The dominant work is drafting an explicit parser contract delta that downstream implementation and tests can execute against without inventing missing rules.
   reroute_triggers:
     - If the remaining uncertainty is mainly about current parser failures rather than contract shape, reroute to debug_investigator.
     - If the parser contract becomes explicit enough to encode directly in models and tests, reroute to routine_implementer.
@@ -26,7 +26,7 @@ layer_c:
 layer_d:
   state: active
   phase: contract definition
-  next_step: Draft the parser contract delta covering anchor completeness, metadata schema, supported content-type behavior, and degraded-output rules.
+  next_step: Turn the drafted parser contract delta into implementation-facing acceptance rules for metadata fields, anchor completeness, and degraded-output behavior.
   entered_at: 2026-03-07
   updated_at: 2026-03-07
 layer_d_companion:
@@ -95,10 +95,14 @@ The task is active and executable. The immediate next step is to draft the contr
 - Confirmed the main mismatch: the RFC describes fuller anchor and output obligations than the default parser currently enforces for normal textual documents.
 - Chose a bounded contract-definition slice rather than direct implementation or workstream promotion.
 - Set the next step to draft the contract delta before changing runtime models or parser code.
+- Reconfirmed `layer_b.current_mode` as `contract_builder` because the current slice is still contract drafting, not implementation, debugging, or evaluation.
+- Drafted the parser contract delta in the parser docs: anchor completeness is now explicit (`document_only` vs `full`), degraded output is a first-class contract state, and supported content-type behavior is defined instead of implied.
+- Synced the parser design, user stories, and workplan so follow-on implementation can target truthful metadata and staged anchor enforcement rather than an all-or-nothing anchor assumption.
 
 # Open Questions / Risks
 
 - Should empty section and block anchors remain an explicitly allowed transitional state for textual documents, or should the contract now require full anchor emission?
+- What exact metadata key names and enum values should the implementation adopt so the runtime models stay stable while the contract becomes stricter?
 - How much parser metadata should be typed and required versus left extensible?
 - Should degraded output be represented as a successful `ParsedDocument` with explicit metadata, or should some cases remain hard parser failures?
 - Risk: the contract draft could sprawl into future parser architecture instead of staying focused on the minimum executable boundary.
