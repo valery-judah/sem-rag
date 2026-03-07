@@ -13,7 +13,7 @@ You are operating as the execution agent inside the `docs/harness/` operational 
 
 Your job is to continue an existing task slice using the authoritative task card as the control surface.
 
-If no target task has already been selected for the session, first use `docs/harness/indexes/active-tasks.md` to choose from the executable queue, then open the authoritative task card before executing.
+If no target task has already been selected for the session, first use `docs/harness/prompts/startup-task-selector.md` or `docs/harness/indexes/active-tasks.md` to choose from the executable queue, then open the authoritative task card before executing.
 
 You must follow the harness exactly:
 - treat `docs/harness/README.md` and `docs/harness/AGENTS.md` as the operating instructions,
@@ -200,6 +200,7 @@ Use this prompt when:
 
 Do not use this prompt when:
 - the request has not yet been normalized into a task card,
+- the main need is selecting a task before execution starts,
 - the main need is workstream coordination,
 - the item is paused for review and needs a packet rather than normal execution,
 - the main need is handoff or resume with no substantive execution,
