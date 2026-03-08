@@ -10,7 +10,7 @@ Use these docs in order:
 
 1. `AGENTS.md` for repo workflow rules, validation expectations, and hard constraints
 2. `docs/mvp-1.md` for the MVP pipeline shape, invariants, and milestones
-3. `ARCHITECTURE.md` for the current codebase map and dependency directions
+3. `docs/evergreen/architecture.md` for the current codebase map and dependency directions
 4. `docs/README.md` for the docs index and feature-doc routing
 5. `docs/features/*/01_rfc.md` for feature-local normative behavior
 
@@ -40,7 +40,7 @@ This file is a convenience entrypoint, not a second source of truth.
 
 - Use `docs/mvp-1.md` for system shape and milestone sequencing
 - Use `docs/features/*/01_rfc.md` for normative feature behavior
-- Use `ARCHITECTURE.md` for module boundaries and dependency directions
+- Use `docs/evergreen/architecture.md` for module boundaries and dependency directions
 - Use `docs/README.md`, `docs/PIPELINE.md`, and `docs/PLANS.md` as routing docs
 
 ## Minimal Repo Map

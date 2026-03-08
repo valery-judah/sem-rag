@@ -7,7 +7,7 @@ The repo currently spans source connectors, canonical parsing, PDF-hybrid extrac
 ## Read First
 
 - `AGENTS.md`: agent and workflow entry point
-- `ARCHITECTURE.md`: current repo/module map
+- `docs/evergreen/architecture.md`: current repo/module map
 - `docs/README.md`: documentation index
 - `docs/mvp-1.md`: MVP semantic-pipeline north star
 
@@ -56,9 +56,10 @@ lines, full git history, or non-staged working tree changes.
 
 ```text
 AGENTS.md
-ARCHITECTURE.md
 docs/
   README.md
+  evergreen/
+    architecture.md
   mvp-1.md
   PIPELINE.md
   PLANS.md
