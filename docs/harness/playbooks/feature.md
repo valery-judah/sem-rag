@@ -8,8 +8,8 @@ Use for new user-visible capability or meaningful product behavior expansion.
 - Treat `workstream.md` as the canonical entrypoint for the workstream.
 - Add `decisions.md`, `evidence.md`, `handoff.md`, or `notes.md` only when they improve continuity, traceability, or validation.
 
-## Phase 1 Minimum Artifact
-- `workstream.md` with the canonical frontmatter and section structure from `docs/harness/templates/workstream.md`
+## Phase 0 Minimum Artifact
+- `workstream.md` with the canonical section structure from `docs/harness/templates/workstream.md`
 - A single concrete `Next step`
 - Placeholder sections are acceptable until later framing work fills them in
 

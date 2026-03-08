@@ -13,7 +13,7 @@ It supports the canonical docs layout rooted at `docs/evergreen/`, `docs/workstr
 - `AGENTS.md`: harness-local usage notes for humans and agents
 - `taxonomy/`: naming and lifecycle vocabulary for workstreams
 - `templates/`: starter files for workstreams, evidence, handoff, decisions, and ADRs
-- `conventions/`: lightweight rules for frontmatter and ADR placement
+- `conventions/`: lightweight rules for ADR placement and related doc conventions
 - `playbooks/`: short procedures by work type
 - `scripts/`: simple shell helpers for initializing and listing docs areas
 
