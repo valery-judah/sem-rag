@@ -9,11 +9,11 @@ This file is the repo entry point for agents. It is a routing layer, not the ful
 - `src/parity/retrieval.py`: in-memory `SemanticIndex`
 - `src/parity/cli.py`: CLI demo over a small hard-coded corpus
 
-The broader product target is defined in `docs/evergreen/mvp.md`. That target includes document ingestion, normalization, retrieval, and source-grounded answering, but those flows are not implemented in the current codebase yet.
+The broader product target is defined in `docs/delivery/service-mvp-1.md`. That target includes document ingestion, normalization, retrieval, and source-grounded answering, but those flows are not implemented in the current codebase yet.
 
 Start with:
 
-- product north star: `docs/evergreen/mvp.md`
+- product north star: `docs/delivery/service-mvp-1.md`
 - repo/code map: `docs/evergreen/architecture.md`
 - stable interfaces: `docs/evergreen/api-contracts.md`
 - docs map: `docs/README.md`
@@ -42,14 +42,14 @@ Start with:
 
 ## Canonical Docs
 
-- `docs/evergreen/mvp.md`: MVP product definition and scope
-- `docs/evergreen/architecture.md`: current repo/module boundaries and target-state gap
-- `docs/evergreen/api-contracts.md`: stable runtime interfaces that exist today
+- `docs/delivery/service-mvp-1.md`: current MVP product definition and scope
+- `docs/evergreen/architecture.md`: current repo/module boundaries and target-state gap (haven't been done yet)
+- `docs/evergreen/api-contracts.md`: stable runtime interfaces that exist today (haven't been done yet)
 - `docs/evergreen/runbook.md`: durable local operation guidance
 - `docs/README.md`: documentation index
 
 ## Hard Constraints
 
 - Keep `uv.lock` committed and up to date after dependency changes; do not edit it manually.
-- Treat `docs/evergreen/mvp.md` as the MVP north star for product scope and boundary decisions.
+- Treat `docs/delivery/service-mvp-1.md` as the MVP north star for product scope and boundary decisions.
 - Do not describe target MVP capabilities as already implemented unless the codebase actually exposes them.

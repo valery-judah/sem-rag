@@ -7,12 +7,12 @@ The current codebase is intentionally small. Today it exposes:
 - `src/parity/retrieval.py`: an in-memory `SemanticIndex` demo
 - `src/parity/cli.py`: a CLI that runs the retrieval demo
 
-The product target is broader than the current implementation. The north star lives in `docs/evergreen/mvp.md`, which describes a future service for asking questions over uploaded PDF and Markdown documents with source-grounded answers.
+The product target is broader than the current implementation. The current delivery spec lives in `docs/delivery/service-mvp-1.md`, which describes a service for asking questions over uploaded PDF and Markdown documents with source-grounded answers.
 
 ## Read First
 
 - `AGENTS.md`: repo workflow entry point for agents
-- `docs/evergreen/mvp.md`: product north star and scope boundary
+- `docs/delivery/service-mvp-1.md`: current MVP product north star and scope boundary
 - `docs/evergreen/architecture.md`: current-state vs target-state architecture
 - `docs/evergreen/api-contracts.md`: stable interfaces that exist today
 - `docs/README.md`: documentation map
@@ -22,6 +22,7 @@ The product target is broader than the current implementation. The north star li
 - `src/parity/__init__.py`: package export surface
 - `src/parity/retrieval.py`: retrieval demo logic
 - `src/parity/cli.py`: demo CLI entry point
+- `docs/delivery/`: current delivery specs and framing documents
 - `docs/evergreen/`: durable product and repo documentation
 - `docs/workstreams/`: optional time-scoped execution records
 - `docs/adrs/`: durable architectural decisions when needed
@@ -52,10 +53,10 @@ make test
 AGENTS.md
 docs/
   README.md
+  delivery/
   evergreen/
     api-contracts.md
     architecture.md
-    mvp.md
     runbook.md
   workstreams/
   adrs/
