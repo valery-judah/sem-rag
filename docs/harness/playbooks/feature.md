@@ -11,7 +11,15 @@ Use for new user-visible capability or meaningful product behavior expansion.
 ## Phase 1 Minimum Artifact
 - `workstream.md` with the canonical frontmatter and section structure from `docs/harness/templates/workstream.md`
 - A single concrete `Next step`
-- Initial scope, boundaries, and read-first context captured locally
+- Placeholder sections are acceptable until later framing work fills them in
+
+## Framing Later
+After creation, use the workstream card to progressively add:
+- objective and scope details
+- context notes
+- boundaries and non-goals
+- useful commands
+- validation notes
 
 ## Minimum Evidence Expected
 - What changed

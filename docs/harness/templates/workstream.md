@@ -8,17 +8,23 @@ owner:
 created: YYYY-MM-DD
 updated: YYYY-MM-DD
 tags: []
+# Optional later note: paths that become relevant once framing work starts.
 affected_paths: []
+# Optional later note: components or subsystems involved in the work.
 affected_components: []
 blockers: []
 depends_on: []
+# Optional later note: durable docs that may need review or update.
 evergreen_targets: []
 adr_links: []
 rfc_links: []
 validation_evidence: []
 gate: none
+# Optional later note: docs worth reading first once framing work begins.
 context_dependencies: []
+# Optional later note: useful commands discovered during framing or execution.
 commands: []
+# Optional later note: constraints or non-goals to keep visible.
 boundaries: []
 ---
 
@@ -38,6 +44,7 @@ Describe what is already true, what changed recently, and what still matters.
 - Record one concrete next action.
 
 ## Relevant context
+- Placeholder section. Fill later when relevant context becomes clearer.
 - paths:
 - components:
 - constraints:
@@ -49,6 +56,7 @@ Describe what is already true, what changed recently, and what still matters.
 3. Execute and validate the workstream.
 
 ## Validation
+- Placeholder section. Fill later when the validation path is clearer.
 - List the tests, checks, or evidence needed before closure.
 
 ## Linked artifacts
