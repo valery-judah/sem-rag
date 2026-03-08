@@ -1,55 +1,59 @@
 # Architecture
 
 **Status:** Verified
-**Last verified:** 2026-03-05
+**Last verified:** 2026-03-08
 
 ## Purpose
-This file captures stable architectural truth for `docforge` and maps the current codebase to the semantic-pipeline MVP described in [`docs/mvp-1.md`](../mvp-1.md). Use it when you need the current high-level system shape, repo boundaries, or dependency directions. It is a repo map, not a replacement for workstream RFCs or schema docs.
+This file captures the current architectural truth for `parity` and the gap between today's code and the target product described in [`docs/evergreen/mvp.md`](./mvp.md). Use it when you need the current repo shape, want to avoid overstating implementation status, or need to decide whether a planned capability is already present.
 
 ## When To Use
 - Starting work on a subsystem
 - Explaining repo boundaries to a new contributor
-- Checking whether a proposed change should become an ADR
+- Checking whether a proposal belongs in evergreen docs, a workstream, or an ADR
 
 ## Current System Shape
-The repository is organized around a pipeline-oriented core plus a lightweight demo surface:
+The repository currently exposes a lightweight package plus documentation scaffolding:
 
-- `src/docforge/connectors/`: source fetch contracts and connector implementations that produce `RawDocument`
-- `src/docforge/parsers/`: canonical parsing contracts, default parser flow, tree construction, and canonicalization
-- `src/docforge/parsers/pdf_hybrid/`: PDF-specific engine orchestration, intermediate schema, runner adapters, and distillation logic
-- `src/docforge/retrieval.py`: in-memory retrieval demo logic
-- `src/docforge/cli.py`: demo entry point
-- `src/docforge/devtools/`: repo-local developer utilities such as secret scanning
-- `tests/`: unit coverage for connectors, parsers, retrieval, and PDF-hybrid components
+- `src/parity/retrieval.py`: in-memory semantic-like retrieval over tokenized text
+- `src/parity/cli.py`: demo entry point that builds a small hard-coded corpus and prints ranked matches
+- `src/parity/__init__.py`: package export surface
+- `docs/evergreen/`: durable product and repo documentation
+- `docs/workstreams/` and `docs/adrs/`: documentation structure for future execution records and long-lived decisions
+- `docs/harness/`: docs tooling, templates, and playbooks
 
-## Dependency Directions
-Keep the dependency flow aligned to the semantic pipeline:
+Today there is no implemented ingestion pipeline, parser subsystem, PDF/Markdown normalization flow, answer-generation layer, or source-grounded citation/navigation surface.
 
-1. Connectors own source enumeration and raw-byte delivery.
-2. Parsers own canonical text, structure trees, anchors, and parser metadata.
-3. PDF-hybrid code is a parser subsystem, not a separate product surface.
-4. Retrieval code consumes text representations; it does not define parser or connector contracts.
-5. Docs in `docs/workstreams/` define workstream-level contracts and execution plans; code should follow those contracts rather than invent parallel behavior.
+## Current Runtime Boundary
+The runtime boundary that exists today is intentionally narrow:
 
-In practice:
+- `parity.SemanticIndex` accepts a non-empty `list[str]`
+- `SemanticIndex.search(query, k=3)` returns ranked `(document_text, score)` tuples
+- `python -m parity.cli` and `make run` exercise that demo surface
 
-- `connectors` must not parse or normalize content.
-- `parsers` must not take ownership of connector sync policy.
-- `pdf_hybrid/engines` must stay focused on engine execution and normalization, leaving final canonical output to parser-level contracts.
-- demo retrieval code should stay decoupled from parser internals unless a workstream RFC explicitly connects them.
+This is a retrieval demonstration, not the full MVP service.
 
-## Phase 1 Coverage Map
-`docs/mvp-1.md` describes a broader end-state than the current codebase.
+## Target State From The MVP Doc
+[`docs/evergreen/mvp.md`](./mvp.md) is the target product definition, not a statement of current implementation. It describes a service that should eventually:
 
-- Present in code today: source connectors, structural parsing, PDF-hybrid parsing work, retrieval demo utilities
-- Present mostly in docs today: hierarchical segmentation, augmented views, graph extraction, publishing/index layers
-- Planned but not yet represented as stable runtime surfaces: local multi-service orchestration, generated schema references, deploy/runbook material
+- ingest user-uploaded PDF and Markdown documents
+- normalize them into a unified internal corpus
+- retrieve relevant content across documents
+- answer questions using retrieved evidence
+- return source references that let the user inspect supporting material
 
-Use [`docs/PIPELINE.md`](../PIPELINE.md) for the detailed crosswalk from Phase 1 components to current code and workstream folders.
+Those capabilities should be treated as planned work until corresponding code exists.
+
+## Architectural Guidance
+Keep the current docs and code honest about the gap between demo and target product:
+
+1. Do not document PDF/Markdown ingestion, parsing, or grounded answering as implemented behavior unless code exists for it.
+2. Keep retrieval-demo behavior decoupled from future ingestion/parsing contracts until those surfaces are introduced intentionally.
+3. Use workstreams for time-scoped design and execution notes; promote only durable, implemented truths into evergreen docs.
+4. Use ADRs only for decisions that outlive a single workstream or materially constrain future MVP implementation.
 
 ## Documentation Authority
-- `docs/mvp-1.md` is the MVP north star for system shape and milestone sequencing.
-- `docs/workstreams/*/01_rfc.md` is normative for workstream-local contracts.
-- `docs/workstreams/*/03_design.md` and `04_workplan.md` define implementation details and execution slices.
-- Control-plane docs such as this file, [`docs/README.md`](../README.md), and [`docs/PLANS.md`](../PLANS.md) summarize and route; they should not duplicate normative schemas.
-- Durable architecture belongs here or in ADRs, not in time-scoped workstream notes.
+- `docs/evergreen/mvp.md` is the product north star.
+- This file describes the current repo shape and the gap to that north star.
+- `docs/evergreen/api-contracts.md` describes stable interfaces that are implemented today.
+- `docs/README.md` routes contributors through the documentation system.
+- `docs/workstreams/` and `docs/adrs/` are available structure, but may be empty between efforts.

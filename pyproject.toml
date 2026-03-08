@@ -3,7 +3,7 @@ requires = ["hatchling>=1.27.0"]
 build-backend = "hatchling.build"
 
 [project]
-name = "docforge"
+name = "parity"
 version = "0.1.0"
 description = "Python semantic RAG baseline"
 readme = "README.md"
@@ -21,10 +21,10 @@ dev = [
 ]
 
 [project.scripts]
-docforge = "docforge.cli:main"
+parity = "parity.cli:main"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/docforge"]
+packages = ["src/parity"]
 
 [tool.ruff]
 line-length = 100

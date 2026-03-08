@@ -45,8 +45,8 @@ This file is a convenience entrypoint, not a second source of truth.
 
 ## Minimal Repo Map
 
-- `src/docforge/connectors/`: source-document contracts and connector implementations
-- `src/docforge/parsers/`: canonical parsing and PDF-hybrid parsing work
-- `src/docforge/segmentation.py`: segmentation logic for parsed output
-- `src/docforge/retrieval.py` and `src/docforge/cli.py`: lightweight retrieval demo surface
+- `src/parity/connectors/`: source-document contracts and connector implementations
+- `src/parity/parsers/`: canonical parsing and PDF-hybrid parsing work
+- `src/parity/segmentation.py`: segmentation logic for parsed output
+- `src/parity/retrieval.py` and `src/parity/cli.py`: lightweight retrieval demo surface
 - `docs/features/`: feature-level RFCs, designs, and workplans

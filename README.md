@@ -1,56 +1,50 @@
-# docforge
+# parity
 
-Semantic-pipeline MVP for turning raw internal documents into structured, queryable knowledge artifacts.
+Minimal question-answering MVP scaffold for a user-provided document corpus.
 
-The repo currently spans source connectors, canonical parsing, PDF-hybrid extraction, segmentation, a lightweight retrieval demo, and workstream-oriented implementation docs.
+The current codebase is intentionally small. Today it exposes:
+
+- `src/parity/retrieval.py`: an in-memory `SemanticIndex` demo
+- `src/parity/cli.py`: a CLI that runs the retrieval demo
+
+The product target is broader than the current implementation. The north star lives in `docs/evergreen/mvp.md`, which describes a future service for asking questions over uploaded PDF and Markdown documents with source-grounded answers.
 
 ## Read First
 
-- `AGENTS.md`: agent and workflow entry point
-- `docs/evergreen/architecture.md`: current repo/module map
-- `docs/README.md`: documentation index
-- `docs/mvp-1.md`: MVP semantic-pipeline north star
+- `AGENTS.md`: repo workflow entry point for agents
+- `docs/evergreen/mvp.md`: product north star and scope boundary
+- `docs/evergreen/architecture.md`: current-state vs target-state architecture
+- `docs/evergreen/api-contracts.md`: stable interfaces that exist today
+- `docs/README.md`: documentation map
 
-These docs form the control plane for the repository. Workstream-local contracts stay in `docs/workstreams/*/01_rfc.md`.
+## Current Repository Shape
 
-## What Is In This Repo
+- `src/parity/__init__.py`: package export surface
+- `src/parity/retrieval.py`: retrieval demo logic
+- `src/parity/cli.py`: demo CLI entry point
+- `docs/evergreen/`: durable product and repo documentation
+- `docs/workstreams/`: optional time-scoped execution records
+- `docs/adrs/`: durable architectural decisions when needed
+- `docs/harness/`: documentation tooling and templates
 
-- `src/docforge/connectors/`: source-document contracts and connector implementations
-- `src/docforge/parsers/`: canonical parsing, structure extraction, and PDF-hybrid parsing work
-- `src/docforge/segmentation.py`: segmentation logic for parser output
-- `src/docforge/retrieval.py` and `src/docforge/cli.py`: lightweight retrieval demo surface
-- `docs/workstreams/`: workstream RFCs, designs, and workplans
-- `tests/`: unit coverage for connectors, parsers, retrieval, and PDF-hybrid components
+The repo does not currently implement document upload, PDF/Markdown ingestion, structure recovery, or grounded answer generation. Those capabilities are target MVP behavior, not present runtime behavior.
 
 ## Quickstart
 
 ```bash
 make sync
 make install
-make test
 make run
 ```
 
-## Secret Scanning
-
-This repo includes a local Gemini API key scan for strings that match the format-aware
-`AIza[A-Za-z0-9_-]{35}` pattern. Version 1 scans only Gemini-style keys, has no allowlist, and
-keeps CI `gitleaks` checks as separate defense in depth.
-
-Run a repo-wide audit of tracked files:
+Common validation targets from `Makefile`:
 
 ```bash
-make secret-scan
+make fmt
+make lint
+make type
+make test
 ```
-
-Install the repo-managed pre-commit hook:
-
-```bash
-make install-git-hooks
-```
-
-After installation, each commit scans staged added lines only. It does not scan unchanged old
-lines, full git history, or non-staged working tree changes.
 
 ## Repository Map
 
@@ -59,11 +53,15 @@ AGENTS.md
 docs/
   README.md
   evergreen/
+    api-contracts.md
     architecture.md
-  mvp-1.md
-  PIPELINE.md
-  PLANS.md
+    mvp.md
+    runbook.md
   workstreams/
-src/docforge/
-tests/
+  adrs/
+  harness/
+src/parity/
+  __init__.py
+  cli.py
+  retrieval.py
 ```

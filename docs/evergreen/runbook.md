@@ -1,18 +1,17 @@
 # Runbook
 
 ## Purpose
-This file captures durable operational guidance for working in this repository. Use it for common local commands, troubleshooting, and ownership notes.
+This file captures durable operational guidance for the current repository. Use it for common local commands, quick verification, and basic troubleshooting of the retrieval demo package.
 
 ## When To Use
 - Bootstrapping the repo locally
 - Running the standard validation loop
-- Looking for the first place to document an operational issue
+- Checking which local commands are part of the normal workflow
 
 ## Local Setup / Common Commands
 ```bash
 make sync
 make install
-make test
 make run
 ```
 
@@ -21,20 +20,22 @@ Additional checks:
 make fmt
 make lint
 make type
-make secret-scan
+make test
 ```
 
-## Deploy / Release Notes
-- This repo currently centers on local development and demo execution.
-- Record any future release or deployment process changes here once they become stable.
-- Keep temporary rollout notes inside the relevant workstream until they are durable.
+## What `make run` Does
+- Installs the package in editable mode through the `install` dependency in `Makefile`
+- Runs `python -m parity.cli`
+- Prints ranked matches from a small hard-coded document list
 
 ## Troubleshooting
 - If imports fail, run `make sync` and `make install`.
 - If validation disagrees across environments, re-run the standard `fmt`, `lint`, `type`, and `test` targets.
-- If parser behavior changes unexpectedly, check the relevant workstream docs in `docs/workstreams/` and recent workstream evidence.
+- If `make run` changes behavior, inspect `src/parity/cli.py` and `src/parity/retrieval.py` first because they define the current runtime surface.
+- If a doc describes ingestion, parsing, or grounded answering as already implemented, reconcile it with `docs/evergreen/architecture.md` and the actual code before treating it as current behavior.
 
 ## Escalation / Ownership
-- Architectural decisions that affect multiple subsystems should be captured in `docs/adrs/`.
-- Time-scoped investigation, implementation notes, and handoff material should live under `docs/workstreams/`.
-- Repo-specific conventions and templates live under `docs/harness/`.
+- Durable repo and product truth belongs in `docs/evergreen/`.
+- Time-scoped investigation and implementation planning can live under `docs/workstreams/`.
+- Long-lived cross-cutting decisions belong in `docs/adrs/`.
+- Repo-specific templates and playbooks live in `docs/harness/`.

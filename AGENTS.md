@@ -4,18 +4,19 @@ This file is the repo entry point for agents. It is a routing layer, not the ful
 
 ## Repo Purpose
 
-`docforge` is a semantic-pipeline MVP for turning raw internal documents into queryable knowledge artifacts. The current repo contains:
+`parity` is a minimal question-answering MVP scaffold. The current runtime surface is small and centered on a retrieval demo:
 
-- source-document contracts and connectors in `src/docforge/connectors/`
-- canonical parsing and PDF-hybrid parsing work in `src/docforge/parsers/`
-- a small retrieval demo in `src/docforge/retrieval.py` and `src/docforge/cli.py`
+- `src/parity/retrieval.py`: in-memory `SemanticIndex`
+- `src/parity/cli.py`: CLI demo over a small hard-coded corpus
 
+The broader product target is defined in `docs/evergreen/mvp.md`. That target includes document ingestion, normalization, retrieval, and source-grounded answering, but those flows are not implemented in the current codebase yet.
 
-Start with (when?):
+Start with:
 
-- product/system north star: `docs/mvp-1.md`
+- product north star: `docs/evergreen/mvp.md`
 - repo/code map: `docs/evergreen/architecture.md`
-- pipeline navigation: `docs/PIPELINE.md`
+- stable interfaces: `docs/evergreen/api-contracts.md`
+- docs map: `docs/README.md`
 
 ## Required Commands And Validation Matrix
 
@@ -37,18 +38,18 @@ Start with (when?):
 ### Validation matrix
 - Docs-only change: no mandatory test run; run targeted checks only if docs affect generated artifacts or commands.
 - Code change without public contract impact: `make test`
-- Parser/schema/logic change: `make fmt`, `make lint`, `make type`, `make test`
+- Package/API behavior change: `make fmt`, `make lint`, `make type`, `make test`
 
 ## Canonical Docs
 
-- `docs/mvp-1.md`: MVP semantic-pipeline contract and milestone map
-- `docs/evergreen/architecture.md`: current repo/module boundaries and dependency directions
+- `docs/evergreen/mvp.md`: MVP product definition and scope
+- `docs/evergreen/architecture.md`: current repo/module boundaries and target-state gap
+- `docs/evergreen/api-contracts.md`: stable runtime interfaces that exist today
+- `docs/evergreen/runbook.md`: durable local operation guidance
 - `docs/README.md`: documentation index
-- `docs/PIPELINE.md`: map from `mvp-1.md` components to code and workstream docs
-- `docs/runbooks/local-dev.md`: future-facing local runtime scaffold
-- `docs/generated/README.md`: reserved location for future generated references
 
 ## Hard Constraints
 
 - Keep `uv.lock` committed and up to date after dependency changes; do not edit it manually.
-- Treat `docs/mvp-1.md` as the MVP north star for pipeline scope and component boundaries.
+- Treat `docs/evergreen/mvp.md` as the MVP north star for product scope and boundary decisions.
+- Do not describe target MVP capabilities as already implemented unless the codebase actually exposes them.
