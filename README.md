@@ -2,7 +2,7 @@
 
 Semantic-pipeline MVP for turning raw internal documents into structured, queryable knowledge artifacts.
 
-The repo currently spans source connectors, canonical parsing, PDF-hybrid extraction, segmentation, a lightweight retrieval demo, and feature-level implementation docs.
+The repo currently spans source connectors, canonical parsing, PDF-hybrid extraction, segmentation, a lightweight retrieval demo, and workstream-oriented implementation docs.
 
 ## Read First
 
@@ -11,7 +11,7 @@ The repo currently spans source connectors, canonical parsing, PDF-hybrid extrac
 - `docs/README.md`: documentation index
 - `docs/mvp-1.md`: MVP semantic-pipeline north star
 
-These docs form the control plane for the repository. Feature-specific contracts stay in `docs/features/*/01_rfc.md`.
+These docs form the control plane for the repository. Workstream-local contracts stay in `docs/workstreams/*/01_rfc.md`.
 
 ## What Is In This Repo
 
@@ -19,7 +19,7 @@ These docs form the control plane for the repository. Feature-specific contracts
 - `src/docforge/parsers/`: canonical parsing, structure extraction, and PDF-hybrid parsing work
 - `src/docforge/segmentation.py`: segmentation logic for parser output
 - `src/docforge/retrieval.py` and `src/docforge/cli.py`: lightweight retrieval demo surface
-- `docs/features/`: feature-level RFCs, designs, and workplans
+- `docs/workstreams/`: workstream RFCs, designs, and workplans
 - `tests/`: unit coverage for connectors, parsers, retrieval, and PDF-hybrid components
 
 ## Quickstart
@@ -62,7 +62,7 @@ docs/
   mvp-1.md
   PIPELINE.md
   PLANS.md
-  features/
+  workstreams/
 src/docforge/
 tests/
 ```
