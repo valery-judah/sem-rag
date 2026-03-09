@@ -139,11 +139,22 @@ def test_source_reference_can_omit_heading_and_page_but_not_document_identity() 
     assert reference.page_label is None
     assert reference.passage_anchor is None
 
+    degraded = make_source_reference(
+        heading_path=None,
+        page_label=None,
+        passage_anchor="doc-1#chunk-1",
+    )
+
+    assert degraded.snippet == "Relevant supporting passage."
+
     with pytest.raises(ValidationError, match="doc_id"):
         SourceReference(
             document_title="Doc 1",
             snippet="Relevant supporting passage.",
         )
+
+    with pytest.raises(ValidationError, match="heading_path"):
+        make_source_reference(heading_path=[])
 
 
 def test_retrieval_hit_requires_nested_source_reference() -> None:
@@ -191,6 +202,32 @@ def test_insufficient_evidence_answer_requires_note() -> None:
             status=AnswerStatus.INSUFFICIENT_EVIDENCE,
             answer_text="I do not have enough evidence.",
             source_references=[],
+        )
+
+
+def test_supported_answer_rejects_insufficiency_note() -> None:
+    with pytest.raises(
+        ValidationError,
+        match="supported answers must not include an insufficiency_note",
+    ):
+        Answer(
+            status=AnswerStatus.SUPPORTED,
+            answer_text="The answer is supported.",
+            source_references=[make_source_reference()],
+            insufficiency_note="This should not appear on supported answers.",
+        )
+
+
+def test_insufficient_evidence_answer_requires_explicit_empty_source_references() -> None:
+    with pytest.raises(
+        ValidationError,
+        match=("insufficient_evidence answers must use an explicit empty source_references list"),
+    ):
+        Answer(
+            status=AnswerStatus.INSUFFICIENT_EVIDENCE,
+            answer_text="I do not have enough evidence.",
+            source_references=[make_source_reference()],
+            insufficiency_note="No directly supporting passage was retrieved.",
         )
 
 

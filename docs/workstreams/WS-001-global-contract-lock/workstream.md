@@ -6,23 +6,28 @@ work_type: feature
 status: active
 owner:
 created: 2026-03-08
-updated: 2026-03-08
+updated: 2026-03-09
 tags: []
 affected_paths:
   - docs/workstreams/WS-001-global-contract-lock/workstream.md
-  - docs/workstreams/WS-001-global-contract-lock/contract-lock-rfc.md
+  - docs/workstreams/WS-001-global-contract-lock/contract-lock.md
+  - docs/workstreams/WS-001-global-contract-lock/seam.md
+  - docs/workstreams/WS-001-global-contract-lock/status.md
+  - docs/workstreams/WS-001-global-contract-lock/handoff.md
   - src/parity/_contracts/
   - tests/test_contracts.py
+  - tests/test_contract_seam.py
 affected_components:
   - workstream framing
   - shared internal contracts
   - contract validation tests
+  - contract seam tests
 blockers: []
 depends_on: []
 evergreen_targets: []
 adr_links: []
 rfc_links:
-  - docs/workstreams/WS-001-global-contract-lock/contract-lock-rfc.md
+  - docs/workstreams/WS-001-global-contract-lock/contract-lock.md
 validation_evidence: []
 gate: none
 context_dependencies:
@@ -57,10 +62,10 @@ Lock a narrow cross-domain contract layer for the MVP by defining a shared inter
 - Production observability, rollout hardening, or operational policy
 
 ## Current status
-The repository currently exposes only a retrieval demo through `parity.SemanticIndex` and `python -m parity.cli`. There is no implemented ingestion pipeline, normalization layer, answer-generation runtime, or source-inspection surface yet. The MVP and post-MVP framing docs establish the target system shape, but the shared internal contracts needed to build that system concurrently are not yet defined in code or in a workstream-local contract artifact.
+The repository still exposes only a retrieval demo through `parity.SemanticIndex` and `python -m parity.cli`; there is no real ingestion pipeline, normalization runtime, answer-generation path, or source-inspection surface yet. WS-001 now has a canonical contract artifact, a dedicated seam note, status and handoff records, an internal contract package in `src/parity/_contracts/`, and separate test layers for contract shape and seam behavior.
 
 ## Next step
-- Draft the workstream-local contract RFC and align the initial internal schema package to it.
+- Run repository validation against the locked Phase 1 package and docs, then capture evidence for downstream Phase 2 and Phase 3 consumers.
 
 ## Relevant context
 - paths:
@@ -84,8 +89,8 @@ The repository currently exposes only a retrieval demo through `parity.SemanticI
 
 ## Workflow steps
 1. Frame the feature scope and relevant constraints.
-2. Draft the shared contract RFC and internal schema package.
-3. Add contract validation tests and record implementation evidence.
+2. Lock the shared contract RFC, seam note, and workstream-local status / handoff artifacts.
+3. Validate the internal schema package with contract-shape and seam-flow tests.
 
 ## Validation
 - Docs review against the MVP and post-MVP framing documents
@@ -95,5 +100,8 @@ The repository currently exposes only a retrieval demo through `parity.SemanticI
 - Repository validation via `make fmt`, `make lint`, `make type`, and `make test`
 
 ## Linked artifacts
-- Workstream-local RFC: `docs/workstreams/WS-001-global-contract-lock/contract-lock-rfc.md`
+- Workstream-local RFC: `docs/workstreams/WS-001-global-contract-lock/contract-lock.md`
+- Contract seam note: `docs/workstreams/WS-001-global-contract-lock/seam.md`
+- Status tracker: `docs/workstreams/WS-001-global-contract-lock/status.md`
+- Handoff note: `docs/workstreams/WS-001-global-contract-lock/handoff.md`
 - Background context only: `docs/delivery/RFC-MVP-Architecture.md`

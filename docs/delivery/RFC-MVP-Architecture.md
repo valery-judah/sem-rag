@@ -102,30 +102,6 @@ While domains are bounded, the contracts between them must be globally defined a
 
 The system must optimize for groundedness and inspectability, not only answer fluency. A more cautious answer with reliable provenance is preferable to a broader answer with weak evidence.
 
----
-
-## 5. Terminology
-
-The following terminology should be used consistently in architecture and planning documents.
-
-| Legacy / lower-level phrasing | Preferred terminology | Meaning |
-| --- | --- | --- |
-| backbone flow | **System Critical Path** / **Core Request Lifecycle** | The runtime execution path of the product |
-| workstreams / lanes | **Functional Domains** / **Bounded Contexts** | Engineering ownership boundaries |
-| corpus and ingestion | **Data Platform & Ingestion** | Source-of-truth intake and persistence layer |
-| structure recovery | **Parsing & Structural Normalization** | Transform heterogeneous source formats into a common schema |
-| segmentation / chunking | **Semantic Discretization** | Turn normalized documents into searchable retrieval units |
-| retrieval | **Vector Search & Context Assembly** | Retrieve and prepare evidence for generation |
-| answering + citation contract | **Grounded Generation (RAG) Subsystem** | Synthesize bounded answers with evidence mapping |
-| source inspection UI | **Provenance Verification Surface** | User-facing surface for validating answer origin |
-| answer rendering, provenance UX, and quality gates | **Product Surface & LLMOps** | User-facing question/answer experience, provenance verification, and evaluation-driven release gating |
-
-Two notes:
-
-1. **Semantic Discretization** is precise, but in code and implementation docs, `retrieval units` or `segments` may still be the clearer operational term.
-2. **Grounded Generation** should be treated as an architectural subsystem, not merely an LLM call.
-
----
 
 ## 6. System Critical Path
 
@@ -225,6 +201,8 @@ The recommended topology is four Functional Domains.
 - assign stable `doc_id`
 - preserve filename, display title, source type, upload timestamp, and internal storage reference
 - maintain authoritative corpus membership
+- model lifecycle state transitions for uploaded content and published document versions
+- ensure superseded or withdrawn content is excluded from active retrieval while preserving lineage needed for audit and regression analysis
 - expose retrieval-independent metadata services to downstream domains
 
 **Primary contract:** canonical `Document` model
@@ -238,10 +216,18 @@ Example minimal shape:
   "filename": "string",
   "source_type": "pdf|markdown",
   "storage_ref": "string",
+  "lifecycle_state": "ingested|published|superseded|withdrawn|failed",
   "uploaded_at": "timestamp",
   "metadata": {}
 }
 ```
+
+**MVP lifecycle semantics:**
+
+- `published` content is eligible for retrieval and citation.
+- `superseded` content is no longer active for retrieval but remains linked to its replacement lineage.
+- `withdrawn` content is removed from active retrieval while preserving enough metadata for audit and operational review.
+- `failed` content never becomes retrieval-eligible and must preserve failure visibility for retry or operator action.
 
 **Non-goals in MVP:**
 
@@ -500,6 +486,7 @@ All contracts should make the following explicit:
 - stable identifiers
 - required vs optional fields
 - source type handling
+- lifecycle-state semantics
 - nullability rules
 - location semantics
 - versioning expectations
@@ -608,7 +595,7 @@ For MVP, discretization should:
 - preserve code blocks as atomic units when practical
 - avoid splitting mid-thought where possible
 - produce retrieval units large enough for semantic coherence but small enough for precise retrieval
-- maintain deterministic or near-deterministic structure for debugging and evaluation
+- maintain deterministic or near-deterministic structure for debugging and evaluation, with bounded-variance behavior when probabilistic extraction is required
 
 ### 10.3 Practical expectation
 
@@ -618,6 +605,8 @@ The exact heuristic may evolve, but the resulting retrieval units must remain:
 - structurally anchored
 - suitable for evidence display
 - stable enough for evaluation reproducibility
+
+When probabilistic or multimodal extraction is required, the system should pin the model and extraction configuration, capture extraction provenance, and keep structural variance bounded enough that regressions remain attributable.
 
 ---
 
@@ -893,87 +882,6 @@ This topology is specific enough for ownership while still compact enough to avo
 
 ---
 
-## 17. Standardized artifact topology
-
-The documentation tree should separate evergreen architecture, temporal execution, and durable decision rationale explicitly. File paths alone are not enough; each class has a different semantic purpose.
-
-### 17.1 Evergreen architecture
-
-`docs/evergreen/` contains durable architectural truth about what the system is.
-
-Recommended evergreen artifacts:
-
-- `docs/evergreen/RFC-MVP-Architecture.md`
-- `docs/evergreen/Domain-Data-Platform-Ingestion.md`
-- `docs/evergreen/Domain-Parsing-Structural-Normalization.md`
-- `docs/evergreen/Domain-Search-Grounded-Generation.md`
-- `docs/evergreen/Domain-Product-Surface-LLMOps.md`
-
-Purpose:
-
-- define system boundaries
-- define functional domains
-- define shared contracts
-- define the System Critical Path
-- define release-quality expectations
-
-Evergreen documents should describe:
-
-- scope
-- owned responsibilities
-- interfaces in and out
-- invariants
-- non-goals
-- primary failure modes
-- validation expectations
-
-### 17.2 Temporal workstreams
-
-`docs/workstreams/WS-XXX-slug/` contains what the team is doing now.
-
-Recommended structure per workstream:
-
-- `docs/workstreams/WS-XXX-slug/workstream.md`
-- `docs/workstreams/WS-XXX-slug/status.md`
-- `docs/workstreams/WS-XXX-slug/telemetry-and-evals.md`
-- `docs/workstreams/WS-XXX-slug/handoff.md`
-
-`workstream.md` is the canonical execution-tracking artifact inside a workstream. These files are temporal execution records, not evergreen domain design documents.
-
-### 17.3 ADRs
-
-`docs/adrs/` contains durable architectural decisions and rationale.
-
-Recommended ADR structure:
-
-- `docs/adrs/ADR-XXX-title.md`
-
-ADRs explain why a durable decision was made, which alternatives were considered, and what tradeoffs were accepted.
-
----
-
-## 18. Immediate next artifacts after this RFC
-
-After this architecture note, the next highest-value artifacts are:
-
-1. **Domain specifications** for each Functional Domain
-2. **Schema definitions** for shared contracts
-3. **Walking skeleton implementation plan** tied to the System Critical Path
-4. **Evaluation plan** for MVP release gating
-
-Recommended file set:
-
-- `docs/evergreen/Domain-Data-Platform-Ingestion.md`
-- `docs/evergreen/Domain-Parsing-Structural-Normalization.md`
-- `docs/evergreen/Domain-Search-Grounded-Generation.md`
-- `docs/evergreen/Domain-Product-Surface-LLMOps.md`
-- shared schema definitions for corpus and answer payloads
-- `docs/workstreams/WS-XXX-slug/workstream.md`
-- `docs/workstreams/WS-XXX-slug/telemetry-and-evals.md`
-- `docs/adrs/ADR-XXX-title.md` when a durable architectural decision needs to be recorded
-
----
-
 ## 19. Open design decisions for the next pass
 
 This RFC intentionally does not fully resolve the following questions:
@@ -984,26 +892,6 @@ This RFC intentionally does not fully resolve the following questions:
 4. What discretization policy should be used for very short or very long sections?
 5. How much PDF hierarchy recovery is necessary before the product is considered useful?
 6. What exact answer-and-provenance UI is sufficient for MVP?
-7. How deterministic should the normalization and discretization pipeline be in practice for debugging and evaluation?
+7. What bounded-variance and provenance guarantees are required when normalization or discretization uses probabilistic extraction?
 
 These are the correct next technical design questions. They should be resolved without expanding scope into deferred features.
-
----
-
-## 20. Final position
-
-The architectural position for MVP is:
-
-**One Core Request Lifecycle, implemented by four Functional Domains, with strict shared contracts and release decisions driven by groundedness and provenance quality.**
-
-The product should feel like one coherent document intelligence pipeline.
-
-The engineering organization should behave as concurrent bounded contexts aligned to that pipeline, not as a linear chain of serial handoffs.
-
-That is the simplest topology that supports:
-
-- fast MVP delivery
-- clean ownership
-- bounded complexity
-- strong source traceability
-- trustworthy user outcomes

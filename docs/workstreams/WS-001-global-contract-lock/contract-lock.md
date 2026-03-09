@@ -2,7 +2,7 @@
 
 **Status:** Draft
 **Scope:** MVP / Phase 1 Global Contract Lock
-**Last updated:** 2026-03-08
+**Last updated:** 2026-03-09
 
 ## 1. Context And Purpose
 
@@ -122,7 +122,9 @@ Optional fields:
 - `chunk_id`
 - `passage_anchor`
 
-`SourceReference` is allowed to omit heading and page details when the parser cannot recover them. It must always retain document identity, and it must not imply unsupported precision. It should carry either a snippet, a passage anchor, or both strongly enough to support inspection.
+`snippet` is the locked minimum inspectable provenance payload for Phase 1. `passage_anchor` is optional and additive.
+
+`SourceReference` is allowed to omit heading and page details when the parser cannot recover them. It must always retain document identity, and it must not imply unsupported precision. Phase 1 therefore locks the minimum valid degraded citation shape as `doc_id + document_title + snippet`.
 
 ### 4.5 RetrievalHit
 
@@ -156,7 +158,9 @@ Phase 1 implementation in `WS-001` locks only two answer statuses:
 
 `supported` answers must include at least one `SourceReference`.
 
-`insufficient_evidence` answers must include a human-readable `insufficiency_note`.
+`supported` answers must not include an `insufficiency_note`.
+
+`insufficient_evidence` answers must include a human-readable `insufficiency_note` and must carry `source_references=[]`. Phase 1 does not allow non-empty citations for `insufficient_evidence`, because the contract should not imply positive support where the system is explicitly declaring insufficient evidence.
 
 This is an intentional Phase 1 simplification for the current workstream. The broader delivery docs still allow `partial` as an optional later status, but `WS-001` does not require it to unblock concurrent MVP implementation.
 
@@ -196,13 +200,15 @@ Contract rules:
 
 - Citations are mandatory for `supported` answers.
 - Citations must resolve to at least document identity and document title.
+- Citations must include a snippet for direct inspection in Phase 1.
 - Citations should include section or heading path when available.
 - Citations should include a page reference when available.
-- Citations should include a snippet, a passage anchor, or both strongly enough for user inspection.
+- Citations may include a passage anchor in addition to the required snippet.
 - Citation precision is allowed to degrade gracefully from document plus heading plus page to document-only provenance when needed.
 - The system may expose partial structure, but it must not invent page numbers, headings, or section ownership.
 - `insufficient_evidence` is a first-class answer outcome, not an exceptional failure path.
 - `answer_text` remains required in both statuses so the product can return a usable user-facing response even when evidence is weak.
+- `insufficient_evidence` responses must use an explicit empty citation list rather than fabricated support references.
 
 ## 7. Observability And Debug Contract
 
