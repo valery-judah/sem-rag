@@ -38,10 +38,10 @@ This workflow assumes a small engineering organization operating across a limite
 
 The engineering team is expected to operate concurrently across the following domains:
 
-- **Platform**
-- **Parsing**
-- **Search / RAG**
-- **LLMOps**
+- **Data Platform & Ingestion**
+- **Parsing & Structural Normalization**
+- **Search & Grounded Generation**
+- **Product Surface & LLMOps**
 
 Each domain may work independently within its bounded context, but must align on shared contracts and release criteria.
 
@@ -77,7 +77,7 @@ Instead, this workflow uses:
 
 - a small **global contract layer**
 - a **shared evaluation layer**
-- domain-specific implementation specs owned in parallel
+- domain-owned execution artifacts owned in parallel
 
 #### Constraint B — Early integration over isolated subsystem sophistication
 
@@ -214,27 +214,27 @@ This prevents central architectural overhead from blocking implementation.
 
 The workflow deliberately separates artifacts into layers:
 
-#### Layer 1 — Global architecture artifacts
+#### Layer 1 — Evergreen architecture
 
-Small number of shared artifacts that define interfaces and quality boundaries.
+`docs/evergreen/` contains durable architectural truth: what the system is, what each domain owns, which invariants must hold, and which interfaces remain stable across workstreams.
 
-#### Layer 2 — Domain speclets
+#### Layer 2 — Temporal workstream execution
 
-Short, domain-owned documents that define local implementation logic, heuristics, internal constraints, and tuning plans.
+`docs/workstreams/WS-XXX-slug/` contains what the team is doing now. `workstream.md` is the canonical execution-tracking artifact inside a workstream, with `status.md`, `telemetry-and-evals.md`, and `handoff.md` as supporting temporal records.
 
-#### Layer 3 — Running system and eval outputs
+#### Layer 3 — Durable decision records
 
-Executable code, Golden Dataset assets, regression reports, and release evidence.
+`docs/adrs/` contains ADRs that record why a durable architectural decision was made and what tradeoff it resolved.
 
-This layering prevents the architecture process from becoming a bottleneck while still forcing coherence.
+This separation prevents evergreen architecture, active execution, and durable rationale from collapsing into one ambiguous documentation class.
 
 ### 4.4 Why evaluation is left-shifted
 
 Without evaluation, domains will optimize according to local intuition:
 
-- Parsing may optimize for structure richness without evidence that it improves retrieval.
-- Search / RAG may tune chunking or k-values without knowing whether support recall actually improved.
-- LLMOps may tune prompts for fluency rather than groundedness.
+- Parsing & Structural Normalization may optimize for structure richness without evidence that it improves retrieval.
+- Search & Grounded Generation may tune chunking or `k` values without knowing whether support recall actually improved.
+- Product Surface & LLMOps may tune prompts or answer presentation for fluency rather than groundedness.
 
 To prevent blind tuning, the workflow requires the Golden Dataset and evaluation harness to be established before substantial optimization begins.
 
@@ -346,7 +346,7 @@ At the end of this phase, the team should have:
 - a shared schema definition for core entities
 - a documented contract for answer payloads and source references
 - a documented lifecycle for document ingestion and processing
-- a clear boundary map across Platform, Parsing, Search / RAG, and LLMOps
+- a clear boundary map across Data Platform & Ingestion, Parsing & Structural Normalization, Search & Grounded Generation, and Product Surface & LLMOps
 - initial contract tests or schema validation hooks
 
 ### 6.3 Shared corpus model
@@ -413,7 +413,7 @@ This is especially useful for regressions and replay.
 
 ### 6.4 Answer and citation contract
 
-The answer payload is a global contract because it binds Search / RAG, LLMOps, UI, and user trust.
+The answer payload is a global contract because it binds Search & Grounded Generation, Product Surface & LLMOps, the user-facing application surface, and user trust.
 
 A minimal answer contract should include:
 
@@ -468,7 +468,7 @@ Minimum required debug visibility:
 
 ### 6.7 Domain interface boundaries
 
-#### Platform owns
+#### Data Platform & Ingestion owns
 
 - upload entrypoints
 - document registration
@@ -476,26 +476,27 @@ Minimum required debug visibility:
 - processing orchestration
 - readiness state exposure
 
-#### Parsing owns
+#### Parsing & Structural Normalization owns
 
 - text extraction from supported file types
 - Markdown hierarchy recovery
 - PDF structure inference
 - section construction
 
-#### Search / RAG owns
+#### Search & Grounded Generation owns
 
 - chunk generation
 - embeddings and indexing
 - retrieval selection
 - evidence packaging for the answer layer
 
-#### LLMOps owns
+#### Product Surface & LLMOps owns
 
-- prompting strategy
-- answer status behavior
-- answer formatting and citation rendering contract compliance
-- qualitative answer-bound enforcement
+- user-facing application behavior for asking questions and viewing answers
+- answer rendering and answer-status presentation behavior
+- provenance verification surface and source inspection UX
+- prompting strategy and bounded-answer behavior
+- evaluation, release-quality surfaces, and citation rendering contract compliance
 
 ### 6.8 Exit criteria
 
@@ -734,7 +735,7 @@ It is **not** allowed to be weak in:
 
 ### 8.4 Minimal implementation guidance by domain
 
-#### Platform
+#### Data Platform & Ingestion
 
 Implement:
 
@@ -743,7 +744,7 @@ Implement:
 - simple process invocation or job triggering
 - readiness state exposure
 
-#### Parsing
+#### Parsing & Structural Normalization
 
 Implement:
 
@@ -752,7 +753,7 @@ Implement:
 - conservative fallback for weakly structured PDFs
 - first-pass section objects, even if coarse
 
-#### Search / RAG
+#### Search & Grounded Generation
 
 Implement:
 
@@ -761,10 +762,12 @@ Implement:
 - baseline nearest-neighbor retrieval
 - top-k evidence packaging
 
-#### LLMOps
+#### Product Surface & LLMOps
 
 Implement:
 
+- basic question submission and answer display flow
+- simple provenance inspection surface
 - simple answer prompt
 - strict instruction to stay within provided evidence
 - explicit insufficient-evidence behavior
@@ -832,9 +835,9 @@ Especially for PDFs, it is better to expose coarse but correct structure than ri
 
 Fluent answers are not a goal if they overstate unsupported claims.
 
-### 9.3 Parsing heuristics
+### 9.3 Parsing & Structural Normalization heuristics
 
-Likely tuning areas for Parsing include:
+Likely tuning areas for Parsing & Structural Normalization include:
 
 - heading recovery from text patterns
 - page-aware structural segmentation
@@ -844,9 +847,9 @@ Likely tuning areas for Parsing include:
 
 The goal is not perfect structural reconstruction. The goal is enough structure to materially improve retrieval and source navigation.
 
-### 9.4 Chunking and retrieval heuristics
+### 9.4 Search & Grounded Generation heuristics
 
-Likely tuning areas for Search / RAG include:
+Likely tuning areas for Search & Grounded Generation include:
 
 - chunk sizing policy
 - overlap policy
@@ -858,21 +861,23 @@ Likely tuning areas for Search / RAG include:
 
 The tuning target is support quality, not abstract retrieval elegance.
 
-### 9.5 Prompting and answer-bounding heuristics
+### 9.5 Product Surface & LLMOps heuristics
 
-Likely tuning areas for LLMOps include:
+Likely tuning areas for Product Surface & LLMOps include:
 
 - instructions for bounded synthesis
 - refusal and insufficient-evidence behavior
 - citation formatting discipline
 - answer decomposition for compare/summarize questions
 - mitigation of unsupported extrapolation
+- answer rendering and provenance inspection clarity
+- answer-status presentation that makes insufficiency explicit without overstating certainty
 
 The answer layer should be tuned toward conservative support usage rather than maximum verbosity.
 
-### 9.6 Reliability and operational tuning
+### 9.6 Data Platform & Ingestion reliability and operational tuning
 
-Likely tuning areas for Platform include:
+Likely tuning areas for Data Platform & Ingestion include:
 
 - retry and failure recovery for ingestion
 - idempotency around document processing
@@ -1002,48 +1007,52 @@ This section makes domain concurrency explicit. It defines what each bounded dom
 
 ### 11.1 Domain summary
 
-- **Platform** owns document registration, storage references, processing orchestration, and readiness surfaces.
-- **Parsing** owns extraction and structural normalization of PDF and Markdown inputs.
-- **Search / RAG** owns chunk creation, indexing, retrieval, and evidence selection.
-- **LLMOps** owns answer generation behavior, bounded synthesis, and insufficient-evidence discipline.
+- **Data Platform & Ingestion** owns document registration, storage references, processing orchestration, lifecycle state exposure, and ingestion reliability.
+- **Parsing & Structural Normalization** owns extraction and structural normalization of PDF and Markdown inputs, including recoverable hierarchy and source-location fidelity.
+- **Search & Grounded Generation** owns retrieval-unit creation, indexing, retrieval, context assembly, and evidence selection for grounded answers.
+- **Product Surface & LLMOps** owns user-facing application behavior for asking questions and viewing answers, answer rendering, provenance verification, source inspection UX, answer-status presentation behavior, and evaluation and release-quality surfaces.
 
 ### 11.2 Responsibility matrix by phase
 
-| Phase | Platform | Parsing | Search / RAG | LLMOps |
+| Phase | Data Platform & Ingestion | Parsing & Structural Normalization | Search & Grounded Generation | Product Surface & LLMOps |
 |---|---|---|---|---|
-| Global Contract Lock | Define document registration and job-state semantics; storage-facing contract surfaces | Define section model requirements and parsing output expectations | Define chunk contract, retrieval input/output contract, evidence packaging needs | Define answer payload, citation requirements, answer-status semantics |
-| Golden Dataset and Evaluation Harness | Provide dataset loading support and reproducible execution hooks | Help label structure-sensitive cases and parsing-specific failure categories | Define retrieval metrics and support-hit expectations | Define groundedness, citation, and insufficient-evidence scoring rubrics |
-| Walking Skeleton | Build upload, registration, storage, and simple orchestration path | Implement baseline extraction and coarse structure recovery | Implement naive chunking, indexing, and baseline retrieval | Implement baseline prompt and source-backed answer behavior |
-| Domain Heuristic Tuning | Improve reliability, retries, idempotency, and debug surfaces | Tune heading recovery, section segmentation, and fallback logic | Tune chunking, retrieval policy, and evidence packaging | Tune prompting, refusal behavior, and citation discipline |
-| Integrated Release Gate | Supply release-state visibility and operational readiness evidence | Supply parsing quality evidence and known-structure limitations | Supply retrieval quality evidence and cross-document support behavior | Supply answer groundedness evidence and negative-case behavior |
+| Phase 1 — Global Contract Lock | Define document registration, storage lineage, and job-state semantics | Define section model requirements, parsing output expectations, and normalization invariants | Define retrieval-unit contract, retrieval input/output contract, and evidence-packaging needs | Define question/answer surface contract, citation requirements, answer-status semantics, and provenance inspection model |
+| Phase 2 — Golden Dataset and Evaluation Harness | Provide dataset loading support and reproducible execution hooks | Help label structure-sensitive cases and parsing-specific failure categories | Define retrieval metrics and support-hit expectations | Define groundedness, citation, source-inspection, and insufficient-evidence scoring rubrics |
+| Phase 3 — Walking Skeleton | Build upload, registration, storage, and simple orchestration path | Implement baseline extraction and coarse structure recovery | Implement naive chunking, indexing, and baseline retrieval | Implement baseline question flow, answer rendering, provenance display, and source-backed answer behavior |
+| Phase 4 — Domain Heuristic Tuning | Improve reliability, retries, idempotency, and debug surfaces | Tune heading recovery, section segmentation, and fallback logic | Tune chunking, retrieval policy, evidence packaging, and grounding behavior | Tune prompting, refusal behavior, answer presentation, provenance UX, and citation discipline |
+| Phase 5 — Integrated Release Gate | Supply release-state visibility and operational readiness evidence | Supply parsing quality evidence and known-structure limitations | Supply retrieval quality evidence and cross-document support behavior | Supply answer groundedness evidence, provenance verification usability evidence, and negative-case behavior |
 
 ### 11.3 Boundary rules
 
 To keep the domains from collapsing into each other, the following rules apply.
 
-#### Rule A — Platform does not own parsing logic
+#### Rule A — Data Platform & Ingestion does not own parsing logic
 
-Platform may orchestrate parsing, but it should not become the owner of structural heuristics.
+Data Platform & Ingestion may orchestrate parsing, but it should not become the owner of structural heuristics.
 
-#### Rule B — Parsing does not own retrieval semantics
+#### Rule B — Parsing & Structural Normalization does not own retrieval semantics
 
-Parsing provides structure and normalized text. It does not decide retrieval ranking policy.
+Parsing & Structural Normalization provides structure and normalized text. It does not decide retrieval ranking policy.
 
-#### Rule C — Search / RAG does not own final user-facing answer policy
+#### Rule C — Search & Grounded Generation does not own final user-facing answer policy
 
-Search / RAG selects evidence and packages it, but the answer layer owns bounded synthesis behavior.
+Search & Grounded Generation selects evidence and packages it, but it does not own answer rendering, answer-status presentation, or provenance inspection behavior.
 
-#### Rule D — LLMOps does not rewrite source truth
+#### Rule D — Product Surface & LLMOps does not rewrite source truth
 
-LLMOps may shape prompts and answer formats, but it must operate on evidence provided by the shared contracts and retrieval layer rather than inventing unsupported structure.
+Product Surface & LLMOps may shape prompts, answer formats, and user-facing inspection behavior, but it must operate on evidence provided by shared contracts and the retrieval layer rather than inventing unsupported structure.
+
+#### Rule E — Product Surface & LLMOps does not absorb retrieval ownership
+
+Product Surface & LLMOps owns how answers and provenance are presented to the user, but it does not own evidence selection, ranking, or retrieval-unit construction.
 
 ### 11.4 Collaboration expectations
 
 The domains should collaborate most closely at these edges:
 
-- **Platform ↔ Parsing** for ingestion lifecycle and replay/debug behavior
-- **Parsing ↔ Search / RAG** for section fidelity and chunk-context quality
-- **Search / RAG ↔ LLMOps** for evidence packaging, answer status semantics, and citation formatting
+- **Data Platform & Ingestion ↔ Parsing & Structural Normalization** for ingestion lifecycle, replay behavior, and raw-to-normalized lineage
+- **Parsing & Structural Normalization ↔ Search & Grounded Generation** for section fidelity, chunk-context quality, and provenance-preserving discretization
+- **Search & Grounded Generation ↔ Product Surface & LLMOps** for evidence packaging, answer-status semantics, citation formatting, and source-inspection behavior
 - **All domains ↔ Evaluation** because every meaningful tuning decision must be measurable
 
 ### 11.5 Escalation cases
@@ -1070,47 +1079,55 @@ By the end of sections 1–11 of this workflow, the intended operating model sho
 
 ---
 
-## 12. Artifact Set
+## 12. Artifact Topology and Semantics
 
-This section makes the workflow operational by defining the concrete artifacts the team is expected to produce. Without an explicit artifact set, the workflow risks becoming a conceptual process description rather than an executable delivery model.
+This section makes the workflow operational by defining the concrete artifact topology the team should use during execution. The workflow should not blur evergreen architecture, active work, and durable rationale into one generic category of notes.
 
-The artifact model follows the same principle as the execution model:
+### 12.1 Semantic distinction
 
-> keep global artifacts small and stable; keep domain artifacts local and mutable.
+The artifact model follows three explicit semantics:
 
-### 12.1 Artifact design principles
+- **Evergreen artifacts** describe what the system is: durable domain scope, interfaces, invariants, non-goals, and architectural boundaries.
+- **Workstream artifacts** describe what the team is doing now: active execution tracking, current status, evaluation evidence, and handoff context for a bounded temporal effort.
+- **ADRs** describe why a durable decision was made: the rationale, tradeoffs, and consequences of an architectural choice that should remain legible after the originating workstream ends.
 
-The artifact set should satisfy the following rules.
+These semantics matter as much as the directory names. A workstream note should not become the de facto architecture source of truth, and an evergreen architecture note should not become a running execution log.
 
-#### Rule A — Shared artifacts define interfaces, not implementation details
+### 12.2 Directory model
 
-A global artifact should exist only when multiple domains need the same boundary condition. Shared artifacts should lock contracts, semantics, and release criteria, but should avoid embedding local heuristic logic.
+The standard documentation topology is:
 
-#### Rule B — Domain artifacts should be short and directly actionable
+```text
+docs/
+  evergreen/
+    RFC-MVP-Architecture.md
+    Domain-Data-Platform-Ingestion.md
+    Domain-Parsing-Structural-Normalization.md
+    Domain-Search-Grounded-Generation.md
+    Domain-Product-Surface-LLMOps.md
+  workstreams/
+    WS-XXX-slug/
+      workstream.md
+      status.md
+      telemetry-and-evals.md
+      handoff.md
+  adrs/
+    ADR-XXX-title.md
+```
 
-A domain artifact is not a mini-architecture thesis. It should describe the local design choices, heuristics, inputs, outputs, test surfaces, and rollout constraints needed for that domain to execute.
+### 12.3 Evergreen artifacts
 
-#### Rule C — Evaluation artifacts are first-class engineering assets
+`docs/evergreen/` should contain the durable architectural truth for MVP.
 
-The Golden Dataset, labels, scoring rubrics, and evaluation runner are not temporary QA collateral. They are part of the system-definition layer and should be versioned accordingly.
+#### 12.3.1 Architecture RFC
 
-#### Rule D — Release artifacts must prove integrity, not merely summarize activity
+`docs/evergreen/RFC-MVP-Architecture.md` is the primary cross-domain architecture artifact.
 
-A release artifact should demonstrate that the MVP bar has been met. It should not degenerate into a status update or an aspirational milestone deck.
-
-### 12.2 Global shared artifacts
-
-The following artifacts should exist at the shared layer.
-
-#### 12.2.1 Architecture RFC
-
-This is the primary cross-domain design artifact.
-
-Its scope should be intentionally constrained to:
+Its scope should remain intentionally constrained to:
 
 - shared schemas
 - provenance guarantees
-- answer and citation contract
+- answer and citation contracts
 - lifecycle states and state semantics
 - release invariants
 - evaluation dimensions
@@ -1124,194 +1141,129 @@ It should not attempt to specify:
 - embedding model experiments
 - storage implementation details beyond contract relevance
 
-Recommended sections:
+#### 12.3.2 Evergreen domain documents
 
-1. context and purpose
-2. shared object model
-3. lifecycle semantics
-4. source-reference contract
-5. answer-status contract
-6. cross-domain ownership map
-7. compatibility and change policy
+Each canonical domain should have one durable domain document:
 
-#### 12.2.2 Schema registry or schema definition package
+- `docs/evergreen/Domain-Data-Platform-Ingestion.md`
+- `docs/evergreen/Domain-Parsing-Structural-Normalization.md`
+- `docs/evergreen/Domain-Search-Grounded-Generation.md`
+- `docs/evergreen/Domain-Product-Surface-LLMOps.md`
 
-The team should maintain a single source of truth for the shared payloads and entities used across domains. Depending on the stack, this may be expressed as:
+Each evergreen domain document should describe:
 
-- JSON Schema
-- Protocol Buffers
-- typed backend definitions
-- generated client/server contract package
+- scope
+- owned responsibilities
+- interfaces in and out
+- invariants
+- non-goals
+- primary failure modes
+- validation expectations
 
-At minimum, the schema set should cover:
+Evergreen domain documents describe the stable shape of the system. They are not execution trackers.
 
-- `Document`
-- `Section`
-- `Chunk`
-- processing/job-state payloads
-- retrieval-result payload
-- answer payload
-- citation/source-reference payload
+### 12.4 Temporal workstream artifacts
 
-#### 12.2.3 Contract test suite
+`docs/workstreams/WS-XXX-slug/` should contain the artifacts for a bounded execution effort.
 
-Shared contracts should be enforced mechanically, not socially.
+#### 12.4.1 `workstream.md`
 
-Recommended test categories:
+`workstream.md` is the canonical execution-tracking artifact inside a workstream.
 
-- schema conformance tests
-- backward/forward compatibility checks where relevant
-- citation-resolution tests
-- answer-payload validation tests
-- ingest/job-state transition tests
+It should record:
 
-#### 12.2.4 Golden Dataset specification
+- objective and scope of the workstream
+- explicit in-scope and out-of-scope boundaries
+- milestones or phase-specific deliverables
+- current execution plan
+- owners, dependencies, and exit criteria
 
-This artifact defines the evaluation corpus and labeling rules.
+It should not be treated as an evergreen domain design document.
 
-Recommended contents:
+#### 12.4.2 Supporting workstream artifacts
 
-- dataset purpose and scope
-- corpus composition rules
-- question taxonomy
-- negative-case requirements
-- labeling guidelines
-- scoring semantics
-- dataset versioning rules
-- known blind spots
+Supporting temporal artifacts may include:
 
-#### 12.2.5 Evaluation harness specification
+- `status.md` for concise progress, blockers, and recent decisions
+- `telemetry-and-evals.md` for workstream-local evaluation evidence, regression notes, and telemetry relevant to the workstream
+- `handoff.md` for resumability, open threads, and next-operator context
 
-This artifact describes how the system is executed against the Golden Dataset and how results are recorded.
+These artifacts support execution; they do not replace evergreen architecture.
 
-Recommended contents:
+### 12.5 ADRs
 
-- runner inputs and outputs
-- deterministic vs model-based evaluators
-- scoring aggregation logic
-- regression-comparison policy
-- storage location of historical runs
-- treatment of flaky evaluation dimensions
+`docs/adrs/ADR-XXX-title.md` should capture durable architectural decisions and rationale.
 
-#### 12.2.6 Release checklist and release evidence template
+Use an ADR when the team needs to preserve:
 
-The team should maintain a release artifact template that records:
+- the decision that was made
+- the alternatives that were considered
+- the tradeoffs that drove the choice
+- the lasting consequences for future workstreams
 
-- system version under evaluation
-- Golden Dataset results
-- known limitations
-- unresolved defects
-- go / no-go recommendation
-- sign-off owners
+Do not treat ADRs as status logs or release checklists.
 
-### 12.3 Domain-specific artifacts
+### 12.6 Shared execution artifacts
 
-Each bounded domain should maintain a lightweight speclet or equivalent implementation note.
+The following shared artifacts should exist across the program, with their placement determined by semantics rather than convenience:
 
-#### 12.3.1 Platform speclet
+- shared schema package or schema registry for `Document`, `Section`, `Chunk`, processing/job-state payloads, retrieval-result payloads, answer payloads, and citation/source-reference payloads
+- contract test suite for schema conformance, citation resolution, answer-payload validity, and lifecycle transitions
+- Golden Dataset specification and corpus fixture manifest
+- evaluation harness and historical baseline result snapshots
+- release checklist and release evidence template
+- failure-case catalog for recurring defects and their disposition
 
-Recommended contents:
+The Golden Dataset and evaluation harness are first-class engineering assets. They are established in Phase 2, reused during Phase 4 heuristic tuning, and reused again in Phase 5 release gating.
 
-- upload flow
-- document registration semantics
-- storage references and ownership model
-- processing orchestration approach
-- idempotency strategy
-- retry and failure semantics
-- debug visibility surfaces
+### 12.7 Domain-specific execution guidance
 
-#### 12.3.2 Parsing speclet
+Domain-local execution detail should be captured either in the relevant evergreen domain document when it changes durable boundaries, or in a workstream-local `workstream.md` and its supporting temporal artifacts when it reflects active implementation, tuning, or rollout work.
 
-Recommended contents:
+Use the artifact type that matches the semantic intent:
 
-- Markdown parsing approach
-- PDF text extraction path
-- structure-recovery heuristics
-- section-construction rules
-- fallback behavior for weak structure
-- parser output examples
-- parsing-specific evaluation dimensions
+- durable domain scope, interfaces, invariants, and non-goals belong in evergreen domain documents
+- active execution tracking belongs in `docs/workstreams/WS-XXX-slug/workstream.md`
+- durable cross-cutting decisions belong in `docs/adrs/`
 
-#### 12.3.3 Search / RAG speclet
+Do not prescribe `speclet.md` as a preferred execution artifact.
 
-Recommended contents:
-
-- chunking policy
-- embedding and indexing baseline
-- retrieval flow
-- evidence-packaging contract
-- metadata usage
-- cross-document retrieval behavior
-- retrieval-specific metrics and ablations
-
-#### 12.3.4 LLMOps speclet
-
-Recommended contents:
-
-- answer prompt contract
-- answer-status rules
-- insufficient-evidence behavior
-- citation rendering constraints
-- prompt-evaluation methodology
-- rollback rules for prompt regressions
-
-### 12.4 Supporting operational artifacts
-
-The following supporting artifacts are not global architecture documents, but they are still useful for execution.
-
-#### 12.4.1 Corpus fixture manifest
-
-A manifest describing the concrete files used in the Golden Dataset, including source type, topical category, and any known structural peculiarities.
-
-#### 12.4.2 Failure-case catalog
-
-A rolling catalog of known failure examples. Each entry should record:
-
-- the user question
-- retrieved evidence
-- system answer
-- expected behavior
-- observed defect class
-- disposition (`fixed`, `known`, `deferred`)
-
-#### 12.4.3 Baseline result snapshot
-
-A durable record of the walking-skeleton performance so that later improvements can be measured against an agreed baseline rather than memory.
-
-#### 12.4.4 Release limitations statement
-
-A short, user-facing or internal-facing statement describing what the MVP explicitly does not support. This ensures that deferred scope is represented clearly at release time.
-
-### 12.5 Artifact ownership model
+### 12.8 Artifact ownership model
 
 Artifacts should have explicit owners.
 
 | Artifact | Primary owner | Reviewers |
 |---|---|---|
-| Architecture RFC | Technical lead or delegated architecture owner | All domain leads |
-| Schema registry | Shared contract owner | Platform, Search / RAG, LLMOps |
-| Contract test suite | Platform or shared infra owner | All domain leads |
-| Golden Dataset specification | Evaluation owner | Parsing, Search / RAG, LLMOps |
-| Evaluation harness specification | Evaluation owner | Platform, Search / RAG, LLMOps |
-| Platform speclet | Platform | Architecture owner + adjacent domains |
-| Parsing speclet | Parsing | Architecture owner + Search / RAG |
-| Search / RAG speclet | Search / RAG | Architecture owner + LLMOps |
-| LLMOps speclet | LLMOps | Architecture owner + Search / RAG |
+| `docs/evergreen/RFC-MVP-Architecture.md` | Technical lead or delegated architecture owner | All domain leads |
+| Evergreen domain document for Data Platform & Ingestion | Data Platform & Ingestion | Architecture owner + adjacent domains |
+| Evergreen domain document for Parsing & Structural Normalization | Parsing & Structural Normalization | Architecture owner + Search & Grounded Generation |
+| Evergreen domain document for Search & Grounded Generation | Search & Grounded Generation | Architecture owner + Product Surface & LLMOps |
+| Evergreen domain document for Product Surface & LLMOps | Product Surface & LLMOps | Architecture owner + Search & Grounded Generation |
+| Shared schema registry | Shared contract owner | Data Platform & Ingestion, Search & Grounded Generation, Product Surface & LLMOps |
+| Contract test suite | Data Platform & Ingestion or shared infra owner | All domain leads |
+| Golden Dataset specification | Product Surface & LLMOps | Parsing & Structural Normalization, Search & Grounded Generation |
+| Evaluation harness specification | Product Surface & LLMOps | Data Platform & Ingestion, Search & Grounded Generation |
+| `docs/workstreams/WS-XXX-slug/workstream.md` | Workstream owner | Affected domain leads |
+| `docs/workstreams/WS-XXX-slug/status.md` | Workstream owner | Affected domain leads |
+| `docs/workstreams/WS-XXX-slug/telemetry-and-evals.md` | Product Surface & LLMOps or delegated evaluation owner | Affected domain leads |
+| `docs/workstreams/WS-XXX-slug/handoff.md` | Current workstream operator | Next operator + workstream owner |
+| `docs/adrs/ADR-XXX-title.md` | Decision owner | Affected domain leads |
 | Release evidence template | Program or release owner | All domain leads |
 
-### 12.6 Minimum viable artifact set
+### 12.9 Minimum viable artifact set
 
 If the team needs the smallest acceptable artifact footprint, the minimum viable set is:
 
-- Architecture RFC
+- `docs/evergreen/RFC-MVP-Architecture.md`
+- the four evergreen domain documents
 - shared schema package
 - Golden Dataset specification
 - evaluation harness
-- one speclet per domain
+- one active `docs/workstreams/WS-XXX-slug/workstream.md` per material workstream
 - baseline result snapshot
 - release evidence template
 
-Anything less risks ambiguity in interfaces, quality standards, or release proof.
+Anything less risks ambiguity in interfaces, ownership, quality standards, or release proof.
 
 ---
 
@@ -1754,8 +1706,8 @@ This appendix ensures that the workflow remains anchored to the MVP document rat
 
 | MVP invariant / hard requirement | Workflow control |
 |---|---|
-| Stable document identity | Shared schema lock; Platform ownership; contract tests |
-| Structural integrity | Parsing heuristics bounded by section model; eval coverage for structure-sensitive cases |
+| Stable document identity | Shared schema lock; Data Platform & Ingestion ownership; contract tests |
+| Structural integrity | Parsing & Structural Normalization heuristics bounded by section model; eval coverage for structure-sensitive cases |
 | Traceability | Provenance contract; citation-resolution tests; release gate checks |
 | Grounded answering | Answer-status contract; retrieval packaging; negative-case evals |
 | Honest failure behavior | Prompt policy; explicit insufficient-evidence scoring; go / no-go rule |
@@ -1806,5 +1758,3 @@ If the item cannot be justified by the MVP problem, goal, scope, or invariants, 
 ---
 
 ## End of Workflow Document
-
-Sections 1–15 together define the intended post-framing execution model for the MVP. The next step after this document is not another broad planning pass; it is to instantiate the artifact set, lock the shared contracts, and begin building the Golden Dataset and walking skeleton in parallel.

@@ -118,7 +118,7 @@ The following terminology should be used consistently in architecture and planni
 | retrieval | **Vector Search & Context Assembly** | Retrieve and prepare evidence for generation |
 | answering + citation contract | **Grounded Generation (RAG) Subsystem** | Synthesize bounded answers with evidence mapping |
 | source inspection UI | **Provenance Verification Surface** | User-facing surface for validating answer origin |
-| evaluation and quality gates | **LLMOps & Evaluation Framework** | Offline and online quality measurement and gating |
+| answer rendering, provenance UX, and quality gates | **Product Surface & LLMOps** | User-facing question/answer experience, provenance verification, and evaluation-driven release gating |
 
 Two notes:
 
@@ -417,12 +417,14 @@ The generation subsystem must be optimized for **faithfulness and provenance**, 
 
 ### 7.4 Domain 4: Product Surface & LLMOps
 
-**Scope:** user trust surface and quality system.
+**Scope:** user-facing question-and-answer surface, provenance verification surface, and quality system.
 
 **Owns:**
 
 - user-facing application behavior for asking questions and viewing answers
+- answer rendering and answer-status presentation behavior
 - provenance verification surface
+- source inspection UX
 - evaluation dataset design and maintenance
 - offline evaluation pipeline
 - unsupported-claim checks and quality gates
@@ -430,7 +432,9 @@ The generation subsystem must be optimized for **faithfulness and provenance**, 
 
 **Responsibilities:**
 
+- provide the query-entry and answer-view flow for the MVP product surface
 - render answer payloads in a way that supports source inspection
+- present answer status in a way that makes insufficiency explicit rather than hidden
 - expose document/section/page references in a minimally usable interface
 - define evaluation suites for factual lookup, localized explanation, multi-source synthesis, and source navigation
 - measure groundedness, citation precision, abstention behavior, and retrieval adequacy
@@ -443,6 +447,7 @@ Example minimal provenance view model:
 ```json
 {
   "answer_text": "string",
+  "answer_status": "supported|insufficient_evidence|partial",
   "sources": [
     {
       "title": "string",
@@ -714,7 +719,7 @@ Do not treat citations as decorative footnotes. In this product, provenance is a
 
 ---
 
-## 14. LLMOps and evaluation framework
+## 14. Product Surface & LLMOps quality framework
 
 The system should ship with an MVP-appropriate evaluation framework.
 
@@ -760,11 +765,11 @@ MVP should not be considered ready unless:
 
 ## 15. Execution phasing
 
-The work should proceed in four phases.
+The work should proceed in five phases that keep evaluation left-shifted and then reuse the same evidence later for release gating.
 
-### Phase 1: Interface-First Design
+### Phase 1 — Global Contract Lock
 
-**Action:** define and freeze minimal schemas and contracts.
+**Action:** define and freeze the minimal shared schemas, lifecycle semantics, provenance contracts, and ownership boundaries required for concurrent execution.
 
 Deliverables:
 
@@ -773,12 +778,28 @@ Deliverables:
 - retrieval unit schema
 - answer payload schema
 - evidence reference model
+- domain boundary map
 
 **Why:** this unblocks concurrent domain execution while minimizing integration churn.
 
 ---
 
-### Phase 2: Walking Skeleton
+### Phase 2 — Golden Dataset and Evaluation Harness
+
+**Action:** establish the Golden Dataset and the evaluation harness before substantial heuristic tuning begins.
+
+Deliverables:
+
+- representative MVP corpus slice
+- labeled question set across the intended use-case classes
+- deterministic and judge-based evaluation checks where appropriate
+- baseline metrics from the current system state
+
+**Why:** evaluation must be available before major tuning so that parsing, retrieval, grounded generation, and product-surface changes are measured against one shared quality bar.
+
+---
+
+### Phase 3 — Walking Skeleton
 
 **Action:** build the thinnest real end-to-end path through the System Critical Path.
 
@@ -789,31 +810,31 @@ Recommended initial slice:
 - create retrieval units
 - index them semantically
 - answer a question
-- return evidence references
+- render the answer with inspectable evidence references
 
 **Why:** this proves that the architecture is viable before deep local optimization.
 
 ---
 
-### Phase 3: Domain-Specific Hardening
+### Phase 4 — Domain Heuristic Tuning
 
-**Action:** improve each domain locally while preserving contracts.
+**Action:** improve each domain locally while preserving contracts and reusing the Phase 2 evaluation harness as the acceptance mechanism.
 
 Examples:
 
 - better PDF section inference
 - better discretization heuristics
 - improved context assembly
-- more robust provenance rendering
+- more robust answer rendering and provenance inspection behavior
 - stronger evaluation coverage
 
-**Why:** once the walking skeleton exists, local iteration becomes much safer and more measurable.
+**Why:** once the walking skeleton exists and the eval harness is in place, local iteration becomes much safer and more measurable.
 
 ---
 
-### Phase 4: End-to-End Validation and Release Gating
+### Phase 5 — Integrated Release Gate
 
-**Action:** run the evaluation framework against the integrated system and validate release criteria.
+**Action:** run the integrated system against the established evaluation framework and validate release criteria.
 
 Check:
 
@@ -823,7 +844,7 @@ Check:
 - abstention quality when evidence is absent
 - usability of the provenance verification surface
 
-**Why:** MVP should be released on trust and utility criteria, not on subsystem completeness.
+**Why:** MVP should be released on trust and utility criteria, not on subsystem completeness, and the same evaluation apparatus established earlier should provide the release evidence.
 
 ---
 
@@ -861,7 +882,9 @@ Focus:
 
 Focus:
 
+- question-and-answer application behavior
 - answer inspection UX
+- answer-status presentation and provenance verification
 - evaluation dataset and pipeline
 - quality gates
 - trust-oriented release readiness
@@ -872,13 +895,19 @@ This topology is specific enough for ownership while still compact enough to avo
 
 ## 17. Standardized artifact topology
 
-The documentation tree should separate stable architecture from temporal execution.
+The documentation tree should separate evergreen architecture, temporal execution, and durable decision rationale explicitly. File paths alone are not enough; each class has a different semantic purpose.
 
 ### 17.1 Evergreen architecture
 
-Recommended top-level evergreen artifact:
+`docs/evergreen/` contains durable architectural truth about what the system is.
 
-- `RFC-MVP-Architecture.md`
+Recommended evergreen artifacts:
+
+- `docs/evergreen/RFC-MVP-Architecture.md`
+- `docs/evergreen/Domain-Data-Platform-Ingestion.md`
+- `docs/evergreen/Domain-Parsing-Structural-Normalization.md`
+- `docs/evergreen/Domain-Search-Grounded-Generation.md`
+- `docs/evergreen/Domain-Product-Surface-LLMOps.md`
 
 Purpose:
 
@@ -888,16 +917,7 @@ Purpose:
 - define the System Critical Path
 - define release-quality expectations
 
-### 17.2 Domain specifications
-
-Recommended evergreen domain documents:
-
-- `Domain-Data-Platform.md`
-- `Domain-Structural-Normalization.md`
-- `Domain-Search-And-Generation.md`
-- `Domain-Provenance-And-Eval.md`
-
-Each should describe:
+Evergreen documents should describe:
 
 - scope
 - owned responsibilities
@@ -907,19 +927,28 @@ Each should describe:
 - primary failure modes
 - validation expectations
 
-### 17.3 Temporal work artifacts
+### 17.2 Temporal workstreams
 
-Active implementation should live under workstreams rather than being embedded into architecture notes.
+`docs/workstreams/WS-XXX-slug/` contains what the team is doing now.
 
 Recommended structure per workstream:
 
-- `workstream.md`
-- `status.md`
-- `adr-log.md`
-- `telemetry-and-evals.md`
-- `handoff.md` when needed
+- `docs/workstreams/WS-XXX-slug/workstream.md`
+- `docs/workstreams/WS-XXX-slug/status.md`
+- `docs/workstreams/WS-XXX-slug/telemetry-and-evals.md`
+- `docs/workstreams/WS-XXX-slug/handoff.md`
 
-This keeps evergreen truth separate from work history and preserves resumability.
+`workstream.md` is the canonical execution-tracking artifact inside a workstream. These files are temporal execution records, not evergreen domain design documents.
+
+### 17.3 ADRs
+
+`docs/adrs/` contains durable architectural decisions and rationale.
+
+Recommended ADR structure:
+
+- `docs/adrs/ADR-XXX-title.md`
+
+ADRs explain why a durable decision was made, which alternatives were considered, and what tradeoffs were accepted.
 
 ---
 
@@ -934,13 +963,14 @@ After this architecture note, the next highest-value artifacts are:
 
 Recommended file set:
 
-- `Domain-Data-Platform.md`
-- `Domain-Structural-Normalization.md`
-- `Domain-Search-And-Generation.md`
-- `Domain-Provenance-And-Eval.md`
-- `Schemas-Corpus-And-Answer-Payloads.md`
-- `Plan-Walking-Skeleton.md`
-- `Plan-MVP-Evaluation.md`
+- `docs/evergreen/Domain-Data-Platform-Ingestion.md`
+- `docs/evergreen/Domain-Parsing-Structural-Normalization.md`
+- `docs/evergreen/Domain-Search-Grounded-Generation.md`
+- `docs/evergreen/Domain-Product-Surface-LLMOps.md`
+- shared schema definitions for corpus and answer payloads
+- `docs/workstreams/WS-XXX-slug/workstream.md`
+- `docs/workstreams/WS-XXX-slug/telemetry-and-evals.md`
+- `docs/adrs/ADR-XXX-title.md` when a durable architectural decision needs to be recorded
 
 ---
 
@@ -977,4 +1007,3 @@ That is the simplest topology that supports:
 - bounded complexity
 - strong source traceability
 - trustworthy user outcomes
-
