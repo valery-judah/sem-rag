@@ -7,12 +7,12 @@ The current codebase is intentionally small. Today it exposes:
 - `src/parity/retrieval.py`: an in-memory `SemanticIndex` demo
 - `src/parity/cli.py`: a CLI that runs the retrieval demo
 
-The product target is broader than the current implementation. The current delivery spec lives in `docs/delivery/service-mvp-1.md`, which describes a service for asking questions over uploaded PDF and Markdown documents with source-grounded answers.
+The product target is broader than the current implementation. The product north star lives in `docs/evergreen/mvp.md`, which defines the MVP scope for question answering over a bounded PDF and Markdown corpus with inspectable evidence. Supporting delivery and workflow material may exist in `docs/delivery/`, but it is not the canonical scope definition.
 
 ## Read First
 
 - `AGENTS.md`: repo workflow entry point for agents
-- `docs/delivery/service-mvp-1.md`: current MVP product north star and scope boundary
+- `docs/evergreen/mvp.md`: MVP product north star and scope boundary
 - `docs/evergreen/architecture.md`: current-state vs target-state architecture
 - `docs/evergreen/api-contracts.md`: stable interfaces that exist today
 - `docs/README.md`: documentation map
@@ -22,8 +22,8 @@ The product target is broader than the current implementation. The current deliv
 - `src/parity/__init__.py`: package export surface
 - `src/parity/retrieval.py`: retrieval demo logic
 - `src/parity/cli.py`: demo CLI entry point
-- `docs/delivery/`: current delivery specs and framing documents
-- `docs/evergreen/`: durable product and repo documentation
+- `docs/evergreen/`: durable canonical product and repo documentation
+- `docs/delivery/`: planning, architecture, and workflow drafts retained for reference; not the product north star
 - `docs/workstreams/`: optional time-scoped execution records
 - `docs/adrs/`: durable architectural decisions when needed
 - `docs/harness/`: documentation tooling and templates
@@ -55,6 +55,7 @@ docs/
   README.md
   delivery/
   evergreen/
+    mvp.md
     api-contracts.md
     architecture.md
     runbook.md
