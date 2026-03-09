@@ -2,7 +2,7 @@
 
 **Status:** Draft  
 **Scope:** MVP / Version 1  
-**Last updated:** 2026-03-09
+**Last updated:** 2026-03-10
 
 ## 1. Problem
 
@@ -54,6 +54,7 @@ This MVP exists to validate a small set of product and feasibility hypotheses wi
 The product target for MVP remains a mixed-format corpus of PDFs and Markdown files.
 
 If PDF normalization fails to clear a usefulness threshold during beta validation, the team may run a Markdown-first beta to validate question flow, answer trust, and source inspection behavior without redefining the long-term MVP target.
+This contingency is binding on downstream architecture and workflow documents: mixed-format remains the MVP target, and Markdown-first is a validation fallback only.
 
 The objective is not to solve every document-processing problem. The objective is to validate that this product shape is useful and technically viable with a constrained first version.
 
@@ -107,6 +108,8 @@ Users want to:
 - Some Markdown files may originate from PDF-to-Markdown conversion.
 - The service may accept a collection rather than a single file.
 
+Internal architecture or workflow documents may use generic terms such as `document`, but MVP-supported inputs remain limited to text-based PDFs and Markdown files.
+
 ### Input metadata requirements
 
 For each document, the system should preserve or derive, where possible:
@@ -136,6 +139,7 @@ The MVP includes the following capabilities.
 
 For MVP, the system should emphasize **sections and headers** as the primary structural abstraction.
 For PDFs, provenance should be recoverable at a coarse level such as page and inferred heading or section path when available; exact paragraph-level anchoring is not required.
+Preserving code blocks or table-like fragments during normalization does not mean table-centric question answering or rich table understanding is in scope for MVP.
 
 ### 7.3 Retrieval preparation
 
@@ -223,6 +227,7 @@ Examples:
 - “Synthesize the guidance on caching from Book A and my notes.”
 
 The MVP may synthesize across multiple relevant documents and show the supporting sources, but this is secondary to the core promise of grounded answers and inspectable evidence. It does not promise strong compare-and-contrast behavior across all relevant viewpoints.
+When sources differ or support is incomplete, the system may surface uncertainty, narrow the scope of the answer, or abstain rather than imply exhaustive reconciliation.
 
 ### 9.4 Source navigation
 
@@ -286,11 +291,11 @@ For PDFs, this traceability may be coarse. The system must preserve recoverable 
 
 ### 12.4 Grounded answering
 
-Answers must be based on retrieved corpus content rather than unsupported model inference.
+Answers must be based on retrieved corpus content rather than unsupported model inference. The system must not fabricate supporting provenance for a claim.
 
 ### 12.5 Honest failure behavior
 
-When the corpus does not contain enough evidence, the system should say so rather than produce a confident unsupported answer.
+When the corpus does not contain enough evidence, the system should narrow scope, abstain, or say so explicitly rather than produce a confident unsupported answer.
 
 ## 13. Answer Quality Expectations
 
@@ -300,6 +305,7 @@ For MVP, answers should be:
 - limited to what the uploaded corpus supports
 - explicit about uncertainty when evidence is weak
 - accompanied by source references useful for inspection
+- willing to narrow scope or abstain when support is insufficient
 
 The service should prefer a qualified answer such as:
 
@@ -325,6 +331,8 @@ The user should be able to treat the corpus as a single question-answerable work
 ## 15. Implementation Boundary for MVP
 
 This document defines the product promise and minimum trust guarantees for MVP. It intentionally does not lock the team into a detailed retrieval or representation design.
+
+Framing authority: this document governs MVP product scope, supported inputs, trust guarantees, and explicit deferrals. Architecture and workflow documents may generalize internal concepts for modeling or implementation, but they may not broaden the MVP on their own.
 
 For MVP, implementation should follow these high-level constraints:
 
