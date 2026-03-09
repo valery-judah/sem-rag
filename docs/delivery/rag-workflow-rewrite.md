@@ -7,6 +7,10 @@ Draft
 
 This document rewrites the delivery workflow for the MVP RAG system.
 
+This workflow is subordinate to `docs/evergreen/mvp.md`. It does not broaden Version 1 product scope beyond text-based PDF and Markdown input, grounded question answering, evidence inspection, and explicit abstention or scope-narrowing when support is weak.
+
+The MVP target remains a mixed-format corpus of PDF and Markdown documents. If PDF normalization underperforms, a Markdown-first beta may be used only as a validation fallback; it does not redefine the MVP target, and downstream workflow decisions should continue to optimize for mixed-format support.
+
 The prior direction was still too close to a conventional engineering workflow: frame the work, decompose it into domains, and then implement toward an intended architecture. That is the wrong center of gravity for this stage.
 
 For an early document-grounded RAG system, implementation is cheap and architecture certainty is low. The durable value is not the first codebase. The durable value is a correct conceptual model of the system, a clear evidence model, a stable set of invariants, and a validated understanding of which boundaries are real.
@@ -17,11 +21,11 @@ The core idea is simple:
 
 1. Model the RAG system precisely.
 2. Make evidence, retrieval units, claims, and failures first-class concepts.
-3. Derive bounded contexts and contracts from that model.
+3. Derive bounded contexts and internal contracts from that model.
 4. Build a thin integrated prototype to pressure the model.
 5. Extract the minimal durable architecture only after the running system exposes the true seams.
 
-This document focuses on conceptual structure, domain modeling technique, and the bridge from modeling to delivery. It intentionally avoids detailed operational mechanics, artifact catalogs, and later productionization policy.
+This document focuses on conceptual structure, domain modeling technique, and the bridge from modeling to delivery. It intentionally avoids detailed operational mechanics, artifact catalogs, later productionization policy, and stable runtime or service API definitions.
 
 ---
 
@@ -61,6 +65,8 @@ The product promise is:
 - generates answers whose claims are supported by retrieved evidence,
 - and abstains or narrows scope when the evidence is insufficient.
 
+For MVP, that promise is specifically about text-based PDFs and Markdown files in one bounded corpus. Generic workflow terms such as `document`, `anchor`, or `evidence unit` are internal modeling abstractions and should not be read as permission to widen supported inputs or provenance guarantees beyond `mvp.md`.
+
 This thesis has several implications.
 
 First, the system is fundamentally **evidence-constrained**. Generation quality depends on upstream representation quality and retrieval behavior.
@@ -87,10 +93,10 @@ The minimum conceptual vocabulary should include the following:
 A bounded collection of source artifacts that the system is allowed to use as evidence.
 
 #### Document
-A source artifact with stable identity. A document may be PDF, Markdown, HTML, wiki content, or another supported source format.
+A source artifact with stable identity. The conceptual model uses `document` as a generic internal term, but MVP-supported inputs remain limited to text-based PDF and Markdown.
 
 #### Document version
-A specific content snapshot of a document. Some identities should remain stable across re-ingestion, while content-derived structures may vary by version.
+A specific content snapshot of a document. Version semantics may matter for later hardening, but MVP only needs enough identity discipline to keep ingested documents and derived retrieval units recoverable and inspectable.
 
 #### Structure tree
 A structural representation of the document after parsing. This includes headings, sections, paragraphs, lists, tables, code blocks, and relative ordering.
@@ -102,10 +108,10 @@ A heading-scoped subtree in the structure tree. A section is a semantic containe
 A retrievable text unit aligned to discourse boundaries and token constraints. Passages are typically the primary evidence units for retrieval.
 
 #### Anchor
-A stable reference that can resolve back to a source location within the document or its rendered form.
+A recoverable reference that can resolve back to a source location within the document or its rendered form. For MVP, especially with PDFs, this may be coarse provenance such as page plus inferred heading or section path rather than exact span accuracy.
 
 #### Evidence unit
-A retrievable or referenceable source fragment that can support a claim. In the first version this is usually a passage, sometimes section metadata, and later may include table cells, code snippets, or graph-linked evidence.
+A retrievable or referenceable source fragment that can support a claim. In MVP this is primarily a passage, sometimes supplemented by section or header context. Richer evidence objects such as table fragments, code-specific units, or graph-linked evidence are deferred extensions rather than MVP commitments.
 
 #### Evidence set
 A set of one or more evidence units sufficient to support a user-visible claim or answer fragment.
@@ -120,7 +126,7 @@ The information need implied by a user request. In early versions the system may
 A user-visible assertion in the answer. Claims are the unit that must be supportable.
 
 #### Citation
-A mapping from a claim or answer span to one or more evidence anchors.
+A mapping from an answer or answer fragment to one or more evidence anchors.
 
 #### Abstention
 A valid answer mode in which the system declines to answer fully, narrows scope, or states that the current corpus does not support the requested claim.
@@ -135,15 +141,15 @@ A document moves through the following conceptual path:
 
 `Acquire -> Parse -> Structure -> Segment -> Represent -> Index/Publish`
 
-This lifecycle is responsible for creating stable, retrievable, anchorable evidence-bearing objects.
+This lifecycle is responsible for creating stable, retrievable, anchorable evidence-bearing objects. For MVP, "anchorable" should be read as recoverably traceable back to the source, not necessarily exact-span accurate.
 
 #### Publication and mutation lifecycle
 
-The model must also define what happens after a document version has been published:
+The model may later define what happens after a document version has been published:
 
 `Publish -> Re-ingest/Supersede -> Re-index -> Withdraw/Delete from active retrieval`
 
-This lifecycle is responsible for preserving stable document identity, version lineage, and citation resolvability as content changes over time. Superseded or withdrawn material may leave active retrieval while still remaining traceable enough for audit and regression analysis.
+This lifecycle describes a future hardening direction rather than a required MVP workflow output. If later versions need re-ingestion, supersession, or withdrawal behavior, they should preserve stable document identity and enough traceability for audit or regression work without being treated as a Version 1 product promise.
 
 #### Query lifecycle
 
@@ -185,8 +191,9 @@ This asks whether the system produced good knowledge representations from the so
 Key concerns:
 
 - Was meaningful document structure preserved?
-- Were sections, lists, tables, and code blocks handled without destroying semantics?
-- Are anchors resolvable and precise enough for citation?
+- Were sections, lists, and ordinary text structure handled without destroying semantics?
+- Were code blocks or table-like fragments preserved well enough for retrieval when they appear, without implying rich table or figure understanding in MVP?
+- Are anchors recoverable enough for useful source inspection?
 - Are IDs stable enough to support traceability and bounded churn?
 
 A poor answer may originate here long before retrieval or generation.
@@ -285,7 +292,7 @@ Define a shared vocabulary for objects like document, section, passage, anchor, 
 Map the conceptual transitions in the document and query lifecycles. This helps expose state transitions, handoffs, and failure points.
 
 #### Invariant modeling
-Identify truths that must survive all rewrites. This is where stable identity, anchorability, and deterministic ordering belong.
+Identify truths that must survive all rewrites. This is where stable identity, recoverable provenance, and deterministic ordering belong.
 
 #### Failure-mode modeling
 Treat failure classes as part of the domain rather than as downstream defects. Unsupported claims, anchor mismatch, retrieval miss, and evidence fragmentation should be modeled explicitly.
@@ -322,7 +329,7 @@ A user asks for a fact that is explicitly present in one passage or one tightly 
 This pressures:
 
 - passage quality,
-- anchor correctness,
+- source-location correctness,
 - top-k retrieval precision,
 - answer citation behavior.
 
@@ -334,7 +341,7 @@ This pressures:
 - section hierarchy,
 - neighbor expansion,
 - context assembly,
-- citation granularity.
+- source inspection granularity that remains compatible with coarse PDF provenance.
 
 #### Multi-passage synthesis within one document
 A user asks a question that requires combining several non-adjacent but related passages from the same source.
@@ -362,9 +369,9 @@ A user wants to inspect the source behind the answer.
 
 This pressures:
 
-- anchorability,
-- citation resolution,
-- stable document-to-anchor linkage,
+- recoverable provenance,
+- citation resolution at useful MVP granularity,
+- stable document-to-source linkage,
 - trustworthy answer presentation.
 
 #### Insufficient-evidence case
@@ -378,7 +385,7 @@ This pressures:
 - retrieval failure interpretation.
 
 #### Low-quality or malformed source case
-The corpus contains a document with damaged structure, ambiguous sections, OCR-like artifacts, malformed tables, or broken layout.
+The corpus contains a document with damaged structure, ambiguous sections, malformed tables, or broken layout. Scanned or OCR-heavy PDFs remain out of scope for MVP, but nearby degraded text cases still pressure representation boundaries.
 
 This pressures:
 
@@ -418,10 +425,10 @@ Evidence is any source-linked representation that can legitimately support a use
 In the first version, the main evidence objects are likely:
 
 - passages,
-- section context metadata,
-- table-preserving fragments,
-- code-preserving fragments,
-- possibly derived structured evidence such as graph edges when those remain anchored.
+- section context metadata such as headers or section path,
+- optionally preserved code or table-like text only as supporting context when normalization retains it.
+
+Table-aware evidence, code-specialized evidence, and derived graph-linked evidence are future extensions. They should not be treated as part of the MVP support contract.
 
 ### 7.2 Evidence properties
 
@@ -430,6 +437,7 @@ An evidence unit should have, conceptually, the following properties:
 - stable identity within a document version,
 - link to document identity,
 - anchor or anchor set,
+- recoverable source locator,
 - structural position,
 - local text or renderable content,
 - compatibility with retrieval and citation.
@@ -451,7 +459,7 @@ A claim may require one evidence unit or several. The workflow should therefore 
 Examples:
 
 - a factual lookup may need one passage,
-- a procedural explanation may require a section-level span,
+- a procedural explanation may require a passage plus section-level context,
 - a synthesis answer may require several passages across one or more documents.
 
 ### 7.5 Evidence and delivery
@@ -495,7 +503,7 @@ This hierarchy supports several behaviors that flat chunking does not support we
 - local neighbor expansion,
 - section-aware assembly,
 - stable citation surfaces,
-- bounded churn under small edits.
+- bounded churn under small edits when later hardening requires it.
 
 ### 8.3 Relationship among sections, passages, and neighbors
 
@@ -514,15 +522,15 @@ The workflow should require explicit answers to the following modeling questions
 
 - What is the default retrievable unit?
 - When can a section itself be retrieved?
-- How are tables and code blocks represented without semantic damage?
+- How are tables and code blocks represented without creating an implied MVP commitment to rich table or code understanding?
 - How is adjacency represented for neighbor expansion?
 - How are ordinals or order semantics preserved?
 - How is overlap managed?
-- What causes a retrieval unit boundary to change across document versions?
+- If later versioning is needed, what causes a retrieval unit boundary to change across document versions?
 
 ### 8.5 Consequence for delivery
 
-The retrieval-unit model should be fixed early enough to shape contracts and evaluations, but not so rigidly that it blocks prototype-driven refinement. The right approach is to lock the minimal semantics of units and anchors while allowing implementation details to evolve.
+The retrieval-unit model should be fixed early enough to shape contracts and evaluations, but not so rigidly that it blocks prototype-driven refinement. The right approach is to lock the minimal semantics of units and anchors while allowing implementation details to evolve. For MVP, this means prioritizing stable section and passage semantics plus coarse, recoverable provenance over exact anchoring schemes.
 
 ---
 
@@ -534,13 +542,13 @@ These invariants are the durable laws of the system. They should survive rewrite
 
 ### 9.1 Stable identity
 
-Documents must have stable identity across re-ingestion.
+Documents must have stable identity within the corpus, and that identity should remain stable across re-ingestion if later versions introduce it.
 
-Retrieval units should have stable identity within a document version, and changes across versions should remain traceable with bounded churn where feasible.
+For MVP, retrieval units need stable enough identity to support source inspection and evaluation within an ingested corpus. More explicit cross-version traceability and bounded-churn guarantees are future-hardening concerns.
 
 ### 9.2 Anchorability
 
-Every evidence-bearing object must map back to a source location. If an answer can cite it, the system must be able to resolve it.
+Every evidence-bearing object must map back to a recoverable source location. If an answer cites it, the system must be able to resolve it at useful MVP granularity, especially for PDFs where provenance may be coarse.
 
 ### 9.3 Hierarchical integrity
 
@@ -562,7 +570,7 @@ The system must not silently convert weak evidence into confident claims. Unsupp
 
 ### 9.7 Evidence-to-claim traceability
 
-Claims shown to users must remain auditable against retrieved evidence. Even if the interface does not expose claim-level metadata initially, the conceptual model should preserve the mapping.
+Claims shown to users should remain auditable against retrieved evidence. MVP does not require claim-span metadata or exact claim-to-citation bindings, but the model should preserve enough support semantics to inspect why an answer was returned.
 
 ### 9.8 Why invariants come before architecture
 
@@ -581,10 +589,10 @@ The goal of bounded context mapping here is not to create a microservice plan. I
 A reasonable first map is:
 
 #### Source Acquisition / Corpus Intake
-Responsible for fetching source artifacts and establishing source identity and version inputs.
+Responsible for fetching source artifacts and establishing source identity. MVP scope is limited to text-based PDF and Markdown inputs even if the conceptual model uses more generic terms.
 
 #### Structural Parsing & Distillation
-Responsible for canonicalizing documents into structured representations and producing anchorable structure.
+Responsible for canonicalizing documents into structured representations and producing recoverably traceable structure.
 
 #### Segmentation / Retrieval Unit Construction
 Responsible for turning structure into retrievable units without breaking semantic coherence or traceability.
@@ -596,7 +604,7 @@ Responsible for making evidence discoverable at query time.
 Responsible for transforming retrieved evidence into an ordered, budget-constrained context window suitable for generation.
 
 #### Answer Generation & Citation Rendering
-Responsible for producing grounded answer text and exposing support through citations or abstention.
+Responsible for producing grounded answer text and exposing support through citations or abstention at MVP-appropriate granularity.
 
 #### Evaluation / Verification
 Responsible for checking whether the system preserves the intended semantics and quality thresholds across layers.
@@ -637,16 +645,17 @@ Once bounded contexts exist, the workflow must distinguish global shared concept
 
 The shared kernel should contain the concepts that must remain globally stable across domains.
 
-At minimum this should include concepts like:
+For MVP, this should include concepts like:
 
 - `doc_id`,
-- `doc_version`,
 - `segment_id`,
 - `anchor_ref`,
 - section path or equivalent hierarchy locator,
 - ordering semantics,
 - evidence support semantics,
 - citation semantics.
+
+If later versions need explicit re-ingestion or supersession handling, they may add `doc_version` or equivalent lineage concepts to the shared kernel.
 
 These should not be reinterpreted independently by each domain.
 
@@ -662,7 +671,7 @@ RAG systems are especially vulnerable to subtle semantic drift between domains.
 
 Examples:
 
-- the parser and segmenter disagree on anchor semantics,
+- the parser and segmenter disagree on provenance semantics,
 - retrieval uses a unit identity that citation rendering cannot resolve,
 - context assembly drops ordering assumptions needed by answer rendering,
 - evaluation measures a different notion of evidence than generation uses.
@@ -682,10 +691,12 @@ A strong RAG workflow does not only describe the success path. It also names the
 Examples:
 
 - structure tree missing meaningful hierarchy,
-- list or table semantics destroyed,
+- list semantics destroyed,
+- table-like text flattened in ways that break recoverable context,
 - code blocks split incorrectly,
 - anchors misaligned or non-resolvable,
-- version churn too high after small edits.
+- coarse provenance missing or misleading,
+- version churn too high after small edits in later hardening work.
 
 ### 12.2 Segmentation failures
 
@@ -694,7 +705,7 @@ Examples:
 - semantically mixed passages,
 - passages too small to preserve local meaning,
 - broken discourse boundaries,
-- table/header separation,
+- table/header separation where table-like text is retained,
 - loss of section relationship.
 
 ### 12.3 Retrieval failures
@@ -776,6 +787,8 @@ A named set of failure classes the system must detect, prevent, or contain.
 #### Evaluation harness and baseline dataset
 A concrete question set, representative corpus slice, and scoring mechanism derived from the scenario set and failure taxonomy.
 
+These outputs guide implementation and evaluation, but they are not stable public APIs. Runtime or service contracts should remain in evergreen contract docs only after code actually implements and stabilizes them.
+
 ### 13.2 Why these outputs matter more than early architecture diagrams
 
 These outputs are durable because they preserve the system's semantics. Early class diagrams, packages, or service decomposition are rarely durable at this stage.
@@ -797,7 +810,7 @@ The core loop should be:
 1. define the end-to-end scenarios,
 2. define the conceptual objects and evidence semantics,
 3. lock the minimum shared invariants and shared kernel,
-4. derive the bounded contexts and minimal contracts,
+4. derive the bounded contexts and minimal internal contracts,
 5. implement the evaluation harness and baseline dataset derived from the scenario and failure model,
 6. implement a thin integrated prototype,
 7. pressure the prototype with the scenario and failure model through the evaluation harness,
@@ -811,7 +824,7 @@ Before substantial coding begins, the workflow should expect the following to be
 - core object vocabulary,
 - evidence support semantics,
 - retrieval-unit semantics,
-- anchor and identity semantics,
+- provenance and identity semantics,
 - bounded context responsibilities at a coarse level,
 - major failure classes.
 
@@ -847,7 +860,7 @@ The prototype is not a half-production system to be protected because of sunk co
 The prototype should help answer questions such as:
 
 - Are the chosen retrieval units actually suitable?
-- Are the anchor semantics sufficient for citation?
+- Are the provenance semantics sufficient for useful citation and source inspection?
 - Do the bounded contexts correspond to real responsibility boundaries?
 - Is the shared kernel too thin or too broad?
 - Which failure classes dominate in practice?
