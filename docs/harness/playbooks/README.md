@@ -4,6 +4,7 @@
 These playbooks describe the minimum documentation flow for common work types in this repo.
 
 ## Index
+- `architecture-doc-rewrite.md`
 - `feature.md`
 - `defect.md`
 - `refactor.md`
