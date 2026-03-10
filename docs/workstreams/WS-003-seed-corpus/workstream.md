@@ -1,16 +1,16 @@
 ---
 artifact_kind: workstream
-id: WS-00X
-title: <short human-readable title>
-work_type: <feature|defect|refactor|spike|operations-infrastructure>
-status: <backlog|active|blocked|done|archived>
+id: WS-003
+title: Seed Corpus
+work_type: feature
+status: active
 owner:
-created: YYYY-MM-DD
-updated: YYYY-MM-DD
+created: 2026-03-10
+updated: 2026-03-10
 ---
 
 # Summary
-Short description of the workstream and intended result.
+Short description of the feature workstream and intended result.
 
 ## Objective
 State the desired outcome clearly enough that completion is recognizable.
@@ -32,7 +32,7 @@ Describe what is already true, what changed recently, and what still matters.
 - read first:
 
 ## Workflow steps
-1. Frame the workstream scope and constraints.
+1. Frame the feature scope and relevant constraints.
 2. Shape the implementation and validation approach.
 3. Execute and validate the workstream.
 
@@ -41,4 +41,4 @@ Describe what is already true, what changed recently, and what still matters.
 - List the tests, checks, or evidence needed before closure.
 
 ## Linked artifacts
-- Add related notes, decisions, evidence, ADRs, RFCs, and evergreen docs here when they exist.
+- Add related notes, decisions, evidence, ADRs, and evergreen docs here when they exist.

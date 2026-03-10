@@ -1,10 +1,42 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-script_dir="$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)"
-repo_root="$(CDPATH='' cd -- "${script_dir}/../../.." && pwd)"
+readonly script_dir="$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)"
+readonly repo_root="$(CDPATH='' cd -- "${script_dir}/../../.." && pwd)"
+readonly docs_dir="${repo_root}/docs"
+readonly workstreams_dir="${docs_dir}/workstreams"
+
+required_workstream_keys=(
+  artifact_kind
+  id
+  title
+  work_type
+  status
+  owner
+  created
+  updated
+)
 
 status=0
+
+report_error() {
+  printf '%s\n' "$1" >&2
+  status=1
+}
+
+markdown_files() {
+  find "${docs_dir}" -type f -name '*.md' | sort
+}
+
+has_frontmatter() {
+  local file="$1"
+  [ "$(sed -n '1p' "${file}")" = "---" ]
+}
+
+frontmatter_closing_line() {
+  local file="$1"
+  awk 'NR > 1 && $0 == "---" { print NR; exit }' "${file}"
+}
 
 frontmatter_block() {
   local file="$1"
@@ -24,57 +56,63 @@ frontmatter_value() {
   printf '%s\n' "${frontmatter}" | sed -nE "s/^${key}:[[:space:]]*(.*)$/\\1/p" | head -n 1
 }
 
-while IFS= read -r file; do
-  first_line="$(sed -n '1p' "${file}")"
-  if [ "${first_line}" != "---" ]; then
-    continue
-  fi
+is_workstream_file() {
+  local file="$1"
+  case "${file}" in
+    "${workstreams_dir}"/*/workstream.md) return 0 ;;
+    *) return 1 ;;
+  esac
+}
 
-  closing_line="$(awk 'NR > 1 && $0 == "---" { print NR; exit }' "${file}")"
+validate_generic_frontmatter() {
+  local file="$1"
+  local closing_line="$2"
+
   if [ -z "${closing_line}" ]; then
-    printf 'Malformed frontmatter: missing closing delimiter in %s\n' "${file}" >&2
-    status=1
-    continue
+    report_error "Malformed frontmatter: missing closing delimiter in ${file}"
+    return 1
   fi
 
   if [ "${closing_line}" -eq 2 ]; then
-    printf 'Malformed frontmatter: empty frontmatter block in %s\n' "${file}" >&2
-    status=1
+    report_error "Malformed frontmatter: empty frontmatter block in ${file}"
+    return 1
   fi
-done < <(find "${repo_root}/docs" -type f -name '*.md' | sort)
 
-while IFS= read -r file; do
-  closing_line="$(awk 'NR > 1 && $0 == "---" { print NR; exit }' "${file}")"
-  if [ -z "${closing_line}" ] || [ "${closing_line}" -eq 2 ]; then
-    continue
-  fi
-  frontmatter="$(frontmatter_block "${file}" "${closing_line}")"
+  return 0
+}
 
-  for key in artifact_kind id title work_type status owner created updated; do
+validate_workstream_frontmatter() {
+  local file="$1"
+  local frontmatter="$2"
+  local artifact_kind
+  local workstream_id
+  local work_type
+  local work_status
+  local created
+  local updated
+  local key
+
+  for key in "${required_workstream_keys[@]}"; do
     if ! has_frontmatter_key "${frontmatter}" "${key}"; then
-      printf 'Missing required frontmatter key %s in %s\n' "${key}" "${file}" >&2
-      status=1
+      report_error "Missing required frontmatter key ${key} in ${file}"
     fi
   done
 
   artifact_kind="$(frontmatter_value "${frontmatter}" "artifact_kind")"
   if [ "${artifact_kind}" != "workstream" ]; then
-    printf 'Invalid artifact_kind in %s: expected workstream\n' "${file}" >&2
-    status=1
+    report_error "Invalid artifact_kind in ${file}: expected workstream"
   fi
 
   workstream_id="$(frontmatter_value "${frontmatter}" "id")"
   if ! printf '%s\n' "${workstream_id}" | grep -Eq '^WS-[0-9][0-9][0-9]+$'; then
-    printf 'Invalid id in %s: expected WS-###\n' "${file}" >&2
-    status=1
+    report_error "Invalid id in ${file}: expected WS-###"
   fi
 
   work_type="$(frontmatter_value "${frontmatter}" "work_type")"
   case "${work_type}" in
     feature|defect|refactor|spike|operations-infrastructure) ;;
     *)
-      printf 'Invalid work_type in %s: %s\n' "${file}" "${work_type}" >&2
-      status=1
+      report_error "Invalid work_type in ${file}: ${work_type}"
       ;;
   esac
 
@@ -82,22 +120,41 @@ while IFS= read -r file; do
   case "${work_status}" in
     backlog|active|blocked|done|archived) ;;
     *)
-      printf 'Invalid status in %s: %s\n' "${file}" "${work_status}" >&2
-      status=1
+      report_error "Invalid status in ${file}: ${work_status}"
       ;;
   esac
 
   created="$(frontmatter_value "${frontmatter}" "created")"
   if [ -z "${created}" ]; then
-    printf 'Invalid created in %s: expected non-empty value\n' "${file}" >&2
-    status=1
+    report_error "Invalid created in ${file}: expected non-empty value"
   fi
 
   updated="$(frontmatter_value "${frontmatter}" "updated")"
   if [ -z "${updated}" ]; then
-    printf 'Invalid updated in %s: expected non-empty value\n' "${file}" >&2
-    status=1
+    report_error "Invalid updated in ${file}: expected non-empty value"
   fi
-done < <(find "${repo_root}/docs/workstreams" -type f -name 'workstream.md' | sort)
+}
+
+while IFS= read -r file; do
+  local_closing_line=""
+  local_frontmatter=""
+
+  if ! has_frontmatter "${file}"; then
+    if is_workstream_file "${file}"; then
+      report_error "Missing frontmatter block in ${file}"
+    fi
+    continue
+  fi
+
+  local_closing_line="$(frontmatter_closing_line "${file}")"
+  if ! validate_generic_frontmatter "${file}" "${local_closing_line}"; then
+    continue
+  fi
+
+  if is_workstream_file "${file}"; then
+    local_frontmatter="$(frontmatter_block "${file}" "${local_closing_line}")"
+    validate_workstream_frontmatter "${file}" "${local_frontmatter}"
+  fi
+done < <(markdown_files)
 
 exit "${status}"

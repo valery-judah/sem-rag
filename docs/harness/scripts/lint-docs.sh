@@ -1,8 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-script_dir="$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)"
+readonly script_dir="$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)"
 
-"${script_dir}/validate-frontmatter.sh"
+checks=(
+  "${script_dir}/validate-frontmatter.sh"
+)
+
+for check in "${checks[@]}"; do
+  "${check}"
+done
 
 printf 'Docs lint checks passed\n'

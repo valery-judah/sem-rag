@@ -7,25 +7,6 @@ status: archived
 owner:
 created: 2026-03-09
 updated: 2026-03-09
-tags: []
-# Optional later note: paths that become relevant once framing work starts.
-affected_paths: []
-# Optional later note: components or subsystems involved in the work.
-affected_components: []
-blockers: []
-depends_on: []
-# Optional later note: durable docs that may need review or update.
-evergreen_targets: []
-adr_links: []
-rfc_links: []
-validation_evidence: []
-gate: none
-# Optional later note: docs worth reading first once framing work begins.
-context_dependencies: []
-# Optional later note: useful commands discovered during framing or execution.
-commands: []
-# Optional later note: constraints or non-goals to keep visible.
-boundaries: []
 ---
 
 # Summary
