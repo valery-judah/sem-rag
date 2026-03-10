@@ -13,28 +13,28 @@ This file captures the current architectural truth for `parity` and the gap betw
 - Checking whether a capability is implemented, internal-only, or still planned
 
 ## Agent Routes
-If you need product scope:
+Product Scope:
 - `docs/evergreen/mvp.md`: `Canonical`
 
-If you need stable public package API:
+Stable Public Package API:
 - `docs/evergreen/api-contracts.md`: `Canonical`
 
-If you need local commands and validation:
+Commands And Validation:
 - `docs/evergreen/runbook.md`: `Canonical`
 
-If you need evaluation semantics:
+Evaluation Semantics:
 - `docs/evergreen/eval-vocabulary.md`: `Canonical`
 - `docs/evergreen/eval-support-semantics.md`: `Canonical`
 - `docs/evergreen/eval-scenario-taxonomy.md`: `Canonical`
 - `docs/evergreen/eval-failure-taxonomy.md`: `Canonical`
 
-If you need workflow rationale or architecture-promotion rules:
+Workflow Rationale And Promotion Rules:
 - `docs/delivery/workflow.md`: `Reference only`
 
-If you need execution history or prior framing:
+Execution History And Prior Framing:
 - `docs/workstreams/`: `Execution history`
 
-If you need current implementation seams:
+Current Implementation Seams:
 - `src/parity/retrieval.py`: `Implemented internal`
 - `src/parity/_contracts/`: `Implemented internal`
 - `src/parity/persistence.py`: `Implemented internal`
