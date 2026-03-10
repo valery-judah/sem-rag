@@ -321,7 +321,9 @@ These scenarios should be RAG-specific. They are not generic user stories. They 
 
 ### 6.1 Scenario categories
 
-The initial taxonomy should include at least the following classes.
+The canonical scenario classes and class meanings are governed by `docs/evergreen/eval-scenario-taxonomy.md`.
+
+The workflow should use those same class names consistently. The notes below describe workflow-specific design pressure, not alternate semantic definitions.
 
 #### Direct factual lookup
 A user asks for a fact that is explicitly present in one passage or one tightly bounded region of a document.
@@ -343,15 +345,17 @@ This pressures:
 - context assembly,
 - source inspection granularity that remains compatible with coarse PDF provenance.
 
-#### Multi-passage synthesis within one document
+#### One-document synthesis
 A user asks a question that requires combining several non-adjacent but related passages from the same source.
+
+Alias note: this corresponds to multi-passage synthesis within one document.
 
 This pressures:
 
-- retrieval recall,
+- within-document recall,
 - ordering policy,
 - evidence-set assembly,
-- claim aggregation.
+- answer scoping.
 
 #### Cross-document synthesis
 A user asks a question whose support is distributed across multiple documents.
@@ -364,8 +368,10 @@ This pressures:
 - answer scoping,
 - conflict handling.
 
-#### Source navigation / citation resolution
+#### Source navigation
 A user wants to inspect the source behind the answer.
+
+Alias note: this corresponds to citation resolution.
 
 This pressures:
 
@@ -384,14 +390,14 @@ This pressures:
 - scope-narrowing behavior,
 - retrieval failure interpretation.
 
-#### Low-quality or malformed source case
+#### Degraded-source edge case
 The corpus contains a document with damaged structure, ambiguous sections, malformed tables, or broken layout. Scanned or OCR-heavy PDFs remain out of scope for MVP, but nearby degraded text cases still pressure representation boundaries.
 
 This pressures:
 
 - parser robustness,
 - representation quality boundaries,
-- fallback behavior,
+- trust-preserving degradation behavior,
 - failure containment.
 
 ### 6.2 Scenario structure
@@ -442,13 +448,15 @@ An evidence unit should have, conceptually, the following properties:
 - local text or renderable content,
 - compatibility with retrieval and citation.
 
-### 7.3 Evidence sufficiency
+### 7.3 Support-state semantics
 
-The model should distinguish three states:
+The canonical criteria for support-state labeling are governed by `docs/evergreen/eval-support-semantics.md`.
 
-- **sufficient evidence**: the available evidence supports the claim,
-- **partial evidence**: the available evidence suggests an answer but does not justify a confident claim,
-- **insufficient evidence**: the corpus does not support the claim.
+For workflow modeling, use these labels consistently without redefining them locally:
+
+- **sufficient support**
+- **partial support**
+- **insufficient support**
 
 Without this distinction, the generator becomes the de facto judge of sufficiency, which is unsafe.
 
@@ -686,9 +694,13 @@ The workflow should explicitly model failure as part of the system domain.
 
 A strong RAG workflow does not only describe the success path. It also names the ways the system can fail, because those failures often determine both architecture and evaluation priorities.
 
-### 12.1 Representation failures
+The canonical failure classes, definitions, and examples are governed by `docs/evergreen/eval-failure-taxonomy.md`.
 
-Examples:
+The workflow should use those same classes when reasoning about pressure points instead of introducing local variants.
+
+### 12.1 Representation failure
+
+Use this class for source-structure or provenance degradation before retrieval.
 
 - structure tree missing meaningful hierarchy,
 - list semantics destroyed,
@@ -698,9 +710,9 @@ Examples:
 - coarse provenance missing or misleading,
 - version churn too high after small edits in later hardening work.
 
-### 12.2 Segmentation failures
+### 12.2 Segmentation failure
 
-Examples:
+Use this class for poor retrieval-unit boundaries or lost structural adjacency.
 
 - semantically mixed passages,
 - passages too small to preserve local meaning,
@@ -708,18 +720,18 @@ Examples:
 - table/header separation where table-like text is retained,
 - loss of section relationship.
 
-### 12.3 Retrieval failures
+### 12.3 Retrieval failure
 
-Examples:
+Use this class when relevant support is not discovered or ranked usefully.
 
 - relevant evidence not retrieved,
-- partial evidence outranking complete support,
+- partial support outranking complete support,
 - retrieval dominated by noisy long passages,
 - rank instability under equivalent queries.
 
-### 12.4 Context assembly failures
+### 12.4 Context assembly failure
 
-Examples:
+Use this class when good retrieval is converted into bad final context.
 
 - redundant overlapping passages consuming budget,
 - missing neighbors where local coherence is needed,
@@ -727,17 +739,34 @@ Examples:
 - over-concentration on one section or one document,
 - truncation removing crucial support.
 
-### 12.5 Answering failures
+### 12.5 Answering failure
 
-Examples:
+Use this class when the answer misstates or exceeds the available support in the assembled context.
 
 - unsupported claims,
 - incorrect synthesis across evidence units,
-- citation attached to the wrong anchor,
 - overconfident interpretation of ambiguous evidence,
-- answering instead of abstaining.
+- omission of necessary qualification.
 
-### 12.6 Why the taxonomy matters
+### 12.6 Citation failure
+
+Use this class when source references are wrong, non-resolvable, or not useful for inspection.
+
+- citation attached to the wrong anchor,
+- citation points to the wrong region,
+- citation is technically present but not inspectable,
+- citation bundle omits a necessary contributing source.
+
+### 12.7 Failure-quality failure
+
+Use this class when the system behaves untrustworthily under weak or missing support.
+
+- answering instead of abstaining,
+- refusal to narrow scope under partial support,
+- misleading certainty language under degraded retrieval,
+- silent fallback to weakly related evidence.
+
+### 12.8 Why the taxonomy matters
 
 The failure taxonomy gives the workflow a structured way to:
 
@@ -746,7 +775,7 @@ The failure taxonomy gives the workflow a structured way to:
 - interpret regressions,
 - decide which boundaries are actually under pressure.
 
-It also prevents vague discussions such as "quality feels worse" when the true failure is, for example, evidence fragmentation or anchor mismatch.
+It also prevents vague discussions such as "quality feels worse" when the true failure is, for example, evidence fragmentation, citation failure, or failure-quality failure.
 
 ---
 

@@ -95,59 +95,45 @@ The harness should treat the corpus manifest as the source of truth for reproduc
 
 ### 11.4 Scenario classes required in the baseline dataset
 
-The baseline dataset must include cases across the following scenario classes.
+The baseline dataset must include cases across the canonical scenario classes defined in `docs/evergreen/eval-scenario-taxonomy.md`. This section fixes the required coverage and per-class dataset purpose for the baseline.
 
 #### 11.4.1 Direct factual lookup
-Questions where one or a small number of passages directly support the answer.
-
 Purpose:
 - pressure basic retrieval;
 - validate passage selection;
 - test citation usefulness on narrow support.
 
 #### 11.4.2 Section-scoped explanation
-Questions asking for explanation of content concentrated within one section or local neighborhood.
-
 Purpose:
 - pressure structure recovery;
 - validate neighborhood expansion;
 - test whether the system can remain local rather than over-expand.
 
 #### 11.4.3 One-document synthesis
-Questions requiring synthesis of multiple passages from a single document.
-
 Purpose:
 - pressure passage segmentation;
 - test evidence aggregation;
 - test support completeness rather than fragment retrieval.
 
 #### 11.4.4 Cross-document synthesis
-Questions requiring evidence from more than one document.
-
 Purpose:
 - pressure multi-document retrieval;
 - test context assembly under competing evidence;
 - validate that the answer remains explicitly grounded.
 
 #### 11.4.5 Source navigation
-Questions where citation usability matters materially, such as asking where a concept is discussed or what section/page supports a claim.
-
 Purpose:
 - pressure provenance preservation;
 - test anchor resolution;
 - verify inspection value rather than only answer text.
 
-#### 11.4.6 Insufficient-evidence
-Questions where the corpus does not adequately support a full answer.
-
+#### 11.4.6 Insufficient-evidence case
 Purpose:
 - test abstention behavior;
 - test scope narrowing;
 - test resistance to unsupported synthesis.
 
-#### 11.4.7 Degraded-source edge cases
-Questions against documents whose structure is weaker but still nominally in MVP scope.
-
+#### 11.4.7 Degraded-source edge case
 Purpose:
 - test robustness at the edge of supported input quality;
 - expose representation and provenance failure modes;
@@ -225,7 +211,7 @@ The dataset must be paired with an annotation guide defining at minimum:
 
 - how to determine support state;
 - how to mark acceptable evidence alternatives;
-- how to judge insufficient evidence;
+- how to judge insufficient support;
 - how to specify citation expectations for PDFs vs Markdown;
 - how to tag likely failure classes;
 - when to reject a proposed case as ambiguous or low value.
@@ -418,7 +404,7 @@ Primary methods:
 - rubric-based review for edge cases with alternate evidence paths.
 
 Typical judgments:
-- did top-k include sufficient evidence;
+- did top-k include support sufficient for the requested answer shape;
 - did retrieval include all required support or only fragments;
 - were correct documents present.
 
@@ -468,18 +454,13 @@ Claim-level judgment is more expensive, but it is important for grounded systems
 
 ### 12.5 Support-state judgment
 
-The harness must explicitly judge support state using the vocabulary fixed in the normative core:
+The harness must judge support state strictly according to `docs/evergreen/eval-support-semantics.md`.
 
-- sufficient support;
-- partial support;
-- insufficient support.
-
-Judges must not collapse these into a binary correct/incorrect label.
-
-Recommended rule:
-- if the corpus materially supports the requested answer shape, label as sufficient;
-- if the corpus supports only a narrower or incomplete answer, label as partial;
-- if the corpus cannot support the requested claim without unsupported synthesis, label as insufficient.
+Judging mechanics:
+- record one explicit support-state label for the requested answer shape;
+- use `sufficient support`, `partial support`, or `insufficient support`;
+- judge against the active corpus rather than world knowledge;
+- preserve structured reasons rather than collapsing the result into binary correct/incorrect.
 
 ### 12.6 Citation usefulness judgment
 
@@ -714,6 +695,7 @@ To keep the long-running workflow disciplined, the following sequencing rules sh
 #### Phase 1
 - `docs/evergreen/eval-vocabulary.md`
 - `docs/evergreen/eval-support-semantics.md`
+- `docs/evergreen/eval-scenario-taxonomy.md`
 - `docs/evergreen/eval-failure-taxonomy.md`
 
 #### Phase 2
@@ -778,7 +760,7 @@ Failures that should block release until fixed or explicitly waived.
 
 Recommended hard blockers for MVP:
 - fabricated or misleading provenance;
-- systematic answering on insufficient evidence where abstention is expected;
+- systematic answering on insufficient-support cases where abstention is expected;
 - loss of mixed-format support in the release suite;
 - severe regression in citation resolution;
 - inability to reproduce harness results for the candidate build.

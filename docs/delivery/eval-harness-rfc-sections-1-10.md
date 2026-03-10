@@ -157,9 +157,9 @@ This separation is mandatory for regression analysis and prototype comparison.
 
 The harness should treat evidence as the main semantic unit of truth. An answer is not merely “correct” or “incorrect”; it is either:
 
-- supported by sufficient evidence,
-- partially suggested by available evidence,
-- or unsupported by the current corpus.
+- within sufficient support,
+- only partially supported,
+- or unsupported relative to the current corpus.
 
 This distinction is central to safe grounded behavior.
 
@@ -169,7 +169,7 @@ A high-quality grounded system must sometimes refuse to overclaim. The harness m
 
 - explicit abstention;
 - explicit scope narrowing;
-- explicit uncertainty under partial evidence.
+- explicit uncertainty under partial support.
 
 This is not a concession. It is part of the product contract.
 
@@ -202,7 +202,7 @@ The harness evaluates the following end-to-end system behaviors:
 #### B. Retrieval behavior
 - discovery of relevant evidence units;
 - retrieval across document boundaries;
-- retrieval of evidence sufficient to answer or abstain correctly;
+- retrieval of support sufficient to answer or abstain correctly;
 - retrieval behavior under multiple scenario classes.
 
 #### C. Context assembly behavior
@@ -218,8 +218,8 @@ The harness evaluates the following end-to-end system behaviors:
 - avoidance of unsupported claims and fabricated provenance.
 
 #### E. Failure behavior
-- abstention under insufficient evidence;
-- explicit uncertainty under partial evidence;
+- abstention under insufficient support;
+- explicit uncertainty under partial support;
 - local and interpretable failure modes;
 - preservation of trust under degraded retrieval or degraded source structure.
 
@@ -277,141 +277,30 @@ For MVP harness purposes, assume:
 
 ## 5. Core vocabulary and shared semantics
 
-The harness requires a stable vocabulary. Terms in this section are normative for the evaluation harness and should not be redefined casually in later workstreams.
+Live semantic authority for the evaluation harness now resides in the evergreen evaluation docs:
 
-### 5.1 Corpus
+- `docs/evergreen/eval-vocabulary.md`
+- `docs/evergreen/eval-support-semantics.md`
+- `docs/evergreen/eval-scenario-taxonomy.md`
+- `docs/evergreen/eval-failure-taxonomy.md`
 
-A **corpus** is the bounded collection of source documents the system is allowed to use as evidence for a given evaluation run.
+This RFC depends on those definitions and should use them consistently rather than restating them.
 
-Rules:
-- corpus boundaries must be explicit;
-- no evidence may be attributed outside the active corpus;
-- case definitions may reference full-corpus or subset-corpus expectations.
+For the rest of this document:
 
-### 5.2 Document
-
-A **document** is a source artifact with stable identity inside the corpus.
-
-For MVP, supported document types are limited to:
-- text-based PDF;
-- Markdown.
-
-A document may have recoverable metadata such as display title, source type, source reference, and upload timestamp, but document identity is the primary harness concern.
-
-### 5.3 Section
-
-A **section** is a structurally meaningful subdivision within a document, typically associated with a heading or recoverable hierarchical boundary.
-
-A section is:
-- a semantic container;
-- potentially useful for provenance and context assembly;
-- not automatically the default retrieval unit.
-
-### 5.4 Passage
-
-A **passage** is the default retrievable text unit used to discover evidence. A passage should preserve enough local coherence to support retrieval and later answer grounding.
-
-A passage is not merely an embedding chunk. It is a semantic and evaluable evidence-bearing unit.
-
-### 5.5 Anchor
-
-An **anchor** is a recoverable reference to a source location.
-
-For MVP, anchors may be coarse. Examples include:
-- page number;
-- section path;
-- inferred heading;
-- source-local locator usable for inspection.
-
-Exact span anchoring is not required for MVP harness success.
-
-### 5.6 Evidence unit
-
-An **evidence unit** is any source-linked representation that can legitimately support a user-visible claim.
-
-In MVP, this is primarily:
-- a passage;
-- optionally supplemented by section metadata or nearby context.
-
-Future richer evidence types such as table-specific evidence or graph-linked evidence are outside the MVP support contract.
-
-### 5.7 Evidence set
-
-An **evidence set** is one or more evidence units jointly sufficient to support a claim, answer fragment, or answer as a whole.
-
-This concept is necessary because:
-- not all claims map cleanly to one passage;
-- synthesis questions may require multiple passages;
-- section interpretation may require local context beyond one fragment.
-
-### 5.8 Context window
-
-A **context window** is the ordered, budget-constrained set of retrieved evidence units and supporting context presented to the generator.
-
-The context window is not identical to raw retrieval output. It is an assembled artifact and must therefore be evaluated separately.
-
-### 5.9 Claim
-
-A **claim** is a user-visible assertion in the generated answer.
-
-A claim may be:
-- directly supported;
-- partially suggested;
-- unsupported.
-
-The harness need not require exact claim-span markup in MVP, but it must preserve claim-level support semantics conceptually.
-
-### 5.10 Citation
-
-A **citation** is a mapping from an answer, answer fragment, or answer-support bundle to one or more evidence anchors.
-
-For MVP, citations are considered valid if they are:
-- source-linked;
-- resolvable at useful granularity;
-- materially consistent with the evidence they are meant to expose.
-
-### 5.11 Abstention
-
-**Abstention** is a valid answer mode in which the system declines to answer fully, narrows the answer scope, or states that the current corpus does not support the requested claim.
-
-Abstention is not failure when the support state warrants it.
-
-### 5.12 Support states
-
-The harness must distinguish three support states:
-
-#### Sufficient support
-The available evidence justifies the claim or answer at MVP trust standards.
-
-#### Partial support
-The available evidence suggests an answer direction but does not justify a confident or complete claim.
-
-#### Insufficient support
-The corpus does not provide adequate evidence for the claim.
-
-### 5.13 Useful citation
-
-A **useful citation** is a citation that a user could realistically follow to inspect the relevant supporting source. For MVP, usefulness should be judged pragmatically rather than by scholarly citation standards.
-
-### 5.14 Supported answer
-
-A **supported answer** is an answer whose material claims remain within the bounds of sufficient or explicitly qualified partial support and whose presented citations resolve to the relevant evidence.
-
-### 5.15 Unsupported answer
-
-An **unsupported answer** is an answer that states or strongly implies claims not justified by the available corpus evidence, especially if it presents those claims with false confidence or fabricated provenance.
+- Section 6 focuses on schema-facing object-model requirements for harness implementation.
+- Section 7 focuses on scenario-driven coverage and authoring implications.
+- Section 8 focuses on taxonomy usage and release implications.
 
 ---
 
 ## 6. Evaluation object model
 
-The harness requires an explicit object model so evaluation remains implementable and reproducible.
+The harness requires an explicit object model so evaluation remains implementable and reproducible. The semantic meaning of the core terms is governed by the evergreen docs; this section fixes the implementation-facing object and schema expectations.
 
 ### 6.1 Eval case
 
-An **eval case** is the atomic unit of harness execution.
-
-Each eval case should conceptually include:
+Each eval case record should include, at minimum:
 
 - `case_id`;
 - `scenario_class`;
@@ -426,9 +315,7 @@ Each eval case should conceptually include:
 
 ### 6.2 Scenario
 
-A **scenario** is the reusable behavioral template from which one or more eval cases are derived.
-
-A scenario defines:
+Scenario definitions or catalogs used by the harness should specify:
 - the type of information need;
 - the expected evidence pattern;
 - the trust behavior under success or failure;
@@ -436,9 +323,7 @@ A scenario defines:
 
 ### 6.3 Corpus manifest
 
-A **corpus manifest** defines the documents available to a given evaluation run and the metadata required to identify them consistently.
-
-At minimum it should capture:
+Each corpus manifest should capture, at minimum:
 - document identity;
 - source type;
 - location or fixture reference;
@@ -446,17 +331,13 @@ At minimum it should capture:
 
 ### 6.4 Gold evidence set
 
-A **gold evidence set** identifies the evidence units considered sufficient, or one acceptable sufficient set, for a given case.
-
-Because multiple evidence realizations may sometimes be valid, the model should allow:
+For each case, the schema should allow:
 - one canonical gold set;
 - or a small set of acceptable alternatives.
 
 ### 6.5 Retrieved evidence set
 
-A **retrieved evidence set** is the evidence returned by the system prior to final context assembly.
-
-The harness uses this object to distinguish:
+The harness should capture a pre-assembly retrieved-evidence object so it can distinguish:
 - retrieval success,
 - retrieval incompleteness,
 - ranking errors,
@@ -465,18 +346,14 @@ The harness uses this object to distinguish:
 
 ### 6.6 Final context artifact
 
-A **final context artifact** is the ordered evidence bundle actually provided to generation.
-
-This object exists because the generator can fail even after raw retrieval success if context assembly:
+The harness should capture the ordered evidence bundle actually provided to generation because the generator can fail even after raw retrieval success if context assembly:
 - omits key support,
 - introduces destructive redundancy,
 - or disrupts local coherence.
 
 ### 6.7 Answer artifact
 
-An **answer artifact** is the user-visible answer output under evaluation.
-
-It may contain:
+The answer artifact captured by the harness may contain:
 - answer text;
 - structured support metadata if emitted by the system;
 - abstention indicators;
@@ -484,9 +361,7 @@ It may contain:
 
 ### 6.8 Citation artifact
 
-A **citation artifact** is the set of source references exposed with the answer.
-
-For harness purposes, citation artifacts are evaluated for:
+For harness purposes, the citation artifact should preserve enough information to evaluate:
 - resolvability;
 - relevance;
 - consistency with supporting evidence;
@@ -494,9 +369,7 @@ For harness purposes, citation artifacts are evaluated for:
 
 ### 6.9 Judgment result
 
-A **judgment result** is the structured outcome of one evaluator over one case.
-
-A judgment result should conceptually include:
+Each judgment result should include, conceptually:
 - evaluator name;
 - pass/fail or score outcome;
 - structured reasons;
@@ -505,19 +378,15 @@ A judgment result should conceptually include:
 
 ### 6.10 Failure classification
 
-A **failure classification** names the dominant failure type observed for a case or subsystem stage.
-
-Classification should be chosen from the failure taxonomy rather than from ad hoc free-text comments wherever possible.
+Harness outputs should record the dominant failure classification using the evergreen failure taxonomy rather than ad hoc free-text comments wherever possible.
 
 ### 6.11 Scorecard
 
-A **scorecard** is the aggregate summary of harness outputs over a suite or run.
-
-It should preserve dimensional separation rather than collapsing everything into one opaque number.
+Scorecards should preserve dimensional separation rather than collapsing everything into one opaque number.
 
 ### 6.12 Reproducibility envelope
 
-The harness must also model a **reproducibility envelope** sufficient for regression work. This includes, conceptually:
+The harness must also model a reproducibility envelope sufficient for regression work. This includes, conceptually:
 - corpus version or fixture reference;
 - system-under-evaluation configuration reference;
 - evaluator configuration reference;
@@ -546,67 +415,54 @@ Every scenario included in the harness should specify:
 - the primary layers under pressure.
 
 ### 7.3 Required initial scenario classes
+The canonical meanings of the scenario classes below are governed by `docs/evergreen/eval-scenario-taxonomy.md`. This RFC fixes the minimum required coverage and the design pressure each class must apply.
 
 #### A. Direct factual lookup
-A user asks for a fact that should be present in one passage or one tightly bounded source region.
-
-This pressures:
+This class must pressure:
 - passage adequacy,
 - top-k precision,
 - provenance correctness,
 - citation usefulness.
 
 #### B. Section-scoped explanation
-A user asks for an explanation requiring locally coherent reading of a section rather than one isolated sentence.
-
-This pressures:
+This class must pressure:
 - hierarchy recovery,
 - section-path usefulness,
 - neighbor expansion,
 - context assembly coherence,
 - coarse PDF provenance sufficiency.
 
-#### C. Multi-passage synthesis within one document
-A user asks a question requiring combination of several non-adjacent passages from the same source.
-
-This pressures:
+#### C. One-document synthesis
+This class must pressure:
 - recall within a document,
 - evidence-set assembly,
 - ordering policy,
 - answer scoping.
 
 #### D. Cross-document synthesis
-A user asks a question whose support is distributed across multiple documents.
-
-This pressures:
+This class must pressure:
 - corpus-level retrieval,
 - document identity discipline,
 - citation grouping,
 - conflict handling,
 - answer qualification when sources differ.
 
-#### E. Source navigation / citation resolution
-A user asks where a topic is discussed or wants to inspect supporting passages.
-
-This pressures:
+#### E. Source navigation
+This class must pressure:
 - resolvable provenance,
 - anchor usefulness,
 - stable linkage from answer to source,
 - answer presentation trust.
 
 #### F. Insufficient-evidence case
-A user asks for something the corpus does not support or supports only weakly.
-
-This pressures:
+This class must pressure:
 - abstention behavior,
 - unsupported-claim prevention,
 - scope narrowing,
 - failure honesty.
 
-#### G. Low-quality or malformed source case
-The corpus contains degraded but still in-scope source material such as weak sectioning, ambiguous boundaries, malformed tables retained as text, or broken layout in an otherwise text-based document.
-
-This pressures:
+#### G. Degraded-source edge case
+This class must pressure:
 - parser robustness,
 - representation boundaries,
 - failure containment,
@@ -665,91 +521,25 @@ The taxonomy exists to:
 - identify which design boundaries are under real pressure;
 - guide mitigation ownership.
 
-### 8.2 Representation failures
+### 8.2 Canonical failure classes
 
-These occur when the source corpus is converted into inadequate internal representations.
+The live definitions and examples for the failure classes are governed by `docs/evergreen/eval-failure-taxonomy.md`.
 
-Examples:
-- meaningful hierarchy lost or corrupted;
-- document identity unstable or missing;
-- anchors missing, misleading, or unusable;
-- section paths malformed;
-- code blocks or table-like text flattened in ways that destroy recoverable context;
-- passage inputs already semantically compromised before retrieval.
+Harness reports and review notes should use the following classes consistently:
 
-### 8.3 Segmentation failures
+- representation failure;
+- segmentation failure;
+- retrieval failure;
+- context assembly failure;
+- answering failure;
+- citation failure;
+- failure-quality failure.
 
-These occur when structure is converted into retrieval units poorly.
+### 8.3 Taxonomy usage rules
 
-Examples:
-- passages too large and noisy;
-- passages too small to preserve local meaning;
-- semantically mixed passages;
-- discourse boundaries broken;
-- section relationships lost;
-- adjacency unavailable for later expansion.
+The harness should classify failures by dominant cause where possible, while allowing secondary tags when needed. The taxonomy is not intended to eliminate nuance, but to prevent non-diagnostic evaluation results. Severity interpretation should use the evergreen failure taxonomy rather than local redefinition.
 
-### 8.4 Retrieval failures
-
-These occur when relevant evidence is not discovered or not ranked usefully.
-
-Examples:
-- relevant evidence absent from top-k;
-- partial support outranking complete support;
-- retrieval dominated by noisy long passages;
-- cross-document support missed;
-- source navigation retrieval returning non-resolvable fragments.
-
-### 8.5 Context assembly failures
-
-These occur when good retrieval is converted into bad final context.
-
-Examples:
-- redundant overlap consuming budget;
-- necessary neighbors omitted;
-- unstable or incoherent ordering;
-- over-concentration on one source when multi-source evidence is needed;
-- truncation removing crucial support;
-- citation scaffolding lost between retrieval and generation.
-
-### 8.6 Answering failures
-
-These occur when the final answer misstates or exceeds the support in the context.
-
-Examples:
-- unsupported claims;
-- incorrect synthesis across evidence units;
-- overconfident interpretation of ambiguous evidence;
-- answering instead of abstaining;
-- omission of necessary qualification.
-
-### 8.7 Citation failures
-
-These occur when source references fail to support inspection even if answer text seems plausible.
-
-Examples:
-- citation points to wrong source region;
-- citation is non-resolvable;
-- citation is technically present but not useful;
-- citation bundle omits key contributing sources;
-- citation overstates support or implies stronger grounding than exists.
-
-### 8.8 Failure-quality failures
-
-These occur when the system behaves untrustworthily under weak support.
-
-Examples:
-- confident unsupported answer on insufficient evidence;
-- fabricated provenance;
-- refusal to narrow scope under partial support;
-- misleading certainty language under degraded retrieval;
-- silent fallback to weakly related evidence.
-
-### 8.9 Taxonomy usage rules
-
-The harness should classify failures by dominant cause where possible, while allowing secondary tags when needed. The taxonomy is not intended to eliminate nuance, but to prevent non-diagnostic evaluation results.
-
-### 8.10 Relationship to release policy
+### 8.4 Relationship to release policy
 
 Not all failure classes are equally severe, but the following are presumptively release-blocking for MVP:
 
@@ -774,7 +564,7 @@ The harness must preserve separate reporting for at least five dimensions:
 Measures whether the source representation preserves enough structure, identity, and provenance to support downstream grounding.
 
 #### B. Retrieval quality
-Measures whether the system discovers sufficient evidence for the question and scenario.
+Measures whether the system discovers support sufficient for the question and scenario.
 
 #### C. Context quality
 Measures whether the retrieved evidence is assembled into a coherent, support-preserving context.

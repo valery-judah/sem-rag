@@ -12,6 +12,33 @@ Authority note: `docs/evergreen/` holds the canonical product and repo truth. `d
 - `adrs/`: durable architecture decision records promoted out of individual workstreams when needed
 - `harness/`: templates, conventions, playbooks, and helper scripts for humans and agents
 
+## Evaluation Docs Map
+Use this map when working on evaluation semantics, the eval harness, or related dataset design.
+
+Canonical evergreen evaluation docs:
+- `docs/evergreen/eval-vocabulary.md`: glossary, term normalization, and evaluation layer names
+- `docs/evergreen/eval-support-semantics.md`: support-state criteria, citation expectations, and abstention rules
+- `docs/evergreen/eval-scenario-taxonomy.md`: canonical scenario classes and classification rules
+- `docs/evergreen/eval-failure-taxonomy.md`: canonical failure classes and classification rules
+
+Related durable framing:
+- `docs/evergreen/mvp.md`: product-scope and trust-contract authority
+- `docs/evergreen/architecture.md`: current repo shape and implementation gap
+
+Reference-only delivery docs:
+- `docs/delivery/workflow.md`: non-canonical workflow and modeling guidance aligned to evergreen semantics
+- `docs/delivery/eval-harness-rfc-sections-1-10.md`: eval-harness rationale, object model, scenario coverage, and scoring philosophy
+- `docs/delivery/eval-harness-rfc-sections-11-15.md`: eval-harness operating model, dataset strategy, judging, phases, and release policy
+
+Execution history:
+- `docs/workstreams/WS-001-eval-harness/`: earlier eval-harness framing material
+- `docs/workstreams/WS-002-semantic-lock/`: semantic-lock history and transition artifacts
+
+Authority note:
+- Treat the evergreen evaluation docs as the semantic source of truth.
+- Use `docs/delivery/` for rationale, implementation guidance, and historical reference without treating it as canonical authority.
+- Use workstreams for time-scoped decisions, evidence, and archival transition material.
+
 ## Where New Work Goes
 - Put durable system descriptions and stable operating guidance in `docs/evergreen/`.
 - Do not treat `docs/delivery/` as the source of truth for product scope or durable repo contracts.

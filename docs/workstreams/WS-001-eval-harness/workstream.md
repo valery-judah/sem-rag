@@ -3,7 +3,7 @@ artifact_kind: workstream
 id: WS-001
 title: Eval Harness
 work_type: feature
-status: archive
+status: archived
 owner:
 created: 2026-03-09
 updated: 2026-03-09
