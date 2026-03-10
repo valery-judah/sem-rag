@@ -4,7 +4,6 @@
 These playbooks describe the minimum documentation flow for common work types in this repo.
 
 ## Index
-- `architecture-doc-rewrite.md`
 - `feature.md`
 - `defect.md`
 - `refactor.md`
@@ -12,4 +11,4 @@ These playbooks describe the minimum documentation flow for common work types in
 - `operations.md`
 
 ## How To Use
-Pick the playbook that matches the workstream type, then pair it with the templates in `docs/harness/templates/`.
+Use `docs/harness/taxonomy/workstream-taxonomy.md` to choose the workstream type, then pick the matching playbook and pair it with the templates in `docs/harness/templates/`.

@@ -5,10 +5,12 @@ This file gives short practical guidance for humans and agents using the docs ha
 
 Use it together with the repo root `AGENTS.md`:
 - root `AGENTS.md` remains authoritative for repo-wide command rules, validation defaults, and hard constraints
-- this file explains how to start a new feature workstream and how to treat the generated workstream card
+- this file explains how to use the shared docs harness and its standard workstream scaffold
 
-## Starting A New Feature Workstream
-If the task is to start a new non-trivial feature, run:
+## Starting A Workstream
+If the task is to start a new non-trivial workstream, first use `docs/harness/taxonomy/workstream-taxonomy.md` to choose the right `work_type`.
+
+Then run:
 
 ```bash
 docs/harness/scripts/new-feature-workstream.sh <slug>
@@ -39,7 +41,8 @@ At creation time it is valid for the file to contain placeholders for:
 Those details can be filled later during framing and execution.
 
 ## Working Rule
-- Use the script to create the workstream card.
+- Use root `AGENTS.md` for repo-level routing decisions before creating a workstream card.
+- Use `docs/harness/taxonomy/workstream-taxonomy.md` when classifying the workstream and choosing a matching playbook.
 - Treat the generated card as the canonical artifact for the workstream.
 - Fill the placeholders progressively as the work becomes clearer.
 - Add `decisions.md`, `evidence.md`, `handoff.md`, or `notes.md` only when they help continuity or validation.

@@ -102,7 +102,7 @@ That led to:
 
 ### Workstream and process changes
 - `WS-002` captured semantic lock as completed work rather than leaving semantics half-owned by multiple docs.
-- `WS-003` now exists to frame internal `agentic-harness` work as its own spike instead of treating it as an implied continuation.
+- `HR-003` now captures internal `agentic-harness` work on its own maintenance track instead of treating it as an implied continuation of parity runtime history.
 - Reflection itself is being treated as a reusable artifact, not just a chat byproduct.
 
 ## Principles Extracted
@@ -149,6 +149,8 @@ Use this note when framing future `agentic-harness` work, especially if the next
 - choosing where semantics should live versus where implementation guidance should live
 - designing agent-facing docs or handoff paths
 - evaluating whether a proposed local note should become evergreen, remain delivery guidance, or stay inside a workstream
+
+Start agentic-harness tasks from `docs/harness-maintain/README.md` so the work is framed on the `HR` track rather than as parity runtime history.
 
 When this note conflicts with current semantic definitions or MVP scope, the canonical docs win:
 

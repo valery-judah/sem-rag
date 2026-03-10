@@ -25,8 +25,8 @@ It supports the canonical docs layout rooted at `docs/evergreen/`, `docs/workstr
 
 ## Starter Workflow
 1. Decide the work is non-trivial enough to deserve a workstream.
-2. Run `docs/harness/scripts/new-feature-workstream.sh <slug>`.
-3. Use the generated `docs/workstreams/WS-###-<slug>/workstream.md` as the workstream card.
+2. Use `docs/harness/taxonomy/workstream-taxonomy.md` to choose the right `work_type` and status vocabulary.
+3. Create or reuse a workstream folder under `docs/workstreams/`.
 4. Fill the placeholders progressively during framing and execution.
 5. Add decisions, evidence, handoff, and notes artifacts only when they improve continuity or validation.
 
