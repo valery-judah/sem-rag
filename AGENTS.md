@@ -11,12 +11,31 @@ This file is the repo entry point for agents. It is a routing layer, not the ful
 
 ...
 
-Start with:
+## Agent Quick Routes
 
-- product north star: `docs/evergreen/mvp.md`
-- repo/code map: `docs/evergreen/architecture.md`
-- stable interfaces: `docs/evergreen/api-contracts.md`
-- docs map: `docs/README.md`
+Authority rule:
+- `docs/evergreen/`: Canonical
+- `docs/delivery/`: Reference only
+- `docs/workstreams/`: Execution history
+
+If you need product scope:
+- `docs/evergreen/mvp.md`: Canonical. Product north star and scope boundary.
+
+If you need current implementation truth:
+- `docs/evergreen/architecture.md`: Canonical. Current repo shape and implementation gap.
+
+If you need stable interfaces:
+- `docs/evergreen/api-contracts.md`: Canonical. Stable runtime interfaces that exist today.
+
+If you need local commands and validation:
+- `docs/evergreen/runbook.md`: Canonical. Local operation guidance and standard commands.
+
+If you need evaluation semantics:
+- `docs/README.md`: Canonical. Docs index and task-based routes.
+- `docs/evergreen/eval-vocabulary.md`: Canonical. Evaluation glossary, term normalization, and layer names.
+- `docs/evergreen/eval-support-semantics.md`: Canonical. Support-state criteria, citation expectations, and abstention rules.
+- `docs/evergreen/eval-scenario-taxonomy.md`: Canonical. Scenario classes and classification rules.
+- `docs/evergreen/eval-failure-taxonomy.md`: Canonical. Failure classes and classification rules.
 
 ## Required Commands And Validation Matrix
 
@@ -42,11 +61,11 @@ Start with:
 
 ## Canonical Docs
 
-- `docs/evergreen/mvp.md`: product north star and scope boundary
-- `docs/evergreen/architecture.md`: current repo/module boundaries and target-state gap
-- `docs/evergreen/api-contracts.md`: stable runtime interfaces that exist today
-- `docs/evergreen/runbook.md`: durable local operation guidance
-- `docs/README.md`: documentation index
+- `docs/evergreen/mvp.md`: Canonical. Product north star and scope boundary.
+- `docs/evergreen/architecture.md`: Canonical. Current repo shape and implementation gap.
+- `docs/evergreen/api-contracts.md`: Canonical. Stable runtime interfaces that exist today.
+- `docs/evergreen/runbook.md`: Canonical. Local operation guidance and standard commands.
+- `docs/README.md`: Canonical. Docs index and task-based routes.
 
 `docs/delivery/` may contain planning, architecture, or workflow drafts, but it is not the canonical source of product scope.
 

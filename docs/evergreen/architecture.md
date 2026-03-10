@@ -11,6 +11,12 @@ This file captures the current architectural truth for `parity` and the gap betw
 - Explaining repo boundaries to a new contributor
 - Checking whether a proposal belongs in evergreen docs, a workstream, or an ADR
 
+## Read Next
+- `docs/evergreen/mvp.md`: Canonical. Product north star and scope boundary.
+- `docs/evergreen/api-contracts.md`: Canonical. Stable runtime interfaces that exist today.
+- `docs/evergreen/runbook.md`: Canonical. Local operation guidance and standard commands.
+- `docs/README.md`: Canonical. Docs index and task-based routes.
+
 ## Current System Shape
 The repository currently exposes a lightweight package plus documentation scaffolding:
 

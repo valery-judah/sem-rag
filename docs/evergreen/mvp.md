@@ -4,6 +4,12 @@
 **Scope:** MVP / Version 1  
 **Last updated:** 2026-03-10
 
+## Read Next
+- `docs/evergreen/architecture.md`: Canonical. Current repo shape and implementation gap.
+- `docs/evergreen/api-contracts.md`: Canonical. Stable runtime interfaces that exist today.
+- `docs/README.md`: Canonical. Docs index and task-based routes.
+- `docs/evergreen/eval-support-semantics.md`: Canonical. Support-state criteria, citation expectations, and abstention rules.
+
 ## 1. Problem
 
 Users often have collections of technical books, manuals, notes, and internal documents in **PDF** and **Markdown** formats, but these materials are difficult to query as a single knowledge source.

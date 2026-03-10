@@ -5,6 +5,34 @@
 
 Authority note: `docs/evergreen/` holds the canonical product and repo truth. `docs/delivery/` may contain planning, architecture, or workflow drafts retained for reference, but it is not the canonical source of product scope. New durable docs belong in `docs/evergreen/`, and new time-scoped execution records belong in `docs/workstreams/`.
 
+## Quick Routes
+If you need product scope:
+- `docs/evergreen/mvp.md`: Canonical. Product north star and scope boundary.
+
+If you need current implementation truth:
+- `docs/evergreen/architecture.md`: Canonical. Current repo shape and implementation gap.
+
+If you need stable interfaces:
+- `docs/evergreen/api-contracts.md`: Canonical. Stable runtime interfaces that exist today.
+
+If you need local commands and validation:
+- `docs/evergreen/runbook.md`: Canonical. Local operation guidance and standard commands.
+
+If you need evaluation semantics:
+- `docs/evergreen/eval-vocabulary.md`: Canonical. Evaluation glossary, term normalization, and layer names.
+- `docs/evergreen/eval-support-semantics.md`: Canonical. Support-state criteria, citation expectations, and abstention rules.
+- `docs/evergreen/eval-scenario-taxonomy.md`: Canonical. Scenario classes and classification rules.
+- `docs/evergreen/eval-failure-taxonomy.md`: Canonical. Failure classes and classification rules.
+
+If you need evaluation implementation guidance:
+- `docs/delivery/workflow.md`: Reference only. Workflow and modeling guidance aligned to evergreen semantics.
+- `docs/delivery/eval-harness-rfc-sections-1-10.md`: Reference only. Eval-harness rationale, object model, scenario coverage, and scoring philosophy.
+- `docs/delivery/eval-harness-rfc-sections-11-15.md`: Reference only. Eval-harness operating model, dataset strategy, judging, phases, and release policy.
+
+If you need execution history:
+- `docs/workstreams/WS-001-eval-harness/`: Execution history. Earlier eval-harness framing material.
+- `docs/workstreams/WS-002-semantic-lock/`: Execution history. Semantic-lock history and transition artifacts.
+
 ## Directory Map
 - `evergreen/`: current durable system truth and operational references
 - `delivery/`: non-canonical planning, architecture, and workflow drafts kept for reference
@@ -15,24 +43,30 @@ Authority note: `docs/evergreen/` holds the canonical product and repo truth. `d
 ## Evaluation Docs Map
 Use this map when working on evaluation semantics, the eval harness, or related dataset design.
 
-Canonical evergreen evaluation docs:
-- `docs/evergreen/eval-vocabulary.md`: glossary, term normalization, and evaluation layer names
-- `docs/evergreen/eval-support-semantics.md`: support-state criteria, citation expectations, and abstention rules
-- `docs/evergreen/eval-scenario-taxonomy.md`: canonical scenario classes and classification rules
-- `docs/evergreen/eval-failure-taxonomy.md`: canonical failure classes and classification rules
+If you need the evaluation glossary and layer names:
+- `docs/evergreen/eval-vocabulary.md`: Canonical. Evaluation glossary, term normalization, and layer names.
 
-Related durable framing:
-- `docs/evergreen/mvp.md`: product-scope and trust-contract authority
-- `docs/evergreen/architecture.md`: current repo shape and implementation gap
+If you need support-state, citation, or abstention rules:
+- `docs/evergreen/eval-support-semantics.md`: Canonical. Support-state criteria, citation expectations, and abstention rules.
 
-Reference-only delivery docs:
-- `docs/delivery/workflow.md`: non-canonical workflow and modeling guidance aligned to evergreen semantics
-- `docs/delivery/eval-harness-rfc-sections-1-10.md`: eval-harness rationale, object model, scenario coverage, and scoring philosophy
-- `docs/delivery/eval-harness-rfc-sections-11-15.md`: eval-harness operating model, dataset strategy, judging, phases, and release policy
+If you need scenario-class meanings:
+- `docs/evergreen/eval-scenario-taxonomy.md`: Canonical. Scenario classes and classification rules.
 
-Execution history:
-- `docs/workstreams/WS-001-eval-harness/`: earlier eval-harness framing material
-- `docs/workstreams/WS-002-semantic-lock/`: semantic-lock history and transition artifacts
+If you need failure classification:
+- `docs/evergreen/eval-failure-taxonomy.md`: Canonical. Failure classes and classification rules.
+
+If you need product or implementation framing around evaluation:
+- `docs/evergreen/mvp.md`: Canonical. Product north star and scope boundary.
+- `docs/evergreen/architecture.md`: Canonical. Current repo shape and implementation gap.
+
+If you need evaluation implementation guidance:
+- `docs/delivery/workflow.md`: Reference only. Workflow and modeling guidance aligned to evergreen semantics.
+- `docs/delivery/eval-harness-rfc-sections-1-10.md`: Reference only. Eval-harness rationale, object model, scenario coverage, and scoring philosophy.
+- `docs/delivery/eval-harness-rfc-sections-11-15.md`: Reference only. Eval-harness operating model, dataset strategy, judging, phases, and release policy.
+
+If you need evaluation execution history:
+- `docs/workstreams/WS-001-eval-harness/`: Execution history. Earlier eval-harness framing material.
+- `docs/workstreams/WS-002-semantic-lock/`: Execution history. Semantic-lock history and transition artifacts.
 
 Authority note:
 - Treat the evergreen evaluation docs as the semantic source of truth.
