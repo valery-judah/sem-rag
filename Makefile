@@ -20,9 +20,12 @@ fmt: ## Format and auto-fix lint issues
 	uv run ruff format .
 	uv run ruff check . --fix
 
+.PHONY: fmt-check
+fmt-check: ## Check formatting without modifying files
+	uv run ruff format . --check
+
 .PHONY: lint
 lint: ## Run lint checks
-	uv run ruff format . --check
 	uv run ruff check .
 
 .PHONY: type
@@ -33,8 +36,11 @@ type: ## Run static type checks
 test: install ## Run unit tests
 	uv run pytest tests
 
+.PHONY: verify
+verify: fmt-check lint type test ## Run the read-only verification suite
+
 .PHONY: check
-check: fmt lint type test ## Run all checks
+check: verify ## Alias for the read-only verification suite
 
 .PHONY: secret-scan
 secret-scan: ## Scan tracked repository files for leaked Gemini API keys

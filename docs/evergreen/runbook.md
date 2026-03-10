@@ -18,9 +18,11 @@ make run
 Additional checks:
 ```bash
 make fmt
+make fmt-check
 make lint
 make type
 make test
+make verify
 ```
 
 ## What `make run` Does
@@ -30,7 +32,7 @@ make test
 
 ## Troubleshooting
 - If imports fail, run `make sync` and `make install`.
-- If validation disagrees across environments, re-run the standard `fmt`, `lint`, `type`, and `test` targets.
+- If validation disagrees across environments, re-run the standard `fmt-check`, `lint`, `type`, `test`, and `verify` targets. Use `fmt` only when you want to apply automatic fixes.
 - If `make run` changes behavior, inspect `src/parity/cli.py` and `src/parity/retrieval.py` first because they define the current runtime surface.
 - If a doc describes ingestion, parsing, or grounded answering as already implemented, reconcile it with `docs/evergreen/architecture.md` and the actual code before treating it as current behavior.
 
