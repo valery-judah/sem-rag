@@ -144,6 +144,24 @@ def test_staged_scan_ignores_unchanged_old_key(tmp_path: Path) -> None:
     assert result.returncode == 0
 
 
+def test_staged_scan_tolerates_non_utf8_added_content(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    _init_repo(repo)
+
+    path = repo / "notes.txt"
+    path.write_text("baseline\n", encoding="utf-8")
+    _commit_all(repo, "baseline")
+
+    path.write_bytes(b"quote:\x93still safe\n")
+    _git(repo, "add", "notes.txt")
+
+    result = _run_secret_scan(repo, "staged-added")
+
+    assert result.returncode == 0
+    assert "UnicodeDecodeError" not in result.stderr
+
+
 def test_repo_scan_flags_committed_key(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
