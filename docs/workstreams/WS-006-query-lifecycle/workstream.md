@@ -22,12 +22,12 @@ Ship the MVP query path as explicit executable stages:
 - Treating retrieved text or evidence sets as sufficient proof without explicit support assessment.
 
 ## Current status
-- Stages 1 through 4 are implemented: queryable corpus boundary, interpretation, retrieval, and selection/evidence-set construction.
-- Internal `POST /queries` now executes through Stage 4 and persists `interpret`, `retrieve`, and `select` traces.
-- The main remaining implementation gap is Stage 5 onward: context assembly, support assessment, answer-mode policy, generation, and citation rendering.
+- Stages 1 through 5 are implemented: queryable corpus boundary, interpretation, retrieval, selection/evidence-set construction, and deterministic context assembly.
+- Internal `POST /queries` now executes through Stage 5 and persists `interpret`, `retrieve`, `select`, and `assemble_context` traces.
+- The main remaining implementation gap is Stage 6 onward: support assessment, answer-mode policy, generation, and citation rendering.
 
 ## Next step
-- Design and implement Stage 5 deterministic context assembly over explicit evidence sets.
+- Design and implement Stage 6 support assessment and answer-mode policy over interpreted queries, evidence sets, and context manifests.
 
 ## Relevant context
 - paths:
@@ -71,3 +71,4 @@ Ship the MVP query path as explicit executable stages:
 - `12_stage-2-interpretation-foundation-design.md`
 - `13_stage-3-retrieval-foundation-design.md`
 - `14_stage-4-selection-evidence-set-construction-design.md`
+- `15_stage-5-deterministic-context-assembly-design.md`

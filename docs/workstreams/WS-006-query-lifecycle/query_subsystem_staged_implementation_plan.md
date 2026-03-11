@@ -99,6 +99,25 @@ The final MVP query subsystem should provide:
 
 The coding sequence below introduces that architecture in a controlled order.
 
+## Current delivery snapshot
+
+As of 2026-03-11, the repo has completed the staged path through Stage 5:
+
+- Stage 0: contracts, enums, policy defaults, and scaffolding
+- Stage 1: queryable `READY`-corpus boundary and stable corpus snapshots
+- Stage 2: deterministic interpretation and durable `interpret` traces
+- Stage 3: snapshot-scoped dense retrieval and durable `retrieve` traces
+- Stage 4: deterministic selection/evidence-set construction and durable `select` traces
+- Stage 5: deterministic context assembly with inspectable `ContextManifest` output and durable `assemble_context` traces
+
+The current implementation gap begins at Stage 6:
+
+- support assessment
+- answer-mode policy
+- grounded generation
+- citation rendering
+- later trace/review hardening
+
 ---
 
 # Stage 0 — Freeze contracts and scaffolding
@@ -500,6 +519,8 @@ This stage is done when:
 
 # Stage 5 — Deterministic context assembly
 
+**Status:** Implemented on 2026-03-11
+
 ## Goal
 
 Build a deterministic, inspectable model-facing context from explicit evidence sets.
@@ -547,6 +568,14 @@ This stage is done when:
 
 - the final model-facing context is structured and inspectable;
 - context inclusion/exclusion decisions are persisted.
+
+This acceptance gate is now satisfied in the repo through:
+
+- executable Stage 5 context assembly in `src/parity/query/context_assembly.py` and `src/parity/query/stages/context.py`;
+- `QueryService.execute_until_context_assembly()` orchestration;
+- internal `POST /queries` responses that include `context_manifest`;
+- Stage 5 trace persistence in `query_stage_traces`;
+- focused contract, query, and route coverage.
 
 ## Coding-agent notes
 
@@ -997,3 +1026,6 @@ Build the query subsystem in this strict order:
 9. implement trace/review surfaces and evaluation hardening.
 
 That is the shortest path to a working system that still respects `07_design.md` rather than accidentally replacing it with a simpler but semantically weaker architecture.
+
+Repo truth as of 2026-03-11 has completed steps 1 through 6 in this sequence.
+The next stage to execute is step 7: support assessment and answer-mode policy.

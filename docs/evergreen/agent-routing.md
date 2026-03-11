@@ -66,7 +66,7 @@ Current Implementation Seams:
 
 ## Implementation Map
 - `src/parity/retrieval.py` and `src/parity/cli.py`: implemented retrieval demo utilities. Open when changing `SemanticIndex`, ranking behavior, or CLI output. These modules are not a stable public API.
-- `src/parity/query/contracts.py`, `src/parity/query/interpretation.py`, `src/parity/query/retrieval.py`, `src/parity/query/service.py`, `src/parity/query/stages/`, `src/parity/query/persistence.py`, and `src/parity/query/trace.py`: internal query runtime through Stage 3. Open when changing query run state, query-time snapshot semantics, interpreted-query shape, retrieval behavior, stage execution, or persisted stage traces.
+- `src/parity/query/contracts.py`, `src/parity/query/interpretation.py`, `src/parity/query/retrieval.py`, `src/parity/query/context_assembly.py`, `src/parity/query/service.py`, `src/parity/query/stages/`, `src/parity/query/persistence.py`, and `src/parity/query/trace.py`: internal query runtime through Stage 5. Open when changing query run state, query-time snapshot semantics, interpreted-query shape, retrieval behavior, context assembly, stage execution, or persisted stage traces.
 - `src/parity/readmodels/documents.py`: query-facing corpus read model over lifecycle persistence. Open when changing `READY`-only queryability, snapshot membership capture, fixed-snapshot section/chunk reads, or embedded-chunk retrieval reads.
 - `src/parity/_contracts/models.py` and `src/parity/_contracts/lifecycle.py`: internal corpus, provenance, answer, and lifecycle seams. Open when changing document, chunk, citation, answer, or processing-state semantics in code.
 - `src/parity/app/api.py`, `src/parity/app/deps.py`, and `src/parity/app/settings.py`: internal FastAPI runtime and dependency wiring. Open when changing intake/status/retry/query route shape, dependency assembly, or runtime settings.
@@ -90,7 +90,7 @@ For query runtime changes:
 - then inspect `src/parity/query/contracts.py`, `src/parity/query/interpretation.py`, `src/parity/query/retrieval.py`, `src/parity/query/stages/interpret.py`, `src/parity/query/stages/retrieve.py`, and `src/parity/query/persistence.py`
 - then inspect `src/parity/readmodels/documents.py`
 - then inspect `src/parity/app/api.py` and `src/parity/app/deps.py`
-- then inspect `tests/readmodels/test_queryable_corpus_read_model.py`, `tests/query/test_query_service_prepare.py`, `tests/query/test_interpretation.py`, `tests/query/test_query_retrieval.py`, `tests/query/test_query_service_interpret.py`, `tests/query/test_query_service_retrieve.py`, and `tests/app/test_runtime_api.py`
+- then inspect `tests/readmodels/test_queryable_corpus_read_model.py`, `tests/query/test_query_service_prepare.py`, `tests/query/test_interpretation.py`, `tests/query/test_query_retrieval.py`, `tests/query/test_query_context_assembly.py`, `tests/query/test_query_service_interpret.py`, `tests/query/test_query_service_retrieve.py`, and `tests/app/test_runtime_api.py`
 - if the change would promote query request, snapshot, interpreted-query, or route payloads into a supported downstream interface, update `docs/evergreen/api-contracts.md` first
 
 For internal contract or lifecycle changes:
@@ -128,7 +128,7 @@ For repo devtool changes:
 Use these proof points to distinguish implemented seams from doc-only intent:
 
 - Retrieval demo surface: `tests/test_retrieval.py`, `tests/test_cli.py`
-- Query boundary, interpretation, and retrieval runtime: `tests/readmodels/test_queryable_corpus_read_model.py`, `tests/query/test_query_service_prepare.py`, `tests/query/test_interpretation.py`, `tests/query/test_query_retrieval.py`, `tests/query/test_query_service_interpret.py`, `tests/query/test_query_service_retrieve.py`, `tests/app/test_runtime_api.py`
+- Query boundary, interpretation, retrieval, selection, and context runtime: `tests/readmodels/test_queryable_corpus_read_model.py`, `tests/query/test_query_service_prepare.py`, `tests/query/test_interpretation.py`, `tests/query/test_query_retrieval.py`, `tests/query/test_query_context_assembly.py`, `tests/query/test_query_service_interpret.py`, `tests/query/test_query_service_retrieve.py`, `tests/app/test_runtime_api.py`
 - Contract models and lifecycle rules: `tests/contract/test_contract_models.py`, `tests/contract/test_lifecycle_state_machine.py`, `tests/contract/test_contract_seam_compat.py`
 - Lifecycle runtime and operator routes: `tests/app/test_documents_api.py`, `tests/lifecycle/test_worker.py`, `tests/pipeline/test_markdown_to_ready.py`, `tests/pipeline/test_pdf_to_ready.py`, `tests/pipeline/test_retry_recovery.py`
 - Artifact storage: `tests/artifacts/test_raw_artifact_store.py`, `tests/artifacts/test_extracted_artifact_store.py`, `tests/artifacts/test_normalized_artifact_store.py`

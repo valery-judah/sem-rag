@@ -10,6 +10,7 @@ from parity.query import (
     AnswerDraft,
     AnswerMode,
     AnswerModeDecision,
+    ContextItem,
     ContextManifest,
     CorpusSnapshot,
     EvidenceGroupingMode,
@@ -192,8 +193,21 @@ def test_evidence_set_requires_evidence_units() -> None:
 def test_context_manifest_rejects_budget_overflow() -> None:
     manifest = ContextManifest(
         ordered_evidence_set_ids=["es-1"],
+        included_evidence_set_ids=["es-1"],
+        inclusion_reasons={"es-1": "included_within_budget"},
         token_budget=4000,
         token_budget_used=512,
+        context_items=[
+            ContextItem(
+                evidence_set_id="es-1",
+                assembly_rank=1,
+                rendered_text="Doc 1 | direct_support | Chapter 1\n[p. 3] Supporting passage.",
+                contributing_doc_ids=["doc-1"],
+                heading_paths=[["Chapter 1"]],
+                locators=["p. 3"],
+                estimated_token_count=16,
+            )
+        ],
     )
 
     assert manifest.token_budget_used == 512
@@ -201,8 +215,48 @@ def test_context_manifest_rejects_budget_overflow() -> None:
     with pytest.raises(ValidationError, match="token_budget_used must not exceed token_budget"):
         ContextManifest(
             ordered_evidence_set_ids=["es-1"],
+            included_evidence_set_ids=["es-1"],
+            inclusion_reasons={"es-1": "included_within_budget"},
             token_budget=100,
             token_budget_used=101,
+            context_items=[
+                ContextItem(
+                    evidence_set_id="es-1",
+                    assembly_rank=1,
+                    rendered_text="Doc 1 | direct_support | Chapter 1\n[p. 3] Supporting passage.",
+                    contributing_doc_ids=["doc-1"],
+                    heading_paths=[["Chapter 1"]],
+                    locators=["p. 3"],
+                    estimated_token_count=16,
+                )
+            ],
+        )
+
+
+def test_context_manifest_requires_context_items_to_match_included_ids() -> None:
+    with pytest.raises(
+        ValidationError,
+        match="context_items must align to included_evidence_set_ids in order",
+    ):
+        ContextManifest(
+            ordered_evidence_set_ids=["es-1"],
+            included_evidence_set_ids=["es-2"],
+            dropped_evidence_set_ids=["es-1"],
+            inclusion_reasons={"es-2": "included_within_budget"},
+            exclusion_reasons={"es-1": "dropped_over_budget"},
+            token_budget=100,
+            token_budget_used=16,
+            context_items=[
+                ContextItem(
+                    evidence_set_id="es-1",
+                    assembly_rank=1,
+                    rendered_text="Doc 1 | direct_support | Chapter 1\n[p. 3] Supporting passage.",
+                    contributing_doc_ids=["doc-1"],
+                    heading_paths=[["Chapter 1"]],
+                    locators=["p. 3"],
+                    estimated_token_count=16,
+                )
+            ],
         )
 
 

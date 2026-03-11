@@ -20,6 +20,7 @@ from parity.lifecycle.service import (
 )
 from parity.lifecycle.worker import DocumentLifecycleWorker
 from parity.query import (
+    ContextManifest,
     CorpusSnapshot,
     EvidenceSet,
     InterpretedQuery,
@@ -49,7 +50,7 @@ class RetrievalQueryRequest(BaseModel):
 
 
 class QuerySubmissionResult(BaseModel):
-    """Internal response payload for Stage 4 selection execution."""
+    """Internal response payload for Stage 5 context-assembly execution."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -61,6 +62,7 @@ class QuerySubmissionResult(BaseModel):
     retrieved_candidates: list[RetrievedCandidate] = Field(default_factory=list)
     selected_candidates: list[RetrievedCandidate] = Field(default_factory=list)
     evidence_sets: list[EvidenceSet] = Field(default_factory=list)
+    context_manifest: ContextManifest
     message: str = Field(min_length=1)
 
 
@@ -192,13 +194,17 @@ def create_app() -> FastAPI:
         service: Annotated[QueryService, Depends(get_query_service)],
     ) -> QuerySubmissionResult:
         try:
-            state = service.execute_until_selection(request)
+            state = service.execute_until_context_assembly(request)
         except CorpusBoundaryUnavailableError as exc:
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                 detail=str(exc),
             ) from exc
-        if state.snapshot is None or state.interpreted_query is None:
+        if (
+            state.snapshot is None
+            or state.interpreted_query is None
+            or state.context_manifest is None
+        ):
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="query execution returned incomplete stage state",
@@ -212,7 +218,8 @@ def create_app() -> FastAPI:
             retrieved_candidates=state.retrieved_candidates,
             selected_candidates=state.selected_candidates,
             evidence_sets=state.evidence_sets,
-            message="query selection completed; downstream stages are not implemented yet",
+            context_manifest=state.context_manifest,
+            message="query context assembly completed; downstream stages are not implemented yet",
         )
 
     @app.post("/internal/run-next-job")

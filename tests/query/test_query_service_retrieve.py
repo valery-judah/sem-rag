@@ -12,6 +12,7 @@ from parity.persistence import (
     SqlSectionRepository,
 )
 from parity.query import QueryRequest, QueryService
+from parity.query.context_assembly import DeterministicContextAssembler
 from parity.query.persistence import SqlQueryRunStore, SqlQuerySnapshotStore, SqlQueryTraceStore
 from parity.query.retrieval import SnapshotDenseQueryRetriever
 from parity.query.selection import DeterministicQuerySelector
@@ -42,6 +43,7 @@ def _service(sql_engine) -> QueryService:
             embedding_adapter=DeterministicEmbeddingAdapter(),
         ),
         selector=DeterministicQuerySelector(corpus_read_model=read_model),
+        context_assembler=DeterministicContextAssembler(),
     )
 
 
@@ -122,3 +124,84 @@ def test_execute_until_selection_handles_empty_snapshot(sql_engine) -> None:
     assert traces[1].payload["candidates"] == []
     assert traces[2].stage_name.value == "select"
     assert traces[2].payload["evidence_sets"] == []
+
+
+def test_execute_until_context_assembly_persists_context_trace_and_manifest(
+    sql_engine,
+    persisted_document_factory,
+    chunk_factory,
+) -> None:
+    documents = SqlDocumentRepository(sql_engine)
+    chunks = SqlChunkRepository(sql_engine)
+    trace_store = SqlQueryTraceStore(sql_engine)
+    documents.create(
+        persisted_document_factory(
+            doc_id="doc-ready",
+            workspace_id="ws-1",
+            ingest_status=ProcessingStatus.READY,
+        )
+    )
+    ready_chunk = chunk_factory(
+        doc_id="doc-ready",
+        chunk_id="chunk-ready",
+        page_start=2,
+        page_end=2,
+        text="semantic retrieval uses embeddings for passage search",
+    )
+    chunks.save([ready_chunk])
+    SqlVectorStore(
+        engine=sql_engine,
+        embedding_adapter=DeterministicEmbeddingAdapter(),
+        index_entries=SqlIndexEntryRepository(sql_engine),
+        chunk_embeddings=SqlChunkEmbeddingRepository(sql_engine),
+    ).publish_document(doc_id="doc-ready", chunks=[ready_chunk])
+
+    state = _service(sql_engine).execute_until_context_assembly(
+        QueryRequest(
+            question="What uses embeddings for passage search?",
+            workspace_id="ws-1",
+        )
+    )
+
+    traces = trace_store.list_stage_traces(state.run.query_id)
+
+    assert state.context_manifest is not None
+    assert state.context_manifest.ordered_evidence_set_ids == ["es-1"]
+    assert state.context_manifest.included_evidence_set_ids == ["es-1"]
+    assert state.context_manifest.dropped_evidence_set_ids == []
+    assert len(state.context_manifest.context_items) == 1
+    assert state.context_manifest.context_items[0].evidence_set_id == "es-1"
+    assert (
+        "semantic retrieval uses embeddings"
+        in state.context_manifest.context_items[0].rendered_text
+    )
+    assert len(traces) == 4
+    assert [trace.stage_name.value for trace in traces] == [
+        "interpret",
+        "retrieve",
+        "select",
+        "assemble_context",
+    ]
+    assert traces[3].payload["included_evidence_set_ids"] == ["es-1"]
+    assert traces[3].payload["context_items"][0]["evidence_set_id"] == "es-1"
+
+
+def test_execute_until_context_assembly_handles_empty_snapshot(sql_engine) -> None:
+    trace_store = SqlQueryTraceStore(sql_engine)
+
+    state = _service(sql_engine).execute_until_context_assembly(
+        QueryRequest(
+            question="What is semantic retrieval?",
+            workspace_id="empty-ws",
+        )
+    )
+
+    traces = trace_store.list_stage_traces(state.run.query_id)
+
+    assert state.context_manifest is not None
+    assert state.context_manifest.ordered_evidence_set_ids == []
+    assert state.context_manifest.included_evidence_set_ids == []
+    assert state.context_manifest.context_items == []
+    assert len(traces) == 4
+    assert traces[3].stage_name.value == "assemble_context"
+    assert traces[3].payload["context_items"] == []

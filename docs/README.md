@@ -82,6 +82,8 @@ WS-006 Execution Track:
 - `docs/workstreams/WS-006-query-lifecycle/11_stage-1-queryable-corpus-boundary-design.md`: Implemented Stage 1 note, including current routes and evergreen review.
 - `docs/workstreams/WS-006-query-lifecycle/12_stage-2-interpretation-foundation-design.md`: Implemented Stage 2 note, including current routes and evergreen review.
 - `docs/workstreams/WS-006-query-lifecycle/13_stage-3-retrieval-foundation-design.md`: Stage 3 retrieval design and implementation note for the current repo shape.
+- `docs/workstreams/WS-006-query-lifecycle/14_stage-4-selection-evidence-set-construction-design.md`: Implemented Stage 4 selection and evidence-set construction note.
+- `docs/workstreams/WS-006-query-lifecycle/15_stage-5-deterministic-context-assembly-design.md`: Implemented Stage 5 deterministic context-assembly note for the current repo shape.
 
 Working Rule:
 - Start with the evergreen docs for stable context.

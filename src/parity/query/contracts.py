@@ -238,22 +238,57 @@ class EvidenceSet(BaseModel):
     assembly_reason: str = Field(min_length=1)
 
 
+class ContextItem(BaseModel):
+    """Structured rendered context item derived from one evidence set."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    evidence_set_id: str = Field(min_length=1)
+    assembly_rank: int = Field(ge=1)
+    rendered_text: str = Field(min_length=1)
+    contributing_doc_ids: list[str] = Field(min_length=1)
+    heading_paths: list[list[str]] = Field(default_factory=list)
+    locators: list[str] = Field(default_factory=list)
+    estimated_token_count: int = Field(ge=1)
+
+
 class ContextManifest(BaseModel):
     """Deterministic, inspectable model-facing context description."""
 
     model_config = ConfigDict(extra="forbid")
 
     ordered_evidence_set_ids: list[str] = Field(default_factory=list)
+    included_evidence_set_ids: list[str] = Field(default_factory=list)
     dropped_evidence_set_ids: list[str] = Field(default_factory=list)
     inclusion_reasons: dict[str, str] = Field(default_factory=dict)
     exclusion_reasons: dict[str, str] = Field(default_factory=dict)
     token_budget: int = Field(ge=1)
     token_budget_used: int = Field(ge=0)
+    context_items: list[ContextItem] = Field(default_factory=list)
+    duplicate_suppression_notes: list[str] = Field(default_factory=list)
 
     @model_validator(mode="after")
     def validate_budget(self) -> ContextManifest:
         if self.token_budget_used > self.token_budget:
             raise ValueError("token_budget_used must not exceed token_budget")
+        context_item_ids = [item.evidence_set_id for item in self.context_items]
+        if context_item_ids != self.included_evidence_set_ids:
+            raise ValueError("context_items must align to included_evidence_set_ids in order")
+        ordered_ids = set(self.ordered_evidence_set_ids)
+        included_ids = set(self.included_evidence_set_ids)
+        dropped_ids = set(self.dropped_evidence_set_ids)
+        if included_ids & dropped_ids:
+            raise ValueError("included and dropped evidence set ids must be disjoint")
+        if not included_ids.issubset(ordered_ids):
+            raise ValueError(
+                "included evidence set ids must be drawn from ordered_evidence_set_ids"
+            )
+        if not dropped_ids.issubset(ordered_ids):
+            raise ValueError("dropped evidence set ids must be drawn from ordered_evidence_set_ids")
+        if set(self.inclusion_reasons) != included_ids:
+            raise ValueError("inclusion_reasons must cover exactly the included evidence set ids")
+        if set(self.exclusion_reasons) != dropped_ids:
+            raise ValueError("exclusion_reasons must cover exactly the dropped evidence set ids")
         return self
 
 
