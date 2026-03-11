@@ -1,28 +1,28 @@
 from __future__ import annotations
 
-import sqlite3
-
 import pytest
+from sqlalchemy.exc import IntegrityError
 
 from parity._contracts import Chunk
 from parity.persistence import (
-    list_chunks_by_document,
-    replace_chunks_for_document,
-    save_chunks,
-    save_document,
-    save_sections,
+    SqlChunkRepository,
+    SqlDocumentRepository,
+    SqlSectionRepository,
 )
 
 pytestmark = pytest.mark.persistence
 
 
 def test_chunk_round_trip_preserves_section_link(
-    conn: sqlite3.Connection,
-    document_factory,
+    sql_engine,
+    persisted_document_factory,
     section_factory,
     chunk_factory,
 ) -> None:
-    document = document_factory()
+    documents = SqlDocumentRepository(sql_engine)
+    sections_repo = SqlSectionRepository(sql_engine)
+    chunks_repo = SqlChunkRepository(sql_engine)
+    document = persisted_document_factory()
     section = section_factory(doc_id=document.doc_id, section_id="doc-1-section-2")
     chunks = [
         chunk_factory(
@@ -44,29 +44,31 @@ def test_chunk_round_trip_preserves_section_link(
             page_end=None,
         ),
     ]
-    save_document(conn, document)
-    save_sections(conn, [section])
+    documents.create(document)
+    sections_repo.save([section])
 
-    save_chunks(conn, chunks)
+    chunks_repo.save(chunks)
 
-    loaded = list_chunks_by_document(conn, document.doc_id)
+    loaded = chunks_repo.list_for_document(document.doc_id)
 
     assert loaded == chunks
     assert isinstance(loaded[0], Chunk)
 
 
 def test_chunk_ordering_round_trip_is_stable(
-    conn: sqlite3.Connection,
-    document_factory,
+    sql_engine,
+    persisted_document_factory,
     section_factory,
     chunk_factory,
 ) -> None:
-    document = document_factory()
+    documents = SqlDocumentRepository(sql_engine)
+    sections_repo = SqlSectionRepository(sql_engine)
+    chunks_repo = SqlChunkRepository(sql_engine)
+    document = persisted_document_factory()
     section = section_factory(doc_id=document.doc_id, section_id="doc-1-section-1")
-    save_document(conn, document)
-    save_sections(conn, [section])
-    save_chunks(
-        conn,
+    documents.create(document)
+    sections_repo.save([section])
+    chunks_repo.save(
         [
             chunk_factory(
                 doc_id=document.doc_id,
@@ -83,17 +85,19 @@ def test_chunk_ordering_round_trip_is_stable(
         ],
     )
 
-    loaded = list_chunks_by_document(conn, document.doc_id)
+    loaded = chunks_repo.list_for_document(document.doc_id)
 
     assert [chunk.chunk_id for chunk in loaded] == ["chunk-1", "chunk-2"]
 
 
 def test_optional_chunk_fields_round_trip_as_none(
-    conn: sqlite3.Connection,
-    document_factory,
+    sql_engine,
+    persisted_document_factory,
     chunk_factory,
 ) -> None:
-    document = document_factory()
+    documents = SqlDocumentRepository(sql_engine)
+    chunks_repo = SqlChunkRepository(sql_engine)
+    document = persisted_document_factory()
     chunk = chunk_factory(
         doc_id=document.doc_id,
         heading_path=["Appendix"],
@@ -105,11 +109,11 @@ def test_optional_chunk_fields_round_trip_as_none(
         lineage=None,
         debug_metadata=None,
     )
-    save_document(conn, document)
+    documents.create(document)
 
-    save_chunks(conn, [chunk])
+    chunks_repo.save([chunk])
 
-    loaded = list_chunks_by_document(conn, document.doc_id)[0]
+    loaded = chunks_repo.list_for_document(document.doc_id)[0]
 
     assert loaded.section_id is None
     assert loaded.lineage is None
@@ -117,17 +121,19 @@ def test_optional_chunk_fields_round_trip_as_none(
 
 
 def test_replace_for_document_removes_prior_chunks(
-    conn: sqlite3.Connection,
-    document_factory,
+    sql_engine,
+    persisted_document_factory,
     section_factory,
     chunk_factory,
 ) -> None:
-    document = document_factory()
+    documents = SqlDocumentRepository(sql_engine)
+    sections_repo = SqlSectionRepository(sql_engine)
+    chunks_repo = SqlChunkRepository(sql_engine)
+    document = persisted_document_factory()
     section = section_factory(doc_id=document.doc_id, section_id="doc-1-section-1")
-    save_document(conn, document)
-    save_sections(conn, [section])
-    save_chunks(
-        conn,
+    documents.create(document)
+    sections_repo.save([section])
+    chunks_repo.save(
         [
             chunk_factory(
                 doc_id=document.doc_id,
@@ -152,22 +158,33 @@ def test_replace_for_document_removes_prior_chunks(
             text="Replacement chunk.",
         )
     ]
-    replace_chunks_for_document(conn, document.doc_id, replacement)
+    chunks_repo.replace_for_document(document.doc_id, replacement)
 
-    assert list_chunks_by_document(conn, document.doc_id) == replacement
+    assert chunks_repo.list_for_document(document.doc_id) == replacement
 
 
 def test_replace_for_document_rejects_cross_document_chunks(
-    conn: sqlite3.Connection,
-    document_factory,
+    sql_engine,
+    persisted_document_factory,
     chunk_factory,
 ) -> None:
-    document = document_factory()
-    save_document(conn, document)
+    documents = SqlDocumentRepository(sql_engine)
+    chunks_repo = SqlChunkRepository(sql_engine)
+    document = persisted_document_factory()
+    documents.create(document)
 
     with pytest.raises(ValueError, match="target document"):
-        replace_chunks_for_document(
-            conn,
+        chunks_repo.replace_for_document(
             document.doc_id,
             [chunk_factory(doc_id="doc-2", chunk_id="doc-2-chunk-1")],
         )
+
+
+def test_chunk_save_requires_existing_document(
+    sql_engine,
+    chunk_factory,
+) -> None:
+    chunks_repo = SqlChunkRepository(sql_engine)
+
+    with pytest.raises(IntegrityError):
+        chunks_repo.save([chunk_factory(doc_id="missing-doc", chunk_id="chunk-1")])

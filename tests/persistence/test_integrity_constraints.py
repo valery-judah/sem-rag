@@ -1,40 +1,44 @@
 from __future__ import annotations
 
-import sqlite3
-
 import pytest
+from sqlalchemy.exc import IntegrityError
 
-from parity.persistence import save_chunks, save_document, save_sections
+from parity.persistence import SqlChunkRepository, SqlDocumentRepository, SqlSectionRepository
 
 pytestmark = pytest.mark.persistence
 
 
 def test_no_section_without_document_possible(
-    conn: sqlite3.Connection,
+    sql_engine,
     section_factory,
 ) -> None:
-    with pytest.raises(sqlite3.IntegrityError):
-        save_sections(conn, [section_factory(doc_id="missing-doc", section_id="section-1")])
+    sections = SqlSectionRepository(sql_engine)
+
+    with pytest.raises(IntegrityError):
+        sections.save([section_factory(doc_id="missing-doc", section_id="section-1")])
 
 
 def test_no_chunk_without_document_possible(
-    conn: sqlite3.Connection,
+    sql_engine,
     chunk_factory,
 ) -> None:
-    with pytest.raises(sqlite3.IntegrityError):
-        save_chunks(conn, [chunk_factory(doc_id="missing-doc", chunk_id="chunk-1")])
+    chunks = SqlChunkRepository(sql_engine)
+
+    with pytest.raises(IntegrityError):
+        chunks.save([chunk_factory(doc_id="missing-doc", chunk_id="chunk-1")])
 
 
 def test_no_orphan_chunks_possible(
-    conn: sqlite3.Connection,
-    document_factory,
+    sql_engine,
+    persisted_document_factory,
     chunk_factory,
 ) -> None:
-    save_document(conn, document_factory())
+    documents = SqlDocumentRepository(sql_engine)
+    chunks = SqlChunkRepository(sql_engine)
+    documents.create(persisted_document_factory())
 
-    with pytest.raises(sqlite3.IntegrityError):
-        save_chunks(
-            conn,
+    with pytest.raises(IntegrityError):
+        chunks.save(
             [
                 chunk_factory(
                     doc_id="doc-1",
@@ -47,21 +51,20 @@ def test_no_orphan_chunks_possible(
 
 
 def test_chunk_cannot_reference_section_from_another_document(
-    conn: sqlite3.Connection,
-    document_factory,
+    sql_engine,
+    persisted_document_factory,
     section_factory,
     chunk_factory,
 ) -> None:
-    save_document(conn, document_factory(doc_id="doc-1"))
-    save_document(conn, document_factory(doc_id="doc-2"))
-    save_sections(
-        conn,
-        [section_factory(doc_id="doc-2", section_id="doc-2-section-1")],
-    )
+    documents = SqlDocumentRepository(sql_engine)
+    sections = SqlSectionRepository(sql_engine)
+    chunks = SqlChunkRepository(sql_engine)
+    documents.create(persisted_document_factory(doc_id="doc-1"))
+    documents.create(persisted_document_factory(doc_id="doc-2"))
+    sections.save([section_factory(doc_id="doc-2", section_id="doc-2-section-1")])
 
-    with pytest.raises(sqlite3.IntegrityError):
-        save_chunks(
-            conn,
+    with pytest.raises(IntegrityError):
+        chunks.save(
             [
                 chunk_factory(
                     doc_id="doc-1",
@@ -73,20 +76,18 @@ def test_chunk_cannot_reference_section_from_another_document(
 
 
 def test_section_cannot_reference_parent_from_another_document(
-    conn: sqlite3.Connection,
-    document_factory,
+    sql_engine,
+    persisted_document_factory,
     section_factory,
 ) -> None:
-    save_document(conn, document_factory(doc_id="doc-1"))
-    save_document(conn, document_factory(doc_id="doc-2"))
-    save_sections(
-        conn,
-        [section_factory(doc_id="doc-2", section_id="doc-2-parent")],
-    )
+    documents = SqlDocumentRepository(sql_engine)
+    sections = SqlSectionRepository(sql_engine)
+    documents.create(persisted_document_factory(doc_id="doc-1"))
+    documents.create(persisted_document_factory(doc_id="doc-2"))
+    sections.save([section_factory(doc_id="doc-2", section_id="doc-2-parent")])
 
-    with pytest.raises(sqlite3.IntegrityError):
-        save_sections(
-            conn,
+    with pytest.raises(IntegrityError):
+        sections.save(
             [
                 section_factory(
                     doc_id="doc-1",

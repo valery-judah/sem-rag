@@ -1,26 +1,25 @@
 from __future__ import annotations
 
-import sqlite3
-
 import pytest
+from sqlalchemy.exc import IntegrityError
 
 from parity._contracts import Section
 from parity.persistence import (
-    list_sections_by_document,
-    replace_sections_for_document,
-    save_document,
-    save_sections,
+    SqlDocumentRepository,
+    SqlSectionRepository,
 )
 
 pytestmark = pytest.mark.persistence
 
 
 def test_sections_round_trip_preserves_parent_child_links(
-    conn: sqlite3.Connection,
-    document_factory,
+    sql_engine,
+    persisted_document_factory,
     section_factory,
 ) -> None:
-    document = document_factory()
+    documents = SqlDocumentRepository(sql_engine)
+    sections_repo = SqlSectionRepository(sql_engine)
+    document = persisted_document_factory()
     sections = [
         section_factory(doc_id=document.doc_id, section_id="doc-1-section-1"),
         section_factory(
@@ -37,22 +36,24 @@ def test_sections_round_trip_preserves_parent_child_links(
             structure_confidence=0.9,
         ),
     ]
-    save_document(conn, document)
+    documents.create(document)
 
-    save_sections(conn, sections)
+    sections_repo.save(sections)
 
-    loaded = list_sections_by_document(conn, document.doc_id)
+    loaded = sections_repo.list_for_document(document.doc_id)
 
     assert loaded == sections
     assert isinstance(loaded[0], Section)
 
 
 def test_optional_section_fields_round_trip_as_none(
-    conn: sqlite3.Connection,
-    document_factory,
+    sql_engine,
+    persisted_document_factory,
     section_factory,
 ) -> None:
-    document = document_factory()
+    documents = SqlDocumentRepository(sql_engine)
+    sections_repo = SqlSectionRepository(sql_engine)
+    document = persisted_document_factory()
     section = section_factory(
         doc_id=document.doc_id,
         heading_path=["Appendix"],
@@ -64,11 +65,11 @@ def test_optional_section_fields_round_trip_as_none(
         source_end_offset=None,
         structure_confidence=None,
     )
-    save_document(conn, document)
+    documents.create(document)
 
-    save_sections(conn, [section])
+    sections_repo.save([section])
 
-    loaded = list_sections_by_document(conn, document.doc_id)[0]
+    loaded = sections_repo.list_for_document(document.doc_id)[0]
 
     assert loaded.heading_text is None
     assert loaded.page_start is None
@@ -76,14 +77,15 @@ def test_optional_section_fields_round_trip_as_none(
 
 
 def test_replace_for_document_removes_prior_sections(
-    conn: sqlite3.Connection,
-    document_factory,
+    sql_engine,
+    persisted_document_factory,
     section_factory,
 ) -> None:
-    document = document_factory()
-    save_document(conn, document)
-    save_sections(
-        conn,
+    documents = SqlDocumentRepository(sql_engine)
+    sections_repo = SqlSectionRepository(sql_engine)
+    document = persisted_document_factory()
+    documents.create(document)
+    sections_repo.save(
         [
             section_factory(doc_id=document.doc_id, section_id="old-section-1"),
             section_factory(doc_id=document.doc_id, section_id="old-section-2"),
@@ -98,22 +100,33 @@ def test_replace_for_document_removes_prior_sections(
             heading_text="Replacement",
         )
     ]
-    replace_sections_for_document(conn, document.doc_id, replacement)
+    sections_repo.replace_for_document(document.doc_id, replacement)
 
-    assert list_sections_by_document(conn, document.doc_id) == replacement
+    assert sections_repo.list_for_document(document.doc_id) == replacement
 
 
 def test_replace_for_document_rejects_cross_document_sections(
-    conn: sqlite3.Connection,
-    document_factory,
+    sql_engine,
+    persisted_document_factory,
     section_factory,
 ) -> None:
-    document = document_factory()
-    save_document(conn, document)
+    documents = SqlDocumentRepository(sql_engine)
+    sections_repo = SqlSectionRepository(sql_engine)
+    document = persisted_document_factory()
+    documents.create(document)
 
     with pytest.raises(ValueError, match="target document"):
-        replace_sections_for_document(
-            conn,
+        sections_repo.replace_for_document(
             document.doc_id,
             [section_factory(doc_id="doc-2", section_id="doc-2-section-1")],
         )
+
+
+def test_section_save_requires_existing_document(
+    sql_engine,
+    section_factory,
+) -> None:
+    sections_repo = SqlSectionRepository(sql_engine)
+
+    with pytest.raises(IntegrityError):
+        sections_repo.save([section_factory(doc_id="missing-doc", section_id="section-1")])

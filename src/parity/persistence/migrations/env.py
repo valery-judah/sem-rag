@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
+import os
 from logging.config import fileConfig
 
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
-from parity.persistence import jobs as _jobs  # noqa: F401
+from parity.persistence.jobs import document_jobs_table
 from parity.persistence.models import metadata
 
 config = context.config
@@ -16,12 +17,23 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 target_metadata = metadata
+_ = document_jobs_table
+
+
+def _configured_database_url() -> str:
+    configured = config.get_main_option("sqlalchemy.url")
+    if configured:
+        return configured
+    env_value = os.environ.get("DATABASE_URL")
+    if env_value:
+        return env_value
+    raise RuntimeError("DATABASE_URL must be set for Alembic migrations")
 
 
 def run_migrations_offline() -> None:
     """Run migrations in offline mode."""
 
-    url = config.get_main_option("sqlalchemy.url")
+    url = _configured_database_url()
     context.configure(
         url=url,
         target_metadata=target_metadata,
@@ -37,6 +49,7 @@ def run_migrations_online() -> None:
     """Run migrations in online mode."""
 
     configuration = config.get_section(config.config_ini_section) or {}
+    configuration["sqlalchemy.url"] = _configured_database_url()
     connectable = engine_from_config(
         configuration,
         prefix="sqlalchemy.",

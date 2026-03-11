@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-import sqlite3
 from datetime import UTC, datetime
 
 import pytest
 import sqlalchemy as sa
+from sqlalchemy import event
 from sqlalchemy.engine import Engine
 
 from parity._contracts import Chunk, Document, ProcessingStatus, Section, SourceType
@@ -15,18 +15,7 @@ from parity.persistence import (
     DocumentJobStatus,
     PersistedDocument,
     apply_migrations,
-    create_schema,
 )
-
-
-@pytest.fixture
-def conn() -> sqlite3.Connection:
-    connection = sqlite3.connect(":memory:")
-    create_schema(connection)
-    try:
-        yield connection
-    finally:
-        connection.close()
 
 
 @pytest.fixture
@@ -39,6 +28,13 @@ def db_url(tmp_path) -> str:
 def sql_engine(db_url: str) -> Engine:
     apply_migrations(db_url)
     engine = sa.create_engine(db_url)
+    if engine.dialect.name == "sqlite":
+        @event.listens_for(engine, "connect")
+        def _set_sqlite_pragma(dbapi_connection, connection_record) -> None:  # type: ignore[no-untyped-def]
+            del connection_record
+            cursor = dbapi_connection.cursor()
+            cursor.execute("PRAGMA foreign_keys = ON")
+            cursor.close()
     try:
         yield engine
     finally:

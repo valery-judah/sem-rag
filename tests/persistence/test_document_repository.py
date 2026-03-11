@@ -1,68 +1,16 @@
 from __future__ import annotations
 
-import sqlite3
-
 import pytest
 
-from parity._contracts import Document, ProcessingStatus, SourceType
+from parity._contracts import ProcessingStatus, SourceType
 from parity.persistence import (
     SqlDocumentRepository,
-    list_documents_by_workspace,
-    save_document,
 )
 
 pytestmark = pytest.mark.persistence
 
 
 def test_create_and_get_document_round_trip(
-    conn: sqlite3.Connection,
-    document_factory,
-) -> None:
-    document = document_factory()
-
-    save_document(conn, document)
-
-    loaded = list_documents_by_workspace(conn, "workspace-1")
-
-    assert loaded == [document]
-
-
-def test_workspace_isolation_filters_documents(
-    conn: sqlite3.Connection,
-    document_factory,
-) -> None:
-    save_document(conn, document_factory(doc_id="doc-1", workspace_id="workspace-1"))
-    save_document(conn, document_factory(doc_id="doc-2", workspace_id="workspace-2"))
-
-    loaded = list_documents_by_workspace(conn, "workspace-1")
-
-    assert [document.doc_id for document in loaded] == ["doc-1"]
-
-
-def test_save_document_replaces_existing_row_for_same_doc_id(
-    conn: sqlite3.Connection,
-    document_factory,
-) -> None:
-    original = document_factory(doc_id="doc-1", ingest_status=ProcessingStatus.REGISTERED)
-    replacement = document_factory(
-        doc_id="doc-1",
-        source_type=SourceType.MARKDOWN,
-        filename="doc-1.md",
-        ingest_status=ProcessingStatus.FAILED,
-        storage_ref="file:///tmp/doc-1.md",
-        metadata={"origin": "retry"},
-    )
-
-    save_document(conn, original)
-    save_document(conn, replacement)
-
-    loaded = list_documents_by_workspace(conn, original.workspace_id)
-
-    assert loaded == [replacement]
-    assert isinstance(loaded[0], Document)
-
-
-def test_sql_document_repository_round_trip(
     sql_engine,
     persisted_document_factory,
 ) -> None:
@@ -74,6 +22,67 @@ def test_sql_document_repository_round_trip(
     loaded = repository.get(document.doc_id)
 
     assert loaded == document
+
+
+def test_workspace_isolation_filters_documents(
+    sql_engine,
+    persisted_document_factory,
+) -> None:
+    repository = SqlDocumentRepository(sql_engine)
+    repository.create(persisted_document_factory(doc_id="doc-1", workspace_id="workspace-1"))
+    repository.create(persisted_document_factory(doc_id="doc-2", workspace_id="workspace-2"))
+
+    loaded = repository.list_by_workspace("workspace-1")
+
+    assert [document.doc_id for document in loaded] == ["doc-1"]
+
+
+def test_list_by_workspace_returns_persisted_documents(
+    sql_engine,
+    persisted_document_factory,
+) -> None:
+    repository = SqlDocumentRepository(sql_engine)
+    expected = [
+        persisted_document_factory(doc_id="doc-1"),
+        persisted_document_factory(
+            doc_id="doc-2",
+            filename="doc-2.md",
+            source_type=SourceType.MARKDOWN,
+            storage_ref="file:///tmp/doc-2.md",
+        ),
+    ]
+
+    for document in expected:
+        repository.create(document)
+
+    loaded = repository.list_by_workspace("workspace-1")
+
+    assert loaded == expected
+
+
+def test_update_status_clears_failure_fields_on_non_failed_status(
+    sql_engine,
+    persisted_document_factory,
+) -> None:
+    repository = SqlDocumentRepository(sql_engine)
+    document = persisted_document_factory(
+        ingest_status=ProcessingStatus.FAILED,
+        failure_code="extract_failed",
+        failure_detail="No usable text layer",
+    )
+    repository.create(document)
+
+    repository.update_status(
+        doc_id=document.doc_id,
+        status=ProcessingStatus.NORMALIZED,
+    )
+
+    loaded = repository.get(document.doc_id)
+
+    assert loaded is not None
+    assert loaded.ingest_status is ProcessingStatus.NORMALIZED
+    assert loaded.failure_code is None
+    assert loaded.failure_detail is None
 
 
 def test_update_status_persists_failure_code_and_detail(

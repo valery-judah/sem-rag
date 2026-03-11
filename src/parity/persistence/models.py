@@ -8,7 +8,7 @@ from datetime import UTC, datetime
 import sqlalchemy as sa
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from parity._contracts import Document, ProcessingStatus, SourceType
+from parity._contracts import Chunk, Document, ProcessingStatus, Section, SourceType
 from parity.lifecycle.models import FailureCategory, LifecycleEvent, LifecycleStage
 
 
@@ -57,6 +57,62 @@ lifecycle_events_table = sa.Table(
     sa.Column("occurred_at", sa.DateTime(timezone=True), nullable=False),
     sa.Column("failure_category", sa.Text(), nullable=True),
     sa.Column("detail_json", sa.JSON(), nullable=False),
+)
+
+sections_table = sa.Table(
+    "sections",
+    metadata,
+    sa.Column("section_id", sa.Text(), primary_key=True),
+    sa.Column(
+        "doc_id",
+        sa.Text(),
+        sa.ForeignKey("documents.doc_id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    ),
+    sa.Column("heading_path_json", sa.JSON(), nullable=False),
+    sa.Column("depth", sa.Integer(), nullable=False),
+    sa.Column("parent_section_id", sa.Text(), nullable=True),
+    sa.Column("heading_text", sa.Text(), nullable=True),
+    sa.Column("page_start", sa.Integer(), nullable=True),
+    sa.Column("page_end", sa.Integer(), nullable=True),
+    sa.Column("source_start_offset", sa.Integer(), nullable=True),
+    sa.Column("source_end_offset", sa.Integer(), nullable=True),
+    sa.Column("structure_confidence", sa.Float(), nullable=True),
+    sa.UniqueConstraint("doc_id", "section_id", name="uq_sections_doc_section"),
+    sa.ForeignKeyConstraint(
+        ["doc_id", "parent_section_id"],
+        ["sections.doc_id", "sections.section_id"],
+        ondelete="CASCADE",
+    ),
+)
+
+chunks_table = sa.Table(
+    "chunks",
+    metadata,
+    sa.Column("chunk_id", sa.Text(), primary_key=True),
+    sa.Column(
+        "doc_id",
+        sa.Text(),
+        sa.ForeignKey("documents.doc_id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    ),
+    sa.Column("text", sa.Text(), nullable=False),
+    sa.Column("ordinal", sa.Integer(), nullable=False),
+    sa.Column("heading_path_json", sa.JSON(), nullable=False),
+    sa.Column("section_id", sa.Text(), nullable=True),
+    sa.Column("page_start", sa.Integer(), nullable=True),
+    sa.Column("page_end", sa.Integer(), nullable=True),
+    sa.Column("source_start_offset", sa.Integer(), nullable=True),
+    sa.Column("source_end_offset", sa.Integer(), nullable=True),
+    sa.Column("lineage_json", sa.JSON(), nullable=True),
+    sa.Column("debug_metadata_json", sa.JSON(), nullable=True),
+    sa.ForeignKeyConstraint(
+        ["doc_id", "section_id"],
+        ["sections.doc_id", "sections.section_id"],
+        ondelete="CASCADE",
+    ),
 )
 
 
@@ -232,6 +288,125 @@ class PersistedLifecycleEvent(BaseModel):
         return self.model_dump(mode="python")
 
 
+class PersistedSection(BaseModel):
+    """Storage-facing section row."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    section_id: str
+    doc_id: str
+    heading_path_json: list[str]
+    depth: int
+    parent_section_id: str | None = None
+    heading_text: str | None = None
+    page_start: int | None = None
+    page_end: int | None = None
+    source_start_offset: int | None = None
+    source_end_offset: int | None = None
+    structure_confidence: float | None = None
+
+    @classmethod
+    def from_contract(cls, section: Section) -> PersistedSection:
+        """Project a contract section into its storage shape."""
+
+        return cls(
+            section_id=section.section_id,
+            doc_id=section.doc_id,
+            heading_path_json=section.heading_path,
+            depth=section.depth,
+            parent_section_id=section.parent_section_id,
+            heading_text=section.heading_text,
+            page_start=section.page_start,
+            page_end=section.page_end,
+            source_start_offset=section.source_start_offset,
+            source_end_offset=section.source_end_offset,
+            structure_confidence=section.structure_confidence,
+        )
+
+    def to_contract(self) -> Section:
+        """Project a storage section row back into the contract shape."""
+
+        return Section(
+            section_id=self.section_id,
+            doc_id=self.doc_id,
+            heading_path=self.heading_path_json,
+            depth=self.depth,
+            parent_section_id=self.parent_section_id,
+            heading_text=self.heading_text,
+            page_start=self.page_start,
+            page_end=self.page_end,
+            source_start_offset=self.source_start_offset,
+            source_end_offset=self.source_end_offset,
+            structure_confidence=self.structure_confidence,
+        )
+
+    def to_row(self) -> dict[str, object]:
+        """Serialize a storage section into SQL-ready values."""
+
+        return self.model_dump(mode="python")
+
+
+class PersistedChunk(BaseModel):
+    """Storage-facing chunk row."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    chunk_id: str
+    doc_id: str
+    text: str
+    ordinal: int
+    heading_path_json: list[str]
+    section_id: str | None = None
+    page_start: int | None = None
+    page_end: int | None = None
+    source_start_offset: int | None = None
+    source_end_offset: int | None = None
+    lineage_json: dict[str, str] | None = None
+    debug_metadata_json: dict[str, str] | None = None
+
+    @classmethod
+    def from_contract(cls, chunk: Chunk) -> PersistedChunk:
+        """Project a contract chunk into its storage shape."""
+
+        return cls(
+            chunk_id=chunk.chunk_id,
+            doc_id=chunk.doc_id,
+            text=chunk.text,
+            ordinal=chunk.ordinal,
+            heading_path_json=chunk.heading_path,
+            section_id=chunk.section_id,
+            page_start=chunk.page_start,
+            page_end=chunk.page_end,
+            source_start_offset=chunk.source_start_offset,
+            source_end_offset=chunk.source_end_offset,
+            lineage_json=chunk.lineage,
+            debug_metadata_json=chunk.debug_metadata,
+        )
+
+    def to_contract(self) -> Chunk:
+        """Project a storage chunk row back into the contract shape."""
+
+        return Chunk(
+            chunk_id=self.chunk_id,
+            doc_id=self.doc_id,
+            text=self.text,
+            ordinal=self.ordinal,
+            heading_path=self.heading_path_json,
+            section_id=self.section_id,
+            page_start=self.page_start,
+            page_end=self.page_end,
+            source_start_offset=self.source_start_offset,
+            source_end_offset=self.source_end_offset,
+            lineage=self.lineage_json,
+            debug_metadata=self.debug_metadata_json,
+        )
+
+    def to_row(self) -> dict[str, object]:
+        """Serialize a storage chunk into SQL-ready values."""
+
+        return self.model_dump(mode="python")
+
+
 def persisted_document_to_row(document: PersistedDocument) -> dict[str, object]:
     """Serialize a persisted document model into a SQLAlchemy row mapping."""
 
@@ -254,6 +429,30 @@ def row_to_lifecycle_event(row: Mapping[str, object]) -> LifecycleEvent:
     """Rehydrate a lifecycle event from a SQLAlchemy mapping row."""
 
     return PersistedLifecycleEvent.model_validate(dict(row)).to_runtime_event()
+
+
+def persisted_section_to_row(section: PersistedSection) -> dict[str, object]:
+    """Serialize a persisted section into a SQLAlchemy row mapping."""
+
+    return section.to_row()
+
+
+def row_to_persisted_section(row: Mapping[str, object]) -> PersistedSection:
+    """Rehydrate a persisted section from a SQLAlchemy mapping row."""
+
+    return PersistedSection.model_validate(dict(row))
+
+
+def persisted_chunk_to_row(chunk: PersistedChunk) -> dict[str, object]:
+    """Serialize a persisted chunk into a SQLAlchemy row mapping."""
+
+    return chunk.to_row()
+
+
+def row_to_persisted_chunk(row: Mapping[str, object]) -> PersistedChunk:
+    """Rehydrate a persisted chunk from a SQLAlchemy mapping row."""
+
+    return PersistedChunk.model_validate(dict(row))
 
 
 def _coerce_datetime(value: object) -> datetime:

@@ -6,20 +6,28 @@ from datetime import datetime
 from typing import Protocol
 
 import sqlalchemy as sa
-from sqlalchemy.engine import Engine
+from sqlalchemy.engine import Connection, Engine
 
-from parity._contracts import ProcessingStatus
+from parity._contracts import Chunk, ProcessingStatus, Section
 from parity.lifecycle.models import LifecycleEvent
 
 from .jobs import DocumentJob, document_job_to_row, document_jobs_table, row_to_document_job
 from .models import (
+    PersistedChunk,
     PersistedDocument,
     PersistedDocumentStatusUpdate,
+    PersistedSection,
+    chunks_table,
     documents_table,
     lifecycle_event_to_row,
     lifecycle_events_table,
+    persisted_chunk_to_row,
+    persisted_section_to_row,
     row_to_lifecycle_event,
+    row_to_persisted_chunk,
     row_to_persisted_document,
+    row_to_persisted_section,
+    sections_table,
     utc_now,
 )
 
@@ -62,6 +70,26 @@ class DocumentJobRepository(Protocol):
     def list_for_document(self, doc_id: str) -> list[DocumentJob]: ...
 
     def update(self, job: DocumentJob) -> None: ...
+
+
+class SectionRepository(Protocol):
+    """Storage operations for document sections."""
+
+    def save(self, sections: list[Section]) -> None: ...
+
+    def list_for_document(self, doc_id: str) -> list[Section]: ...
+
+    def replace_for_document(self, doc_id: str, sections: list[Section]) -> None: ...
+
+
+class ChunkRepository(Protocol):
+    """Storage operations for document chunks."""
+
+    def save(self, chunks: list[Chunk]) -> None: ...
+
+    def list_for_document(self, doc_id: str) -> list[Chunk]: ...
+
+    def replace_for_document(self, doc_id: str, chunks: list[Chunk]) -> None: ...
 
 
 class SqlDocumentRepository:
@@ -181,3 +209,84 @@ class SqlDocumentJobRepository:
             result = conn.execute(stmt)
         if result.rowcount != 1:
             raise LookupError(f"document job {job.job_id!r} was not found")
+
+
+class SqlSectionRepository:
+    """SQLAlchemy-backed repository for document sections."""
+
+    def __init__(self, engine: Engine) -> None:
+        self._engine = engine
+
+    def save(self, sections: list[Section]) -> None:
+        rows = [
+            persisted_section_to_row(PersistedSection.from_contract(section))
+            for section in sections
+        ]
+        if not rows:
+            return
+        with self._engine.begin() as conn:
+            conn.execute(sa.insert(sections_table), rows)
+
+    def list_for_document(self, doc_id: str) -> list[Section]:
+        stmt = (
+            sa.select(sections_table)
+            .where(sections_table.c.doc_id == doc_id)
+            .order_by(sections_table.c.depth, sections_table.c.section_id)
+        )
+        with self._engine.begin() as conn:
+            rows = conn.execute(stmt).mappings().all()
+        return [row_to_persisted_section(dict(row)).to_contract() for row in rows]
+
+    def replace_for_document(self, doc_id: str, sections: list[Section]) -> None:
+        _require_matching_doc_id(doc_id, sections)
+        with self._engine.begin() as conn:
+            conn.execute(sa.delete(sections_table).where(sections_table.c.doc_id == doc_id))
+            if sections:
+                self._insert_sections(conn, sections)
+
+    def _insert_sections(self, conn: Connection, sections: list[Section]) -> None:
+        rows = [
+            persisted_section_to_row(PersistedSection.from_contract(section))
+            for section in sections
+        ]
+        conn.execute(sa.insert(sections_table), rows)
+
+
+class SqlChunkRepository:
+    """SQLAlchemy-backed repository for document chunks."""
+
+    def __init__(self, engine: Engine) -> None:
+        self._engine = engine
+
+    def save(self, chunks: list[Chunk]) -> None:
+        rows = [persisted_chunk_to_row(PersistedChunk.from_contract(chunk)) for chunk in chunks]
+        if not rows:
+            return
+        with self._engine.begin() as conn:
+            conn.execute(sa.insert(chunks_table), rows)
+
+    def list_for_document(self, doc_id: str) -> list[Chunk]:
+        stmt = (
+            sa.select(chunks_table)
+            .where(chunks_table.c.doc_id == doc_id)
+            .order_by(chunks_table.c.ordinal, chunks_table.c.chunk_id)
+        )
+        with self._engine.begin() as conn:
+            rows = conn.execute(stmt).mappings().all()
+        return [row_to_persisted_chunk(dict(row)).to_contract() for row in rows]
+
+    def replace_for_document(self, doc_id: str, chunks: list[Chunk]) -> None:
+        _require_matching_doc_id(doc_id, chunks)
+        with self._engine.begin() as conn:
+            conn.execute(sa.delete(chunks_table).where(chunks_table.c.doc_id == doc_id))
+            if chunks:
+                self._insert_chunks(conn, chunks)
+
+    def _insert_chunks(self, conn: Connection, chunks: list[Chunk]) -> None:
+        rows = [persisted_chunk_to_row(PersistedChunk.from_contract(chunk)) for chunk in chunks]
+        conn.execute(sa.insert(chunks_table), rows)
+
+
+def _require_matching_doc_id(doc_id: str, records: list[Section] | list[Chunk]) -> None:
+    if any(record.doc_id != doc_id for record in records):
+        raise ValueError("all persisted records must belong to the target document")

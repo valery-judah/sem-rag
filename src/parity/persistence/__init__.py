@@ -4,12 +4,16 @@ from .jobs import DocumentJob, DocumentJobStage, DocumentJobStatus
 from .migrations import apply_migrations
 from .models import PersistedDocument
 from .repositories import (
+    ChunkRepository,
     DocumentJobRepository,
     DocumentRepository,
     LifecycleEventRepository,
+    SectionRepository,
+    SqlChunkRepository,
     SqlDocumentJobRepository,
     SqlDocumentRepository,
     SqlLifecycleEventRepository,
+    SqlSectionRepository,
 )
 from .sqlite_compat import (
     create_schema,
@@ -25,15 +29,19 @@ from .sqlite_compat import (
 
 __all__ = [
     "DocumentJob",
+    "ChunkRepository",
     "DocumentJobRepository",
     "DocumentJobStage",
     "DocumentJobStatus",
     "DocumentRepository",
     "LifecycleEventRepository",
     "PersistedDocument",
+    "SectionRepository",
+    "SqlChunkRepository",
     "SqlDocumentJobRepository",
     "SqlDocumentRepository",
     "SqlLifecycleEventRepository",
+    "SqlSectionRepository",
     "apply_migrations",
     "create_schema",
     "list_chunks_by_document",

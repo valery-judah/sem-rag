@@ -37,14 +37,15 @@ Execution History And Prior Framing:
 Current Implementation Seams:
 - `src/parity/retrieval.py`: `Implemented internal`
 - `src/parity/_contracts/`: `Implemented internal`
-- `src/parity/persistence.py`: `Implemented internal`
+- `src/parity/persistence/`: `Implemented internal`
 - `src/parity/evaluation/`: `Implemented internal`
 - `src/parity/devtools/secret_scan.py`: `Implemented internal`
 
 ## Implementation Map
 - `src/parity/retrieval.py` and `src/parity/cli.py`: public retrieval demo surface. Open when changing `SemanticIndex`, ranking behavior, or CLI output.
 - `src/parity/_contracts/models.py` and `src/parity/_contracts/lifecycle.py`: internal corpus, provenance, answer, and lifecycle seams. Open when changing document, chunk, citation, answer, or processing-state semantics in code.
-- `src/parity/persistence.py`: SQLite round-trip layer for `Document`, `Section`, and `Chunk`. Open when changing persisted fields, linkage rules, or repository-style access semantics.
+- `src/parity/persistence/sqlite_compat.py`: SQLite compatibility round-trip layer for `Document`, `Section`, and `Chunk`. Open when changing persisted fields, linkage rules, or existing internal repository semantics.
+- `src/parity/persistence/models.py`, `src/parity/persistence/jobs.py`, `src/parity/persistence/repositories.py`, and `src/parity/persistence/migrations/`: lifecycle metadata persistence, Alembic-backed migrations, and Postgres-oriented repository seams. Open when changing durable document/job/event storage or migration workflow.
 - `src/parity/evaluation/models.py`, `src/parity/evaluation/dataset.py`, `src/parity/evaluation/runner.py`, `src/parity/evaluation/systems.py`, and `src/parity/evaluation/fixtures.py`: deterministic harness scaffolding. Open when changing baseline evaluation cases, provenance checks, or synthetic seam behavior.
 - `src/parity/devtools/secret_scan.py`: repo safety tooling. Open when changing secret-pattern detection, reporting, or staged-vs-repo scanning behavior.
 
@@ -66,7 +67,7 @@ For internal contract or lifecycle changes:
 - if semantics overlap evaluation labels, normalize against the evergreen eval docs instead of inventing local wording
 
 For persistence changes:
-- open `src/parity/persistence.py`
+- open `src/parity/persistence/`
 - then inspect `tests/persistence/`
 - then inspect `src/parity/_contracts/`
 
@@ -97,7 +98,8 @@ The currently earned seams are:
 - stable public demo surface around `SemanticIndex` and the CLI
 - provenance-bearing corpus primitives for documents, sections, chunks, retrieval hits, and answers
 - explicit document-processing lifecycle progression with a failure state
-- SQLite-backed persistence for internal corpus primitives with linkage enforcement
+- SQLite-backed compatibility persistence for corpus primitives with linkage enforcement
+- Alembic-backed migration workflow and lifecycle metadata repositories for documents, lifecycle events, and document jobs
 - deterministic evaluation of retrieval ordering, supporting evidence, and provenance completeness
 - repo devtool support for staged and repository secret scanning
 
@@ -126,7 +128,7 @@ The target product in [`docs/evergreen/mvp.md`](./mvp.md) still exceeds the runt
 
 ## Change Impact
 - Retrieval demo changes may affect `docs/evergreen/api-contracts.md`, `tests/test_retrieval.py`, and `tests/test_cli.py`.
-- Contract or lifecycle changes may affect `src/parity/persistence.py`, `src/parity/evaluation/fixtures.py`, `tests/contract/`, `tests/persistence/`, and `tests/test_evaluation_harness.py`.
+- Contract or lifecycle changes may affect `src/parity/persistence/`, `src/parity/evaluation/fixtures.py`, `tests/contract/`, `tests/persistence/`, and `tests/test_evaluation_harness.py`.
 - Persistence changes may require matching updates to contract fields, ordering assumptions, and integrity checks in tests.
 - Evaluation harness changes may require matching updates to baseline cases, seam fixtures, and evergreen semantic docs if the change is semantic rather than mechanical.
 - Semantic doc changes should normalize against the owning evergreen doc instead of inventing parallel labels locally.

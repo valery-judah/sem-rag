@@ -15,6 +15,14 @@ make install
 make run
 ```
 
+Lifecycle metadata migrations use Alembic with `DATABASE_URL`:
+
+```bash
+export DATABASE_URL=postgresql+psycopg://user:pass@localhost:5432/parity
+make migrate
+make db-revision MESSAGE="add lifecycle index"
+```
+
 Additional checks:
 ```bash
 make fmt
@@ -25,14 +33,24 @@ make test
 make verify
 ```
 
+`make db-revision` creates a new revision file under `src/parity/persistence/migrations/versions/`. Schema changes to lifecycle metadata should update both the SQLAlchemy table definitions and a reviewed Alembic revision.
+
 ## What `make run` Does
 - Installs the package in editable mode through the `install` dependency in `Makefile`
 - Runs `python -m parity.cli`
 - Prints ranked matches from a small hard-coded document list
 
+## Database Migrations
+- Alembic is the standard migration interface for lifecycle metadata tables.
+- `DATABASE_URL` is the canonical database URL input for migration commands.
+- `parity.persistence.apply_migrations(...)` remains available as an internal helper for tests and bootstrapping, but normal repo operations should use Alembic commands.
+- The current Alembic scope is limited to lifecycle metadata tables: `documents`, `lifecycle_events`, and `document_jobs`.
+- The SQLite compatibility seam for `Document`, `Section`, and `Chunk` remains in place and is not yet migrated into Alembic-managed runtime tables.
+
 ## Troubleshooting
 - If imports fail, run `make sync` and `make install`.
 - If validation disagrees across environments, re-run the standard `fmt-check`, `lint`, `type`, `test`, and `verify` targets. Use `fmt` only when you want to apply automatic fixes.
+- If Alembic commands fail immediately, verify that `DATABASE_URL` is set and points at a reachable database.
 - If `make run` changes behavior, inspect `src/parity/cli.py` and `src/parity/retrieval.py` first because they define the current runtime surface.
 - If a doc describes ingestion, parsing, or grounded answering as already implemented, reconcile it with `docs/evergreen/architecture.md` and the actual code before treating it as current behavior.
 

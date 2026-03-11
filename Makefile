@@ -57,3 +57,13 @@ install-git-hooks: ## Configure git to use repo-managed hooks
 .PHONY: run
 run: install ## Run parity demo CLI
 	uv run python -m parity.cli
+
+.PHONY: migrate
+migrate: install ## Apply Alembic migrations using DATABASE_URL
+	@if [ -z "$(DATABASE_URL)" ]; then echo "DATABASE_URL is required"; exit 1; fi
+	uv run alembic -c alembic.ini upgrade head
+
+.PHONY: db-revision
+db-revision: install ## Create a new Alembic revision with MESSAGE="..."
+	@if [ -z "$(MESSAGE)" ]; then echo "MESSAGE is required"; exit 1; fi
+	uv run alembic -c alembic.ini revision -m "$(MESSAGE)"
