@@ -1639,47 +1639,57 @@ These questions are intentionally left outside the MVP lifecycle design:
 
 # 18. Implementation checklist
 
+Actuality check as of 2026-03-11: the lifecycle scope described in this workstream is now implemented in the repo. The checklist below reflects current seams and validation rather than the original draft to-do list.
+
 ## Core
 
-* [ ] implement `Document` and lifecycle persistence models
-* [ ] implement job queue and worker
-* [ ] implement lifecycle state validation
-* [ ] implement upload intake and raw artifact storage
+* [x] implement durable document registration with checksum capture, raw artifact linkage, and initial lifecycle event persistence
+* [x] implement document, lifecycle event, and document job persistence models and repositories
+* [x] implement document-scoped job orchestration and worker execution
+* [x] implement lifecycle state validation and failure transition handling
+* [x] implement upload intake with source-type validation and raw artifact storage
+* [x] implement internal runtime routes for upload, status, artifact inspection, retry, retrieval smoke queries, and worker drain
 
 ## Extraction and normalization
 
-* [ ] implement Markdown extractor
-* [ ] implement PDF extractor
-* [ ] define extracted artifact schema
-* [ ] define normalized artifact schema
-* [ ] implement Markdown normalizer
-* [ ] implement PDF normalizer with conservative heading inference
+* [x] define extracted artifact schema and persistence
+* [x] define normalized artifact schema and persistence
+* [x] implement Markdown extractor
+* [x] implement PDF extractor
+* [x] implement Markdown normalizer
+* [x] implement PDF normalizer with conservative heading inference and synthetic fallback behavior
 
 ## Structure and chunks
 
-* [ ] implement section derivation
-* [ ] implement chunking policy
-* [ ] persist sections and chunks with integrity checks
+* [x] implement section derivation
+* [x] implement chunking policy
+* [x] persist sections and chunks with integrity checks
+* [x] preserve provenance-bearing source navigation data on ready chunks
+* [x] implement replace-on-retry cleanup for downstream sections and chunks
 
 ## Publication and readiness
 
-* [ ] implement embedding adapter
-* [ ] implement Postgres-backed vector persistence adapter
-* [ ] persist index entries
-* [ ] implement readiness predicate
-* [ ] implement retrieval smoke checks
+* [x] implement embedding adapter
+* [x] implement persistence-backed vector publication with chunk embedding storage
+* [x] persist index entries and chunk embeddings
+* [x] implement cleanup of partial index publication on failure
+* [x] implement readiness predicate over persisted normalized artifacts, sections, chunks, and index entries
+* [x] implement document-scoped retrieval smoke checks
+* [x] implement retry reset and cleanup semantics for failed post-registration stages
 
 ## Validation
 
-* [ ] contract tests
-* [ ] pipeline tests for PDF and Markdown to `READY`
-* [ ] failure-path tests
-* [ ] persistence integrity tests
+* [x] contract tests for lifecycle semantics and contract seams
+* [x] stage tests for register, extract, normalize, section, chunk, index, and ready transitions
+* [x] pipeline tests for PDF and Markdown to `READY`
+* [x] failure-path and retry-recovery tests
+* [x] persistence round-trip, replacement, integrity, and migration tests
+* [x] artifact store and normalized payload regression tests
 
 ---
 
 # 19. Bottom line
 
-For MVP, the correct architecture is a single-node Python service with internal HTTP endpoints, a new domain layer, Postgres-backed orchestration and vector persistence, persisted normalized artifacts, conservative PDF structure recovery, section-first chunking, separate index publication, and a strict readiness predicate tied to persisted provenance-bearing artifacts plus a real retrieval smoke call.
+For MVP, the correct architecture is a single-node Python service with internal HTTP endpoints, a new domain layer, SQL-backed orchestration and persistence-backed vector publication, persisted normalized artifacts, conservative PDF structure recovery, section-first chunking, separate index publication, and a strict readiness predicate tied to persisted provenance-bearing artifacts plus a real retrieval smoke call.
 
 That is the smallest design that satisfies the lifecycle requirements without broadening the MVP scope.

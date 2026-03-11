@@ -15,6 +15,10 @@ artifacts/
 !src/parity/artifacts/**
 !tests/artifacts/
 !tests/artifacts/**
+src/parity/artifacts/**/__pycache__/
+src/parity/artifacts/**/*.py[cod]
+tests/artifacts/**/__pycache__/
+tests/artifacts/**/*.py[cod]
 *.egg-info/
 .eggs/
 *.egg
