@@ -83,6 +83,19 @@ This rule is non-negotiable because it protects trust semantics:
 
 The query subsystem must treat `READY` as the hard boundary between “ingested but not trustworthy for answering” and “allowed evidence source.”
 
+### 2.5 Corpus snapshot boundary
+
+Each query run must execute against a stable corpus snapshot.
+
+For MVP, the simplest acceptable definition is:
+
+- the active corpus is the set of `READY` documents visible in the workspace at query start;
+- retrieval, selection, support assessment, and citation rendering all read against that same snapshot;
+- documents becoming `READY` after query start do not join the in-flight query;
+- documents leaving queryability after query start do not silently disappear from the in-flight trace.
+
+The query response and persisted trace must therefore be interpretable against a known query-time corpus boundary rather than an implicitly shifting latest state.
+
 ## 3. Primary bounded contexts
 
 The query architecture should be organized into bounded contexts derived from semantics, not from framework layers.
@@ -115,7 +128,7 @@ Responsibilities:
 - assess support against requested answer shape;
 - decide the correct answer mode;
 - generate grounded answer text;
-- produce citation-ready fragment linkage.
+- produce citation-ready answer support.
 
 This domain owns the end-to-end query path and the invariants that must survive all implementation changes.
 
@@ -127,7 +140,7 @@ Responsibilities:
 
 - query embedding generation;
 - optional learned reranking later;
-- structured LLM calls for interpretation, support assessment, answer-mode assistance, and grounded generation;
+- structured LLM calls for interpretation, support assessment, and grounded generation;
 - schema validation around model outputs.
 
 Inference adapters must not become the architectural center of gravity. Model providers may change. The semantic stage contracts must remain stable.
@@ -140,7 +153,7 @@ Responsibilities:
 
 - persist stage outputs;
 - persist rankings, evidence sets, and context manifests;
-- persist support-state decisions and answer-mode decisions;
+- persist support-state decisions, qualifying reasons, and answer-mode decisions;
 - persist final answer text and citation bundles;
 - preserve enough information to reproduce failure localization and evaluation outcomes.
 
@@ -164,7 +177,8 @@ Before interpretation begins, the service must validate:
 - the workspace exists;
 - the request is authorized to see that workspace;
 - the active query corpus is bounded and known;
-- only `READY` documents are eligible for retrieval.
+- only `READY` documents are eligible for retrieval;
+- the query will read against a stable corpus snapshot.
 
 ### 4.2 Interpretation
 
@@ -209,13 +223,14 @@ This stage prepares explicit evidence sets rather than relying on a naive top-k 
 
 Selected candidates are organized into explicit evidence sets.
 
-An evidence set may be:
+For MVP, an evidence set may be:
 
 - a single passage that directly supports a narrow factual answer;
-- a passage plus adjacent supporting passage for local coherence;
+- a passage plus an adjacent supporting passage for local coherence;
 - multiple passages from the same document for section-scoped explanation;
-- multiple passages across documents for synthesis;
-- a deliberate conflicting-source set when material divergence is detected.
+- a small cross-document set when the query clearly requires synthesis.
+
+Conflict handling must be represented, but sophisticated reconciliation is not an MVP default behavior. The first implementation should preserve divergence explicitly and allow downstream abstention or qualified output rather than attempting aggressive normalization across disagreeing sources.
 
 This is the stage that converts “related retrieved text” into “supportable evidence structure.”
 
@@ -237,27 +252,37 @@ The unit of truncation should normally be the lower-value evidence set, not arbi
 
 The assembled evidence is evaluated against the requested answer shape.
 
-Support assessment must determine whether the query is:
+Support assessment must determine a canonical support state using the source-of-truth support semantics:
 
-- `SUPPORTED`;
-- `PARTIALLY_SUPPORTED`;
-- `UNSUPPORTED_IN_CORPUS`;
-- `UNSUPPORTED_QUESTION_TYPE`;
-- `AMBIGUOUS_OR_CONFLICTING`.
+- `SUFFICIENT`
+- `PARTIAL`
+- `INSUFFICIENT`
+
+Support assessment may also attach qualifying reasons and review notes such as:
+
+- unsupported question type;
+- ambiguity;
+- material conflict across sources;
+- provenance weakness;
+- missing evidence for one or more required sub-questions.
 
 This stage must evaluate support sufficiency, not just topical relevance.
 
 ### 4.8 Answer-mode decision
 
-The service translates the support state into answer posture.
+The service translates the support state plus qualifying reasons into answer posture.
 
 Required behavior:
 
-- `SUPPORTED` -> direct answer with inspectable citation support;
-- `PARTIALLY_SUPPORTED` -> narrow or qualify the answer;
-- `UNSUPPORTED_IN_CORPUS` -> abstain or state that the corpus lacks enough support;
-- `UNSUPPORTED_QUESTION_TYPE` -> explicit capability-boundary response;
-- `AMBIGUOUS_OR_CONFLICTING` -> surface disagreement or uncertainty.
+- `SUFFICIENT` -> direct answer with inspectable citation support;
+- `PARTIAL` -> narrowed or explicitly qualified answer;
+- `INSUFFICIENT` -> abstain, scoped abstain, or explicit corpus-boundary response.
+
+Qualifying reasons may further constrain the posture. For example:
+
+- unsupported question type -> capability-boundary response;
+- ambiguity -> narrowed answer or abstention pending clarification policy;
+- material conflict -> qualified uncertainty or explicit disagreement surface.
 
 Answer mode is a guardrail between support assessment and generation. It exists to prevent the generator from broadening or overclaiming.
 
@@ -274,13 +299,15 @@ Generation may paraphrase and synthesize only when the support state permits it.
 
 ### 4.10 Citation rendering
 
-The service maps answer fragments to evidence anchors and renders inspectable citations.
+The service renders inspectable citations from stored provenance.
 
 Minimum MVP provenance expectations:
 
 - **PDF**: document identity plus page;
 - **Markdown**: document identity plus heading path, section path, or equivalent stable local locator;
 - **cross-document synthesis**: one usable citation per materially contributing source.
+
+The MVP does not require exact paragraph- or sentence-level anchoring. Citations must be recoverable, materially correct, and useful for inspection.
 
 ### 4.11 Trace persistence and response
 
@@ -291,9 +318,9 @@ The service persists the full query trace and returns:
 - answer mode;
 - visible limitations when applicable;
 - inspectable citations;
-- query identifier for later trace or replay.
+- query identifier for later trace lookup.
 
-## 5. Core domain objects
+## 5. Canonical semantic objects
 
 The subsystem should make the core semantic objects explicit in code, ideally as internal domain models and Pydantic contracts.
 
@@ -365,17 +392,16 @@ Usually this is a passage, optionally enriched with:
 
 ### 5.5 EvidenceSet
 
-Represents one or more evidence units sufficient to support a claim or answer fragment.
+Represents one or more evidence units treated as a coherent support structure.
 
 Suggested fields:
 
 - `evidence_set_id`
 - `purpose`
 - `units`
-- `supporting_claims`
-- `completeness_score`
-- `conflict_flags`
 - `coverage_notes`
+- `conflict_flags`
+- `assembly_reason`
 
 The evidence set is critical because support often depends on grouped evidence rather than isolated passages.
 
@@ -397,17 +423,17 @@ This object is needed for determinism, debugging, and evaluation.
 
 ### 5.7 SupportAssessment
 
-Represents the support-state judgment.
+Represents the canonical support judgment.
 
 Suggested fields:
 
 - `support_state`
+- `qualifying_reasons`
 - `rationale`
 - `supported_subquestions`
 - `unsupported_gaps`
 - `conflicting_sources`
-- `required_citation_shape`
-- `confidence_notes`
+- `provenance_notes`
 
 This object is not optional. It is the primary semantic control point for honest answering.
 
@@ -432,7 +458,7 @@ Suggested fields:
 
 - `text`
 - `visible_limitations`
-- `fragment_links`
+- `support_notes`
 - `render_warnings`
 
 ### 5.10 CitationBundle
@@ -441,7 +467,6 @@ Represents the rendered provenance attached to answer content.
 
 Suggested fields:
 
-- `answer_fragment_id`
 - `anchors`
 - `doc_titles`
 - `locators`
@@ -474,7 +499,7 @@ It must not silently broaden the question or reduce a precise request into gener
 Recommended implementation:
 
 - dense-first retrieval over passage vectors;
-- hard filter to `READY` documents in the active workspace;
+- hard filter to `READY` documents in the active workspace snapshot;
 - metadata-preserving retrieval output;
 - no use of external-world search.
 
@@ -504,13 +529,18 @@ The goal is not only “most similar text.” The goal is “best supportable ev
 
 This stage should convert reranked candidates into meaningful support structures.
 
-Required capabilities:
+Required MVP capabilities:
 
 - single-passage support for narrow factual answers;
 - neighboring-passage expansion where local coherence matters;
 - multi-passage same-document grouping for explanations;
-- cross-document grouping for synthesis;
-- conflict-aware grouping when sources diverge.
+- small cross-document grouping for clear synthesis tasks.
+
+Out of scope for first implementation as default behavior:
+
+- heavy claim decomposition;
+- exhaustive contradiction reconciliation;
+- fine-grained claim graph construction.
 
 The builder should prefer explicit evidence grouping over implicit prompt-side assumptions.
 
@@ -532,7 +562,7 @@ The context assembler owns prompt composition mechanics, but not support-state j
 Recommended implementation:
 
 - hybrid approach;
-- deterministic pre-checks for obvious unsupported question types and provenance insufficiency;
+- deterministic pre-checks for obvious unsupported question types, empty evidence, and provenance insufficiency;
 - structured LLM judgment over interpreted query plus evidence sets plus context manifest;
 - deterministic post-rules that can preserve or narrow, but never widen, support.
 
@@ -542,7 +572,7 @@ This stage must judge evidence sufficiency against the requested answer shape. I
 
 Recommended implementation:
 
-- deterministic mapping from support state to allowed posture;
+- deterministic mapping from support state plus qualifying reasons to allowed posture;
 - explicit handling of direct answer, narrowed answer, qualified answer, full abstention, scoped abstention, and qualified uncertainty;
 - optional generation hints derived from the chosen posture.
 
@@ -553,7 +583,6 @@ This stage should be implemented as policy logic, not as a prompt suggestion.
 Recommended implementation:
 
 - one grounded generation call that consumes answer mode and supportable evidence only;
-- structured fragment linkage output where feasible;
 - no hidden widening of answer scope.
 
 Generation rules:
@@ -569,7 +598,7 @@ Generation rules:
 Recommended implementation:
 
 - derive citations from stored provenance, not from model invention;
-- attach answer fragments to one or more evidence anchors;
+- attach the final answer to one or more evidence anchors at MVP inspection granularity;
 - preserve multi-source bundles where multiple sources materially contribute.
 
 Citation quality requirements:
@@ -582,9 +611,20 @@ Citation quality requirements:
 
 ## 7. Persistence model
 
-The query subsystem should persist stage artifacts in Postgres so that behavior remains inspectable and replayable.
+The query subsystem should persist enough stage artifacts in Postgres for inspection, debugging, and evaluation, but should avoid premature over-normalization in MVP.
 
-### 7.1 Query run records
+### 7.1 Persistence principles
+
+The MVP persistence model should prioritize:
+
+- durable traceability of query-time decisions;
+- inspection of retrieval quality and support judgment;
+- storage of final answer and rendered citations;
+- room to evolve into more normalized structures later without breaking semantic contracts.
+
+The first implementation should prefer a small number of durable records with structured JSON payloads over a large table graph whose shape is not yet proven by runtime and eval pressure.
+
+### 7.2 Query run records
 
 Suggested table: `query_run`
 
@@ -592,7 +632,7 @@ Purpose:
 
 - one durable record per query request;
 - links the final answer to the complete runtime trace;
-- stores workspace boundary, timestamps, and terminal status.
+- stores workspace boundary, corpus snapshot boundary, timestamps, and terminal status.
 
 Suggested columns:
 
@@ -601,92 +641,61 @@ Suggested columns:
 - `user_text`
 - `requested_answer_shape`
 - `status`
+- `corpus_snapshot_json`
 - `created_at`
 - `completed_at`
 - `config_snapshot_json`
 
-### 7.2 Interpretation records
+### 7.3 Stage trace records
 
-Suggested table: `query_interpretation`
-
-Purpose:
-
-- persist structured interpretation output;
-- preserve answer-shape and scope assumptions used downstream.
-
-### 7.3 Retrieval candidate records
-
-Suggested table: `query_retrieval_candidate`
+Suggested table: `query_stage_trace`
 
 Purpose:
 
-- persist all retrieved candidates, not only winners;
-- preserve ranking and provenance;
-- support debugging of retrieval misses and thresholding errors.
+- persist stage-level artifacts as structured payloads;
+- preserve interpretation, retrieval, evidence selection, context assembly, and support decisions without forcing premature normalization;
+- support debugging, replay inputs, and evaluation.
 
-### 7.4 Evidence set records
+Suggested columns:
 
-Suggested tables:
+- `id`
+- `query_run_id`
+- `stage_name`
+- `stage_order`
+- `payload_json`
+- `created_at`
 
-- `query_evidence_set`
-- `query_evidence_set_member`
+At minimum, stage traces should exist for:
 
-Purpose:
+- interpretation;
+- retrieval;
+- selection;
+- evidence-set construction;
+- context assembly;
+- support assessment;
+- answer-mode decision.
 
-- persist explicit evidence grouping;
-- preserve how supportable units were formed;
-- enable review of grouping quality and conflict handling.
-
-### 7.5 Context manifest records
-
-Suggested tables:
-
-- `query_context_manifest`
-- `query_context_item`
-
-Purpose:
-
-- persist the actual ordered context seen by the generator;
-- preserve dropped evidence, truncation reasons, and deterministic ordering decisions.
-
-### 7.6 Support assessment records
-
-Suggested table: `query_support_assessment`
-
-Purpose:
-
-- persist the canonical support-state decision;
-- preserve rationale and unsupported gaps;
-- make answer-policy debugging possible.
-
-### 7.7 Answer mode records
-
-Suggested table: `query_answer_mode`
-
-Purpose:
-
-- record the chosen answer posture independently from generation;
-- allow inspection of whether generation violated policy.
-
-### 7.8 Answer records
+### 7.4 Answer records
 
 Suggested table: `query_answer`
 
 Purpose:
 
-- store final answer text and visible limitations;
-- support replay, comparison, and review.
+- store final answer text, visible limitations, canonical support state, qualifying reasons, and answer mode;
+- support replay comparison and review.
 
-### 7.9 Fragment-to-evidence linkage records
+Suggested columns:
 
-Suggested table: `query_answer_fragment_link`
+- `id`
+- `query_run_id`
+- `answer_text`
+- `support_state`
+- `qualifying_reasons_json`
+- `answer_mode`
+- `visible_limitations_json`
+- `created_at`
 
-Purpose:
-
-- preserve evidence-to-answer traceability at fragment granularity where available;
-- support citation rendering and review.
-
-### 7.10 Citation records
+### 7.5 Citation records
 
 Suggested table: `query_citation`
 
@@ -695,7 +704,29 @@ Purpose:
 - persist final citation bundles and rendered locators;
 - make provenance defects inspectable.
 
-### 7.11 Failure and diagnostic records
+Suggested columns:
+
+- `id`
+- `query_run_id`
+- `citation_index`
+- `doc_id`
+- `locator_json`
+- `support_role`
+- `notes_json`
+
+### 7.6 Optional normalized retrieval records
+
+Suggested table: `query_retrieval_candidate`
+
+Purpose:
+
+- persist all retrieved candidates when retrieval analysis requires SQL-level inspection;
+- preserve ranking and provenance;
+- support debugging of retrieval misses and thresholding errors.
+
+This table is useful, but it is optional for MVP if equivalent information is preserved in the retrieval stage trace payload.
+
+### 7.7 Failure and diagnostic records
 
 Suggested table: `query_failure`
 
@@ -770,11 +801,11 @@ Returns normalized citation objects detached from the full trace.
 
 This is useful for validation and inspection tooling.
 
-### 8.5 `POST /queries/{query_id}/replay`
+### 8.5 Replay handling
 
-Optional internal endpoint to rerun a query against the same boundary and config snapshot.
+Replay is useful for regression and operator debugging, especially while the subsystem is still being hardened. For MVP, replay should exist first as an internal service capability and test harness primitive.
 
-This is useful for regression and operator debugging, especially while the subsystem is still being hardened.
+Do not make `POST /queries/{query_id}/replay` part of the required HTTP surface until the replay contract is proven to be stable and genuinely needed outside tests or operator tooling.
 
 ### 8.6 API design notes
 
@@ -800,6 +831,7 @@ src/<app>/
 
     contracts/
       requests.py
+      responses.py
       trace.py
       citations.py
 
@@ -844,4 +876,70 @@ src/<app>/
     schemas.py
 ```
 
-This is a target internal module layout for the future query subsystem inside the existing service, not a statement of current implementation.
+This is a target internal module layout for the query subsystem inside the existing service, not a commitment to premature package fragmentation. During MVP implementation, prefer fewer modules with clear semantic ownership over many thin files whose boundaries are not yet justified.
+
+## 10. Policy defaults required before implementation
+
+Before implementation starts, the subsystem should freeze a small set of query-time defaults so behavior remains deterministic and reviewable.
+
+At minimum, the design must carry explicit defaults for:
+
+- retrieval candidate count and any retrieval floor or threshold;
+- neighboring-passage expansion policy;
+- duplicate suppression policy;
+- evidence-set size bounds;
+- context token budget and drop order;
+- deterministic tie-break rules;
+- mapping from support state plus qualifying reasons to answer mode;
+- citation rendering rules at MVP locator granularity.
+
+These defaults do not need to be optimal at the start, but they do need to be explicit. Hidden policy in prompts or ad hoc heuristics will make the subsystem hard to validate.
+
+## 11. Evaluation and acceptance contract
+
+The architecture is not complete unless it states how the query path will be judged.
+
+The query subsystem should therefore define acceptance at three levels.
+
+### 11.1 Stage-level acceptance
+
+Each major stage should be inspectable and testable in isolation.
+
+Examples:
+
+- interpretation preserves answer shape and does not silently broaden scope;
+- retrieval returns provenance-bearing candidates only from the query-time corpus snapshot;
+- selection improves support quality rather than only semantic similarity;
+- support assessment distinguishes sufficient, partial, and insufficient evidence;
+- answer mode never widens posture beyond assessed support;
+- citations resolve to real document-local anchors.
+
+### 11.2 End-to-end acceptance
+
+End-to-end evaluation should check whether the overall answer behavior respects the MVP trust contract.
+
+Required query classes include:
+
+- direct factual lookup;
+- section-scoped explanation;
+- one-document synthesis;
+- cross-document synthesis within MVP limits;
+- unsupported-in-corpus cases;
+- unsupported-question-type cases;
+- ambiguous or materially conflicting evidence cases;
+- provenance-sensitive cases.
+
+### 11.3 Failure-oriented acceptance
+
+The design should be validated against the primary trust failures, including:
+
+- unsupported answer;
+- partial evidence presented as complete;
+- incorrect abstention;
+- missing abstention;
+- incorrect provenance;
+- provenance too weak for inspection;
+- scope-boundary failure;
+- document-lifecycle defect surfacing as query-time trust failure.
+
+A query run is acceptable only if its answer behavior and its trace agree about what the evidence supported and why the selected answer mode was permitted.
