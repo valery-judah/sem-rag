@@ -3,108 +3,167 @@ from __future__ import annotations
 import hashlib
 
 import pytest
-from fastapi.testclient import TestClient
+from fastapi import FastAPI, HTTPException
 
-from parity.app.api import create_app
-from parity.app.deps import reset_runtime_caches
-from parity.persistence import apply_migrations
+from parity.app.deps import get_document_lifecycle_service
+from parity.artifacts import FilesystemArtifactStore
+from parity.stages import DocumentRegistrationError, RegisterDocumentStage
 
-
-@pytest.fixture
-def client(tmp_path, monkeypatch) -> TestClient:
-    database_path = tmp_path / "documents-api.db"
-    artifact_root = tmp_path / "artifacts"
-    db_url = f"sqlite+pysqlite:///{database_path}"
-    apply_migrations(db_url)
-    monkeypatch.setenv("DATABASE_URL", db_url)
-    monkeypatch.setenv("PARITY_ARTIFACT_ROOT", str(artifact_root))
-    reset_runtime_caches()
-
-    app = create_app()
-    with TestClient(app) as test_client:
-        yield test_client
-
-    reset_runtime_caches()
+pytestmark = pytest.mark.anyio
 
 
-def test_pdf_upload_registers_successfully(client: TestClient) -> None:
-    payload = b"%PDF-1.7\n1 0 obj\n"
-    response = client.post(
-        "/documents",
-        data={"workspace_id": "ws-1", "title": "System Design"},
-        files={"file": ("system-design.pdf", payload, "application/pdf")},
+def _upload_endpoint(app: FastAPI):
+    for route in app.routes:
+        if getattr(route, "path", None) == "/documents" and "POST" in route.methods:
+            return route.endpoint
+    raise AssertionError("upload route was not found")
+
+
+class _UploadFileStub:
+    def __init__(self, *, filename: str, content: bytes) -> None:
+        self.filename = filename
+        self._content = content
+
+    async def read(self) -> bytes:
+        return self._content
+
+
+def _upload_file(filename: str, content: bytes) -> _UploadFileStub:
+    return _UploadFileStub(filename=filename, content=content)
+
+
+def _service(sql_engine, tmp_path):
+    return get_document_lifecycle_service(
+        engine=sql_engine,
+        artifact_store=FilesystemArtifactStore(tmp_path / "artifacts"),
     )
 
-    assert response.status_code == 201
-    assert response.json() == {
-        "doc_id": response.json()["doc_id"],
+
+async def test_pdf_upload_registers_successfully(app: FastAPI, sql_engine, tmp_path) -> None:
+    payload = b"%PDF-1.7\n1 0 obj\n"
+
+    result = await _upload_endpoint(app)(
+        workspace_id="ws-1",
+        file=_upload_file("system-design.pdf", payload),
+        service=_service(sql_engine, tmp_path),
+        title="System Design",
+    )
+
+    assert result.model_dump() == {
+        "doc_id": result.doc_id,
         "ingest_status": "registered",
         "source_type": "pdf",
         "filename": "system-design.pdf",
         "title": "System Design",
-        "uploaded_at": response.json()["uploaded_at"],
+        "uploaded_at": result.uploaded_at,
         "checksum": f"sha256:{hashlib.sha256(payload).hexdigest()}",
     }
 
 
-def test_markdown_upload_registers_successfully(client: TestClient) -> None:
-    response = client.post(
-        "/documents",
-        data={"workspace_id": "ws-1", "title": "Ops Notes"},
-        files={"file": ("ops-notes.md", b"# Ops\n\nThis is UTF-8 markdown.\n", "text/markdown")},
-    )
-
-    body = response.json()
-
-    assert response.status_code == 201
-    assert body["ingest_status"] == "registered"
-    assert body["source_type"] == "markdown"
-    assert body["filename"] == "ops-notes.md"
-    assert body["title"] == "Ops Notes"
-    assert body["checksum"].startswith("sha256:")
-
-
-def test_unsupported_extension_is_rejected_explicitly(client: TestClient) -> None:
-    response = client.post(
-        "/documents",
-        data={"workspace_id": "ws-1"},
-        files={"file": ("notes.txt", b"plain text", "text/plain")},
-    )
-
-    assert response.status_code == 415
-    assert "text-based PDF and Markdown" in response.json()["detail"]
-
-
-def test_fake_pdf_content_with_pdf_extension_is_rejected_explicitly(
-    client: TestClient,
+async def test_markdown_upload_registers_successfully(
+    app: FastAPI,
+    sql_engine,
+    tmp_path,
 ) -> None:
-    response = client.post(
-        "/documents",
-        data={"workspace_id": "ws-1"},
-        files={"file": ("notes.pdf", b"not really a pdf", "application/pdf")},
+    result = await _upload_endpoint(app)(
+        workspace_id="ws-1",
+        file=_upload_file("ops-notes.md", b"# Ops\n\nThis is UTF-8 markdown.\n"),
+        service=_service(sql_engine, tmp_path),
+        title="Ops Notes",
     )
 
-    assert response.status_code == 415
-    assert "PDF header bytes" in response.json()["detail"]
+    assert result.ingest_status.value == "registered"
+    assert result.source_type.value == "markdown"
+    assert result.filename == "ops-notes.md"
+    assert result.title == "Ops Notes"
+    assert result.checksum.startswith("sha256:")
 
 
-def test_unsupported_png_is_rejected_explicitly(client: TestClient) -> None:
-    response = client.post(
-        "/documents",
-        data={"workspace_id": "ws-1"},
-        files={"file": ("image.png", b"\x89PNG\r\n\x1a\n", "image/png")},
+async def test_unsupported_extension_is_rejected_explicitly(
+    app: FastAPI,
+    sql_engine,
+    tmp_path,
+) -> None:
+    with pytest.raises(HTTPException) as exc_info:
+        await _upload_endpoint(app)(
+            workspace_id="ws-1",
+            file=_upload_file("notes.txt", b"plain text"),
+            service=_service(sql_engine, tmp_path),
+            title=None,
+        )
+
+    assert exc_info.value.status_code == 415
+    assert "text-based PDF and Markdown" in exc_info.value.detail
+
+
+async def test_fake_pdf_content_with_pdf_extension_is_rejected_explicitly(
+    app: FastAPI,
+    sql_engine,
+    tmp_path,
+) -> None:
+    with pytest.raises(HTTPException) as exc_info:
+        await _upload_endpoint(app)(
+            workspace_id="ws-1",
+            file=_upload_file("notes.pdf", b"not really a pdf"),
+            service=_service(sql_engine, tmp_path),
+            title=None,
+        )
+
+    assert exc_info.value.status_code == 415
+    assert "PDF header bytes" in exc_info.value.detail
+
+
+async def test_unsupported_png_is_rejected_explicitly(
+    app: FastAPI,
+    sql_engine,
+    tmp_path,
+) -> None:
+    with pytest.raises(HTTPException) as exc_info:
+        await _upload_endpoint(app)(
+            workspace_id="ws-1",
+            file=_upload_file("image.png", b"\x89PNG\r\n\x1a\n"),
+            service=_service(sql_engine, tmp_path),
+            title=None,
+        )
+
+    assert exc_info.value.status_code == 415
+    assert "text-based PDF and Markdown" in exc_info.value.detail
+
+
+async def test_omitted_title_falls_back_to_filename_stem(
+    app: FastAPI,
+    sql_engine,
+    tmp_path,
+) -> None:
+    result = await _upload_endpoint(app)(
+        workspace_id="ws-1",
+        file=_upload_file("team-playbook.markdown", b"# Team Playbook\n"),
+        service=_service(sql_engine, tmp_path),
+        title=None,
     )
 
-    assert response.status_code == 415
-    assert "text-based PDF and Markdown" in response.json()["detail"]
+    assert result.title == "team-playbook"
 
 
-def test_omitted_title_falls_back_to_filename_stem(client: TestClient) -> None:
-    response = client.post(
-        "/documents",
-        data={"workspace_id": "ws-1"},
-        files={"file": ("team-playbook.markdown", b"# Team Playbook\n", "text/markdown")},
-    )
+async def test_upload_route_maps_registration_error_to_500(
+    app: FastAPI,
+    sql_engine,
+    tmp_path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def _raise_registration_error(self, request):  # type: ignore[no-untyped-def]
+        del self, request
+        raise DocumentRegistrationError("synthetic registration failure")
 
-    assert response.status_code == 201
-    assert response.json()["title"] == "team-playbook"
+    monkeypatch.setattr(RegisterDocumentStage, "run", _raise_registration_error)
+
+    with pytest.raises(HTTPException) as exc_info:
+        await _upload_endpoint(app)(
+            workspace_id="ws-1",
+            file=_upload_file("doc.md", b"# Doc\n"),
+            service=_service(sql_engine, tmp_path),
+            title=None,
+        )
+
+    assert exc_info.value.status_code == 500
+    assert exc_info.value.detail == "document registration failed"

@@ -1,0 +1,70 @@
+{
+  "doc_id": "fixture-smoke",
+  "source_type": "markdown",
+  "extractor_version": "markdown-v1",
+  "pages": [
+    {
+      "page_number": 1,
+      "blocks": [
+        {
+          "kind": "heading",
+          "text": "# Lifecycle Smoke",
+          "order_index": 0,
+          "source_start_offset": 0,
+          "source_end_offset": 17,
+          "meta": null
+        },
+        {
+          "kind": "text",
+          "text": "This markdown fixture exercises the extracted and normalized artifact pipeline.",
+          "order_index": 1,
+          "source_start_offset": 19,
+          "source_end_offset": 98,
+          "meta": null
+        },
+        {
+          "kind": "heading",
+          "text": "## Readiness",
+          "order_index": 2,
+          "source_start_offset": 100,
+          "source_end_offset": 112,
+          "meta": null
+        },
+        {
+          "kind": "text",
+          "text": "READY means retrievable and inspectable.",
+          "order_index": 3,
+          "source_start_offset": 114,
+          "source_end_offset": 154,
+          "meta": null
+        },
+        {
+          "kind": "text",
+          "text": "- status progression stays explicit",
+          "order_index": 4,
+          "source_start_offset": 156,
+          "source_end_offset": 191,
+          "meta": null
+        },
+        {
+          "kind": "text",
+          "text": "> failure remains attributable",
+          "order_index": 5,
+          "source_start_offset": 193,
+          "source_end_offset": 223,
+          "meta": null
+        },
+        {
+          "kind": "code",
+          "text": "```text\nCHUNKED -> INDEXED -> READY\n```",
+          "order_index": 6,
+          "source_start_offset": 225,
+          "source_end_offset": 264,
+          "meta": null
+        }
+      ]
+    }
+  ],
+  "warnings": [],
+  "meta": null
+}

@@ -11,6 +11,10 @@ __pycache__/
 build/
 dist/
 artifacts/
+!src/parity/artifacts/
+!src/parity/artifacts/**
+!tests/artifacts/
+!tests/artifacts/**
 *.egg-info/
 .eggs/
 *.egg

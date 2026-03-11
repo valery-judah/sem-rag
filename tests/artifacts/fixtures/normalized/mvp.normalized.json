@@ -1,0 +1,138 @@
+{
+  "doc_id": "fixture-mvp",
+  "source_type": "markdown",
+  "normalizer_version": "markdown-v1",
+  "blocks": [
+    {
+      "kind": "heading",
+      "text": "MVP: Question-Answering Service over PDF Books and Markdown Files",
+      "order_index": 0,
+      "heading_level": 1,
+      "heading_path": [
+        "MVP: Question-Answering Service over PDF Books and Markdown Files"
+      ],
+      "page_number": 1,
+      "source_start_offset": 0,
+      "source_end_offset": 67,
+      "meta": {
+        "source_kind": "heading"
+      }
+    },
+    {
+      "kind": "heading",
+      "text": "1. Problem",
+      "order_index": 1,
+      "heading_level": 2,
+      "heading_path": [
+        "MVP: Question-Answering Service over PDF Books and Markdown Files",
+        "1. Problem"
+      ],
+      "page_number": 1,
+      "source_start_offset": 69,
+      "source_end_offset": 82,
+      "meta": {
+        "source_kind": "heading"
+      }
+    },
+    {
+      "kind": "paragraph",
+      "text": "Users often have collections of technical books, manuals, notes, and internal documents in PDF and Markdown formats, but these materials are difficult to query as a single knowledge source.",
+      "order_index": 2,
+      "heading_level": null,
+      "heading_path": [
+        "MVP: Question-Answering Service over PDF Books and Markdown Files",
+        "1. Problem"
+      ],
+      "page_number": 1,
+      "source_start_offset": 84,
+      "source_end_offset": 273,
+      "meta": {
+        "source_kind": "text"
+      }
+    },
+    {
+      "kind": "paragraph",
+      "text": "Basic file search or keyword search is often not enough because it does not reliably provide:",
+      "order_index": 3,
+      "heading_level": null,
+      "heading_path": [
+        "MVP: Question-Answering Service over PDF Books and Markdown Files",
+        "1. Problem"
+      ],
+      "page_number": 1,
+      "source_start_offset": 275,
+      "source_end_offset": 368,
+      "meta": {
+        "source_kind": "text"
+      }
+    },
+    {
+      "kind": "list_item",
+      "text": "- grounded answers based on the uploaded corpus\n- references back to the relevant source material\n- synthesis across multiple files",
+      "order_index": 4,
+      "heading_level": null,
+      "heading_path": [
+        "MVP: Question-Answering Service over PDF Books and Markdown Files",
+        "1. Problem"
+      ],
+      "page_number": 1,
+      "source_start_offset": 370,
+      "source_end_offset": 501,
+      "meta": {
+        "source_kind": "text"
+      }
+    },
+    {
+      "kind": "heading",
+      "text": "2. Goal",
+      "order_index": 5,
+      "heading_level": 2,
+      "heading_path": [
+        "MVP: Question-Answering Service over PDF Books and Markdown Files",
+        "2. Goal"
+      ],
+      "page_number": 1,
+      "source_start_offset": 503,
+      "source_end_offset": 513,
+      "meta": {
+        "source_kind": "heading"
+      }
+    },
+    {
+      "kind": "paragraph",
+      "text": "Build a service where a user can:",
+      "order_index": 6,
+      "heading_level": null,
+      "heading_path": [
+        "MVP: Question-Answering Service over PDF Books and Markdown Files",
+        "2. Goal"
+      ],
+      "page_number": 1,
+      "source_start_offset": 515,
+      "source_end_offset": 548,
+      "meta": {
+        "source_kind": "text"
+      }
+    },
+    {
+      "kind": "list_item",
+      "text": "- upload a focused collection of PDF books and Markdown files\n- ask natural-language questions over the whole collection\n- inspect which documents, pages, chapters, or sections informed the answer",
+      "order_index": 7,
+      "heading_level": null,
+      "heading_path": [
+        "MVP: Question-Answering Service over PDF Books and Markdown Files",
+        "2. Goal"
+      ],
+      "page_number": 1,
+      "source_start_offset": 550,
+      "source_end_offset": 746,
+      "meta": {
+        "source_kind": "text"
+      }
+    }
+  ],
+  "warnings": [],
+  "meta": {
+    "heading_count": "3"
+  }
+}
