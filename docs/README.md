@@ -10,7 +10,10 @@ Product Scope:
 - `docs/evergreen/mvp.md`: Canonical. Product north star and scope boundary.
 
 Implementation Truth:
-- `docs/evergreen/architecture.md`: Canonical. Current repo shape and implementation gap.
+- `docs/evergreen/architecture.md`: Canonical. Current architecture and implementation gap.
+
+Agent Routing:
+- `docs/evergreen/agent-routing.md`: Canonical. Coding-agent routing, implementation map, and edit starting points.
 
 Stable Interfaces:
 - `docs/evergreen/api-contracts.md`: Canonical. Stable runtime interfaces that exist today.
@@ -20,6 +23,12 @@ Commands And Validation:
 
 Evaluation Docs:
 - See `Evaluation Docs Map` below for the detailed route across evergreen, delivery, and workstream material.
+
+Query Work:
+- See `Query Docs Map` below for the canonical read order, current implementation truth, and WS-006 stage material.
+
+Context Building:
+- `docs/harness-maintain/context-building-playbook.md`: Reference only. Stable method for building context before phase-specific workstream discovery.
 
 ## Directory Map
 - `evergreen/`: current durable system truth and operational references
@@ -45,7 +54,8 @@ Failure Taxonomy:
 
 Product And Implementation Framing:
 - `docs/evergreen/mvp.md`: Canonical. Product north star and scope boundary.
-- `docs/evergreen/architecture.md`: Canonical. Current repo shape and implementation gap.
+- `docs/evergreen/architecture.md`: Canonical. Current architecture and implementation gap.
+- `docs/evergreen/agent-routing.md`: Canonical. Current code-entry routing and implementation map.
 
 Implementation Guidance:
 - `docs/delivery/workflow.md`: Reference only. Workflow and modeling guidance aligned to evergreen semantics.
@@ -55,6 +65,28 @@ Implementation Guidance:
 Execution History:
 - `docs/workstreams/WS-001-eval-harness/`: Execution history. Earlier eval-harness framing material.
 - `docs/workstreams/WS-002-semantic-lock/`: Execution history. Semantic-lock history and transition artifacts.
+
+## Query Docs Map
+Use this map when working on the query subsystem.
+
+Stable Context-Building Base:
+- `docs/evergreen/mvp.md`: Canonical. Product scope and trust boundary.
+- `docs/evergreen/architecture.md`: Canonical. Current architecture, earned seams, and implementation gap.
+- `docs/evergreen/agent-routing.md`: Canonical. Agent routes, owning files, and proving tests.
+- `docs/evergreen/api-contracts.md`: Canonical. Public-contract boundary. Internal query routes do not count as stable APIs.
+- `docs/harness-maintain/context-building-playbook.md`: Reference only. Stable navigation and proof-building method.
+
+WS-006 Execution Track:
+- `docs/workstreams/WS-006-query-lifecycle/query_subsystem_staged_implementation_plan.md`: Stage sequence and acceptance gates.
+- `docs/workstreams/WS-006-query-lifecycle/07_design.md`: Query architecture and runtime semantics.
+- `docs/workstreams/WS-006-query-lifecycle/11_stage-1-queryable-corpus-boundary-design.md`: Implemented Stage 1 note, including current routes and evergreen review.
+- `docs/workstreams/WS-006-query-lifecycle/12_stage-2-interpretation-foundation-design.md`: Implemented Stage 2 note, including current routes and evergreen review.
+
+Working Rule:
+- Start with the evergreen docs for stable context.
+- Use `docs/evergreen/architecture.md` for durable system shape and `docs/evergreen/agent-routing.md` for code-entry routing.
+- Then open the latest implemented WS-006 stage note before planning the next phase.
+- Treat workstream docs as execution history and local design notes unless evergreen docs explicitly promote a seam.
 
 ## Where New Work Goes
 - Put durable system descriptions and stable operating guidance in `docs/evergreen/`.

@@ -255,6 +255,78 @@ Stage 2 still does not implement:
 
 Those remain for later stages.
 
+## Evergreen Review
+
+Stable base reviewed during Stage 2:
+
+- `docs/evergreen/mvp.md`
+- `docs/evergreen/architecture.md`
+- `docs/evergreen/agent-routing.md`
+- `docs/evergreen/api-contracts.md`
+- `docs/evergreen/eval-support-semantics.md`
+
+Promoted or worthy of promotion from Stage 2:
+
+- deterministic interpreted-query contract and normalization as internal architecture
+- durable query stage traces as internal architecture
+- internal `/queries` route now executing through interpretation and stopping there explicitly
+
+Not promoted to stable public contract:
+
+- interpreted-query payload shape
+- stage trace payload schema
+- internal route response fields
+
+Why:
+
+- Stage 2 earned implemented internal seams and tests
+- the route and contracts are still intended to evolve before any public compatibility promise
+
+## Current Routes
+
+Start with the stable query context base in `docs/harness-maintain/context-building-playbook.md`.
+Then use the Stage 2-specific route below.
+
+1. [11_stage-1-queryable-corpus-boundary-design.md](../../../../../docs/workstreams/WS-006-query-lifecycle/11_stage-1-queryable-corpus-boundary-design.md)
+2. [contracts.py](../../../../../src/parity/query/contracts.py)
+3. [interpretation.py](../../../../../src/parity/query/interpretation.py)
+4. [interpret.py](../../../../../src/parity/query/stages/interpret.py)
+5. [service.py](../../../../../src/parity/query/service.py)
+6. [persistence.py](../../../../../src/parity/query/persistence.py)
+7. [api.py](../../../../../src/parity/app/api.py)
+8. [deps.py](../../../../../src/parity/app/deps.py)
+
+Then confirm in tests:
+
+1. [test_interpretation.py](../../../../../tests/query/test_interpretation.py)
+2. [test_query_service_interpret.py](../../../../../tests/query/test_query_service_interpret.py)
+3. [test_runtime_api.py](../../../../../tests/app/test_runtime_api.py)
+4. [test_postgres_migrations.py](../../../../../tests/persistence/test_postgres_migrations.py)
+
+## Context Building
+
+Stage 2 reuses the stable context-building base and the Stage 1 route, then adds only interpretation-specific discovery.
+
+Use the following order:
+
+1. stable context-building base from `docs/harness-maintain/context-building-playbook.md`
+2. Stage 1 implemented note to inherit the already-earned query boundary
+3. Stage 2 workstream note for interpretation-specific intent
+4. `src/parity/query/interpretation.py` and `src/parity/query/stages/interpret.py`
+5. `src/parity/query/service.py` and `src/parity/query/persistence.py`
+6. proving tests for interpretation semantics and trace persistence
+
+Supported by repo truth in Stage 2:
+
+- interpretation is now a real executable stage
+- interpretation artifacts persist as durable stage traces
+- `/queries` executes through interpretation before stopping
+
+Inference due to missing seam in Stage 2:
+
+- provider-backed LLM interpretation remains deferred because the repo still has no shared inference adapter boundary
+- interpretation currently uses snapshot input as a stage boundary artifact rather than a semantic signal source
+
 ## Log
 
 - 2026-03-11: drafted the Stage 2 repo-facing design to make interpretation an explicit executable stage after Stage 1 snapshot capture.

@@ -247,6 +247,101 @@ Stage 1 still does not implement:
 
 Those remain for later stages.
 
+## Evergreen Review
+
+Stable base reviewed during Stage 1:
+
+- `docs/evergreen/mvp.md`
+- `docs/evergreen/architecture.md`
+- `docs/evergreen/api-contracts.md`
+
+Promoted or worthy of promotion from Stage 1:
+
+- query-facing read model over lifecycle persistence
+- `READY`-only queryable corpus boundary
+- durable query runs and query snapshots as internal architecture
+- internal `POST /queries` as an implemented runtime seam, not a public contract
+
+Not promoted to stable public contract:
+
+- query request or response payload shapes
+- query package exports
+- internal route behavior
+
+Why:
+
+- Stage 1 earned internal architecture and proving tests, but not downstream compatibility guarantees
+- `docs/evergreen/api-contracts.md` still correctly says there is no stable public query API
+
+## Current Routes
+
+Use this route when extending or reviewing Stage 1 behavior.
+
+Stable base first:
+
+1. `docs/evergreen/mvp.md`
+2. `docs/evergreen/architecture.md`
+3. `docs/evergreen/agent-routing.md`
+4. `docs/evergreen/api-contracts.md`
+5. `docs/harness-maintain/context-building-playbook.md`
+6. `docs/workstreams/WS-006-query-lifecycle/query_subsystem_staged_implementation_plan.md`
+7. `docs/workstreams/WS-006-query-lifecycle/07_design.md`
+
+Then use the Stage 1-specific route:
+
+1. [documents.py](../../../../../src/parity/readmodels/documents.py)
+2. [service.py](../../../../../src/parity/query/service.py)
+3. [persistence.py](../../../../../src/parity/query/persistence.py)
+4. [api.py](../../../../../src/parity/app/api.py)
+5. [deps.py](../../../../../src/parity/app/deps.py)
+
+Then confirm in tests:
+
+1. [test_queryable_corpus_read_model.py](../../../../../tests/readmodels/test_queryable_corpus_read_model.py)
+2. [test_query_service_prepare.py](../../../../../tests/query/test_query_service_prepare.py)
+3. [test_runtime_api.py](../../../../../tests/app/test_runtime_api.py)
+
+## Context Building
+
+This is the actual discovery path that supported Stage 1 implementation.
+
+1. Staged plan:
+   - open `query_subsystem_staged_implementation_plan.md`
+   - answers: Stage 1 goal, acceptance gate, and prohibited scope expansion
+2. Evergreen docs:
+   - open `mvp.md`, `architecture.md`, `agent-routing.md`, and `api-contracts.md`
+   - answers: canonical scope, durable architecture, current routing, internal-vs-public boundary, and current repo truth
+3. Existing query scaffolding:
+   - open `src/parity/query/`
+   - answers: which contracts and service seams already exist
+4. Adjacent stage design:
+   - open `10_stage-0-foundation-design.md`
+   - answers: expected level of repo-facing specificity and Stage 0 carry-forward constraints
+5. Persistence and model seams:
+   - open `src/parity/persistence/`, `src/parity/_contracts/`, and `src/parity/lifecycle/status.py`
+   - answers: what `READY` means, what provenance exists, and what persistence can actually support
+6. Runtime wiring:
+   - open `src/parity/app/api.py` and `src/parity/app/deps.py`
+   - answers: where the internal route and service wiring should land
+7. Proving tests:
+   - open the Stage 1 tests listed above
+   - answers: whether the seam is implemented repo truth rather than just design intent
+
+Stable reusable rules for this method now live in:
+
+- `docs/harness-maintain/context-building-playbook.md`
+
+Supported by repo truth in Stage 1:
+
+- `READY` is the queryability boundary
+- query membership can be frozen via persisted `eligible_doc_ids`
+- internal route and persistence seams are implemented and tested
+
+Inference due to missing seam in Stage 1:
+
+- workspace existence can only be approximated by non-empty `workspace_id` plus document scoping because there is no workspace registry
+- `readiness_version` remains unset because there is no canonical readiness-version artifact
+
 ## Log
 
 - 2026-03-11: drafted the Stage 1 repo-facing design to define the queryable corpus boundary, snapshot persistence, and internal `/queries` route.
