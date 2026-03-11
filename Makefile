@@ -36,6 +36,10 @@ type: ## Run static type checks
 test: install ## Run unit tests
 	uv run pytest tests
 
+.PHONY: test-e2e
+test-e2e: install ## Run docker-backed end-to-end tests
+	uv run pytest tests/e2e -m e2e -o addopts=-q
+
 .PHONY: verify
 verify: fmt-check lint type test ## Run the read-only verification suite
 

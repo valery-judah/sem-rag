@@ -5,7 +5,12 @@ from datetime import UTC, datetime
 import pytest
 
 from parity._contracts import Chunk, ProcessingStatus, Section, SourceType
-from parity.indexing import ChunkEmbedding, DeterministicEmbeddingAdapter, IndexEntry, SqlVectorStore
+from parity.indexing import (
+    ChunkEmbedding,
+    DeterministicEmbeddingAdapter,
+    IndexEntry,
+    SqlVectorStore,
+)
 from parity.persistence import (
     DocumentJobStage,
     PersistedDocument,

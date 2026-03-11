@@ -15,6 +15,7 @@ make install
 make run
 make run-api
 make run-worker
+make test-e2e
 ```
 
 Lifecycle metadata migrations use Alembic with `DATABASE_URL`:
@@ -47,7 +48,13 @@ make fmt-check
 make lint
 make type
 make test
+make test-e2e
 make verify
+```
+
+Manual Docker stack:
+```bash
+docker compose up --build
 ```
 
 `make db-revision` creates a new revision file under `src/parity/persistence/migrations/versions/`. Schema changes to lifecycle metadata should update both the SQLAlchemy table definitions and a reviewed Alembic revision.
@@ -60,7 +67,9 @@ make verify
 ## Internal Lifecycle Runtime
 - `make run-api` runs the internal FastAPI lifecycle app with upload, status, retry, retrieval-smoke, health, and artifact-inspection routes.
 - `make run-worker` runs the queue-draining lifecycle worker that advances documents from `REGISTERED` to `READY`.
+- `make test-e2e` runs the docker-backed end-to-end Markdown lifecycle suite under `tests/e2e/`.
 - `POST /internal/run-next-job` exists for tests and local debug; normal local operation should prefer the worker loop.
+- `docker compose up --build` starts the local Postgres, migration, API, and worker stack defined in `docker-compose.yml`.
 
 ## Database Migrations
 - Alembic is the standard migration interface for lifecycle metadata tables.
