@@ -10,14 +10,18 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
   "alembic>=1.14,<2",
+  "fastapi",
   "psycopg[binary]>=3.2,<4",
   "pydantic>=2,<3",
   "pypdf>=5.0.0",
+  "python-multipart",
   "sqlalchemy>=2,<3",
+  "uvicorn",
 ]
 
 [dependency-groups]
 dev = [
+  "httpx>=0.28.1",
   "mypy>=1.17.0",
   "pytest>=8.4.0",
   "ruff>=0.12.0",

@@ -35,9 +35,19 @@ from .models import (
 class DocumentRepository(Protocol):
     """Storage operations for durable document metadata."""
 
-    def create(self, document: PersistedDocument) -> None: ...
+    def create(
+        self,
+        document: PersistedDocument,
+        *,
+        connection: Connection | None = None,
+    ) -> None: ...
 
-    def get(self, doc_id: str) -> PersistedDocument | None: ...
+    def get(
+        self,
+        doc_id: str,
+        *,
+        connection: Connection | None = None,
+    ) -> PersistedDocument | None: ...
 
     def list_by_workspace(self, workspace_id: str) -> list[PersistedDocument]: ...
 
@@ -55,7 +65,12 @@ class DocumentRepository(Protocol):
 class LifecycleEventRepository(Protocol):
     """Append-only event log operations for lifecycle transitions."""
 
-    def append(self, event: LifecycleEvent) -> None: ...
+    def append(
+        self,
+        event: LifecycleEvent,
+        *,
+        connection: Connection | None = None,
+    ) -> None: ...
 
     def list_for_document(self, doc_id: str) -> list[LifecycleEvent]: ...
 
@@ -98,14 +113,30 @@ class SqlDocumentRepository:
     def __init__(self, engine: Engine) -> None:
         self._engine = engine
 
-    def create(self, document: PersistedDocument) -> None:
+    def create(
+        self,
+        document: PersistedDocument,
+        *,
+        connection: Connection | None = None,
+    ) -> None:
+        if connection is not None:
+            connection.execute(sa.insert(documents_table), [document.to_row()])
+            return
         with self._engine.begin() as conn:
             conn.execute(sa.insert(documents_table), [document.to_row()])
 
-    def get(self, doc_id: str) -> PersistedDocument | None:
+    def get(
+        self,
+        doc_id: str,
+        *,
+        connection: Connection | None = None,
+    ) -> PersistedDocument | None:
         stmt = sa.select(documents_table).where(documents_table.c.doc_id == doc_id)
-        with self._engine.begin() as conn:
-            row = conn.execute(stmt).mappings().first()
+        if connection is not None:
+            row = connection.execute(stmt).mappings().first()
+        else:
+            with self._engine.begin() as conn:
+                row = conn.execute(stmt).mappings().first()
         if row is None:
             return None
         return row_to_persisted_document(dict(row))
@@ -153,7 +184,18 @@ class SqlLifecycleEventRepository:
     def __init__(self, engine: Engine) -> None:
         self._engine = engine
 
-    def append(self, event: LifecycleEvent) -> None:
+    def append(
+        self,
+        event: LifecycleEvent,
+        *,
+        connection: Connection | None = None,
+    ) -> None:
+        if connection is not None:
+            connection.execute(
+                sa.insert(lifecycle_events_table),
+                [lifecycle_event_to_row(event)],
+            )
+            return
         with self._engine.begin() as conn:
             conn.execute(sa.insert(lifecycle_events_table), [lifecycle_event_to_row(event)])
 

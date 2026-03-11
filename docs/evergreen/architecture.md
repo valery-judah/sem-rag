@@ -1,7 +1,7 @@
 # Architecture
 
 **Status:** Verified
-**Last verified:** 2026-03-10
+**Last verified:** 2026-03-11
 
 ## Purpose
 This file captures the current architectural truth for `parity` and the gap between today's code and the target product described in [`docs/evergreen/mvp.md`](./mvp.md). It is also a local architecture map for coding agents: use it to find the right code entrypoint, the right authority doc, and the current boundary between implemented scaffolding and missing product runtime.
@@ -37,6 +37,9 @@ Execution History And Prior Framing:
 Current Implementation Seams:
 - `src/parity/retrieval.py`: `Implemented internal`
 - `src/parity/_contracts/`: `Implemented internal`
+- `src/parity/app/`: `Implemented internal`
+- `src/parity/artifacts/`: `Implemented internal`
+- `src/parity/stages/register.py`: `Implemented internal`
 - `src/parity/persistence/`: `Implemented internal`
 - `src/parity/evaluation/`: `Implemented internal`
 - `src/parity/devtools/secret_scan.py`: `Implemented internal`
@@ -44,6 +47,9 @@ Current Implementation Seams:
 ## Implementation Map
 - `src/parity/retrieval.py` and `src/parity/cli.py`: public retrieval demo surface. Open when changing `SemanticIndex`, ranking behavior, or CLI output.
 - `src/parity/_contracts/models.py` and `src/parity/_contracts/lifecycle.py`: internal corpus, provenance, answer, and lifecycle seams. Open when changing document, chunk, citation, answer, or processing-state semantics in code.
+- `src/parity/app/api.py`, `src/parity/app/deps.py`, and `src/parity/app/settings.py`: internal FastAPI upload runtime and environment wiring. Open when changing intake route shape, dependency assembly, or runtime settings.
+- `src/parity/lifecycle/service.py` and `src/parity/stages/register.py`: transport-thin upload coordination and durable registration stage. Open when changing supported input validation, checksum generation, raw artifact registration, or initial lifecycle-event behavior.
+- `src/parity/artifacts/store.py` and `src/parity/artifacts/schemas.py`: filesystem-backed artifact persistence for raw, extracted, and normalized payloads. Open when changing managed artifact paths or storage payload shapes.
 - `src/parity/persistence/sqlite_compat.py`: SQLite compatibility round-trip layer for `Document`, `Section`, and `Chunk`. Open when changing persisted fields, linkage rules, or existing internal repository semantics.
 - `src/parity/persistence/models.py`, `src/parity/persistence/jobs.py`, `src/parity/persistence/repositories.py`, and `src/parity/persistence/migrations/`: lifecycle metadata persistence, Alembic-backed migrations, and Postgres-oriented repository seams. Open when changing durable document/job/event storage or migration workflow.
 - `src/parity/evaluation/models.py`, `src/parity/evaluation/dataset.py`, `src/parity/evaluation/runner.py`, `src/parity/evaluation/systems.py`, and `src/parity/evaluation/fixtures.py`: deterministic harness scaffolding. Open when changing baseline evaluation cases, provenance checks, or synthetic seam behavior.
@@ -66,6 +72,13 @@ For internal contract or lifecycle changes:
 - then inspect `tests/contract/test_contract_seam_compat.py`
 - if semantics overlap evaluation labels, normalize against the evergreen eval docs instead of inventing local wording
 
+For upload and registration changes:
+- open `src/parity/app/api.py`
+- then inspect `src/parity/app/deps.py` and `src/parity/app/settings.py`
+- then inspect `src/parity/lifecycle/service.py` and `src/parity/stages/register.py`
+- then inspect `tests/app/test_documents_api.py` and `tests/stages/test_register_stage.py`
+- if the change would create a stable external API, update `docs/evergreen/api-contracts.md` first instead of treating the internal route as public
+
 For persistence changes:
 - open `src/parity/persistence/`
 - then inspect `tests/persistence/`
@@ -86,6 +99,8 @@ Use these proof points to distinguish implemented seams from doc-only intent:
 
 - Retrieval demo surface: `tests/test_retrieval.py`, `tests/test_cli.py`
 - Contract models and lifecycle rules: `tests/contract/test_contract_models.py`, `tests/contract/test_lifecycle_state_machine.py`, `tests/contract/test_contract_seam_compat.py`
+- Upload and registration runtime: `tests/app/test_documents_api.py`, `tests/stages/test_register_stage.py`
+- Artifact storage: `tests/artifacts/test_raw_artifact_store.py`, `tests/artifacts/test_extracted_artifact_store.py`, `tests/artifacts/test_normalized_artifact_store.py`
 - Persistence linkage and round-trips: `tests/persistence/test_document_repository.py`, `tests/persistence/test_section_repository.py`, `tests/persistence/test_chunk_repository.py`, `tests/persistence/test_replace_on_retry.py`
 - Deterministic evaluation behavior and provenance checks: `tests/test_evaluation_harness.py`, `src/parity/evaluation/fixtures.py`
 - Secret scanning behavior: `tests/test_secret_scan.py`
@@ -98,6 +113,9 @@ The currently earned seams are:
 - stable public demo surface around `SemanticIndex` and the CLI
 - provenance-bearing corpus primitives for documents, sections, chunks, retrieval hits, and answers
 - explicit document-processing lifecycle progression with a failure state
+- internal upload intake via FastAPI backed by a transport-thin lifecycle service
+- durable registration of supported PDF and Markdown uploads into `REGISTERED` documents with initial lifecycle events
+- filesystem-backed raw, extracted, and normalized artifact storage with deterministic document-scoped paths
 - SQLite-backed compatibility persistence for corpus primitives with linkage enforcement
 - Alembic-backed migration workflow and lifecycle metadata repositories for documents, lifecycle events, and document jobs
 - deterministic evaluation of retrieval ordering, supporting evidence, and provenance completeness
@@ -105,15 +123,15 @@ The currently earned seams are:
 
 ## Boundary Between Public API, Internal Architecture, And Planned Work
 ### Stable Public API
-The stable public package interface remains intentionally narrow and is defined in [`docs/evergreen/api-contracts.md`](./api-contracts.md). Today that means the in-memory `SemanticIndex` retrieval demo and its CLI entrypoint expectations.
+The stable public package interface remains intentionally empty and is defined in [`docs/evergreen/api-contracts.md`](./api-contracts.md). The new upload route is an internal runtime seam, not a public contract.
 
 ### Implemented Internal Architecture
-The `_contracts` layer, lifecycle rules, persistence helpers, evaluation harness, and devtools exist in code and are exercised by tests. They are current implementation truth, but they are not yet promised as stable external interfaces for downstream callers.
+The `_contracts` layer, upload app, lifecycle rules, registration stage, artifact store, persistence helpers, evaluation harness, and devtools exist in code and are exercised by tests. They are current implementation truth, but they are not yet promised as stable external interfaces for downstream callers.
 
 ### Planned MVP Capabilities Not Yet Implemented
 The target product in [`docs/evergreen/mvp.md`](./mvp.md) still exceeds the runtime that exists today. The following user-facing capabilities are not implemented in `src/parity/`:
 
-- no real upload or ingestion pipeline
+- no extraction or normalization runtime beyond durable raw upload registration
 - no parser, extractor, or normalizer runtime for PDF or Markdown inputs
 - no chunk retrieval pipeline operating over ingested corpora
 - no answer-generation service
