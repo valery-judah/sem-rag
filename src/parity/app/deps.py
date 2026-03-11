@@ -28,6 +28,9 @@ from parity.persistence import (
     SqlLifecycleEventRepository,
     SqlSectionRepository,
 )
+from parity.query import QueryService
+from parity.query.persistence import SqlQueryRunStore, SqlQuerySnapshotStore
+from parity.readmodels import SqlQueryableCorpusReadModel
 from parity.stages import (
     ChunkDocumentStage,
     ExtractDocumentJobStage,
@@ -212,6 +215,35 @@ def get_document_lifecycle_worker(
         lifecycle_events=lifecycle_events,
         orchestrator=orchestrator,
         stage_runners=stage_runners,
+    )
+
+
+def get_queryable_corpus_read_model(
+    engine: Annotated[Engine, Depends(get_engine)],
+) -> SqlQueryableCorpusReadModel:
+    """Build the query-facing read model over lifecycle persistence."""
+
+    return SqlQueryableCorpusReadModel(
+        documents=SqlDocumentRepository(engine),
+        sections=SqlSectionRepository(engine),
+        chunks=SqlChunkRepository(engine),
+        index_entries=SqlIndexEntryRepository(engine),
+    )
+
+
+def get_query_service(
+    engine: Annotated[Engine, Depends(get_engine)],
+    corpus_read_model: Annotated[
+        SqlQueryableCorpusReadModel,
+        Depends(get_queryable_corpus_read_model),
+    ],
+) -> QueryService:
+    """Build the internal query service for Stage 1 snapshot capture."""
+
+    return QueryService(
+        corpus_read_model=corpus_read_model,
+        run_store=SqlQueryRunStore(engine),
+        snapshot_store=SqlQuerySnapshotStore(engine),
     )
 
 

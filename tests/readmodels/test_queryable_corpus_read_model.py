@@ -1,0 +1,143 @@
+from __future__ import annotations
+
+from datetime import UTC, datetime
+
+import pytest
+
+from parity._contracts import ProcessingStatus
+from parity.indexing import IndexEntry
+from parity.persistence import (
+    SqlChunkRepository,
+    SqlDocumentRepository,
+    SqlIndexEntryRepository,
+    SqlSectionRepository,
+)
+from parity.readmodels import SqlQueryableCorpusReadModel
+
+pytestmark = pytest.mark.anyio
+
+
+def _read_model(sql_engine) -> SqlQueryableCorpusReadModel:
+    return SqlQueryableCorpusReadModel(
+        documents=SqlDocumentRepository(sql_engine),
+        sections=SqlSectionRepository(sql_engine),
+        chunks=SqlChunkRepository(sql_engine),
+        index_entries=SqlIndexEntryRepository(sql_engine),
+    )
+
+
+def test_capture_snapshot_returns_only_ready_documents_for_workspace(
+    sql_engine,
+    persisted_document_factory,
+    chunk_factory,
+) -> None:
+    documents = SqlDocumentRepository(sql_engine)
+    chunks = SqlChunkRepository(sql_engine)
+    index_entries = SqlIndexEntryRepository(sql_engine)
+
+    documents.create(
+        persisted_document_factory(
+            doc_id="doc-ready",
+            workspace_id="ws-1",
+            ingest_status=ProcessingStatus.READY,
+        )
+    )
+    documents.create(
+        persisted_document_factory(
+            doc_id="doc-indexed",
+            workspace_id="ws-1",
+            ingest_status=ProcessingStatus.INDEXED,
+        )
+    )
+    documents.create(
+        persisted_document_factory(
+            doc_id="doc-other-workspace",
+            workspace_id="ws-2",
+            ingest_status=ProcessingStatus.READY,
+        )
+    )
+    chunks.save(
+        [
+            chunk_factory(
+                doc_id="doc-ready",
+                chunk_id="chunk-ready",
+                page_start=1,
+                page_end=1,
+                source_start_offset=None,
+                source_end_offset=None,
+            ),
+            chunk_factory(
+                doc_id="doc-indexed",
+                chunk_id="chunk-indexed",
+                page_start=2,
+                page_end=2,
+            ),
+        ]
+    )
+    index_entries.replace_for_document(
+        "doc-ready",
+        [
+            IndexEntry(
+                chunk_id="chunk-ready",
+                doc_id="doc-ready",
+                index_backend="deterministic",
+                index_key="doc-ready:chunk-ready",
+                index_version="idx-v1",
+                published_at=datetime(2026, 3, 11, tzinfo=UTC),
+            )
+        ],
+    )
+
+    snapshot = _read_model(sql_engine).capture_snapshot(
+        "ws-1",
+        query_started_at=datetime(2026, 3, 11, 9, tzinfo=UTC),
+    )
+
+    assert snapshot.workspace_id == "ws-1"
+    assert snapshot.eligible_doc_ids == ["doc-ready"]
+    assert snapshot.retrieval_index_version == "idx-v1"
+
+
+def test_list_chunks_for_snapshot_returns_only_provenance_bearing_chunks(
+    sql_engine,
+    persisted_document_factory,
+    chunk_factory,
+) -> None:
+    documents = SqlDocumentRepository(sql_engine)
+    chunks = SqlChunkRepository(sql_engine)
+
+    documents.create(
+        persisted_document_factory(
+            doc_id="doc-ready",
+            workspace_id="ws-1",
+            ingest_status=ProcessingStatus.READY,
+        )
+    )
+    chunks.save(
+        [
+            chunk_factory(
+                doc_id="doc-ready",
+                chunk_id="chunk-provenanced",
+                page_start=1,
+                page_end=1,
+                source_start_offset=None,
+                source_end_offset=None,
+            ),
+            chunk_factory(
+                doc_id="doc-ready",
+                chunk_id="chunk-unprovenanced",
+                section_id=None,
+                page_start=None,
+                page_end=None,
+                source_start_offset=None,
+                source_end_offset=None,
+            ),
+        ]
+    )
+
+    snapshot = _read_model(sql_engine).capture_snapshot("ws-1")
+    queryable_chunks = _read_model(sql_engine).list_chunks_for_snapshot(snapshot)
+
+    assert [chunk.chunk_id for chunk in queryable_chunks] == ["chunk-provenanced"]
+    assert queryable_chunks[0].heading_path
+    assert queryable_chunks[0].page_start == 1

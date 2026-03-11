@@ -7,6 +7,8 @@ from typing import Annotated
 from fastapi import Body, Depends, FastAPI, File, Form, HTTPException, UploadFile, status
 from pydantic import BaseModel, ConfigDict, Field
 
+from parity.query import CorpusSnapshot, QueryRequest, QueryRunStatus, QueryService
+from parity.query.errors import CorpusBoundaryUnavailableError
 from parity.lifecycle.service import (
     DocumentArtifactRefs,
     DocumentLifecycleService,
@@ -21,7 +23,11 @@ from parity.lifecycle.service import (
 from parity.lifecycle.worker import DocumentLifecycleWorker
 from parity.stages import DocumentRegistrationError
 
-from .deps import get_document_lifecycle_service, get_document_lifecycle_worker
+from .deps import (
+    get_document_lifecycle_service,
+    get_document_lifecycle_worker,
+    get_query_service,
+)
 
 
 class RetrievalQueryRequest(BaseModel):
@@ -32,6 +38,18 @@ class RetrievalQueryRequest(BaseModel):
     doc_id: str
     query: str = Field(min_length=1)
     k: int = Field(default=3, ge=1)
+
+
+class QuerySubmissionResult(BaseModel):
+    """Internal response payload for Stage 1 query preparation."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    query_id: str = Field(min_length=1)
+    workspace_id: str = Field(min_length=1)
+    status: QueryRunStatus
+    snapshot: CorpusSnapshot
+    message: str = Field(min_length=1)
 
 
 def create_app() -> FastAPI:
@@ -151,6 +169,30 @@ def create_app() -> FastAPI:
             )
         except DocumentNotFoundError as exc:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+
+    @app.post(
+        "/queries",
+        response_model=QuerySubmissionResult,
+        status_code=status.HTTP_202_ACCEPTED,
+    )
+    async def submit_query(
+        request: Annotated[QueryRequest, Body()],
+        service: Annotated[QueryService, Depends(get_query_service)],
+    ) -> QuerySubmissionResult:
+        try:
+            state = service.prepare_query(request)
+        except CorpusBoundaryUnavailableError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail=str(exc),
+            ) from exc
+        return QuerySubmissionResult(
+            query_id=state.run.query_id,
+            workspace_id=state.run.workspace_id,
+            status=state.run.status,
+            snapshot=state.snapshot,
+            message="query execution is not implemented yet",
+        )
 
     @app.post("/internal/run-next-job")
     async def run_next_job(

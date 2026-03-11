@@ -6,8 +6,12 @@ from pydantic import ValidationError
 from sqlalchemy.engine import Engine
 
 from parity._contracts import ProcessingStatus
-from parity.app.api import RetrievalQueryRequest
-from parity.app.deps import get_document_lifecycle_service
+from parity.app.api import QuerySubmissionResult, RetrievalQueryRequest
+from parity.app.deps import (
+    get_document_lifecycle_service,
+    get_query_service,
+    get_queryable_corpus_read_model,
+)
 from parity.artifacts import FilesystemArtifactStore
 from parity.lifecycle import FailureCategory, LifecycleStage
 from parity.persistence import (
@@ -18,6 +22,8 @@ from parity.persistence import (
     SqlDocumentRepository,
     SqlLifecycleEventRepository,
 )
+from parity.query import QueryRequest
+from parity.query.persistence import SqlQuerySnapshotStore
 
 pytestmark = pytest.mark.anyio
 
@@ -33,6 +39,13 @@ def _service(sql_engine: Engine, tmp_path):
     return get_document_lifecycle_service(
         engine=sql_engine,
         artifact_store=FilesystemArtifactStore(tmp_path / "artifacts"),
+    )
+
+
+def _query_service(sql_engine: Engine):
+    return get_query_service(
+        engine=sql_engine,
+        corpus_read_model=get_queryable_corpus_read_model(engine=sql_engine),
     )
 
 
@@ -200,6 +213,54 @@ async def test_retrieval_query_returns_404_for_unknown_document(
 def test_retrieval_query_validates_positive_k() -> None:
     with pytest.raises(ValidationError):
         RetrievalQueryRequest(doc_id="doc-1", query="consensus", k=0)
+
+
+async def test_queries_route_returns_stub_result_and_persists_snapshot(
+    app: FastAPI,
+    sql_engine: Engine,
+    persisted_document_factory,
+) -> None:
+    documents = SqlDocumentRepository(sql_engine)
+    snapshot_store = SqlQuerySnapshotStore(sql_engine)
+    documents.create(
+        persisted_document_factory(
+            doc_id="doc-ready",
+            workspace_id="ws-1",
+            ingest_status=ProcessingStatus.READY,
+        )
+    )
+
+    result = await _route_endpoint(app, path="/queries", method="POST")(
+        request=QueryRequest(
+            question="What is available in the corpus?",
+            workspace_id="ws-1",
+        ),
+        service=_query_service(sql_engine),
+    )
+
+    assert isinstance(result, QuerySubmissionResult)
+    assert result.workspace_id == "ws-1"
+    assert result.status.value == "pending"
+    assert result.snapshot.eligible_doc_ids == ["doc-ready"]
+    assert result.message == "query execution is not implemented yet"
+    persisted_snapshot = snapshot_store.get_snapshot(result.query_id)
+    assert persisted_snapshot is not None
+    assert persisted_snapshot.model_dump() == result.snapshot.model_dump()
+
+
+async def test_queries_route_allows_empty_snapshot(
+    app: FastAPI,
+    sql_engine: Engine,
+) -> None:
+    result = await _route_endpoint(app, path="/queries", method="POST")(
+        request=QueryRequest(
+            question="What is available in the corpus?",
+            workspace_id="empty-ws",
+        ),
+        service=_query_service(sql_engine),
+    )
+
+    assert result.snapshot.eligible_doc_ids == []
 
 
 async def test_healthz_returns_ok(app: FastAPI) -> None:

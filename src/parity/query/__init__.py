@@ -35,6 +35,7 @@ from .errors import (
     UnsupportedPolicyOverrideError,
 )
 from .policies import QueryPolicy, QueryPolicyDefaults
+from .persistence import QueryRunStore, QuerySnapshotStore, QueryTraceStore
 from .service import QueryService
 from .trace import QueryStageTrace, QueryStageTraceStatus, QueryTraceBundle
 
@@ -62,13 +63,16 @@ __all__ = [
     "QueryRequestType",
     "QueryRun",
     "QueryRunStatus",
+    "QueryRunStore",
     "QueryRuntimeState",
+    "QuerySnapshotStore",
     "QueryService",
     "QueryStageContractViolationError",
     "QueryStageName",
     "QueryStageNotImplementedError",
     "QueryStageTrace",
     "QueryStageTraceStatus",
+    "QueryTraceStore",
     "QueryTraceBundle",
     "RetrievedCandidate",
     "SupportAssessment",
