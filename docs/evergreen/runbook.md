@@ -67,7 +67,7 @@ docker compose up --build
 ## Internal Lifecycle Runtime
 - `make run-api` runs the internal FastAPI lifecycle app with upload, status, retry, retrieval-smoke, health, and artifact-inspection routes.
 - `make run-worker` runs the queue-draining lifecycle worker that advances documents from `REGISTERED` to `READY`.
-- `make test-e2e` runs the docker-backed end-to-end Markdown lifecycle suite under `tests/e2e/`.
+- `make test-e2e` runs the docker-backed end-to-end document lifecycle suite under `tests/e2e/`.
 - `POST /internal/run-next-job` exists for tests and local debug; normal local operation should prefer the worker loop.
 - `docker compose up --build` starts the local Postgres, migration, API, and worker stack defined in `docker-compose.yml`.
 

@@ -153,7 +153,7 @@ An ordered, budgeted assembly of evidence units and scaffolding sent to the gene
 A user-visible assertion in the answer. Claims are the unit that must be supportable.
 
 ### 6.11 Citation
-A mapping from an answer or answer fragment to one or more evidence anchors.
+A mapping from an answer or answer fragment to one or more evidence anchors. The minimum useful citation contract is document identity plus a source-type-appropriate locator; passage identifiers, snippet text, and other localizing aids are enrichments when available rather than universal minimum requirements.
 
 ### 6.12 Abstention
 A valid answer mode in which the runtime declines the full request, narrows scope, or states that the active corpus does not support the requested claim.
@@ -169,6 +169,8 @@ The conceptual query lifecycle for MVP is:
 This is the normative runtime path.
 
 The purpose of making **Assess Support** and **Decide Answer Mode** explicit is to prevent the generation step from becoming the hidden judge of evidence sufficiency. Retrieval, support judgment, and final rendering must remain inspectable as separate concerns.
+
+Once support has been assessed, downstream stages may preserve that answer posture or narrow it further, but they must not escalate it into a broader or more confident answer than the evidence supports. In effect, answer-mode selection and grounded generation act as downgrade-only enforcement even if implemented without a separately named runtime guard.
 
 The query lifecycle must therefore satisfy the following top-level rule:
 
@@ -479,6 +481,8 @@ Select the correct response mode from the assessed support state before natural-
 ### Requirements
 The lifecycle **must** choose answer behavior according to support state.
 
+After support state is determined, later stages **must not** widen the answer beyond that state. They may keep the same posture, narrow scope further, add qualification, or abstain more conservatively, but they **must not** convert partial, conflicting, unsupported, or out-of-scope cases into a broader supported-answer posture.
+
 The required high-level behavior is:
 
 | Support state | Required answer-mode behavior |
@@ -575,9 +579,10 @@ Render inspectable citations that map supported answer content back to useful so
 ### Requirements
 Supported answers **must** include inspectable citations at useful MVP granularity.
 
-For MVP, citations **must** resolve through recoverable provenance such as:
+For MVP, the mandatory citation minimum is recoverable provenance that lets a reviewer inspect the supporting source region at useful granularity. That minimum **must** include source identity plus a source-type-appropriate locator.
 
-- document identity and title;
+Recommended citation enrichments **may** also be included when the runtime preserves them and product surfaces allow them, such as:
+
 - passage or chunk identity when retained by the system;
 - section identity or heading path when recoverable;
 - page label or coarse page location for PDFs when recoverable;
@@ -589,8 +594,9 @@ Citation behavior **must** follow source-type expectations:
 Minimum acceptable citation shape:
 
 - document identity or title;
-- page number;
-- optionally inferred heading or section path when recoverable.
+- page number.
+
+Additional PDF localizers, such as inferred heading or section path, are recommended when recoverable but are not part of the universal minimum.
 
 A PDF citation is acceptable only if a reviewer can land on the correct page and locate the relevant support without excessive searching.
 
@@ -599,6 +605,8 @@ Minimum acceptable citation shape:
 
 - document identity or title;
 - heading path, section path, or other stable local locator.
+
+Additional Markdown localizers, passage identifiers, or snippet text are recommended enrichments when available, but the minimum remains document identity plus a stable local locator.
 
 A Markdown citation is acceptable only if a reviewer can navigate to the correct file region without excessive searching.
 
@@ -733,7 +741,7 @@ If the question requires unsupported capabilities, the system must state that bo
 If sources conflict materially, the answer must surface the conflict or uncertainty rather than presenting a single unqualified conclusion.
 
 ### 12.6 Citation coupling rule
-Supported answer content must have inspectable citation support. Unsupported or abstained content must not be decorated with fabricated or misleading citations.
+Supported answer content must have inspectable citation support at the minimum contract of source identity plus a source-type-appropriate locator. Unsupported or abstained content must not be decorated with fabricated or misleading citations.
 
 ---
 
@@ -743,8 +751,9 @@ Supported answer content must have inspectable citation support. Unsupported or 
 For MVP, minimum provenance expectations are:
 
 - **PDF**: document identity plus page number;
-- **Markdown**: document identity plus heading path or stable section locator;
-- **Mixed-format synthesis**: one usable provenance record per materially contributing source.
+- **Markdown**: document identity plus heading path, section path, or other stable local locator;
+- **Mixed-format synthesis**: one usable provenance record per materially contributing source;
+- **Optional enrichments**: passage or chunk identity when retained by the runtime; supporting snippet text or equivalent localizing aid when product surfaces allow it.
 
 ### 13.2 Inspection usefulness standard
 A citation is useful only if a reviewer can reach the correct source area and locate the supporting material without excessive searching.

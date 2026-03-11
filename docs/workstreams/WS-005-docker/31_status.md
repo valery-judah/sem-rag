@@ -1,110 +1,115 @@
 # WS-005 Status
 
 **Date:** 2026-03-11  
-**Scope of this note:** status after implementing the initial Docker runtime and Docker-backed e2e suite for the internal document lifecycle.
+**Scope of this note:** current status of the Docker runtime and Docker-backed end-to-end suite for the internal document lifecycle.
 
-## What was completed
+## What is currently in place
 
-The repo now has a working Docker path for the internal lifecycle runtime plus a real containerized e2e suite.
+The repo has a working Docker path for the internal lifecycle runtime and a passing Docker-backed e2e suite.
 
-Completed changes:
+Current repo assets:
 
-* added a shared runtime entrypoint:
+* shared runtime entrypoint:
   * `src/parity/runtime.py`
-* added Docker runtime assets:
+* Docker runtime assets:
   * `Dockerfile`
   * `.dockerignore`
   * `docker-compose.yml`
-* added a Docker-backed pytest layer:
+* Docker-backed e2e suite:
   * `tests/e2e/conftest.py`
   * `tests/e2e/test_markdown_stack_smoke.py`
+  * `tests/e2e/test_pdf_stack.py`
   * `tests/e2e/test_real_markdown_docs.py`
   * `tests/e2e/test_stack_failures.py`
-* added repo wiring for the e2e suite:
+* repo wiring for the e2e suite:
   * `pyproject.toml` marker `e2e`
   * default pytest exclusion for `e2e`
   * `make test-e2e`
-* updated operating docs:
+* operating docs:
   * `docs/evergreen/runbook.md`
 
-## What the Docker e2e suite now proves
+## What the Docker e2e suite currently proves
 
-The active Docker e2e suite validates all of the following against real containers:
+The active e2e suite validates the following against real containers:
 
 * Markdown upload reaches `READY`
+* PDF upload reaches `READY`
+* malformed PDF upload reaches `FAILED` without published retrieval artifacts
+* unsupported PNG upload is rejected over the real HTTP stack
 * the API and worker run as separate processes
-* Alembic migrations execute before the stack serves requests
+* migrations run before the stack serves requests
 * real repo Markdown documents can be uploaded and indexed
 * persisted artifact files exist for raw, extracted, and normalized stages
 * Postgres contains persisted `chunks`, `chunk_embeddings`, and `index_entries`
 * embedding payloads are non-empty JSON vectors with a stored embedding model
-* retrieval stays document-scoped across multiple uploaded Markdown docs
+* retrieval stays document-scoped across multiple uploaded docs
 * persisted chunks retain heading-path plus coarse provenance fields
-* explicit unsupported PNG upload is rejected over the real HTTP stack
+* PDF chunks retain page-oriented provenance
 
-## Real Markdown docs used in the suite
+## Documents and fixtures used in the suite
 
-The Docker e2e suite currently uploads and validates these repo docs:
+Real repo Markdown docs used in e2e coverage:
 
 * `docs/workstreams/WS-004-document-lifecycle/21-design-exploration.md`
 * `docs/workstreams/WS-004-document-lifecycle/22-staged.md`
 * `docs/evergreen/mvp.md`
 
-The suite also keeps one small synthetic Markdown smoke fixture for quick feedback:
+Synthetic fixtures used in e2e coverage:
 
 * `tests/e2e/fixtures/smoke.md`
+* `tests/e2e/fixtures/ready_text_pdf.pdf`
+* `tests/e2e/fixtures/malformed.pdf`
 
-## Validation completed
+## Validation confirmed on 2026-03-11
 
-The following checks were run successfully during implementation:
+The following checks were confirmed against the current repo:
 
 * `uv run pytest tests/e2e --collect-only -m e2e -o addopts=-q`
-* `uv run pytest tests/e2e -m e2e -o addopts=-q`
+* `make test-e2e`
 
-Observed result after the latest additions:
+Observed result:
 
-* `6 passed in 42.02s`
+* `8 passed in 45.49s`
 
-Manual runtime verification was also completed:
+Manual compose-path verification was also completed:
 
-* `docker compose up --build`
+* `docker compose up --build -d`
 * `docker compose ps`
-* `GET /readyz` returned `200 {"status":"ok"}`
+* `/readyz` returned `{"status":"ok"}`
 
-## What was intentionally not implemented
+## Current shape of the local Docker stack
 
-The following were deliberately left out of this Docker slice:
+The compose stack currently defines:
 
-* PDF `READY` e2e coverage
-* malformed PDF failure-path e2e coverage
-* retry recovery under injected index-publication failure
-* new HTTP inspection routes just for e2e
-* a separate external vector database
+* `db`
+* `migrate`
+* `api`
+* `worker`
 
-## Why those items were deferred
+Important runtime facts:
 
-This workstream was scoped to deliver the first practical Docker path with the least additional runtime surface:
-
-* Markdown is the strongest current input path
-* the existing Postgres-backed indexing seam is sufficient for explicit vector persistence checks
-* retry/fault-injection e2e needs a clearer, intentional failure seam to avoid brittle container-only hacks
-
-## Current repo state relevant to the next agent
-
-Important current facts:
-
+* `api` and `worker` both depend on a healthy database plus successful `migrate`
+* the stack uses Postgres plus a bind-mounted artifact root at `./data`
 * the Docker e2e suite is additive and excluded from default pytest runs
-* the active vector persistence proof uses existing Postgres tables:
+* the vector persistence proof uses the existing Postgres tables:
   * `chunks`
   * `chunk_embeddings`
   * `index_entries`
-* Docker Desktop socket auto-detection was needed locally because the daemon socket is under `~/.docker/run/docker.sock` rather than `/var/run/docker.sock`
+* local Docker Desktop socket auto-detection exists in `tests/e2e/conftest.py` for environments where the daemon socket is under `~/.docker/run/docker.sock`
+
+## What is still not covered by this Docker slice
+
+The current Docker layer still does not prove all desired failure and recovery behavior.
+
+Not covered today:
+
+* retry recovery under injected index-publication failure
+* idempotency guarantees across worker retries after partial indexing failure
+* any external vector database integration
 
 ## Recommended next step
 
-If this workstream continues, pick one of these next slices:
+The next useful slice is retry and recovery coverage:
 
-1. PDF-focused Docker e2e:
-   upload a supported PDF fixture, assert `READY`, and validate page-oriented provenance fields.
-2. Retry/failure Docker e2e:
-   add a controlled fault-injection seam for index publication and prove retry recovery without duplicate persisted vectors/index entries.
+1. add a controlled fault-injection seam around index publication
+2. prove worker retry recovery in Docker without duplicate persisted vectors or index entries
