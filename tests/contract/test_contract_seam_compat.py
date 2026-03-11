@@ -1,10 +1,39 @@
 from __future__ import annotations
 
+from datetime import UTC, datetime
 from itertools import pairwise
+
+import pytest
 
 from parity._contracts import (
     AnswerStatus,
+    Document,
+    SourceType,
+)
+from parity._contracts import (
+    ProcessingStatus as contract_processing_status,
+)
+from parity._contracts import (
+    can_transition_processing_status as contract_can_transition_processing_status,
+)
+from parity._contracts.lifecycle import (
+    IN_FLIGHT_PROCESSING_STATUSES as contract_in_flight_statuses,
+)
+from parity._contracts.lifecycle import (
+    TERMINAL_PROCESSING_STATUSES as contract_terminal_statuses,
+)
+from parity._contracts.lifecycle import (
+    allowed_next_processing_statuses as contract_allowed_next_processing_statuses,
+)
+from parity._contracts.lifecycle import (
+    require_processing_status_transition as contract_require_processing_status_transition,
+)
+from parity.lifecycle import (
+    IN_FLIGHT_PROCESSING_STATUSES,
+    TERMINAL_PROCESSING_STATUSES,
+    InvalidLifecycleTransitionError,
     ProcessingStatus,
+    allowed_next_processing_statuses,
     can_transition_processing_status,
 )
 from tests.support.contract_seam import (
@@ -13,8 +42,29 @@ from tests.support.contract_seam import (
     locked_lifecycle_path,
 )
 
+pytestmark = pytest.mark.contract
 
-def test_supported_corpus_question_seam_returns_cross_document_answer() -> None:
+
+def test_contract_processing_status_reexports_runtime_status() -> None:
+    assert contract_processing_status is ProcessingStatus
+    assert contract_in_flight_statuses == IN_FLIGHT_PROCESSING_STATUSES
+    assert contract_terminal_statuses == TERMINAL_PROCESSING_STATUSES
+
+
+@pytest.mark.parametrize("current", sorted(ProcessingStatus))
+def test_contract_transition_helpers_match_runtime_helpers(current: ProcessingStatus) -> None:
+    assert contract_allowed_next_processing_statuses(current) == allowed_next_processing_statuses(
+        current
+    )
+
+    for new in ProcessingStatus:
+        assert contract_can_transition_processing_status(
+            current,
+            new,
+        ) == can_transition_processing_status(current, new)
+
+
+def test_existing_import_sites_remain_valid() -> None:
     seam = build_supported_corpus_question_seam()
 
     assert len(seam.documents) == 4
@@ -22,6 +72,33 @@ def test_supported_corpus_question_seam_returns_cross_document_answer() -> None:
     assert seam.answer.status is AnswerStatus.SUPPORTED
     assert len(seam.answer.source_references) == 2
     assert len({reference.doc_id for reference in seam.answer.source_references}) == 2
+
+
+def test_contract_document_model_unchanged_in_pr1() -> None:
+    assert set(Document.model_fields) == {
+        "doc_id",
+        "workspace_id",
+        "source_type",
+        "title",
+        "filename",
+        "uploaded_at",
+        "ingest_status",
+        "storage_ref",
+        "metadata",
+    }
+
+    document = Document(
+        doc_id="doc-1",
+        workspace_id="workspace-1",
+        source_type=SourceType.PDF,
+        title="Doc 1",
+        filename="doc-1.pdf",
+        uploaded_at=datetime(2026, 3, 11, tzinfo=UTC),
+        ingest_status=ProcessingStatus.UPLOADED,
+        storage_ref="file:///tmp/doc-1.pdf",
+    )
+
+    assert document.storage_ref == "file:///tmp/doc-1.pdf"
 
 
 def test_supported_corpus_question_seam_preserves_retrieval_trace() -> None:
@@ -101,8 +178,25 @@ def test_lifecycle_contract_seam() -> None:
     linear_path = locked_lifecycle_path()
 
     for current, new in pairwise(linear_path):
-        assert can_transition_processing_status(current, new)
+        assert contract_can_transition_processing_status(current, new)
 
-    assert can_transition_processing_status(ProcessingStatus.CHUNKED, ProcessingStatus.FAILED)
-    assert not can_transition_processing_status(ProcessingStatus.READY, ProcessingStatus.FAILED)
-    assert not can_transition_processing_status(ProcessingStatus.FAILED, ProcessingStatus.READY)
+    assert contract_can_transition_processing_status(
+        ProcessingStatus.CHUNKED,
+        ProcessingStatus.FAILED,
+    )
+    assert not contract_can_transition_processing_status(
+        ProcessingStatus.READY,
+        ProcessingStatus.FAILED,
+    )
+    assert not contract_can_transition_processing_status(
+        ProcessingStatus.FAILED,
+        ProcessingStatus.READY,
+    )
+
+
+def test_contract_require_transition_raises_runtime_error_type() -> None:
+    with pytest.raises(InvalidLifecycleTransitionError):
+        contract_require_processing_status_transition(
+            ProcessingStatus.UPLOADED,
+            ProcessingStatus.FAILED,
+        )

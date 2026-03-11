@@ -60,12 +60,14 @@ For retrieval demo changes:
 For internal contract or lifecycle changes:
 - open `src/parity/_contracts/models.py`
 - then inspect `src/parity/_contracts/lifecycle.py`
-- then inspect `tests/test_contracts.py` and `tests/test_contract_seam.py`
+- then inspect `tests/contract/test_contract_models.py`
+- then inspect `tests/contract/test_lifecycle_state_machine.py`
+- then inspect `tests/contract/test_contract_seam_compat.py`
 - if semantics overlap evaluation labels, normalize against the evergreen eval docs instead of inventing local wording
 
 For persistence changes:
 - open `src/parity/persistence.py`
-- then inspect `tests/test_persistence_contracts.py`
+- then inspect `tests/persistence/`
 - then inspect `src/parity/_contracts/`
 
 For evaluation harness changes:
@@ -82,8 +84,8 @@ For repo devtool changes:
 Use these proof points to distinguish implemented seams from doc-only intent:
 
 - Retrieval demo surface: `tests/test_retrieval.py`, `tests/test_cli.py`
-- Contract models and lifecycle rules: `tests/test_contracts.py`, `tests/test_contract_seam.py`
-- Persistence linkage and round-trips: `tests/test_persistence_contracts.py`
+- Contract models and lifecycle rules: `tests/contract/test_contract_models.py`, `tests/contract/test_lifecycle_state_machine.py`, `tests/contract/test_contract_seam_compat.py`
+- Persistence linkage and round-trips: `tests/persistence/test_document_repository.py`, `tests/persistence/test_section_repository.py`, `tests/persistence/test_chunk_repository.py`, `tests/persistence/test_replace_on_retry.py`
 - Deterministic evaluation behavior and provenance checks: `tests/test_evaluation_harness.py`, `src/parity/evaluation/fixtures.py`
 - Secret scanning behavior: `tests/test_secret_scan.py`
 
@@ -124,7 +126,7 @@ The target product in [`docs/evergreen/mvp.md`](./mvp.md) still exceeds the runt
 
 ## Change Impact
 - Retrieval demo changes may affect `docs/evergreen/api-contracts.md`, `tests/test_retrieval.py`, and `tests/test_cli.py`.
-- Contract or lifecycle changes may affect `src/parity/persistence.py`, `src/parity/evaluation/fixtures.py`, `tests/test_contracts.py`, `tests/test_contract_seam.py`, `tests/test_persistence_contracts.py`, and `tests/test_evaluation_harness.py`.
+- Contract or lifecycle changes may affect `src/parity/persistence.py`, `src/parity/evaluation/fixtures.py`, `tests/contract/`, `tests/persistence/`, and `tests/test_evaluation_harness.py`.
 - Persistence changes may require matching updates to contract fields, ordering assumptions, and integrity checks in tests.
 - Evaluation harness changes may require matching updates to baseline cases, seam fixtures, and evergreen semantic docs if the change is semantic rather than mechanical.
 - Semantic doc changes should normalize against the owning evergreen doc instead of inventing parallel labels locally.

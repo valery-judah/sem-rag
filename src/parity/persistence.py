@@ -39,8 +39,11 @@ def create_schema(conn: sqlite3.Connection) -> None:
             source_start_offset INTEGER,
             source_end_offset INTEGER,
             structure_confidence REAL,
+            UNIQUE (doc_id, section_id),
             FOREIGN KEY (doc_id) REFERENCES documents (doc_id) ON DELETE CASCADE,
-            FOREIGN KEY (parent_section_id) REFERENCES sections (section_id) ON DELETE CASCADE
+            FOREIGN KEY (doc_id, parent_section_id)
+                REFERENCES sections (doc_id, section_id)
+                ON DELETE CASCADE
         );
 
         CREATE TABLE IF NOT EXISTS chunks (
@@ -57,7 +60,9 @@ def create_schema(conn: sqlite3.Connection) -> None:
             lineage_json TEXT,
             debug_metadata_json TEXT,
             FOREIGN KEY (doc_id) REFERENCES documents (doc_id) ON DELETE CASCADE,
-            FOREIGN KEY (section_id) REFERENCES sections (section_id) ON DELETE CASCADE
+            FOREIGN KEY (doc_id, section_id)
+                REFERENCES sections (doc_id, section_id)
+                ON DELETE CASCADE
         );
         """
     )
@@ -173,6 +178,34 @@ def save_chunks(conn: sqlite3.Connection, chunks: list[Chunk]) -> None:
             for chunk in chunks
         ],
     )
+
+
+def replace_sections_for_document(
+    conn: sqlite3.Connection,
+    doc_id: str,
+    sections: list[Section],
+) -> None:
+    """Replace the full persisted section set for one document."""
+
+    _require_matching_doc_id(doc_id, sections)
+    conn.execute("PRAGMA foreign_keys = ON")
+    with conn:
+        conn.execute("DELETE FROM sections WHERE doc_id = ?", (doc_id,))
+        save_sections(conn, sections)
+
+
+def replace_chunks_for_document(
+    conn: sqlite3.Connection,
+    doc_id: str,
+    chunks: list[Chunk],
+) -> None:
+    """Replace the full persisted chunk set for one document."""
+
+    _require_matching_doc_id(doc_id, chunks)
+    conn.execute("PRAGMA foreign_keys = ON")
+    with conn:
+        conn.execute("DELETE FROM chunks WHERE doc_id = ?", (doc_id,))
+        save_chunks(conn, chunks)
 
 
 def list_documents_by_workspace(
@@ -401,3 +434,11 @@ def _cast_optional_float(value: object) -> float | None:
     if not isinstance(value, float):
         raise TypeError(f"expected float, got {type(value).__name__}")
     return value
+
+
+def _require_matching_doc_id(
+    doc_id: str,
+    records: list[Section] | list[Chunk],
+) -> None:
+    if any(record.doc_id != doc_id for record in records):
+        raise ValueError("all persisted records must belong to the target document")

@@ -41,4 +41,8 @@ warn_unused_ignores = true
 
 [tool.pytest.ini_options]
 addopts = "-q"
+markers = [
+  "contract: lifecycle semantics and invariant tests",
+  "persistence: db-backed integrity and repository tests",
+]
 testpaths = ["tests"]

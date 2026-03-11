@@ -15,12 +15,9 @@ from parity._contracts import (
     Section,
     SourceReference,
     SourceType,
-    can_transition_processing_status,
 )
-from parity.lifecycle import (
-    InvalidLifecycleTransitionError,
-    require_processing_status_transition,
-)
+
+pytestmark = pytest.mark.contract
 
 
 def make_source_reference(**overrides: object) -> SourceReference:
@@ -96,7 +93,8 @@ def test_section_requires_heading_path_and_valid_ranges() -> None:
         )
 
     with pytest.raises(
-        ValidationError, match="page_end must be greater than or equal to page_start"
+        ValidationError,
+        match="page_end must be greater than or equal to page_start",
     ):
         Section(
             section_id="section-1",
@@ -225,7 +223,7 @@ def test_supported_answer_rejects_insufficiency_note() -> None:
 def test_insufficient_evidence_answer_requires_explicit_empty_source_references() -> None:
     with pytest.raises(
         ValidationError,
-        match=("insufficient_evidence answers must use an explicit empty source_references list"),
+        match="insufficient_evidence answers must use an explicit empty source_references list",
     ):
         Answer(
             status=AnswerStatus.INSUFFICIENT_EVIDENCE,
@@ -250,54 +248,3 @@ def test_answer_accepts_locked_status_semantics() -> None:
 
     assert supported.status is AnswerStatus.SUPPORTED
     assert insufficient.status is AnswerStatus.INSUFFICIENT_EVIDENCE
-
-
-@pytest.mark.parametrize(
-    ("current", "new"),
-    [
-        (ProcessingStatus.UPLOADED, ProcessingStatus.REGISTERED),
-        (ProcessingStatus.REGISTERED, ProcessingStatus.EXTRACTING),
-        (ProcessingStatus.EXTRACTING, ProcessingStatus.NORMALIZED),
-        (ProcessingStatus.NORMALIZED, ProcessingStatus.CHUNKED),
-        (ProcessingStatus.CHUNKED, ProcessingStatus.INDEXED),
-        (ProcessingStatus.INDEXED, ProcessingStatus.READY),
-        (ProcessingStatus.REGISTERED, ProcessingStatus.FAILED),
-        (ProcessingStatus.EXTRACTING, ProcessingStatus.FAILED),
-        (ProcessingStatus.NORMALIZED, ProcessingStatus.FAILED),
-        (ProcessingStatus.CHUNKED, ProcessingStatus.FAILED),
-        (ProcessingStatus.INDEXED, ProcessingStatus.FAILED),
-    ],
-)
-def test_processing_status_allows_locked_transitions(
-    current: ProcessingStatus,
-    new: ProcessingStatus,
-) -> None:
-    assert can_transition_processing_status(current, new)
-
-
-@pytest.mark.parametrize(
-    ("current", "new"),
-    [
-        (ProcessingStatus.UPLOADED, ProcessingStatus.READY),
-        (ProcessingStatus.UPLOADED, ProcessingStatus.FAILED),
-        (ProcessingStatus.REGISTERED, ProcessingStatus.CHUNKED),
-        (ProcessingStatus.READY, ProcessingStatus.FAILED),
-        (ProcessingStatus.FAILED, ProcessingStatus.READY),
-    ],
-)
-def test_processing_status_rejects_unlocked_transitions(
-    current: ProcessingStatus,
-    new: ProcessingStatus,
-) -> None:
-    assert not can_transition_processing_status(current, new)
-
-
-def test_require_processing_status_transition_raises_on_invalid_transition() -> None:
-    with pytest.raises(
-        InvalidLifecycleTransitionError,
-        match="cannot transition processing status from uploaded to failed",
-    ):
-        require_processing_status_transition(
-            ProcessingStatus.UPLOADED,
-            ProcessingStatus.FAILED,
-        )

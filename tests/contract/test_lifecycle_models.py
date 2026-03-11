@@ -5,42 +5,62 @@ from datetime import UTC, datetime
 import pytest
 from pydantic import ValidationError
 
+import parity._contracts as contracts
 from parity.lifecycle import (
-    IN_FLIGHT_PROCESSING_STATUSES,
-    TERMINAL_PROCESSING_STATUSES,
     FailureCategory,
     LifecycleEvent,
     LifecycleStage,
     ProcessingStatus,
-    allowed_next_processing_statuses,
 )
 
-
-def test_status_sets_capture_in_flight_and_terminal_states() -> None:
-    assert IN_FLIGHT_PROCESSING_STATUSES == frozenset(
-        {
-            ProcessingStatus.REGISTERED,
-            ProcessingStatus.EXTRACTING,
-            ProcessingStatus.NORMALIZED,
-            ProcessingStatus.CHUNKED,
-            ProcessingStatus.INDEXED,
-        }
-    )
-    assert TERMINAL_PROCESSING_STATUSES == frozenset(
-        {
-            ProcessingStatus.READY,
-            ProcessingStatus.FAILED,
-        }
-    )
+pytestmark = pytest.mark.contract
 
 
-def test_allowed_next_processing_statuses_matches_locked_transition_table() -> None:
-    assert allowed_next_processing_statuses(ProcessingStatus.UPLOADED) == frozenset(
-        {ProcessingStatus.REGISTERED}
+def test_lifecycle_event_requires_stage_and_to_status() -> None:
+    with pytest.raises(ValidationError) as excinfo:
+        LifecycleEvent(
+            event_id="event-1",
+            doc_id="doc-1",
+            occurred_at=datetime(2026, 3, 11, tzinfo=UTC),
+        )
+
+    message = str(excinfo.value)
+    assert "stage" in message
+    assert "to_status" in message
+
+
+def test_lifecycle_stage_enum_values_are_stable() -> None:
+    assert [stage.value for stage in LifecycleStage] == [
+        "upload",
+        "register",
+        "extract",
+        "normalize",
+        "chunk",
+        "index",
+        "readiness",
+    ]
+
+
+def test_failure_category_enum_covers_expected_failure_classes() -> None:
+    assert [category.value for category in FailureCategory] == [
+        "validation",
+        "unsupported_input",
+        "processing",
+        "internal",
+    ]
+
+
+def test_lifecycle_event_detail_defaults_to_mapping() -> None:
+    event = LifecycleEvent(
+        event_id="event-1",
+        doc_id="doc-1",
+        stage=LifecycleStage.REGISTER,
+        from_status=ProcessingStatus.UPLOADED,
+        to_status=ProcessingStatus.REGISTERED,
+        occurred_at=datetime(2026, 3, 11, tzinfo=UTC),
     )
-    assert allowed_next_processing_statuses(ProcessingStatus.INDEXED) == frozenset(
-        {ProcessingStatus.READY, ProcessingStatus.FAILED}
-    )
+
+    assert event.detail == {}
 
 
 def test_lifecycle_event_accepts_failed_transition_with_failure_category() -> None:
@@ -90,3 +110,9 @@ def test_lifecycle_event_rejects_failure_category_for_non_failed_transition() ->
             failure_category=FailureCategory.VALIDATION,
             detail={},
         )
+
+
+def test_runtime_models_are_internal_not_contract_models() -> None:
+    assert not hasattr(contracts, "LifecycleEvent")
+    assert not hasattr(contracts, "LifecycleStage")
+    assert not hasattr(contracts, "FailureCategory")
