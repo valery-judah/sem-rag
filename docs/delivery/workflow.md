@@ -75,7 +75,7 @@ Second, the system is fundamentally **structure-sensitive**. A poor parser or se
 
 Third, the system is fundamentally **traceability-sensitive**. If evidence cannot be mapped back to anchors in the source corpus, citation quality and trust collapse.
 
-Fourth, the system must be designed around **layered quality**, not only answer-level quality. Representation quality, retrieval quality, context quality, and answer quality are distinct concerns.
+Fourth, the system must be designed around **layered quality**, not only answer-level quality. Representation quality, retrieval quality, context quality, and answer quality are distinct concerns. (#todo why?)
 
 This thesis should govern every later modeling and implementation decision.
 
