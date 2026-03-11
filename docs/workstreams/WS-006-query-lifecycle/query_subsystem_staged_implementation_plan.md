@@ -358,6 +358,8 @@ Implement the first real evidence discovery path using dense passage retrieval o
 
 Retrieval is the first place where the subsystem produces candidate evidence. It must preserve identity and provenance before any support reasoning can be trustworthy, and it must consume the interpreted query contract rather than stand in for it.
 
+Detailed repo-facing design for this stage lives in `13_stage-3-retrieval-foundation-design.md`.
+
 ## Deliverables
 
 ### 3.1 Query embedding adapter

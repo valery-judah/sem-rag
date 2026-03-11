@@ -7,6 +7,7 @@ import pytest
 from parity._contracts import ProcessingStatus
 from parity.indexing import IndexEntry
 from parity.persistence import (
+    SqlChunkEmbeddingRepository,
     SqlChunkRepository,
     SqlDocumentRepository,
     SqlIndexEntryRepository,
@@ -25,6 +26,7 @@ def _service(sql_engine) -> QueryService:
             documents=SqlDocumentRepository(sql_engine),
             sections=SqlSectionRepository(sql_engine),
             chunks=SqlChunkRepository(sql_engine),
+            chunk_embeddings=SqlChunkEmbeddingRepository(sql_engine),
             index_entries=SqlIndexEntryRepository(sql_engine),
         ),
         run_store=SqlQueryRunStore(sql_engine),

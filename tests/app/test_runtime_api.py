@@ -13,13 +13,16 @@ from parity.app.deps import (
     get_queryable_corpus_read_model,
 )
 from parity.artifacts import FilesystemArtifactStore
+from parity.indexing import DeterministicEmbeddingAdapter, SqlVectorStore
 from parity.lifecycle import FailureCategory, LifecycleStage
 from parity.persistence import (
     DocumentJob,
     DocumentJobStage,
     DocumentJobStatus,
+    SqlChunkRepository,
     SqlDocumentJobRepository,
     SqlDocumentRepository,
+    SqlIndexEntryRepository,
     SqlLifecycleEventRepository,
 )
 from parity.query import QueryRequest
@@ -219,8 +222,10 @@ async def test_queries_route_returns_stub_result_and_persists_snapshot(
     app: FastAPI,
     sql_engine: Engine,
     persisted_document_factory,
+    chunk_factory,
 ) -> None:
     documents = SqlDocumentRepository(sql_engine)
+    chunks = SqlChunkRepository(sql_engine)
     snapshot_store = SqlQuerySnapshotStore(sql_engine)
     trace_store = SqlQueryTraceStore(sql_engine)
     documents.create(
@@ -230,10 +235,21 @@ async def test_queries_route_returns_stub_result_and_persists_snapshot(
             ingest_status=ProcessingStatus.READY,
         )
     )
+    ready_chunk = chunk_factory(
+        doc_id="doc-ready",
+        chunk_id="chunk-ready",
+        text="vector search uses embeddings to retrieve related passages",
+    )
+    chunks.save([ready_chunk])
+    SqlVectorStore(
+        engine=sql_engine,
+        embedding_adapter=DeterministicEmbeddingAdapter(),
+        index_entries=SqlIndexEntryRepository(sql_engine),
+    ).publish_document(doc_id="doc-ready", chunks=[ready_chunk])
 
     result = await _route_endpoint(app, path="/queries", method="POST")(
         request=QueryRequest(
-            question="What is available in the corpus?",
+            question="What uses embeddings to retrieve related passages?",
             workspace_id="ws-1",
         ),
         service=_query_service(sql_engine),
@@ -244,13 +260,16 @@ async def test_queries_route_returns_stub_result_and_persists_snapshot(
     assert result.status.value == "running"
     assert result.snapshot.eligible_doc_ids == ["doc-ready"]
     assert result.interpreted_query.request_type.value == "fact_lookup"
-    assert result.message == "query interpretation completed; downstream stages are not implemented yet"
+    assert len(result.retrieved_candidates) == 1
+    assert result.retrieved_candidates[0].chunk_id == "chunk-ready"
+    assert result.message == "query retrieval completed; downstream stages are not implemented yet"
     persisted_snapshot = snapshot_store.get_snapshot(result.query_id)
     persisted_traces = trace_store.list_stage_traces(result.query_id)
     assert persisted_snapshot is not None
     assert persisted_snapshot.model_dump() == result.snapshot.model_dump()
-    assert len(persisted_traces) == 1
+    assert len(persisted_traces) == 2
     assert persisted_traces[0].stage_name.value == "interpret"
+    assert persisted_traces[1].stage_name.value == "retrieve"
 
 
 async def test_queries_route_allows_empty_snapshot(

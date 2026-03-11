@@ -22,9 +22,9 @@ from .contracts import (
     QuerySpecificity,
     QueryStageName,
     RetrievedCandidate,
-    SynthesisMode,
     SupportAssessment,
     SupportState,
+    SynthesisMode,
     TrustFailureLabel,
     UnsupportedCapability,
 )
@@ -37,8 +37,8 @@ from .errors import (
     QueryStageNotImplementedError,
     UnsupportedPolicyOverrideError,
 )
-from .policies import QueryPolicy, QueryPolicyDefaults
 from .persistence import QueryRunStore, QuerySnapshotStore, QueryTraceStore, SqlQueryTraceStore
+from .policies import QueryPolicy, QueryPolicyDefaults
 from .service import QueryService
 from .trace import QueryStageTrace, QueryStageTraceStatus, QueryTraceBundle
 

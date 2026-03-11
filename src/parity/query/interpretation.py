@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import re
 from collections.abc import Iterable
-from typing import Protocol
+from typing import Protocol, TypeVar
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -21,6 +21,7 @@ from .contracts import (
 _WHITESPACE_RE = re.compile(r"\s+")
 _NON_ALNUM_RE = re.compile(r"[^a-z0-9\s]+")
 _TOKEN_RE = re.compile(r"[a-z0-9][a-z0-9_-]*")
+_T = TypeVar("_T")
 _STOPWORDS = frozenset(
     {
         "a",
@@ -279,9 +280,15 @@ def _requires_source_navigation(normalized_question: str) -> bool:
 
 def _detect_unsupported_capabilities(normalized_question: str) -> list[UnsupportedCapability]:
     flags: list[UnsupportedCapability] = []
-    if any(token in normalized_question for token in ("outside the corpus", "latest", "current events")):
+    if any(
+        token in normalized_question
+        for token in ("outside the corpus", "latest", "current events")
+    ):
         flags.append(UnsupportedCapability.EXTERNAL_KNOWLEDGE)
-    if any(token in normalized_question for token in ("figure", "diagram", "image", "screenshot", "chart")):
+    if any(
+        token in normalized_question
+        for token in ("figure", "diagram", "image", "screenshot", "chart")
+    ):
         flags.append(UnsupportedCapability.IMAGE_OR_FIGURE_REASONING)
     if "table" in normalized_question:
         flags.append(UnsupportedCapability.TABLE_HEAVY_ANSWERING)
@@ -306,7 +313,10 @@ def _derive_answer_shape(
         return "qualified_comparison"
     if synthesis_mode is SynthesisMode.CROSS_DOCUMENT:
         return "multi_source_synthesis"
-    if request_type is QueryRequestType.EXPLANATION and specificity is QuerySpecificity.SECTION_SCOPED:
+    if (
+        request_type is QueryRequestType.EXPLANATION
+        and specificity is QuerySpecificity.SECTION_SCOPED
+    ):
         return "section_scoped_explanation"
     if request_type is QueryRequestType.EXPLANATION:
         return "explanatory_paragraph"
@@ -325,6 +335,6 @@ def _extract_scope_hints(normalized_question: str) -> list[str]:
     return hints
 
 
-def _sorted_unique(values: Iterable[object]) -> list[object]:
+def _sorted_unique(values: Iterable[_T]) -> list[_T]:
     unique = {value for value in values}
     return sorted(unique, key=lambda value: str(value))

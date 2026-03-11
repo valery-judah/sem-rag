@@ -5,8 +5,9 @@ from datetime import UTC, datetime
 import pytest
 
 from parity._contracts import ProcessingStatus
-from parity.indexing import IndexEntry
+from parity.indexing import ChunkEmbedding, IndexEntry
 from parity.persistence import (
+    SqlChunkEmbeddingRepository,
     SqlChunkRepository,
     SqlDocumentRepository,
     SqlIndexEntryRepository,
@@ -22,6 +23,7 @@ def _read_model(sql_engine) -> SqlQueryableCorpusReadModel:
         documents=SqlDocumentRepository(sql_engine),
         sections=SqlSectionRepository(sql_engine),
         chunks=SqlChunkRepository(sql_engine),
+        chunk_embeddings=SqlChunkEmbeddingRepository(sql_engine),
         index_entries=SqlIndexEntryRepository(sql_engine),
     )
 
@@ -141,3 +143,79 @@ def test_list_chunks_for_snapshot_returns_only_provenance_bearing_chunks(
     assert [chunk.chunk_id for chunk in queryable_chunks] == ["chunk-provenanced"]
     assert queryable_chunks[0].heading_path
     assert queryable_chunks[0].page_start == 1
+
+
+def test_list_embedded_chunks_for_snapshot_returns_only_snapshot_chunks_with_embeddings(
+    sql_engine,
+    persisted_document_factory,
+    chunk_factory,
+) -> None:
+    documents = SqlDocumentRepository(sql_engine)
+    chunks = SqlChunkRepository(sql_engine)
+    embeddings = SqlChunkEmbeddingRepository(sql_engine)
+
+    documents.create(
+        persisted_document_factory(
+            doc_id="doc-ready",
+            workspace_id="ws-1",
+            ingest_status=ProcessingStatus.READY,
+        )
+    )
+    documents.create(
+        persisted_document_factory(
+            doc_id="doc-outside",
+            workspace_id="ws-2",
+            ingest_status=ProcessingStatus.READY,
+        )
+    )
+    chunks.save(
+        [
+            chunk_factory(
+                doc_id="doc-ready",
+                chunk_id="chunk-embedded",
+                text="semantic retrieval over embeddings",
+            ),
+            chunk_factory(
+                doc_id="doc-ready",
+                chunk_id="chunk-missing-embedding",
+                text="missing embedding should not surface",
+                ordinal=1,
+            ),
+            chunk_factory(
+                doc_id="doc-outside",
+                chunk_id="chunk-outside",
+                text="outside workspace chunk",
+            ),
+        ]
+    )
+    embeddings.replace_for_document(
+        "doc-ready",
+        [
+            ChunkEmbedding(
+                chunk_id="chunk-embedded",
+                doc_id="doc-ready",
+                embedding_model="deterministic-hash-v1",
+                embedding_vector=[0.1, 0.2, 0.3],
+                created_at=datetime(2026, 3, 11, tzinfo=UTC),
+            )
+        ],
+    )
+    embeddings.replace_for_document(
+        "doc-outside",
+        [
+            ChunkEmbedding(
+                chunk_id="chunk-outside",
+                doc_id="doc-outside",
+                embedding_model="deterministic-hash-v1",
+                embedding_vector=[0.9, 0.8, 0.7],
+                created_at=datetime(2026, 3, 11, tzinfo=UTC),
+            )
+        ],
+    )
+
+    snapshot = _read_model(sql_engine).capture_snapshot("ws-1")
+    embedded_chunks = _read_model(sql_engine).list_embedded_chunks_for_snapshot(snapshot)
+
+    assert [chunk.chunk_id for chunk in embedded_chunks] == ["chunk-embedded"]
+    assert embedded_chunks[0].embedding_model == "deterministic-hash-v1"
+    assert embedded_chunks[0].embedding_vector == [0.1, 0.2, 0.3]

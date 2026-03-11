@@ -7,8 +7,6 @@ from typing import Annotated
 from fastapi import Body, Depends, FastAPI, File, Form, HTTPException, UploadFile, status
 from pydantic import BaseModel, ConfigDict, Field
 
-from parity.query import CorpusSnapshot, InterpretedQuery, QueryRequest, QueryRunStatus, QueryService
-from parity.query.errors import CorpusBoundaryUnavailableError
 from parity.lifecycle.service import (
     DocumentArtifactRefs,
     DocumentLifecycleService,
@@ -21,6 +19,15 @@ from parity.lifecycle.service import (
     UploadDocumentResult,
 )
 from parity.lifecycle.worker import DocumentLifecycleWorker
+from parity.query import (
+    CorpusSnapshot,
+    InterpretedQuery,
+    QueryRequest,
+    QueryRunStatus,
+    QueryService,
+    RetrievedCandidate,
+)
+from parity.query.errors import CorpusBoundaryUnavailableError
 from parity.stages import DocumentRegistrationError
 
 from .deps import (
@@ -41,7 +48,7 @@ class RetrievalQueryRequest(BaseModel):
 
 
 class QuerySubmissionResult(BaseModel):
-    """Internal response payload for Stage 2 query interpretation."""
+    """Internal response payload for Stage 3 retrieval execution."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -50,6 +57,7 @@ class QuerySubmissionResult(BaseModel):
     status: QueryRunStatus
     snapshot: CorpusSnapshot
     interpreted_query: InterpretedQuery
+    retrieved_candidates: list[RetrievedCandidate] = Field(default_factory=list)
     message: str = Field(min_length=1)
 
 
@@ -181,19 +189,25 @@ def create_app() -> FastAPI:
         service: Annotated[QueryService, Depends(get_query_service)],
     ) -> QuerySubmissionResult:
         try:
-            state = service.execute_until_interpretation(request)
+            state = service.execute_until_retrieval(request)
         except CorpusBoundaryUnavailableError as exc:
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                 detail=str(exc),
             ) from exc
+        if state.snapshot is None or state.interpreted_query is None:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="query execution returned incomplete stage state",
+            )
         return QuerySubmissionResult(
             query_id=state.run.query_id,
             workspace_id=state.run.workspace_id,
             status=state.run.status,
             snapshot=state.snapshot,
             interpreted_query=state.interpreted_query,
-            message="query interpretation completed; downstream stages are not implemented yet",
+            retrieved_candidates=state.retrieved_candidates,
+            message="query retrieval completed; downstream stages are not implemented yet",
         )
 
     @app.post("/internal/run-next-job")

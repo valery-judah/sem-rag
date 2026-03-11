@@ -36,13 +36,13 @@ It does not create a stable public API.
 
 Stage 2 is implemented with:
 
-- a stronger `InterpretedQuery` contract in [contracts.py](../../../../../src/parity/query/contracts.py);
-- deterministic interpretation and normalization helpers in [interpretation.py](../../../../../src/parity/query/interpretation.py);
-- an executable `interpret` stage in [interpret.py](../../../../../src/parity/query/stages/interpret.py);
-- durable query stage traces through [persistence.py](../../../../../src/parity/query/persistence.py);
-- a new migration [0005_query_stage_traces.py](../../../../../src/parity/persistence/migrations/versions/0005_query_stage_traces.py);
-- Stage 2 service wiring in [service.py](../../../../../src/parity/query/service.py);
-- internal route integration in [api.py](../../../../../src/parity/app/api.py) and [deps.py](../../../../../src/parity/app/deps.py).
+- a stronger `InterpretedQuery` contract in [contracts.py](src/parity/query/contracts.py);
+- deterministic interpretation and normalization helpers in [interpretation.py](src/parity/query/interpretation.py);
+- an executable `interpret` stage in [interpret.py](src/parity/query/stages/interpret.py);
+- durable query stage traces through [persistence.py](src/parity/query/persistence.py);
+- a new migration [0005_query_stage_traces.py](src/parity/persistence/migrations/versions/0005_query_stage_traces.py);
+- Stage 2 service wiring in [service.py](src/parity/query/service.py);
+- internal route integration in [api.py](src/parity/app/api.py) and [deps.py](src/parity/app/deps.py).
 
 ## Design constraints resolved in Stage 2
 
@@ -67,7 +67,7 @@ The implemented consequence is pragmatic:
 
 ### Strengthened `InterpretedQuery` contract
 
-[contracts.py](../../../../../src/parity/query/contracts.py) now defines:
+[contracts.py](src/parity/query/contracts.py) now defines:
 
 - `QuerySpecificity`
 - `SynthesisMode`
@@ -90,7 +90,7 @@ This keeps Stage 2 aligned with QL-1 by preserving distinctions among factual lo
 
 ### Deterministic interpreter seam
 
-[interpretation.py](../../../../../src/parity/query/interpretation.py) now exposes:
+[interpretation.py](src/parity/query/interpretation.py) now exposes:
 
 - `QueryInterpreter`
 - `RawInterpretedQuery`
@@ -121,7 +121,7 @@ The interpreter receives the Stage 1 `CorpusSnapshot`, but the current determini
 
 ### Interpretation stage execution
 
-[interpret.py](../../../../../src/parity/query/stages/interpret.py) now runs a real Stage 2 interpretation step.
+[interpret.py](src/parity/query/stages/interpret.py) now runs a real Stage 2 interpretation step.
 
 The stage:
 
@@ -135,12 +135,12 @@ Stage 2 records request-shape and capability-boundary signals only.
 
 ### Durable query stage traces
 
-[persistence.py](../../../../../src/parity/query/persistence.py) now includes:
+[persistence.py](src/parity/query/persistence.py) now includes:
 
 - `query_stage_traces_table`
 - `SqlQueryTraceStore`
 
-[0005_query_stage_traces.py](../../../../../src/parity/persistence/migrations/versions/0005_query_stage_traces.py) creates:
+[0005_query_stage_traces.py](src/parity/persistence/migrations/versions/0005_query_stage_traces.py) creates:
 
 - `query_stage_traces`
 
@@ -160,7 +160,7 @@ The `interpret` trace payload currently includes:
 
 ### Query service behavior
 
-[service.py](../../../../../src/parity/query/service.py) now supports Stage 2 execution through:
+[service.py](src/parity/query/service.py) now supports Stage 2 execution through:
 
 - `prepare_query()`
 - `execute_until_interpretation()`
@@ -180,7 +180,7 @@ If no query corpus read model is configured, `execute()` still follows the Stage
 
 ### Internal API surface
 
-[api.py](../../../../../src/parity/app/api.py) now exposes internal `POST /queries` with Stage 2 behavior.
+[api.py](src/parity/app/api.py) now exposes internal `POST /queries` with Stage 2 behavior.
 
 It accepts:
 
@@ -208,7 +208,7 @@ It does not promote a stable public API contract.
 
 ### App wiring
 
-[deps.py](../../../../../src/parity/app/deps.py) now wires:
+[deps.py](src/parity/app/deps.py) now wires:
 
 - `SqlQueryTraceStore`
 - `DeterministicQueryInterpreter`
@@ -221,12 +221,12 @@ No provider-backed LLM configuration is required to execute Stage 2 locally.
 
 Stage 2 is covered by:
 
-- [test_query_contract_models.py](../../../../../tests/contract/test_query_contract_models.py)
-- [test_interpretation.py](../../../../../tests/query/test_interpretation.py)
-- [test_query_service_prepare.py](../../../../../tests/query/test_query_service_prepare.py)
-- [test_query_service_interpret.py](../../../../../tests/query/test_query_service_interpret.py)
-- [test_runtime_api.py](../../../../../tests/app/test_runtime_api.py)
-- [test_postgres_migrations.py](../../../../../tests/persistence/test_postgres_migrations.py)
+- [test_query_contract_models.py](tests/contract/test_query_contract_models.py)
+- [test_interpretation.py](tests/query/test_interpretation.py)
+- [test_query_service_prepare.py](tests/query/test_query_service_prepare.py)
+- [test_query_service_interpret.py](tests/query/test_query_service_interpret.py)
+- [test_runtime_api.py](tests/app/test_runtime_api.py)
+- [test_postgres_migrations.py](tests/persistence/test_postgres_migrations.py)
 
 The current coverage locks the key Stage 2 invariants:
 
@@ -287,21 +287,21 @@ Why:
 Start with the stable query context base in `docs/harness-maintain/context-building-playbook.md`.
 Then use the Stage 2-specific route below.
 
-1. [11_stage-1-queryable-corpus-boundary-design.md](../../../../../docs/workstreams/WS-006-query-lifecycle/11_stage-1-queryable-corpus-boundary-design.md)
-2. [contracts.py](../../../../../src/parity/query/contracts.py)
-3. [interpretation.py](../../../../../src/parity/query/interpretation.py)
-4. [interpret.py](../../../../../src/parity/query/stages/interpret.py)
-5. [service.py](../../../../../src/parity/query/service.py)
-6. [persistence.py](../../../../../src/parity/query/persistence.py)
-7. [api.py](../../../../../src/parity/app/api.py)
-8. [deps.py](../../../../../src/parity/app/deps.py)
+1. [11_stage-1-queryable-corpus-boundary-design.md](docs/workstreams/WS-006-query-lifecycle/11_stage-1-queryable-corpus-boundary-design.md)
+2. [contracts.py](src/parity/query/contracts.py)
+3. [interpretation.py](src/parity/query/interpretation.py)
+4. [interpret.py](src/parity/query/stages/interpret.py)
+5. [service.py](src/parity/query/service.py)
+6. [persistence.py](src/parity/query/persistence.py)
+7. [api.py](src/parity/app/api.py)
+8. [deps.py](src/parity/app/deps.py)
 
 Then confirm in tests:
 
-1. [test_interpretation.py](../../../../../tests/query/test_interpretation.py)
-2. [test_query_service_interpret.py](../../../../../tests/query/test_query_service_interpret.py)
-3. [test_runtime_api.py](../../../../../tests/app/test_runtime_api.py)
-4. [test_postgres_migrations.py](../../../../../tests/persistence/test_postgres_migrations.py)
+1. [test_interpretation.py](tests/query/test_interpretation.py)
+2. [test_query_service_interpret.py](tests/query/test_query_service_interpret.py)
+3. [test_runtime_api.py](tests/app/test_runtime_api.py)
+4. [test_postgres_migrations.py](tests/persistence/test_postgres_migrations.py)
 
 ## Context Building
 

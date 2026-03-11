@@ -34,7 +34,7 @@ It does not create a stable public API.
 
 Stage 1 is implemented with:
 
-- a read-only query-facing document adapter in [documents.py](../../../../../src/parity/readmodels/documents.py);
+- a read-only query-facing document adapter in [documents.py](src/parity/readmodels/documents.py);
 - query-facing document, section, and chunk projections;
 - snapshot capture through `QueryService.prepare_query()`;
 - durable persistence for query runs and query snapshots;
@@ -63,7 +63,7 @@ The implemented consequence is straightforward:
 
 ### Read model
 
-[documents.py](../../../../../src/parity/readmodels/documents.py) now exposes:
+[documents.py](src/parity/readmodels/documents.py) now exposes:
 
 - `QueryableDocumentRecord`
 - `QueryableSectionRecord`
@@ -134,7 +134,7 @@ This keeps Stage 1 aligned with the trust requirement that query-time chunks rem
 
 ## Query persistence
 
-[persistence.py](../../../../../src/parity/query/persistence.py) now includes:
+[persistence.py](src/parity/query/persistence.py) now includes:
 
 - `QueryRunStore`
 - `QuerySnapshotStore`
@@ -152,7 +152,7 @@ Timezone normalization is handled on readback so SQLite-backed tests preserve UT
 
 ## Query service behavior
 
-[service.py](../../../../../src/parity/query/service.py) now supports Stage 1 preparation through:
+[service.py](src/parity/query/service.py) now supports Stage 1 preparation through:
 
 - `capture_snapshot(request, query_started_at=...)`
 - `prepare_query(request)`
@@ -170,7 +170,7 @@ It only upgrades its initialization path so configured environments capture the 
 
 ## Internal API surface
 
-[api.py](../../../../../src/parity/app/api.py) now exposes internal `POST /queries`.
+[api.py](src/parity/app/api.py) now exposes internal `POST /queries`.
 
 It accepts:
 
@@ -197,7 +197,7 @@ It does not promote a stable public API contract.
 
 ## App wiring
 
-[deps.py](../../../../../src/parity/app/deps.py) now wires:
+[deps.py](src/parity/app/deps.py) now wires:
 
 - `get_queryable_corpus_read_model()`
 - `get_query_service()`
@@ -206,7 +206,7 @@ The query service is constructed from the same SQL engine and persistence layer 
 
 ## Migrations
 
-Stage 1 adds [0004_query_subsystem_stage1.py](../../../../../src/parity/persistence/migrations/versions/0004_query_subsystem_stage1.py).
+Stage 1 adds [0004_query_subsystem_stage1.py](src/parity/persistence/migrations/versions/0004_query_subsystem_stage1.py).
 
 That migration creates:
 
@@ -219,9 +219,9 @@ These tables are the durable substrate for later query stages.
 
 Stage 1 is covered by:
 
-- [test_queryable_corpus_read_model.py](../../../../../tests/readmodels/test_queryable_corpus_read_model.py)
-- [test_query_service_prepare.py](../../../../../tests/query/test_query_service_prepare.py)
-- [test_runtime_api.py](../../../../../tests/app/test_runtime_api.py)
+- [test_queryable_corpus_read_model.py](tests/readmodels/test_queryable_corpus_read_model.py)
+- [test_query_service_prepare.py](tests/query/test_query_service_prepare.py)
+- [test_runtime_api.py](tests/app/test_runtime_api.py)
 
 The current coverage locks the key Stage 1 invariants:
 
@@ -289,17 +289,17 @@ Stable base first:
 
 Then use the Stage 1-specific route:
 
-1. [documents.py](../../../../../src/parity/readmodels/documents.py)
-2. [service.py](../../../../../src/parity/query/service.py)
-3. [persistence.py](../../../../../src/parity/query/persistence.py)
-4. [api.py](../../../../../src/parity/app/api.py)
-5. [deps.py](../../../../../src/parity/app/deps.py)
+1. [documents.py](src/parity/readmodels/documents.py)
+2. [service.py](src/parity/query/service.py)
+3. [persistence.py](src/parity/query/persistence.py)
+4. [api.py](src/parity/app/api.py)
+5. [deps.py](src/parity/app/deps.py)
 
 Then confirm in tests:
 
-1. [test_queryable_corpus_read_model.py](../../../../../tests/readmodels/test_queryable_corpus_read_model.py)
-2. [test_query_service_prepare.py](../../../../../tests/query/test_query_service_prepare.py)
-3. [test_runtime_api.py](../../../../../tests/app/test_runtime_api.py)
+1. [test_queryable_corpus_read_model.py](tests/readmodels/test_queryable_corpus_read_model.py)
+2. [test_query_service_prepare.py](tests/query/test_query_service_prepare.py)
+3. [test_runtime_api.py](tests/app/test_runtime_api.py)
 
 ## Context Building
 

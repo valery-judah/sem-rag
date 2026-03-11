@@ -23,9 +23,9 @@ from parity.query import (
     QueryRunStatus,
     QuerySpecificity,
     RetrievedCandidate,
-    SynthesisMode,
     SupportAssessment,
     SupportState,
+    SynthesisMode,
     TrustFailureLabel,
     UnsupportedCapability,
 )

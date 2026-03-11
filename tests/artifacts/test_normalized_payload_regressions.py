@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from parity.artifacts import NormalizedArtifact
 from parity._contracts import SourceType
+from parity.artifacts import NormalizedArtifact
 from parity.extractors import MarkdownExtractor
 from parity.normalizers import MarkdownNormalizer
 
