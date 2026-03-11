@@ -26,7 +26,7 @@ from parity.persistence import (
     SqlLifecycleEventRepository,
 )
 from parity.query import QueryRequest
-from parity.query.persistence import SqlQuerySnapshotStore, SqlQueryTraceStore
+from parity.query.persistence import SqlQueryAnswerStore, SqlQuerySnapshotStore, SqlQueryTraceStore
 
 pytestmark = pytest.mark.anyio
 
@@ -218,7 +218,7 @@ def test_retrieval_query_validates_positive_k() -> None:
         RetrievalQueryRequest(doc_id="doc-1", query="consensus", k=0)
 
 
-async def test_queries_route_returns_stage5_result_and_persists_traces(
+async def test_queries_route_returns_final_answer_and_persists_artifacts(
     app: FastAPI,
     sql_engine: Engine,
     persisted_document_factory,
@@ -228,6 +228,7 @@ async def test_queries_route_returns_stage5_result_and_persists_traces(
     chunks = SqlChunkRepository(sql_engine)
     snapshot_store = SqlQuerySnapshotStore(sql_engine)
     trace_store = SqlQueryTraceStore(sql_engine)
+    answer_store = SqlQueryAnswerStore(sql_engine)
     documents.create(
         persisted_document_factory(
             doc_id="doc-ready",
@@ -257,7 +258,7 @@ async def test_queries_route_returns_stage5_result_and_persists_traces(
 
     assert isinstance(result, QuerySubmissionResult)
     assert result.workspace_id == "ws-1"
-    assert result.status.value == "running"
+    assert result.status.value == "succeeded"
     assert result.snapshot.eligible_doc_ids == ["doc-ready"]
     assert result.interpreted_query.request_type.value == "fact_lookup"
     assert len(result.retrieved_candidates) == 1
@@ -270,21 +271,31 @@ async def test_queries_route_returns_stage5_result_and_persists_traces(
     assert result.context_manifest.context_items[0].evidence_set_id == "es-1"
     assert result.support_assessment.support_state.value == "sufficient"
     assert result.answer_mode_decision.answer_mode.value == "direct_answer"
+    assert "vector search uses embeddings to retrieve related passages" in result.answer.answer_text
+    assert result.support_state.value == "sufficient"
+    assert result.answer_mode.value == "direct_answer"
+    assert result.visible_limitations == []
+    assert len(result.citations.citations) == 1
+    assert result.citations.material_doc_ids == ["doc-ready"]
     assert (
-        result.message == "query support assessment completed; grounded generation and "
-        "citation rendering are not implemented yet"
+        result.message == "query answer completed with grounded generation and rendered citations"
     )
     persisted_snapshot = snapshot_store.get_snapshot(result.query_id)
     persisted_traces = trace_store.list_stage_traces(result.query_id)
+    persisted_answer = answer_store.get_answer_artifacts(result.query_id)
     assert persisted_snapshot is not None
     assert persisted_snapshot.model_dump() == result.snapshot.model_dump()
-    assert len(persisted_traces) == 6
+    assert persisted_answer is not None
+    assert persisted_answer.answer.answer_text == result.answer.answer_text
+    assert len(persisted_traces) == 8
     assert persisted_traces[0].stage_name.value == "interpret"
     assert persisted_traces[1].stage_name.value == "retrieve"
     assert persisted_traces[2].stage_name.value == "select"
     assert persisted_traces[3].stage_name.value == "assemble_context"
     assert persisted_traces[4].stage_name.value == "assess_support"
     assert persisted_traces[5].stage_name.value == "decide_answer_mode"
+    assert persisted_traces[6].stage_name.value == "generate"
+    assert persisted_traces[7].stage_name.value == "render_citations"
 
 
 async def test_queries_route_allows_empty_snapshot(
@@ -307,6 +318,9 @@ async def test_queries_route_allows_empty_snapshot(
     assert result.context_manifest.context_items == []
     assert result.support_assessment.support_state.value == "insufficient"
     assert result.answer_mode_decision.answer_mode.value == "full_abstention"
+    assert result.status.value == "succeeded"
+    assert "does not provide enough support" in result.answer.answer_text
+    assert result.citations.citations == []
 
 
 async def test_healthz_returns_ok(app: FastAPI) -> None:

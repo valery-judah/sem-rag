@@ -20,7 +20,10 @@ from parity.lifecycle.service import (
 )
 from parity.lifecycle.worker import DocumentLifecycleWorker
 from parity.query import (
+    AnswerDraft,
+    AnswerMode,
     AnswerModeDecision,
+    CitationBundle,
     ContextManifest,
     CorpusSnapshot,
     EvidenceSet,
@@ -30,6 +33,7 @@ from parity.query import (
     QueryService,
     RetrievedCandidate,
     SupportAssessment,
+    SupportState,
 )
 from parity.query.errors import CorpusBoundaryUnavailableError
 from parity.stages import DocumentRegistrationError
@@ -52,7 +56,7 @@ class RetrievalQueryRequest(BaseModel):
 
 
 class QuerySubmissionResult(BaseModel):
-    """Internal response payload for Stage 6 answer-mode execution."""
+    """Internal response payload for Stage 7 end-to-end query execution."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -67,6 +71,11 @@ class QuerySubmissionResult(BaseModel):
     context_manifest: ContextManifest
     support_assessment: SupportAssessment
     answer_mode_decision: AnswerModeDecision
+    answer: AnswerDraft
+    support_state: SupportState
+    answer_mode: AnswerMode
+    visible_limitations: list[str] = Field(default_factory=list)
+    citations: CitationBundle
     message: str = Field(min_length=1)
 
 
@@ -191,14 +200,14 @@ def create_app() -> FastAPI:
     @app.post(
         "/queries",
         response_model=QuerySubmissionResult,
-        status_code=status.HTTP_202_ACCEPTED,
+        status_code=status.HTTP_200_OK,
     )
     async def submit_query(
         request: Annotated[QueryRequest, Body()],
         service: Annotated[QueryService, Depends(get_query_service)],
     ) -> QuerySubmissionResult:
         try:
-            state = service.execute_until_answer_mode(request)
+            state = service.execute_until_answer(request)
         except CorpusBoundaryUnavailableError as exc:
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
@@ -210,6 +219,8 @@ def create_app() -> FastAPI:
             or state.context_manifest is None
             or state.support_assessment is None
             or state.answer_mode_decision is None
+            or state.answer_draft is None
+            or state.citation_bundle is None
         ):
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -227,10 +238,12 @@ def create_app() -> FastAPI:
             context_manifest=state.context_manifest,
             support_assessment=state.support_assessment,
             answer_mode_decision=state.answer_mode_decision,
-            message=(
-                "query support assessment completed; grounded generation and "
-                "citation rendering are not implemented yet"
-            ),
+            answer=state.answer_draft,
+            support_state=state.support_assessment.support_state,
+            answer_mode=state.answer_mode_decision.answer_mode,
+            visible_limitations=state.answer_draft.visible_limitations,
+            citations=state.citation_bundle,
+            message="query answer completed with grounded generation and rendered citations",
         )
 
     @app.post("/internal/run-next-job")

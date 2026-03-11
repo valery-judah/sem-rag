@@ -7,20 +7,28 @@ from uuid import uuid4
 
 from parity.readmodels import QueryableCorpusReadModel
 
+from .answer_generation import DeterministicGroundedAnswerGenerator, GroundedAnswerGenerator
 from .answer_mode_policy import AnswerModePolicy
+from .citation_rendering import CitationRenderer, DeterministicCitationRenderer
 from .context_assembly import ContextAssembler
-from .contracts import CorpusSnapshot, QueryRequest, QueryRun, QueryRunStatus
+from .contracts import CorpusSnapshot, FinalQueryArtifacts, QueryRequest, QueryRun, QueryRunStatus
 from .domain import QueryRuntimeState
-from .errors import CorpusBoundaryUnavailableError, QueryStageNotImplementedError
+from .errors import (
+    CorpusBoundaryUnavailableError,
+    QueryStageContractViolationError,
+    QueryStageNotImplementedError,
+)
 from .interpretation import DeterministicQueryInterpreter, QueryInterpreter
-from .persistence import QueryRunStore, QuerySnapshotStore, QueryTraceStore
+from .persistence import QueryAnswerStore, QueryRunStore, QuerySnapshotStore, QueryTraceStore
 from .policies import QueryPolicy, QueryPolicyDefaults, apply_policy_overrides
 from .retrieval import DenseQueryRetriever
 from .selection import QuerySelector
 from .stages.assess_support import run as run_assess_support_stage
 from .stages.context import run as run_context_stage
 from .stages.decide_answer_mode import run as run_decide_answer_mode_stage
+from .stages.generate import run as run_generate_stage
 from .stages.interpret import run as run_interpret_stage
+from .stages.render_citations import run as run_render_citations_stage
 from .stages.retrieve import run as run_retrieve_stage
 from .stages.select import run as run_select_stage
 from .support_assessment import HybridSupportAssessor
@@ -43,6 +51,9 @@ class QueryService:
         context_assembler: ContextAssembler | None = None,
         support_assessor: HybridSupportAssessor | None = None,
         answer_mode_policy: AnswerModePolicy | None = None,
+        answer_generator: GroundedAnswerGenerator | None = None,
+        citation_renderer: CitationRenderer | None = None,
+        answer_store: QueryAnswerStore | None = None,
     ) -> None:
         self._base_policy = base_policy or QueryPolicyDefaults.build()
         self._corpus_read_model = corpus_read_model
@@ -55,6 +66,9 @@ class QueryService:
         self._context_assembler = context_assembler
         self._support_assessor = support_assessor
         self._answer_mode_policy = answer_mode_policy
+        self._answer_generator = answer_generator or DeterministicGroundedAnswerGenerator()
+        self._citation_renderer = citation_renderer or DeterministicCitationRenderer()
+        self._answer_store = answer_store
 
     @property
     def base_policy(self) -> QueryPolicy:
@@ -206,11 +220,13 @@ class QueryService:
         return state
 
     def execute(self, request: QueryRequest) -> QueryRuntimeState:
-        """Reject execution until later stages are implemented."""
+        """Execute the deepest configured query lifecycle path."""
 
         if self._corpus_read_model is None:
-            state = self.initialize_runtime_state(request)
-        elif self._support_assessor is not None and self._answer_mode_policy is not None:
+            raise QueryStageNotImplementedError("query corpus read model is not configured")
+        if self._answer_store is not None:
+            return self.execute_until_answer(request)
+        if self._support_assessor is not None and self._answer_mode_policy is not None:
             state = self.execute_until_answer_mode(request)
         elif self._context_assembler is not None:
             state = self.execute_until_context_assembly(request)
@@ -221,7 +237,7 @@ class QueryService:
         else:
             state = self.execute_until_interpretation(request)
         raise QueryStageNotImplementedError(
-            "Query execution is not implemented beyond answer-mode decision for "
+            "Query execution is not implemented beyond the deepest configured stage for "
             f"{state.run.query_id}",
         )
 
@@ -295,3 +311,101 @@ class QueryService:
         if self._trace_store is not None:
             self._trace_store.append_stage_trace(answer_mode_result.trace)
         return state
+
+    def execute_until_answer(self, request: QueryRequest) -> QueryRuntimeState:
+        """Run the query lifecycle through Stage 7 final answer completion."""
+
+        if self._answer_store is None:
+            raise QueryStageNotImplementedError("final answer persistence is not configured")
+        if self._answer_generator is None:
+            raise QueryStageNotImplementedError("generate stage is not configured")
+        if self._citation_renderer is None:
+            raise QueryStageNotImplementedError("render_citations stage is not configured")
+
+        state = self.execute_until_answer_mode(request)
+        if state.snapshot is None:
+            raise CorpusBoundaryUnavailableError("query corpus snapshot was not captured")
+        if state.interpreted_query is None:
+            raise QueryStageNotImplementedError(
+                "interpret stage did not produce an interpreted query"
+            )
+        if state.context_manifest is None:
+            raise QueryStageNotImplementedError(
+                "assemble_context stage did not produce a context manifest"
+            )
+        if state.support_assessment is None:
+            raise QueryStageNotImplementedError(
+                "assess_support stage did not produce a support assessment"
+            )
+        if state.answer_mode_decision is None:
+            raise QueryStageNotImplementedError(
+                "decide_answer_mode stage did not produce an answer mode decision"
+            )
+
+        try:
+            policy = self.resolve_policy(request)
+            generate_result = run_generate_stage(
+                query_id=state.run.query_id,
+                request=request,
+                snapshot=state.snapshot,
+                interpreted_query=state.interpreted_query,
+                context_manifest=state.context_manifest,
+                support_assessment=state.support_assessment,
+                answer_mode_decision=state.answer_mode_decision,
+                policy=policy,
+                generator=self._answer_generator,
+            )
+            state.answer_draft = generate_result.generation.answer_draft
+            if self._trace_store is not None:
+                self._trace_store.append_stage_trace(generate_result.trace)
+
+            render_result = run_render_citations_stage(
+                query_id=state.run.query_id,
+                request=request,
+                snapshot=state.snapshot,
+                interpreted_query=state.interpreted_query,
+                evidence_sets=state.evidence_sets,
+                context_manifest=state.context_manifest,
+                support_assessment=state.support_assessment,
+                answer_mode_decision=state.answer_mode_decision,
+                answer_draft=state.answer_draft,
+                policy=policy,
+                renderer=self._citation_renderer,
+            )
+            state.citation_bundle = render_result.rendering.citation_bundle
+            if self._trace_store is not None:
+                self._trace_store.append_stage_trace(render_result.trace)
+
+            if state.answer_draft.should_render_citations and not state.citation_bundle.citations:
+                raise QueryStageContractViolationError(
+                    "non-abstaining answers must not complete without citations"
+                )
+
+            self._answer_store.save_answer_artifacts(
+                state.run.query_id,
+                FinalQueryArtifacts(
+                    answer=state.answer_draft,
+                    citations=state.citation_bundle,
+                    support_state=state.support_assessment.support_state,
+                    qualifying_reason_codes=state.support_assessment.qualifying_reason_codes,
+                    answer_mode=state.answer_mode_decision.answer_mode,
+                    trust_failure_labels=state.support_assessment.trust_failure_labels,
+                ),
+            )
+            if self._run_store is not None:
+                state.run = self._run_store.update_query_run_status(
+                    state.run.query_id,
+                    QueryRunStatus.SUCCEEDED,
+                )
+            else:
+                state.run.status = QueryRunStatus.SUCCEEDED
+            return state
+        except Exception:
+            if self._run_store is not None:
+                state.run = self._run_store.update_query_run_status(
+                    state.run.query_id,
+                    QueryRunStatus.FAILED,
+                )
+            else:
+                state.run.status = QueryRunStatus.FAILED
+            raise

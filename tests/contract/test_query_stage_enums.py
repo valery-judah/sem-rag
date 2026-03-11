@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from parity.query import QueryStageName, QueryStageNotImplementedError, QueryStageTraceStatus
+from parity.query import QueryStageName, QueryStageTraceStatus
 from parity.query.stages import (
     ASSESS_SUPPORT_STAGE,
     CONTEXT_STAGE,
@@ -14,7 +14,6 @@ from parity.query.stages import (
     RETRIEVE_STAGE,
     SELECT_STAGE,
 )
-from parity.query.stages.generate import run as run_generate_stage
 
 pytestmark = pytest.mark.contract
 
@@ -44,10 +43,7 @@ def test_stage_placeholders_export_expected_stage_names() -> None:
     assert RENDER_CITATIONS_STAGE is QueryStageName.RENDER_CITATIONS
 
 
-def test_stage_placeholders_fail_closed_in_stage_zero() -> None:
-    with pytest.raises(QueryStageNotImplementedError, match="generate stage is not implemented"):
-        run_generate_stage()
-
+def test_stage_trace_status_values_remain_stable() -> None:
     assert [status.value for status in QueryStageTraceStatus] == [
         "pending",
         "succeeded",

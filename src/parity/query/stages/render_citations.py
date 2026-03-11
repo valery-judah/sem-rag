@@ -1,14 +1,95 @@
-"""Citation rendering stage placeholder."""
+"""Stage-7 citation rendering."""
 
 from __future__ import annotations
 
-from parity.query.contracts import QueryStageName
-from parity.query.errors import QueryStageNotImplementedError
+from pydantic import BaseModel, ConfigDict, Field
+
+from parity.query.citation_rendering import CitationRenderer, CitationRenderingResult
+from parity.query.contracts import (
+    AnswerDraft,
+    AnswerModeDecision,
+    CitationBundle,
+    ContextManifest,
+    CorpusSnapshot,
+    EvidenceSet,
+    InterpretedQuery,
+    QueryRequest,
+    QueryStageName,
+    SupportAssessment,
+)
+from parity.query.policies import QueryPolicy
+from parity.query.trace import QueryStageTrace, QueryStageTraceStatus, utc_now
 
 STAGE_NAME = QueryStageName.RENDER_CITATIONS
 
 
-def run() -> None:
-    """Placeholder Stage 0 entrypoint for citation rendering."""
+class RenderCitationsStageResult(BaseModel):
+    """Structured result of the citation-rendering stage."""
 
-    raise QueryStageNotImplementedError(f"{STAGE_NAME.value} stage is not implemented")
+    model_config = ConfigDict(extra="forbid")
+
+    rendering: CitationRenderingResult
+    trace: QueryStageTrace
+
+
+class RenderCitationsTracePayload(BaseModel):
+    """Structured trace payload for Stage 7 citation rendering."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    grounded_evidence_set_ids: list[str] = Field(default_factory=list)
+    citation_count: int = Field(ge=0)
+    citation_doc_ids: list[str] = Field(default_factory=list)
+    citation_support_roles: list[str] = Field(default_factory=list)
+    provenance_warnings: list[str] = Field(default_factory=list)
+    renderer_version: str = Field(min_length=1)
+
+
+def run(
+    *,
+    query_id: str,
+    request: QueryRequest,
+    snapshot: CorpusSnapshot,
+    interpreted_query: InterpretedQuery,
+    evidence_sets: list[EvidenceSet],
+    context_manifest: ContextManifest,
+    support_assessment: SupportAssessment,
+    answer_mode_decision: AnswerModeDecision,
+    answer_draft: AnswerDraft,
+    policy: QueryPolicy,
+    renderer: CitationRenderer,
+) -> RenderCitationsStageResult:
+    """Render citations from stored provenance only."""
+
+    del request, snapshot
+    started_at = utc_now()
+    rendering = renderer.render(
+        interpreted_query=interpreted_query,
+        evidence_sets=evidence_sets,
+        context_manifest=context_manifest,
+        support_assessment=support_assessment,
+        answer_mode_decision=answer_mode_decision,
+        answer_draft=answer_draft,
+        policy=policy,
+    )
+    finished_at = utc_now()
+    citation_bundle: CitationBundle = rendering.citation_bundle
+    payload = RenderCitationsTracePayload(
+        grounded_evidence_set_ids=answer_draft.grounded_evidence_set_ids,
+        citation_count=len(citation_bundle.citations),
+        citation_doc_ids=citation_bundle.material_doc_ids,
+        citation_support_roles=[
+            citation.support_role.value for citation in citation_bundle.citations
+        ],
+        provenance_warnings=rendering.provenance_warnings,
+        renderer_version=rendering.renderer_version,
+    )
+    trace = QueryStageTrace(
+        query_id=query_id,
+        stage_name=STAGE_NAME,
+        stage_status=QueryStageTraceStatus.SUCCEEDED,
+        started_at=started_at,
+        finished_at=finished_at,
+        payload=payload.model_dump(mode="json"),
+    )
+    return RenderCitationsStageResult(rendering=rendering, trace=trace)

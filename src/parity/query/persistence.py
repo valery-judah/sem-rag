@@ -4,12 +4,23 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from datetime import UTC, datetime
-from typing import Protocol
+from typing import Protocol, cast
 
 import sqlalchemy as sa
 from sqlalchemy.engine import Engine
 
-from .contracts import AnswerDraft, CitationBundle, CorpusSnapshot, QueryRun, QueryRunStatus
+from .contracts import (
+    AnswerDraft,
+    AnswerMode,
+    CitationBundle,
+    CorpusSnapshot,
+    FinalQueryArtifacts,
+    QueryRun,
+    QueryRunStatus,
+    SupportQualifierReason,
+    SupportState,
+    TrustFailureLabel,
+)
 from .trace import QueryStageTrace
 
 query_metadata = sa.MetaData()
@@ -59,6 +70,29 @@ query_stage_traces_table = sa.Table(
     sa.Column("payload_json", sa.JSON(), nullable=False),
 )
 
+query_answers_table = sa.Table(
+    "query_answers",
+    query_metadata,
+    sa.Column(
+        "query_id",
+        sa.Text(),
+        sa.ForeignKey("query_runs.query_id", ondelete="CASCADE"),
+        primary_key=True,
+    ),
+    sa.Column("answer_text", sa.Text(), nullable=False),
+    sa.Column("visible_limitations_json", sa.JSON(), nullable=False),
+    sa.Column("should_render_citations", sa.Boolean(), nullable=False),
+    sa.Column("grounded_evidence_set_ids_json", sa.JSON(), nullable=False),
+    sa.Column("support_state", sa.Text(), nullable=False),
+    sa.Column("qualifying_reason_codes_json", sa.JSON(), nullable=False),
+    sa.Column("answer_mode", sa.Text(), nullable=False),
+    sa.Column("citations_json", sa.JSON(), nullable=False),
+    sa.Column("trust_failure_labels_json", sa.JSON(), nullable=False),
+    sa.Column("generator_version", sa.Text(), nullable=False),
+    sa.Column("renderer_version", sa.Text(), nullable=True),
+    sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
+)
+
 
 class QueryRunStore(Protocol):
     """Persistence interface for query run records."""
@@ -103,10 +137,12 @@ class QueryAnswerStore(Protocol):
     def save_answer_artifacts(
         self,
         query_id: str,
-        answer: AnswerDraft,
-        citations: CitationBundle,
+        artifacts: FinalQueryArtifacts,
     ) -> None:
         """Persist final answer and citation artifacts for a query run."""
+
+    def get_answer_artifacts(self, query_id: str) -> FinalQueryArtifacts | None:
+        """Load persisted final answer artifacts for a query run."""
 
 
 class SqlQueryRunStore:
@@ -195,6 +231,33 @@ class SqlQueryTraceStore:
         return [_row_to_stage_trace(dict(row)) for row in rows]
 
 
+class SqlQueryAnswerStore:
+    """SQLAlchemy-backed repository for final answer artifacts."""
+
+    def __init__(self, engine: Engine) -> None:
+        self._engine = engine
+
+    def save_answer_artifacts(
+        self,
+        query_id: str,
+        artifacts: FinalQueryArtifacts,
+    ) -> None:
+        row = _answer_artifacts_to_row(query_id, artifacts)
+        with self._engine.begin() as conn:
+            conn.execute(
+                sa.delete(query_answers_table).where(query_answers_table.c.query_id == query_id)
+            )
+            conn.execute(sa.insert(query_answers_table), [row])
+
+    def get_answer_artifacts(self, query_id: str) -> FinalQueryArtifacts | None:
+        stmt = sa.select(query_answers_table).where(query_answers_table.c.query_id == query_id)
+        with self._engine.begin() as conn:
+            row = conn.execute(stmt).mappings().first()
+        if row is None:
+            return None
+        return _row_to_answer_artifacts(dict(row))
+
+
 def _query_run_to_row(run: QueryRun) -> dict[str, object]:
     payload = run.model_dump(mode="python")
     payload["status"] = run.status.value
@@ -240,6 +303,56 @@ def _row_to_stage_trace(row: Mapping[str, object]) -> QueryStageTrace:
     if payload["finished_at"] is not None:
         payload["finished_at"] = _coerce_datetime(payload["finished_at"])
     return QueryStageTrace.model_validate(payload)
+
+
+def _answer_artifacts_to_row(
+    query_id: str,
+    artifacts: FinalQueryArtifacts,
+) -> dict[str, object]:
+    return {
+        "query_id": query_id,
+        "answer_text": artifacts.answer.answer_text,
+        "visible_limitations_json": artifacts.answer.visible_limitations,
+        "should_render_citations": artifacts.answer.should_render_citations,
+        "grounded_evidence_set_ids_json": artifacts.answer.grounded_evidence_set_ids,
+        "support_state": artifacts.support_state.value,
+        "qualifying_reason_codes_json": [
+            reason.value for reason in artifacts.qualifying_reason_codes
+        ],
+        "answer_mode": artifacts.answer_mode.value,
+        "citations_json": artifacts.citations.model_dump(mode="json"),
+        "trust_failure_labels_json": [label.value for label in artifacts.trust_failure_labels],
+        "generator_version": artifacts.answer.generator_version,
+        "renderer_version": artifacts.citations.renderer_version,
+        "created_at": artifacts.created_at,
+    }
+
+
+def _row_to_answer_artifacts(row: Mapping[str, object]) -> FinalQueryArtifacts:
+    payload = dict(row)
+    visible_limitations = cast(list[str], payload["visible_limitations_json"])
+    grounded_evidence_set_ids = cast(list[str], payload["grounded_evidence_set_ids_json"])
+    qualifying_reason_codes = cast(list[str], payload["qualifying_reason_codes_json"])
+    trust_failure_labels = cast(list[str], payload["trust_failure_labels_json"])
+    answer = AnswerDraft(
+        answer_text=str(payload["answer_text"]),
+        visible_limitations=visible_limitations,
+        should_render_citations=bool(payload["should_render_citations"]),
+        grounded_evidence_set_ids=grounded_evidence_set_ids,
+        generator_version=str(payload["generator_version"]),
+    )
+    citations = CitationBundle.model_validate(payload["citations_json"])
+    return FinalQueryArtifacts(
+        answer=answer,
+        citations=citations,
+        support_state=SupportState(str(payload["support_state"])),
+        qualifying_reason_codes=[
+            SupportQualifierReason(str(reason)) for reason in qualifying_reason_codes
+        ],
+        answer_mode=AnswerMode(str(payload["answer_mode"])),
+        trust_failure_labels=[TrustFailureLabel(str(label)) for label in trust_failure_labels],
+        created_at=_coerce_datetime(payload["created_at"]),
+    )
 
 
 def _coerce_datetime(value: object) -> datetime:

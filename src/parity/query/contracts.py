@@ -339,6 +339,8 @@ class AnswerDraft(BaseModel):
     answer_text: str = Field(min_length=1)
     visible_limitations: list[str] = Field(default_factory=list)
     should_render_citations: bool = True
+    grounded_evidence_set_ids: list[str] = Field(default_factory=list)
+    generator_version: str = Field(min_length=1)
 
 
 class CitationRecord(BaseModel):
@@ -346,6 +348,7 @@ class CitationRecord(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
+    evidence_set_id: str = Field(min_length=1)
     source_reference: SourceReference
     support_role: CitationSupportRole
 
@@ -356,4 +359,19 @@ class CitationBundle(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     citations: list[CitationRecord] = Field(default_factory=list)
+    material_doc_ids: list[str] = Field(default_factory=list)
     renderer_version: str | None = None
+
+
+class FinalQueryArtifacts(BaseModel):
+    """Durable final answer artifacts persisted after Stage 7."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    answer: AnswerDraft
+    citations: CitationBundle
+    support_state: SupportState
+    qualifying_reason_codes: list[SupportQualifierReason] = Field(default_factory=list)
+    answer_mode: AnswerMode
+    trust_failure_labels: list[TrustFailureLabel] = Field(default_factory=list)
+    created_at: datetime = Field(default_factory=utc_now)

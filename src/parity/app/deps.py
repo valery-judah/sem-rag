@@ -32,7 +32,12 @@ from parity.query import QueryService
 from parity.query.answer_mode_policy import DeterministicAnswerModePolicy
 from parity.query.context_assembly import DeterministicContextAssembler
 from parity.query.interpretation import DeterministicQueryInterpreter
-from parity.query.persistence import SqlQueryRunStore, SqlQuerySnapshotStore, SqlQueryTraceStore
+from parity.query.persistence import (
+    SqlQueryAnswerStore,
+    SqlQueryRunStore,
+    SqlQuerySnapshotStore,
+    SqlQueryTraceStore,
+)
 from parity.query.retrieval import SnapshotDenseQueryRetriever
 from parity.query.selection import DeterministicQuerySelector
 from parity.query.support_assessment import HybridSupportAssessor
@@ -245,7 +250,7 @@ def get_query_service(
         Depends(get_queryable_corpus_read_model),
     ],
 ) -> QueryService:
-    """Build the internal query service for Stage 1 snapshot capture."""
+    """Build the internal query service for end-to-end internal query execution."""
 
     return QueryService(
         corpus_read_model=corpus_read_model,
@@ -261,6 +266,7 @@ def get_query_service(
         context_assembler=DeterministicContextAssembler(),
         support_assessor=HybridSupportAssessor(),
         answer_mode_policy=DeterministicAnswerModePolicy(),
+        answer_store=SqlQueryAnswerStore(engine),
     )
 
 

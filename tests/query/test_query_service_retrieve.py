@@ -14,7 +14,12 @@ from parity.persistence import (
 from parity.query import QueryRequest, QueryService
 from parity.query.answer_mode_policy import DeterministicAnswerModePolicy
 from parity.query.context_assembly import DeterministicContextAssembler
-from parity.query.persistence import SqlQueryRunStore, SqlQuerySnapshotStore, SqlQueryTraceStore
+from parity.query.persistence import (
+    SqlQueryAnswerStore,
+    SqlQueryRunStore,
+    SqlQuerySnapshotStore,
+    SqlQueryTraceStore,
+)
 from parity.query.retrieval import SnapshotDenseQueryRetriever
 from parity.query.selection import DeterministicQuerySelector
 from parity.query.support_assessment import HybridSupportAssessor
@@ -48,6 +53,7 @@ def _service(sql_engine) -> QueryService:
         context_assembler=DeterministicContextAssembler(),
         support_assessor=HybridSupportAssessor(),
         answer_mode_policy=DeterministicAnswerModePolicy(),
+        answer_store=SqlQueryAnswerStore(sql_engine),
     )
 
 
@@ -290,3 +296,97 @@ def test_execute_until_answer_mode_handles_empty_snapshot_with_abstention(sql_en
     assert len(traces) == 6
     assert traces[4].payload["qualifying_reason_codes"] == ["no_evidence_available"]
     assert traces[5].payload["final_answer_mode"] == "full_abstention"
+
+
+def test_execute_until_answer_persists_final_answer_and_citation_artifacts(
+    sql_engine,
+    persisted_document_factory,
+    chunk_factory,
+) -> None:
+    documents = SqlDocumentRepository(sql_engine)
+    chunks = SqlChunkRepository(sql_engine)
+    trace_store = SqlQueryTraceStore(sql_engine)
+    answer_store = SqlQueryAnswerStore(sql_engine)
+    documents.create(
+        persisted_document_factory(
+            doc_id="doc-ready",
+            workspace_id="ws-1",
+            ingest_status=ProcessingStatus.READY,
+        )
+    )
+    ready_chunk = chunk_factory(
+        doc_id="doc-ready",
+        chunk_id="chunk-ready",
+        page_start=4,
+        page_end=4,
+        text="vector search uses embeddings to retrieve related passages",
+    )
+    chunks.save([ready_chunk])
+    SqlVectorStore(
+        engine=sql_engine,
+        embedding_adapter=DeterministicEmbeddingAdapter(),
+        index_entries=SqlIndexEntryRepository(sql_engine),
+        chunk_embeddings=SqlChunkEmbeddingRepository(sql_engine),
+    ).publish_document(doc_id="doc-ready", chunks=[ready_chunk])
+
+    state = _service(sql_engine).execute_until_answer(
+        QueryRequest(
+            question="What uses embeddings to retrieve related passages?",
+            workspace_id="ws-1",
+        )
+    )
+
+    traces = trace_store.list_stage_traces(state.run.query_id)
+    persisted = answer_store.get_answer_artifacts(state.run.query_id)
+
+    assert state.run.status.value == "succeeded"
+    assert state.answer_draft is not None
+    assert (
+        "vector search uses embeddings to retrieve related passages"
+        in state.answer_draft.answer_text
+    )
+    assert state.answer_draft.grounded_evidence_set_ids == ["es-1"]
+    assert state.answer_draft.generator_version == "answer_generation.deterministic.v1"
+    assert state.citation_bundle is not None
+    assert len(state.citation_bundle.citations) == 1
+    assert state.citation_bundle.material_doc_ids == ["doc-ready"]
+    assert state.citation_bundle.renderer_version == "citation_rendering.deterministic.v1"
+    assert len(traces) == 8
+    assert [trace.stage_name.value for trace in traces] == [
+        "interpret",
+        "retrieve",
+        "select",
+        "assemble_context",
+        "assess_support",
+        "decide_answer_mode",
+        "generate",
+        "render_citations",
+    ]
+    assert traces[6].payload["generator_version"] == "answer_generation.deterministic.v1"
+    assert traces[7].payload["citation_count"] == 1
+    assert persisted is not None
+    assert persisted.answer.answer_text == state.answer_draft.answer_text
+    assert persisted.citations.material_doc_ids == ["doc-ready"]
+    assert persisted.answer_mode.value == "direct_answer"
+
+
+def test_execute_until_answer_handles_empty_snapshot_with_honest_abstention(sql_engine) -> None:
+    answer_store = SqlQueryAnswerStore(sql_engine)
+
+    state = _service(sql_engine).execute_until_answer(
+        QueryRequest(
+            question="What is available in the corpus?",
+            workspace_id="empty-ws",
+        )
+    )
+
+    persisted = answer_store.get_answer_artifacts(state.run.query_id)
+
+    assert state.run.status.value == "succeeded"
+    assert state.answer_draft is not None
+    assert "does not provide enough support" in state.answer_draft.answer_text
+    assert state.answer_draft.should_render_citations is False
+    assert state.citation_bundle is not None
+    assert state.citation_bundle.citations == []
+    assert persisted is not None
+    assert persisted.citations.citations == []

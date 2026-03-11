@@ -14,6 +14,7 @@ from .contracts import (
     EvidenceGroupingMode,
     EvidenceSet,
     EvidenceUnit,
+    FinalQueryArtifacts,
     InterpretedQuery,
     QueryPolicyOverride,
     QueryRequest,
@@ -39,7 +40,14 @@ from .errors import (
     QueryStageNotImplementedError,
     UnsupportedPolicyOverrideError,
 )
-from .persistence import QueryRunStore, QuerySnapshotStore, QueryTraceStore, SqlQueryTraceStore
+from .persistence import (
+    QueryAnswerStore,
+    QueryRunStore,
+    QuerySnapshotStore,
+    QueryTraceStore,
+    SqlQueryAnswerStore,
+    SqlQueryTraceStore,
+)
 from .policies import QueryPolicy, QueryPolicyDefaults
 from .service import QueryService
 from .trace import QueryStageTrace, QueryStageTraceStatus, QueryTraceBundle
@@ -59,8 +67,10 @@ __all__ = [
     "EvidenceGroupingMode",
     "EvidenceSet",
     "EvidenceUnit",
+    "FinalQueryArtifacts",
     "InterpretedQuery",
     "InvalidQueryRequestError",
+    "QueryAnswerStore",
     "QueryError",
     "QueryPolicy",
     "QueryPolicyDefaults",
@@ -82,6 +92,7 @@ __all__ = [
     "QueryTraceStore",
     "QueryTraceBundle",
     "RetrievedCandidate",
+    "SqlQueryAnswerStore",
     "SqlQueryTraceStore",
     "SynthesisMode",
     "SupportAssessment",

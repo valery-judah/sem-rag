@@ -10,12 +10,16 @@ from parity.query import (
     AnswerDraft,
     AnswerMode,
     AnswerModeDecision,
+    CitationBundle,
+    CitationRecord,
+    CitationSupportRole,
     ContextItem,
     ContextManifest,
     CorpusSnapshot,
     EvidenceGroupingMode,
     EvidenceSet,
     EvidenceUnit,
+    FinalQueryArtifacts,
     InterpretedQuery,
     QueryPolicyOverride,
     QueryRequest,
@@ -281,6 +285,27 @@ def test_support_assessment_and_answer_decision_round_trip() -> None:
     draft = AnswerDraft(
         answer_text="The corpus partially addresses the question.",
         visible_limitations=["The answer is qualified because support is partial."],
+        grounded_evidence_set_ids=["es-1"],
+        generator_version="answer_generation.deterministic.v1",
+    )
+    citations = CitationBundle(
+        citations=[
+            CitationRecord(
+                evidence_set_id="es-1",
+                source_reference=make_source_reference(),
+                support_role=CitationSupportRole.PRIMARY,
+            )
+        ],
+        material_doc_ids=["doc-1"],
+        renderer_version="citation_rendering.deterministic.v1",
+    )
+    artifacts = FinalQueryArtifacts(
+        answer=draft,
+        citations=citations,
+        support_state=assessment.support_state,
+        qualifying_reason_codes=assessment.qualifying_reason_codes,
+        answer_mode=decision.answer_mode,
+        trust_failure_labels=assessment.trust_failure_labels,
     )
 
     assert decision.based_on_support_state is SupportState.PARTIAL
@@ -289,3 +314,4 @@ def test_support_assessment_and_answer_decision_round_trip() -> None:
         SupportQualifierReason.SCOPE_NARROWING_REQUIRED,
     ]
     assert draft.should_render_citations is True
+    assert artifacts.citations.material_doc_ids == ["doc-1"]

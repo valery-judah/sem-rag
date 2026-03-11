@@ -1,4 +1,4 @@
-"""Placeholder query stage modules for the staged query lifecycle."""
+"""Query stage module exports for the staged query lifecycle."""
 
 from .assess_support import STAGE_NAME as ASSESS_SUPPORT_STAGE
 from .context import STAGE_NAME as CONTEXT_STAGE
