@@ -113,6 +113,7 @@ Responsibilities:
 - shield query logic from raw persistence schema details.
 
 This context is read-only from the query subsystem’s perspective. It does not own document mutation, retries, or lifecycle transitions.
+In package terms, this may remain a top-level `readmodels/` adapter because it exposes document-lifecycle outputs to the query subsystem without making document internals part of `query/` ownership.
 
 ### 3.2 Query lifecycle domain
 
@@ -876,7 +877,7 @@ src/<app>/
     schemas.py
 ```
 
-This is a target internal module layout for the query subsystem inside the existing service, not a commitment to premature package fragmentation. During MVP implementation, prefer fewer modules with clear semantic ownership over many thin files whose boundaries are not yet justified.
+This is a target internal module layout for the query subsystem inside the existing service, not a commitment to premature package fragmentation. Here, `query/contracts/` should be read as transport-facing internal request/response/trace shapes, while the semantic stage and domain contracts remain centered in `query/domain/` and `query/stages/`. During MVP implementation, prefer fewer modules with clear semantic ownership over many thin files whose boundaries are not yet justified.
 
 ## 10. Policy defaults required before implementation
 
