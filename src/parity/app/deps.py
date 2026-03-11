@@ -29,7 +29,8 @@ from parity.persistence import (
     SqlSectionRepository,
 )
 from parity.query import QueryService
-from parity.query.persistence import SqlQueryRunStore, SqlQuerySnapshotStore
+from parity.query.interpretation import DeterministicQueryInterpreter
+from parity.query.persistence import SqlQueryRunStore, SqlQuerySnapshotStore, SqlQueryTraceStore
 from parity.readmodels import SqlQueryableCorpusReadModel
 from parity.stages import (
     ChunkDocumentStage,
@@ -244,6 +245,8 @@ def get_query_service(
         corpus_read_model=corpus_read_model,
         run_store=SqlQueryRunStore(engine),
         snapshot_store=SqlQuerySnapshotStore(engine),
+        trace_store=SqlQueryTraceStore(engine),
+        interpreter=DeterministicQueryInterpreter(),
     )
 
 

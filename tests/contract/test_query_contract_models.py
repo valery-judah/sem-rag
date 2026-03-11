@@ -21,10 +21,13 @@ from parity.query import (
     QueryRequestType,
     QueryRun,
     QueryRunStatus,
+    QuerySpecificity,
     RetrievedCandidate,
+    SynthesisMode,
     SupportAssessment,
     SupportState,
     TrustFailureLabel,
+    UnsupportedCapability,
 )
 
 pytestmark = pytest.mark.contract
@@ -109,13 +112,36 @@ def test_interpreted_query_preserves_shape_flags() -> None:
         normalized_question="what is semantic retrieval",
         request_type=QueryRequestType.EXPLANATION,
         answer_shape="explanatory paragraph",
+        specificity=QuerySpecificity.PRECISE,
         scope_hints=["retrieval", "embeddings"],
         requires_synthesis=False,
+        synthesis_mode=SynthesisMode.NONE,
         requires_source_navigation=True,
+        unsupported_capability_flags=[],
+        normalization_notes=["lowercased"],
     )
 
     assert interpreted.request_type is QueryRequestType.EXPLANATION
     assert interpreted.requires_source_navigation is True
+    assert interpreted.specificity is QuerySpecificity.PRECISE
+
+
+def test_interpreted_query_preserves_unsupported_capability_flags() -> None:
+    interpreted = InterpretedQuery(
+        normalized_question="analyze the figure on page 3",
+        request_type=QueryRequestType.UNSUPPORTED,
+        answer_shape="capability boundary response",
+        specificity=QuerySpecificity.SECTION_SCOPED,
+        requires_synthesis=False,
+        synthesis_mode=SynthesisMode.NONE,
+        requires_source_navigation=False,
+        unsupported_capability_flags=[UnsupportedCapability.IMAGE_OR_FIGURE_REASONING],
+        normalization_notes=[],
+    )
+
+    assert interpreted.unsupported_capability_flags == [
+        UnsupportedCapability.IMAGE_OR_FIGURE_REASONING
+    ]
 
 
 def test_retrieved_candidate_requires_rank_and_heading_path() -> None:

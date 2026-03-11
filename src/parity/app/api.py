@@ -7,7 +7,7 @@ from typing import Annotated
 from fastapi import Body, Depends, FastAPI, File, Form, HTTPException, UploadFile, status
 from pydantic import BaseModel, ConfigDict, Field
 
-from parity.query import CorpusSnapshot, QueryRequest, QueryRunStatus, QueryService
+from parity.query import CorpusSnapshot, InterpretedQuery, QueryRequest, QueryRunStatus, QueryService
 from parity.query.errors import CorpusBoundaryUnavailableError
 from parity.lifecycle.service import (
     DocumentArtifactRefs,
@@ -41,7 +41,7 @@ class RetrievalQueryRequest(BaseModel):
 
 
 class QuerySubmissionResult(BaseModel):
-    """Internal response payload for Stage 1 query preparation."""
+    """Internal response payload for Stage 2 query interpretation."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -49,6 +49,7 @@ class QuerySubmissionResult(BaseModel):
     workspace_id: str = Field(min_length=1)
     status: QueryRunStatus
     snapshot: CorpusSnapshot
+    interpreted_query: InterpretedQuery
     message: str = Field(min_length=1)
 
 
@@ -180,7 +181,7 @@ def create_app() -> FastAPI:
         service: Annotated[QueryService, Depends(get_query_service)],
     ) -> QuerySubmissionResult:
         try:
-            state = service.prepare_query(request)
+            state = service.execute_until_interpretation(request)
         except CorpusBoundaryUnavailableError as exc:
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
@@ -191,7 +192,8 @@ def create_app() -> FastAPI:
             workspace_id=state.run.workspace_id,
             status=state.run.status,
             snapshot=state.snapshot,
-            message="query execution is not implemented yet",
+            interpreted_query=state.interpreted_query,
+            message="query interpretation completed; downstream stages are not implemented yet",
         )
 
     @app.post("/internal/run-next-job")

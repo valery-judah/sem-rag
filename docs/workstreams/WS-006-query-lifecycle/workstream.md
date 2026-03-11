@@ -48,3 +48,5 @@ Describe what is already true, what changed recently, and what still matters.
 - `07_design.md`
 - `query_subsystem_staged_implementation_plan.md`
 - `10_stage-0-foundation-design.md`
+- `11_stage-1-queryable-corpus-boundary-design.md`
+- `12_stage-2-interpretation-foundation-design.md`

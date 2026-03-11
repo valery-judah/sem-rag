@@ -22,6 +22,9 @@ def test_initial_migration_creates_lifecycle_metadata_tables(db_url: str) -> Non
             "document_jobs",
             "documents",
             "lifecycle_events",
+            "query_runs",
+            "query_snapshots",
+            "query_stage_traces",
             "sections",
         }
     finally:

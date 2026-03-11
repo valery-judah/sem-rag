@@ -11,8 +11,10 @@ from .contracts import CorpusSnapshot, QueryRequest, QueryRun, QueryRunStatus
 from .domain import QueryRuntimeState
 from .errors import CorpusBoundaryUnavailableError
 from .errors import QueryStageNotImplementedError
+from .interpretation import DeterministicQueryInterpreter, QueryInterpreter
 from .persistence import QueryRunStore, QuerySnapshotStore, QueryTraceStore
 from .policies import QueryPolicy, QueryPolicyDefaults, apply_policy_overrides
+from .stages.interpret import run as run_interpret_stage
 
 
 class QueryService:
@@ -26,12 +28,14 @@ class QueryService:
         run_store: QueryRunStore | None = None,
         snapshot_store: QuerySnapshotStore | None = None,
         trace_store: QueryTraceStore | None = None,
+        interpreter: QueryInterpreter | None = None,
     ) -> None:
         self._base_policy = base_policy or QueryPolicyDefaults.build()
         self._corpus_read_model = corpus_read_model
         self._run_store = run_store
         self._snapshot_store = snapshot_store
         self._trace_store = trace_store
+        self._interpreter = interpreter or DeterministicQueryInterpreter()
 
     @property
     def base_policy(self) -> QueryPolicy:
@@ -107,13 +111,36 @@ class QueryService:
             snapshot=snapshot,
         )
 
+    def execute_until_interpretation(self, request: QueryRequest) -> QueryRuntimeState:
+        """Run the query lifecycle through the Stage-2 interpretation stage."""
+
+        state = self.prepare_query(request)
+        state.run.status = QueryRunStatus.RUNNING
+        if self._run_store is not None:
+            state.run = self._run_store.update_query_run_status(
+                state.run.query_id,
+                QueryRunStatus.RUNNING,
+            )
+        if state.snapshot is None:
+            raise CorpusBoundaryUnavailableError("query corpus snapshot was not captured")
+        result = run_interpret_stage(
+            query_id=state.run.query_id,
+            request=request,
+            snapshot=state.snapshot,
+            interpreter=self._interpreter,
+        )
+        state.interpreted_query = result.interpretation.interpreted_query
+        if self._trace_store is not None:
+            self._trace_store.append_stage_trace(result.trace)
+        return state
+
     def execute(self, request: QueryRequest) -> QueryRuntimeState:
         """Reject execution until later stages are implemented."""
 
         if self._corpus_read_model is None:
             state = self.initialize_runtime_state(request)
         else:
-            state = self.prepare_query(request)
+            state = self.execute_until_interpretation(request)
         raise QueryStageNotImplementedError(
-            f"Query execution is not implemented in Stage 0 scaffolding for {state.run.query_id}",
+            f"Query execution is not implemented beyond interpretation for {state.run.query_id}",
         )

@@ -41,6 +41,24 @@ query_snapshots_table = sa.Table(
     sa.Column("readiness_version", sa.Text(), nullable=True),
 )
 
+query_stage_traces_table = sa.Table(
+    "query_stage_traces",
+    query_metadata,
+    sa.Column("trace_id", sa.Integer(), primary_key=True, autoincrement=True),
+    sa.Column(
+        "query_id",
+        sa.Text(),
+        sa.ForeignKey("query_runs.query_id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    ),
+    sa.Column("stage_name", sa.Text(), nullable=False),
+    sa.Column("stage_status", sa.Text(), nullable=False),
+    sa.Column("started_at", sa.DateTime(timezone=True), nullable=False),
+    sa.Column("finished_at", sa.DateTime(timezone=True), nullable=True),
+    sa.Column("payload_json", sa.JSON(), nullable=False),
+)
+
 
 class QueryRunStore(Protocol):
     """Persistence interface for query run records."""
@@ -74,6 +92,9 @@ class QueryTraceStore(Protocol):
 
     def append_stage_trace(self, trace: QueryStageTrace) -> None:
         """Persist a stage trace for a query run."""
+
+    def list_stage_traces(self, query_id: str) -> list[QueryStageTrace]:
+        """Load stage traces for a query run in execution order."""
 
 
 class QueryAnswerStore(Protocol):
@@ -150,6 +171,30 @@ class SqlQuerySnapshotStore:
         return _row_to_snapshot(dict(row))
 
 
+class SqlQueryTraceStore:
+    """SQLAlchemy-backed repository for structured query stage traces."""
+
+    def __init__(self, engine: Engine) -> None:
+        self._engine = engine
+
+    def append_stage_trace(self, trace: QueryStageTrace) -> None:
+        with self._engine.begin() as conn:
+            conn.execute(sa.insert(query_stage_traces_table), [_stage_trace_to_row(trace)])
+
+    def list_stage_traces(self, query_id: str) -> list[QueryStageTrace]:
+        stmt = (
+            sa.select(query_stage_traces_table)
+            .where(query_stage_traces_table.c.query_id == query_id)
+            .order_by(
+                query_stage_traces_table.c.started_at.asc(),
+                query_stage_traces_table.c.trace_id.asc(),
+            )
+        )
+        with self._engine.begin() as conn:
+            rows = conn.execute(stmt).mappings().all()
+        return [_row_to_stage_trace(dict(row)) for row in rows]
+
+
 def _query_run_to_row(run: QueryRun) -> dict[str, object]:
     payload = run.model_dump(mode="python")
     payload["status"] = run.status.value
@@ -177,6 +222,24 @@ def _row_to_snapshot(row: Mapping[str, object]) -> CorpusSnapshot:
     payload["eligible_doc_ids"] = payload.pop("eligible_doc_ids_json")
     payload["query_started_at"] = _coerce_datetime(payload["query_started_at"])
     return CorpusSnapshot.model_validate(payload)
+
+
+def _stage_trace_to_row(trace: QueryStageTrace) -> dict[str, object]:
+    payload = trace.model_dump(mode="python")
+    payload["stage_name"] = trace.stage_name.value
+    payload["stage_status"] = trace.stage_status.value
+    payload["payload_json"] = payload.pop("payload")
+    return payload
+
+
+def _row_to_stage_trace(row: Mapping[str, object]) -> QueryStageTrace:
+    payload = dict(row)
+    del payload["trace_id"]
+    payload["payload"] = payload.pop("payload_json")
+    payload["started_at"] = _coerce_datetime(payload["started_at"])
+    if payload["finished_at"] is not None:
+        payload["finished_at"] = _coerce_datetime(payload["finished_at"])
+    return QueryStageTrace.model_validate(payload)
 
 
 def _coerce_datetime(value: object) -> datetime:

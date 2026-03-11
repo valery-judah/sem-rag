@@ -23,7 +23,7 @@ from parity.persistence import (
     SqlLifecycleEventRepository,
 )
 from parity.query import QueryRequest
-from parity.query.persistence import SqlQuerySnapshotStore
+from parity.query.persistence import SqlQuerySnapshotStore, SqlQueryTraceStore
 
 pytestmark = pytest.mark.anyio
 
@@ -222,6 +222,7 @@ async def test_queries_route_returns_stub_result_and_persists_snapshot(
 ) -> None:
     documents = SqlDocumentRepository(sql_engine)
     snapshot_store = SqlQuerySnapshotStore(sql_engine)
+    trace_store = SqlQueryTraceStore(sql_engine)
     documents.create(
         persisted_document_factory(
             doc_id="doc-ready",
@@ -240,12 +241,16 @@ async def test_queries_route_returns_stub_result_and_persists_snapshot(
 
     assert isinstance(result, QuerySubmissionResult)
     assert result.workspace_id == "ws-1"
-    assert result.status.value == "pending"
+    assert result.status.value == "running"
     assert result.snapshot.eligible_doc_ids == ["doc-ready"]
-    assert result.message == "query execution is not implemented yet"
+    assert result.interpreted_query.request_type.value == "fact_lookup"
+    assert result.message == "query interpretation completed; downstream stages are not implemented yet"
     persisted_snapshot = snapshot_store.get_snapshot(result.query_id)
+    persisted_traces = trace_store.list_stage_traces(result.query_id)
     assert persisted_snapshot is not None
     assert persisted_snapshot.model_dump() == result.snapshot.model_dump()
+    assert len(persisted_traces) == 1
+    assert persisted_traces[0].stage_name.value == "interpret"
 
 
 async def test_queries_route_allows_empty_snapshot(
@@ -261,6 +266,7 @@ async def test_queries_route_allows_empty_snapshot(
     )
 
     assert result.snapshot.eligible_doc_ids == []
+    assert result.interpreted_query.request_type.value == "fact_lookup"
 
 
 async def test_healthz_returns_ok(app: FastAPI) -> None:

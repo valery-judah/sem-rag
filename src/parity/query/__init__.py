@@ -19,11 +19,14 @@ from .contracts import (
     QueryRequestType,
     QueryRun,
     QueryRunStatus,
+    QuerySpecificity,
     QueryStageName,
     RetrievedCandidate,
+    SynthesisMode,
     SupportAssessment,
     SupportState,
     TrustFailureLabel,
+    UnsupportedCapability,
 )
 from .domain import QueryRuntimeState
 from .errors import (
@@ -35,7 +38,7 @@ from .errors import (
     UnsupportedPolicyOverrideError,
 )
 from .policies import QueryPolicy, QueryPolicyDefaults
-from .persistence import QueryRunStore, QuerySnapshotStore, QueryTraceStore
+from .persistence import QueryRunStore, QuerySnapshotStore, QueryTraceStore, SqlQueryTraceStore
 from .service import QueryService
 from .trace import QueryStageTrace, QueryStageTraceStatus, QueryTraceBundle
 
@@ -66,6 +69,7 @@ __all__ = [
     "QueryRunStore",
     "QueryRuntimeState",
     "QuerySnapshotStore",
+    "QuerySpecificity",
     "QueryService",
     "QueryStageContractViolationError",
     "QueryStageName",
@@ -75,8 +79,11 @@ __all__ = [
     "QueryTraceStore",
     "QueryTraceBundle",
     "RetrievedCandidate",
+    "SqlQueryTraceStore",
+    "SynthesisMode",
     "SupportAssessment",
     "SupportState",
     "TrustFailureLabel",
     "UnsupportedPolicyOverrideError",
+    "UnsupportedCapability",
 ]

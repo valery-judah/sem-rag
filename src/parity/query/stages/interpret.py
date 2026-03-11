@@ -1,14 +1,52 @@
-"""Interpretation stage placeholder."""
+"""Stage-2 query interpretation stage."""
 
 from __future__ import annotations
 
-from parity.query.contracts import QueryStageName
-from parity.query.errors import QueryStageNotImplementedError
+from pydantic import BaseModel, ConfigDict
+
+from parity.query.contracts import CorpusSnapshot, QueryRequest, QueryStageName
+from parity.query.interpretation import QueryInterpretationResult, QueryInterpreter
+from parity.query.trace import QueryStageTrace, QueryStageTraceStatus, utc_now
 
 STAGE_NAME = QueryStageName.INTERPRET
 
 
-def run() -> None:
-    """Placeholder Stage 0 entrypoint for interpretation."""
+class InterpretationStageResult(BaseModel):
+    """Structured result of the interpretation stage."""
 
-    raise QueryStageNotImplementedError(f"{STAGE_NAME.value} stage is not implemented")
+    model_config = ConfigDict(extra="forbid")
+
+    interpretation: QueryInterpretationResult
+    trace: QueryStageTrace
+
+
+def run(
+    *,
+    query_id: str,
+    request: QueryRequest,
+    snapshot: CorpusSnapshot,
+    interpreter: QueryInterpreter,
+) -> InterpretationStageResult:
+    """Interpret a query and return its persisted stage-trace payload."""
+
+    started_at = utc_now()
+    interpretation = interpreter.interpret(
+        request=request,
+        snapshot=snapshot,
+    )
+    finished_at = utc_now()
+    trace = QueryStageTrace(
+        query_id=query_id,
+        stage_name=STAGE_NAME,
+        stage_status=QueryStageTraceStatus.SUCCEEDED,
+        started_at=started_at,
+        finished_at=finished_at,
+        payload={
+            "interpreted_query": interpretation.interpreted_query.model_dump(mode="json"),
+            "interpreter": interpretation.metadata.model_dump(mode="json"),
+        },
+    )
+    return InterpretationStageResult(
+        interpretation=interpretation,
+        trace=trace,
+    )

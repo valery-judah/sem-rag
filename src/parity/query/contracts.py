@@ -80,6 +80,31 @@ class QueryRequestType(StrEnum):
     UNSUPPORTED = "unsupported"
 
 
+class QuerySpecificity(StrEnum):
+    """Interpretation-level specificity used by downstream retrieval policy."""
+
+    PRECISE = "precise"
+    SECTION_SCOPED = "section_scoped"
+    BROAD = "broad"
+
+
+class SynthesisMode(StrEnum):
+    """Interpretation-level synthesis scope."""
+
+    NONE = "none"
+    SINGLE_DOCUMENT = "single_document"
+    CROSS_DOCUMENT = "cross_document"
+
+
+class UnsupportedCapability(StrEnum):
+    """MVP capability boundaries surfaced during interpretation."""
+
+    EXTERNAL_KNOWLEDGE = "external_knowledge"
+    IMAGE_OR_FIGURE_REASONING = "image_or_figure_reasoning"
+    TABLE_HEAVY_ANSWERING = "table_heavy_answering"
+    OCR_REQUIRED = "ocr_required"
+
+
 class EvidenceGroupingMode(StrEnum):
     """Evidence grouping strategies for later selection stages."""
 
@@ -163,10 +188,13 @@ class InterpretedQuery(BaseModel):
     normalized_question: str = Field(min_length=1)
     request_type: QueryRequestType
     answer_shape: str = Field(min_length=1)
+    specificity: QuerySpecificity
     scope_hints: list[str] = Field(default_factory=list)
     requires_synthesis: bool = False
+    synthesis_mode: SynthesisMode = SynthesisMode.NONE
     requires_source_navigation: bool = False
-    unsupported_question_type_signal: str | None = None
+    unsupported_capability_flags: list[UnsupportedCapability] = Field(default_factory=list)
+    normalization_notes: list[str] = Field(default_factory=list)
 
 
 class RetrievedCandidate(BaseModel):

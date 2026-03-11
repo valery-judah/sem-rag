@@ -290,6 +290,8 @@ Establish structured query interpretation as an explicit runtime contract before
 
 `07_design.md` makes `Interpret` the first semantic stage after intake. If retrieval is implemented first, the subsystem will drift toward raw-query search and collapse the intended runtime backbone.
 
+Detailed repo-facing design for this stage lives in `12_stage-2-interpretation-foundation-design.md`.
+
 ## Deliverables
 
 ### 2.1 Interpretation stage
