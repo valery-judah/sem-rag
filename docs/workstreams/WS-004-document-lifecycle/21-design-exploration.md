@@ -6,9 +6,9 @@ Draft
 
 ## Purpose
 
-Define the implementation design for the MVP document lifecycle as a local-deployable Python service.
+Define the implementation design for the MVP document lifecycle as an internal HTTP service with background workers.
 
-This document translates the existing lifecycle seam and MVP constraints into a concrete runtime design. It is intentionally limited to the document-ingestion and retrieval-preparation lifecycle. It does not define the query or answer-generation architecture.
+This document translates the existing lifecycle seam and MVP constraints into a concrete runtime design. It is intentionally limited to the document-ingestion and retrieval-preparation lifecycle. It does not define the query or answer-generation architecture, and it does not create a stable public API contract.
 
 ## Scope alignment
 
@@ -66,21 +66,27 @@ This design does not commit to:
 * connectors, sync, automation, or collaboration
 * production-scale observability or multi-tenant control planes
 
+This design does assume:
+
+* internal HTTP endpoints for runtime and operator actions
+* PostgreSQL as the primary database
+* a new domain layer for lifecycle runtime concepts
+* real embeddings and real vector persistence
+
 ---
 
 # 1. System overview
 
 ## 1.1 Local deployment model
 
-For MVP, the recommended deployment model is a single local service codebase with a small number of runtime components:
+For MVP, the recommended deployment model is a single service codebase with a small number of runtime components:
 
-* HTTP service for intake and inspection
+* internal HTTP service for intake, status, retry, and inspection
 * background worker loop for stage execution
-* SQL database for metadata and lifecycle truth
-* local filesystem artifact store for raw and intermediate artifacts
-* local vector index adapter for chunk publication
+* PostgreSQL for metadata, lifecycle truth, jobs, and vector persistence
+* filesystem artifact store for raw and intermediate artifacts
 
-This is intentionally a single-node design. Stage separation exists in the code and persistence model, not in separate infrastructure tiers.
+This is intentionally a single-node MVP design. Stage separation exists in the code and persistence model, not in separate infrastructure tiers.
 
 ## 1.2 Runtime topology
 
@@ -89,23 +95,25 @@ This is intentionally a single-node design. Stage separation exists in the code 
 | Local node                                                |
 |                                                           |
 |  +-------------------+      +--------------------------+  |
-|  | HTTP/API service  | ---> | DocumentLifecycleService |  |
+|  | Internal HTTP API | ---> | DocumentLifecycleService |  |
 |  +-------------------+      +--------------------------+  |
 |                                      |                    |
 |                                      v                    |
 |                           +-----------------------+       |
-|                           | DB-backed job queue   |       |
+|                           | Postgres-backed jobs  |       |
 |                           +-----------------------+       |
 |                                      |                    |
 |                                      v                    |
 |                           +-----------------------+       |
 |                           | Stage runner worker   |       |
 |                           +-----------------------+       |
-|                               |        |        |         |
-|                               v        v        v         |
-|                         +--------+ +--------+ +--------+  |
-|                         | SQL DB | | Files  | | Vector |  |
-|                         +--------+ +--------+ +--------+  |
+|                                   |        |             |
+|                                   v        v             |
+|                           +-------------+ +--------+     |
+|                           | PostgreSQL  | | Files  |     |
+|                           | metadata +  | |        |     |
+|                           | vectors     | |        |     |
+|                           +-------------+ +--------+     |
 +----------------------------------------------------------+
 ```
 
@@ -732,8 +740,8 @@ Indexing should be a distinct stage boundary even if the same worker process per
 
 For each chunk:
 
-* compute embedding
-* upsert into vector store
+* compute a real embedding
+* upsert the vector into Postgres-backed retrieval persistence
 * persist `IndexEntry`
 
 ### Publication invariant
@@ -777,7 +785,7 @@ A document can transition to `READY` only if all of the following are true:
 * indexed retrieval artifacts exist
 * chunk-to-section-to-document linkage is intact
 * provenance meets minimum requirements
-* retrieval smoke checks pass at least at a minimal level
+* retrieval smoke checks pass through a real queryable retrieval call
 
 ### Minimum provenance rule
 
@@ -813,8 +821,8 @@ def is_ready(doc_id: str) -> bool:
 For MVP, use a simple smoke check rather than full retrieval evaluation. Example:
 
 * select one or more representative chunks from the document
-* query the vector index with content sampled from those chunks
-* verify the backend returns at least one result referencing that document
+* issue a real retrieval query using content sampled from those chunks
+* verify the retrieval call returns at least one result referencing that document
 
 ---
 
@@ -862,7 +870,7 @@ Do not automatically delete partial artifacts on failure. Preserve them for insp
 
 ## 6.1 Orchestration approach
 
-For MVP, use a DB-backed job queue with worker polling rather than an external broker such as Redis or RabbitMQ.
+For MVP, use a Postgres-backed job queue with worker polling rather than an external broker such as Redis or RabbitMQ.
 
 ## 6.2 Why DB-backed jobs are sufficient now
 
@@ -946,14 +954,14 @@ This avoids ambiguous ownership without introducing full historical lineage.
 
 Use two persistence classes:
 
-* SQL database for metadata, lifecycle state, linkage, and job records
+* PostgreSQL for metadata, lifecycle state, linkage, job records, and vector persistence
 * filesystem artifact store for raw, extracted, and normalized payloads
 
 ## 7.2 Why this split
 
-* structured linkage and queries belong in SQL
+* structured linkage, jobs, and retrieval persistence belong in PostgreSQL
 * large intermediate artifacts are easier to inspect on disk
-* local deployment remains simple
+* real vector persistence can live alongside lifecycle metadata
 * backups and debugging are straightforward
 
 ## 7.3 Suggested SQL tables
@@ -1048,6 +1056,16 @@ Columns:
 * `index_key`
 * `index_version`
 * `published_at`
+
+### `chunk_embeddings`
+
+Columns:
+
+* `chunk_id` PK/FK
+* `doc_id` FK
+* `embedding_model`
+* `embedding_vector`
+* `created_at`
 
 ## 7.4 Filesystem layout
 
@@ -1190,6 +1208,7 @@ Suggested endpoints:
 * `GET /documents/{doc_id}/status`
 * `GET /documents/{doc_id}/artifacts`
 * `POST /documents/{doc_id}/retry`
+* `POST /retrieval/query`
 * `GET /workspaces/{workspace_id}/documents`
 * `GET /healthz`
 * `GET /readyz`
@@ -1528,7 +1547,7 @@ Exit:
 
 Deliver:
 
-* embedding and vector publication
+* real embedding generation and vector publication
 * index entry persistence
 * readiness predicate
 * retrieval smoke test coverage
@@ -1571,17 +1590,17 @@ Rationale:
 * avoids false structural claims
 * coarse synthetic sections remain allowed fallback
 
-## Decision 4: Use DB-backed jobs for local MVP
+## Decision 4: Use Postgres-backed jobs for MVP
 
 Accepted.
 
 Rationale:
 
-* minimal local operational complexity
+* low operational complexity
 * enough reliability for staged lifecycle processing
 * easy migration path to external workers later
 
-## Decision 5: Split SQL metadata from filesystem artifacts
+## Decision 5: Split Postgres metadata/vector persistence from filesystem artifacts
 
 Accepted.
 
@@ -1589,7 +1608,18 @@ Rationale:
 
 * keeps artifacts inspectable
 * keeps linkage queryable
+* keeps real retrieval persistence in the primary database
 * simple local deployment
+
+## Decision 6: Use internal HTTP endpoints rather than a public API contract
+
+Accepted.
+
+Rationale:
+
+* supports runtime and operator workflows early
+* avoids premature public API commitments
+* aligns with the current evergreen contract position
 
 ---
 
@@ -1634,7 +1664,7 @@ These questions are intentionally left outside the MVP lifecycle design:
 ## Publication and readiness
 
 * [ ] implement embedding adapter
-* [ ] implement vector index adapter
+* [ ] implement Postgres-backed vector persistence adapter
 * [ ] persist index entries
 * [ ] implement readiness predicate
 * [ ] implement retrieval smoke checks
@@ -1650,6 +1680,6 @@ These questions are intentionally left outside the MVP lifecycle design:
 
 # 19. Bottom line
 
-For MVP, the correct architecture is a single-node Python service with explicit lifecycle stage runners, DB-backed orchestration, persisted normalized artifacts, conservative PDF structure recovery, section-first chunking, separate index publication, and a strict readiness predicate tied to persisted provenance-bearing artifacts.
+For MVP, the correct architecture is a single-node Python service with internal HTTP endpoints, a new domain layer, Postgres-backed orchestration and vector persistence, persisted normalized artifacts, conservative PDF structure recovery, section-first chunking, separate index publication, and a strict readiness predicate tied to persisted provenance-bearing artifacts plus a real retrieval smoke call.
 
 That is the smallest design that satisfies the lifecycle requirements without broadening the MVP scope.

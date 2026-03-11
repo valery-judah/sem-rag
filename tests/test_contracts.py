@@ -17,6 +17,10 @@ from parity._contracts import (
     SourceType,
     can_transition_processing_status,
 )
+from parity.lifecycle import (
+    InvalidLifecycleTransitionError,
+    require_processing_status_transition,
+)
 
 
 def make_source_reference(**overrides: object) -> SourceReference:
@@ -257,7 +261,6 @@ def test_answer_accepts_locked_status_semantics() -> None:
         (ProcessingStatus.NORMALIZED, ProcessingStatus.CHUNKED),
         (ProcessingStatus.CHUNKED, ProcessingStatus.INDEXED),
         (ProcessingStatus.INDEXED, ProcessingStatus.READY),
-        (ProcessingStatus.UPLOADED, ProcessingStatus.FAILED),
         (ProcessingStatus.REGISTERED, ProcessingStatus.FAILED),
         (ProcessingStatus.EXTRACTING, ProcessingStatus.FAILED),
         (ProcessingStatus.NORMALIZED, ProcessingStatus.FAILED),
@@ -276,6 +279,7 @@ def test_processing_status_allows_locked_transitions(
     ("current", "new"),
     [
         (ProcessingStatus.UPLOADED, ProcessingStatus.READY),
+        (ProcessingStatus.UPLOADED, ProcessingStatus.FAILED),
         (ProcessingStatus.REGISTERED, ProcessingStatus.CHUNKED),
         (ProcessingStatus.READY, ProcessingStatus.FAILED),
         (ProcessingStatus.FAILED, ProcessingStatus.READY),
@@ -286,3 +290,14 @@ def test_processing_status_rejects_unlocked_transitions(
     new: ProcessingStatus,
 ) -> None:
     assert not can_transition_processing_status(current, new)
+
+
+def test_require_processing_status_transition_raises_on_invalid_transition() -> None:
+    with pytest.raises(
+        InvalidLifecycleTransitionError,
+        match="cannot transition processing status from uploaded to failed",
+    ):
+        require_processing_status_transition(
+            ProcessingStatus.UPLOADED,
+            ProcessingStatus.FAILED,
+        )

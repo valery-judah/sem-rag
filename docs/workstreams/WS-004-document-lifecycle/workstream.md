@@ -25,14 +25,16 @@ Deliver the document-processing pipeline behind the existing internal lifecycle 
 ## Current status
 - The repo already has tested internal lifecycle and corpus contract models for `Document`, `Section`, `Chunk`, and processing status transitions.
 - The runtime ingestion pipeline behind those seams does not exist yet.
-- A requirements artifact now defines scope, invariants, and staged delivery expectations for this workstream.
+- Requirements, design exploration, and staged delivery docs now define scope, architecture direction, and PR sequencing for this workstream.
 
 ## Next step
-- Turn the requirements into an implementation shape for Stage 1: registration, persistence, and lifecycle execution boundaries.
+- Execute `PR 1`: core domain and lifecycle contract enforcement.
 
 ## Relevant context
 - paths:
 - `docs/workstreams/WS-004-document-lifecycle/requirements.md`
+- `docs/workstreams/WS-004-document-lifecycle/21-design-exploration.md`
+- `docs/workstreams/WS-004-document-lifecycle/22-staged.md`
 - `docs/evergreen/mvp.md`
 - `docs/evergreen/architecture.md`
 - `docs/delivery/workflow.md`
@@ -42,6 +44,7 @@ Deliver the document-processing pipeline behind the existing internal lifecycle 
 - components:
 - internal contract layer
 - persistence layer
+- new domain layer plus lifecycle runtime
 - future ingestion and indexing pipeline
 - constraints:
 - keep MVP input scope limited to text-based PDF and Markdown
@@ -49,11 +52,13 @@ Deliver the document-processing pipeline behind the existing internal lifecycle 
 - preserve alignment with the locked internal lifecycle seam unless changed intentionally
 - read first:
 - `docs/workstreams/WS-004-document-lifecycle/requirements.md`
+- `docs/workstreams/WS-004-document-lifecycle/21-design-exploration.md`
+- `docs/workstreams/WS-004-document-lifecycle/22-staged.md`
 
 ## Workflow steps
 1. Lock requirements and staged delivery boundaries.
-2. Shape Stage 1 implementation around registration, persistence, and lifecycle execution.
-3. Implement later stages for extraction, normalization, chunking, and indexing with validation at each step.
+2. Execute PR 1 for the new domain layer and lifecycle contract.
+3. Continue through staged delivery from persistence to readiness with validation at each step.
 
 ## Validation
 - Stage-aligned tests proving documents can progress through the lifecycle honestly
@@ -63,6 +68,8 @@ Deliver the document-processing pipeline behind the existing internal lifecycle 
 
 ## Linked artifacts
 - `docs/workstreams/WS-004-document-lifecycle/requirements.md`
+- `docs/workstreams/WS-004-document-lifecycle/21-design-exploration.md`
+- `docs/workstreams/WS-004-document-lifecycle/22-staged.md`
 - `docs/evergreen/mvp.md`
 - `docs/evergreen/architecture.md`
 - `docs/delivery/workflow.md`
