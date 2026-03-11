@@ -44,4 +44,7 @@ Describe what is already true, what changed recently, and what still matters.
 - Add related notes, decisions, evidence, ADRs, and evergreen docs here when they exist.
 - `00_requirements-v0.md`
 - `01_requirements-critique.md`
-- `02_decisions-baseline.md`
+- `05_decisions-baseline.md`
+- `07_design.md`
+- `query_subsystem_staged_implementation_plan.md`
+- `10_stage-0-foundation-design.md`

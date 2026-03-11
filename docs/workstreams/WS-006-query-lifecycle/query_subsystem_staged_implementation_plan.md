@@ -111,6 +111,8 @@ Create the minimum internal structure needed so later implementation does not co
 
 Without this stage, the coding agent will likely implement a direct `/queries` endpoint with retrieval and generation fused together. That would violate `07_design.md` before the subsystem is even bootstrapped.
 
+Detailed repo-facing design for this stage lives in `10_stage-0-foundation-design.md`.
+
 ## Deliverables
 
 ### 0.1 Query package skeleton
