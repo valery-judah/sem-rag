@@ -5,7 +5,11 @@ import sqlite3
 import pytest
 
 from parity._contracts import Document, ProcessingStatus, SourceType
-from parity.persistence import list_documents_by_workspace, save_document
+from parity.persistence import (
+    SqlDocumentRepository,
+    list_documents_by_workspace,
+    save_document,
+)
 
 pytestmark = pytest.mark.persistence
 
@@ -56,3 +60,40 @@ def test_save_document_replaces_existing_row_for_same_doc_id(
 
     assert loaded == [replacement]
     assert isinstance(loaded[0], Document)
+
+
+def test_sql_document_repository_round_trip(
+    sql_engine,
+    persisted_document_factory,
+) -> None:
+    repository = SqlDocumentRepository(sql_engine)
+    document = persisted_document_factory()
+
+    repository.create(document)
+
+    loaded = repository.get(document.doc_id)
+
+    assert loaded == document
+
+
+def test_update_status_persists_failure_code_and_detail(
+    sql_engine,
+    persisted_document_factory,
+) -> None:
+    repository = SqlDocumentRepository(sql_engine)
+    document = persisted_document_factory()
+    repository.create(document)
+
+    repository.update_status(
+        doc_id=document.doc_id,
+        status=ProcessingStatus.FAILED,
+        failure_code="extract_failed",
+        failure_detail="No usable text layer",
+    )
+
+    loaded = repository.get(document.doc_id)
+
+    assert loaded is not None
+    assert loaded.ingest_status is ProcessingStatus.FAILED
+    assert loaded.failure_code == "extract_failed"
+    assert loaded.failure_detail == "No usable text layer"

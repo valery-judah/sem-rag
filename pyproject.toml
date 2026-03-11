@@ -9,8 +9,11 @@ description = "Python semantic RAG baseline"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+  "alembic>=1.14,<2",
+  "psycopg[binary]>=3.2,<4",
   "pydantic>=2,<3",
   "pypdf>=5.0.0",
+  "sqlalchemy>=2,<3",
 ]
 
 [dependency-groups]
@@ -44,5 +47,6 @@ addopts = "-q"
 markers = [
   "contract: lifecycle semantics and invariant tests",
   "persistence: db-backed integrity and repository tests",
+  "artifacts: filesystem-backed artifact persistence tests",
 ]
 testpaths = ["tests"]

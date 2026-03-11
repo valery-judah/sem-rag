@@ -1,4 +1,4 @@
-"""SQLite-backed persistence for internal corpus contract models."""
+"""SQLite-backed compatibility helpers for the existing corpus persistence seam."""
 
 from __future__ import annotations
 

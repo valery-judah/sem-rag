@@ -4,9 +4,19 @@ import sqlite3
 from datetime import UTC, datetime
 
 import pytest
+import sqlalchemy as sa
+from sqlalchemy.engine import Engine
 
 from parity._contracts import Chunk, Document, ProcessingStatus, Section, SourceType
-from parity.persistence import create_schema
+from parity.lifecycle.models import LifecycleEvent, LifecycleStage
+from parity.persistence import (
+    DocumentJob,
+    DocumentJobStage,
+    DocumentJobStatus,
+    PersistedDocument,
+    apply_migrations,
+    create_schema,
+)
 
 
 @pytest.fixture
@@ -17,6 +27,22 @@ def conn() -> sqlite3.Connection:
         yield connection
     finally:
         connection.close()
+
+
+@pytest.fixture
+def db_url(tmp_path) -> str:
+    database_path = tmp_path / "lifecycle-metadata.db"
+    return f"sqlite+pysqlite:///{database_path}"
+
+
+@pytest.fixture
+def sql_engine(db_url: str) -> Engine:
+    apply_migrations(db_url)
+    engine = sa.create_engine(db_url)
+    try:
+        yield engine
+    finally:
+        engine.dispose()
 
 
 @pytest.fixture
@@ -87,5 +113,82 @@ def chunk_factory():
         }
         base.update(overrides)
         return Chunk(**base)
+
+    return make
+
+
+@pytest.fixture
+def persisted_document_factory():
+    def make(
+        doc_id: str = "doc-1",
+        workspace_id: str = "workspace-1",
+        source_type: SourceType = SourceType.PDF,
+        **overrides: object,
+    ) -> PersistedDocument:
+        filename = f"{doc_id}.pdf" if source_type is SourceType.PDF else f"{doc_id}.md"
+        base = {
+            "doc_id": doc_id,
+            "workspace_id": workspace_id,
+            "source_type": source_type,
+            "title": f"Title for {doc_id}",
+            "filename": filename,
+            "uploaded_at": datetime(2026, 3, 8, tzinfo=UTC),
+            "ingest_status": ProcessingStatus.REGISTERED,
+            "storage_ref": f"file:///tmp/{filename}",
+            "metadata_json": {"origin": "test"},
+            "checksum": "sha256:abc",
+            "raw_storage_path": f"raw/{workspace_id}/{doc_id}/{filename}",
+            "created_at": datetime(2026, 3, 8, 1, tzinfo=UTC),
+            "updated_at": datetime(2026, 3, 8, 1, tzinfo=UTC),
+        }
+        base.update(overrides)
+        return PersistedDocument(**base)
+
+    return make
+
+
+@pytest.fixture
+def lifecycle_event_factory():
+    def make(
+        doc_id: str = "doc-1",
+        event_id: str = "event-1",
+        **overrides: object,
+    ) -> LifecycleEvent:
+        base = {
+            "event_id": event_id,
+            "doc_id": doc_id,
+            "stage": LifecycleStage.REGISTER,
+            "from_status": ProcessingStatus.UPLOADED,
+            "to_status": ProcessingStatus.REGISTERED,
+            "occurred_at": datetime(2026, 3, 8, 2, tzinfo=UTC),
+            "detail": {"origin": "test"},
+        }
+        base.update(overrides)
+        return LifecycleEvent(**base)
+
+    return make
+
+
+@pytest.fixture
+def document_job_factory():
+    def make(
+        doc_id: str = "doc-1",
+        job_id: str = "job-1",
+        **overrides: object,
+    ) -> DocumentJob:
+        base = {
+            "job_id": job_id,
+            "doc_id": doc_id,
+            "target_stage": DocumentJobStage.EXTRACT,
+            "status": DocumentJobStatus.QUEUED,
+            "attempt_count": 0,
+            "not_before": datetime(2026, 3, 8, 3, tzinfo=UTC),
+            "error_code": None,
+            "error_detail": None,
+            "created_at": datetime(2026, 3, 8, 3, tzinfo=UTC),
+            "updated_at": datetime(2026, 3, 8, 3, tzinfo=UTC),
+        }
+        base.update(overrides)
+        return DocumentJob(**base)
 
     return make
