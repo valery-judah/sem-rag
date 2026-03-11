@@ -14,6 +14,7 @@ from parity.persistence import (
 from parity.query import QueryRequest, QueryService
 from parity.query.persistence import SqlQueryRunStore, SqlQuerySnapshotStore, SqlQueryTraceStore
 from parity.query.retrieval import SnapshotDenseQueryRetriever
+from parity.query.selection import DeterministicQuerySelector
 from parity.readmodels import SqlQueryableCorpusReadModel
 
 pytestmark = pytest.mark.anyio
@@ -40,10 +41,11 @@ def _service(sql_engine) -> QueryService:
             corpus_read_model=read_model,
             embedding_adapter=DeterministicEmbeddingAdapter(),
         ),
+        selector=DeterministicQuerySelector(corpus_read_model=read_model),
     )
 
 
-def test_execute_until_retrieval_persists_retrieval_trace_and_candidates(
+def test_execute_until_selection_persists_selection_trace_and_evidence_sets(
     sql_engine,
     persisted_document_factory,
     chunk_factory,
@@ -71,7 +73,7 @@ def test_execute_until_retrieval_persists_retrieval_trace_and_candidates(
         chunk_embeddings=SqlChunkEmbeddingRepository(sql_engine),
     ).publish_document(doc_id="doc-ready", chunks=[ready_chunk])
 
-    state = _service(sql_engine).execute_until_retrieval(
+    state = _service(sql_engine).execute_until_selection(
         QueryRequest(
             question="What uses embeddings for passage search?",
             workspace_id="ws-1",
@@ -84,16 +86,24 @@ def test_execute_until_retrieval_persists_retrieval_trace_and_candidates(
     assert state.snapshot is not None
     assert state.interpreted_query is not None
     assert [candidate.chunk_id for candidate in state.retrieved_candidates] == ["chunk-ready"]
-    assert len(traces) == 2
-    assert [trace.stage_name.value for trace in traces] == ["interpret", "retrieve"]
+    assert [candidate.chunk_id for candidate in state.selected_candidates] == ["chunk-ready"]
+    assert len(state.evidence_sets) == 1
+    assert state.evidence_sets[0].grouping_mode.value == "single_passage"
+    assert len(traces) == 3
+    assert [trace.stage_name.value for trace in traces] == ["interpret", "retrieve", "select"]
     assert traces[1].payload["retrievable_chunk_count"] == 1
     assert traces[1].payload["candidates"][0]["chunk_id"] == "chunk-ready"
+    assert traces[2].payload["selected_candidates"][0]["chunk_id"] == "chunk-ready"
+    assert (
+        traces[2].payload["evidence_sets"][0]["evidence_units"][0]["candidate"]["chunk_id"]
+        == "chunk-ready"
+    )
 
 
-def test_execute_until_retrieval_handles_empty_snapshot(sql_engine) -> None:
+def test_execute_until_selection_handles_empty_snapshot(sql_engine) -> None:
     trace_store = SqlQueryTraceStore(sql_engine)
 
-    state = _service(sql_engine).execute_until_retrieval(
+    state = _service(sql_engine).execute_until_selection(
         QueryRequest(
             question="What is semantic retrieval?",
             workspace_id="empty-ws",
@@ -105,6 +115,10 @@ def test_execute_until_retrieval_handles_empty_snapshot(sql_engine) -> None:
     assert state.snapshot is not None
     assert state.snapshot.eligible_doc_ids == []
     assert state.retrieved_candidates == []
-    assert len(traces) == 2
+    assert state.selected_candidates == []
+    assert state.evidence_sets == []
+    assert len(traces) == 3
     assert traces[1].stage_name.value == "retrieve"
     assert traces[1].payload["candidates"] == []
+    assert traces[2].stage_name.value == "select"
+    assert traces[2].payload["evidence_sets"] == []

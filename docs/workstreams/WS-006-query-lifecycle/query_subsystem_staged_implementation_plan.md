@@ -432,6 +432,8 @@ Convert retrieved candidates into explicit supportable evidence structures inste
 
 The design explicitly rejects naive top-k prompting. This stage is the bridge from search results to supportable evidence.
 
+Detailed repo-facing design for this stage lives in `14_stage-4-selection-evidence-set-construction-design.md`.
+
 ## Deliverables
 
 ### 4.1 Heuristic reranking / selection stage

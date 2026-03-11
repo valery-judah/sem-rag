@@ -218,7 +218,7 @@ def test_retrieval_query_validates_positive_k() -> None:
         RetrievalQueryRequest(doc_id="doc-1", query="consensus", k=0)
 
 
-async def test_queries_route_returns_stub_result_and_persists_snapshot(
+async def test_queries_route_returns_stage4_result_and_persists_traces(
     app: FastAPI,
     sql_engine: Engine,
     persisted_document_factory,
@@ -262,14 +262,19 @@ async def test_queries_route_returns_stub_result_and_persists_snapshot(
     assert result.interpreted_query.request_type.value == "fact_lookup"
     assert len(result.retrieved_candidates) == 1
     assert result.retrieved_candidates[0].chunk_id == "chunk-ready"
-    assert result.message == "query retrieval completed; downstream stages are not implemented yet"
+    assert len(result.selected_candidates) == 1
+    assert result.selected_candidates[0].chunk_id == "chunk-ready"
+    assert len(result.evidence_sets) == 1
+    assert result.evidence_sets[0].evidence_units[0].candidate.chunk_id == "chunk-ready"
+    assert result.message == "query selection completed; downstream stages are not implemented yet"
     persisted_snapshot = snapshot_store.get_snapshot(result.query_id)
     persisted_traces = trace_store.list_stage_traces(result.query_id)
     assert persisted_snapshot is not None
     assert persisted_snapshot.model_dump() == result.snapshot.model_dump()
-    assert len(persisted_traces) == 2
+    assert len(persisted_traces) == 3
     assert persisted_traces[0].stage_name.value == "interpret"
     assert persisted_traces[1].stage_name.value == "retrieve"
+    assert persisted_traces[2].stage_name.value == "select"
 
 
 async def test_queries_route_allows_empty_snapshot(
@@ -286,6 +291,8 @@ async def test_queries_route_allows_empty_snapshot(
 
     assert result.snapshot.eligible_doc_ids == []
     assert result.interpreted_query.request_type.value == "fact_lookup"
+    assert result.selected_candidates == []
+    assert result.evidence_sets == []
 
 
 async def test_healthz_returns_ok(app: FastAPI) -> None:

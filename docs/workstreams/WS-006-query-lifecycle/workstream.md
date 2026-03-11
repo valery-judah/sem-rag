@@ -10,26 +10,43 @@ updated: 2026-03-11
 ---
 
 # Summary
-Short description of the feature workstream and intended result.
+Implement the explicit query lifecycle for grounded QA over the `READY` corpus, preserving support semantics, traceability, and provenance-bearing evidence structures.
 
 ## Objective
-State the desired outcome clearly enough that completion is recognizable.
+Ship the MVP query path as explicit executable stages:
+`Interpret -> Retrieve -> Select -> Assemble Context -> Assess Support -> Decide Answer Mode -> Generate -> Cite or Abstain`.
 
 ## Non-goals
-- List what is explicitly out of scope.
+- Replacing the staged lifecycle with one fused retrieval-plus-prompt loop.
+- Promoting internal query runtime seams into a stable public API before the runtime path is complete.
+- Treating retrieved text or evidence sets as sufficient proof without explicit support assessment.
 
 ## Current status
-Describe what is already true, what changed recently, and what still matters.
+- Stages 1 through 4 are implemented: queryable corpus boundary, interpretation, retrieval, and selection/evidence-set construction.
+- Internal `POST /queries` now executes through Stage 4 and persists `interpret`, `retrieve`, and `select` traces.
+- The main remaining implementation gap is Stage 5 onward: context assembly, support assessment, answer-mode policy, generation, and citation rendering.
 
 ## Next step
-- Record one concrete next action.
+- Design and implement Stage 5 deterministic context assembly over explicit evidence sets.
 
 ## Relevant context
-- Placeholder section. Fill later when relevant context becomes clearer.
 - paths:
+- `src/parity/query/`
+- `src/parity/readmodels/`
+- `src/parity/app/api.py`
 - components:
+- query service orchestration
+- snapshot-scoped retrieval and selection
+- durable query stage tracing
 - constraints:
+- only `READY` documents are queryable
+- each query executes against a stable corpus snapshot
+- later stages may narrow answer posture but must not widen it
 - read first:
+- `docs/evergreen/mvp.md`
+- `docs/evergreen/architecture.md`
+- `docs/workstreams/WS-006-query-lifecycle/07_design.md`
+- `docs/workstreams/WS-006-query-lifecycle/query_subsystem_staged_implementation_plan.md`
 
 ## Workflow steps
 1. Frame the feature scope and relevant constraints.
@@ -37,8 +54,10 @@ Describe what is already true, what changed recently, and what still matters.
 3. Execute and validate the workstream.
 
 ## Validation
-- Placeholder section. Fill later when the validation path is clearer.
-- List the tests, checks, or evidence needed before closure.
+- Stage-specific query tests under `tests/query/`
+- route behavior under `tests/app/test_runtime_api.py`
+- contract coverage under `tests/contract/test_query_contract_models.py`
+- repo validation through `make test`, plus stronger checks when internal API or package behavior changes
 
 ## Linked artifacts
 - Add related notes, decisions, evidence, ADRs, and evergreen docs here when they exist.
@@ -50,3 +69,5 @@ Describe what is already true, what changed recently, and what still matters.
 - `10_stage-0-foundation-design.md`
 - `11_stage-1-queryable-corpus-boundary-design.md`
 - `12_stage-2-interpretation-foundation-design.md`
+- `13_stage-3-retrieval-foundation-design.md`
+- `14_stage-4-selection-evidence-set-construction-design.md`

@@ -32,6 +32,7 @@ from parity.query import QueryService
 from parity.query.interpretation import DeterministicQueryInterpreter
 from parity.query.persistence import SqlQueryRunStore, SqlQuerySnapshotStore, SqlQueryTraceStore
 from parity.query.retrieval import SnapshotDenseQueryRetriever
+from parity.query.selection import DeterministicQuerySelector
 from parity.readmodels import SqlQueryableCorpusReadModel
 from parity.stages import (
     ChunkDocumentStage,
@@ -253,6 +254,7 @@ def get_query_service(
             corpus_read_model=corpus_read_model,
             embedding_adapter=DeterministicEmbeddingAdapter(),
         ),
+        selector=DeterministicQuerySelector(corpus_read_model=corpus_read_model),
     )
 
 

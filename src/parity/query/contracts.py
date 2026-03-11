@@ -219,6 +219,9 @@ class EvidenceUnit(BaseModel):
     evidence_unit_id: str = Field(min_length=1)
     candidate: RetrievedCandidate
     source_reference: SourceReference
+    unit_rank: int = Field(ge=1)
+    added_by_neighbor_expansion: bool = False
+    selection_reason: str = Field(min_length=1)
 
 
 class EvidenceSet(BaseModel):
@@ -229,7 +232,10 @@ class EvidenceSet(BaseModel):
     evidence_set_id: str = Field(min_length=1)
     grouping_mode: EvidenceGroupingMode
     evidence_units: list[EvidenceUnit] = Field(min_length=1)
-    rationale: str = Field(min_length=1)
+    purpose: str = Field(min_length=1)
+    coverage_notes: list[str] = Field(default_factory=list)
+    conflict_flags: list[str] = Field(default_factory=list)
+    assembly_reason: str = Field(min_length=1)
 
 
 class ContextManifest(BaseModel):

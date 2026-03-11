@@ -37,7 +37,7 @@ The currently relevant bounded contexts are:
 - document lifecycle:
   - registration, extraction, normalization, section recovery, chunking, indexing, readiness, retry
 - query runtime:
-  - query run creation, stable corpus snapshots, interpretation, snapshot-scoped dense retrieval, and stage tracing through Stage 3
+  - query run creation, stable corpus snapshots, interpretation, snapshot-scoped dense retrieval, deterministic selection/evidence-set construction, and stage tracing through Stage 4
 - query-facing read model:
   - read-only projection of `READY` lifecycle outputs into a queryable corpus, including retrieval-ready embedded chunks
 - persistence:
@@ -61,7 +61,9 @@ The currently earned seams are:
 - executable internal `interpret` stage with durable stage traces in `query_stage_traces`
 - snapshot-scoped dense retrieval over persisted chunk embeddings with provenance-preserving `RetrievedCandidate` output
 - executable internal `retrieve` stage with durable stage traces in `query_stage_traces`
-- internal `POST /queries` execution through Stage 3 retrieval, with explicit stop before selection
+- deterministic selection with duplicate suppression, bounded neighbor expansion, and first-class `EvidenceSet` output
+- executable internal `select` stage with durable stage traces in `query_stage_traces`
+- internal `POST /queries` execution through Stage 4 selection, with explicit stop before context assembly
 - queued lifecycle orchestration with a document-scoped worker and stage dispatch
 - durable registration of supported PDF and Markdown uploads into `REGISTERED` documents with initial lifecycle events and queued extraction work
 - filesystem-backed raw, extracted, and normalized artifact storage with deterministic document-scoped paths
@@ -80,12 +82,11 @@ These seams are implemented internal architecture, not stable public contracts.
 The stable public package interface remains intentionally empty and is defined in [`docs/evergreen/api-contracts.md`](./api-contracts.md). Internal routes such as upload/status/retry/retrieval smoke and `POST /queries`, along with `src/parity/query/` exports, are implemented runtime seams rather than public contracts.
 
 ### Implemented Internal Architecture
-The `_contracts` layer, query read model, internal query runtime through Stage 3 retrieval, internal lifecycle app, queue worker, executable stages from registration through readiness, artifact store, persistence/indexing helpers, evaluation harness, and devtools exist in code and are exercised by tests. They are current implementation truth, but they are not yet promised as stable external interfaces for downstream callers.
+The `_contracts` layer, query read model, internal query runtime through Stage 4 selection/evidence-set construction, internal lifecycle app, queue worker, executable stages from registration through readiness, artifact store, persistence/indexing helpers, evaluation harness, and devtools exist in code and are exercised by tests. They are current implementation truth, but they are not yet promised as stable external interfaces for downstream callers.
 
 ### Planned MVP Capabilities Not Yet Implemented
 The target product in [`docs/evergreen/mvp.md`](./mvp.md) still exceeds the runtime that exists today. The following user-facing capabilities are not implemented in `src/parity/`:
 
-- no evidence selection stage
 - no context-assembly stage
 - no support-assessment stage
 - no answer-mode decision stage
@@ -95,11 +96,10 @@ The target product in [`docs/evergreen/mvp.md`](./mvp.md) still exceeds the runt
 - no user-facing source-inspection UI beyond internal debug/operator routes
 
 ## Gap To MVP
-The current runtime has earned lifecycle processing through `READY`, query-time corpus boundary capture, interpretation through Stage 2, and snapshot-scoped dense retrieval through Stage 3.
+The current runtime has earned lifecycle processing through `READY`, query-time corpus boundary capture, interpretation through Stage 2, snapshot-scoped dense retrieval through Stage 3, and deterministic selection/evidence-set construction through Stage 4.
 
 The main remaining gap to the MVP question-answering service is the rest of the query path:
 
-- evidence selection and grouping
 - context assembly
 - support assessment
 - answer-mode selection
@@ -113,7 +113,7 @@ The runtime also has not earned a stable public service or package API.
 - Do not redefine evaluation semantics here. Support-state, scenario, citation, and failure meanings are owned by the evergreen eval docs.
 - Do not treat `docs/delivery/workflow.md` as authority for current implementation truth. It is workflow rationale and promotion guidance, not the current-state source of truth.
 - Do not infer public API stability, answer generation, or user-facing source inspection from internal lifecycle routes or worker seams.
-- Do not infer retrieval, support assessment, answer-mode selection, generation, or citation rendering from the existence of `InterpretedQuery`, support-state enums, or trust-failure labels in `src/parity/query/contracts.py`.
+- Do not infer context assembly, support assessment, answer-mode selection, generation, or citation rendering from the existence of `InterpretedQuery`, support-state enums, trust-failure labels, or `EvidenceSet` objects in `src/parity/query/contracts.py`.
 - When referencing support-state or trust-failure vocabulary, normalize against [`docs/evergreen/eval-support-semantics.md`](./eval-support-semantics.md) and related evergreen eval docs instead of restating workstream-specific framing as runtime fact.
 - Do not promote a new seam into evergreen architecture just because it appears in one prototype or one workstream. It should be implemented repo truth and exercised under tests or equivalent validation pressure.
 

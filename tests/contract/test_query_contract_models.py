@@ -165,9 +165,14 @@ def test_evidence_set_requires_evidence_units() -> None:
                 evidence_unit_id="eu-1",
                 candidate=make_candidate(),
                 source_reference=make_source_reference(),
+                unit_rank=1,
+                selection_reason="Selected as direct evidence.",
             )
         ],
-        rationale="Single passage directly answers the question.",
+        purpose="direct_support",
+        coverage_notes=["Single passage directly answers the question."],
+        conflict_flags=[],
+        assembly_reason="Single passage directly answers the question.",
     )
 
     assert evidence_set.grouping_mode is EvidenceGroupingMode.SINGLE_PASSAGE
@@ -177,7 +182,10 @@ def test_evidence_set_requires_evidence_units() -> None:
             evidence_set_id="es-1",
             grouping_mode=EvidenceGroupingMode.SINGLE_PASSAGE,
             evidence_units=[],
-            rationale="Invalid empty set.",
+            purpose="direct_support",
+            coverage_notes=[],
+            conflict_flags=[],
+            assembly_reason="Invalid empty set.",
         )
 
 

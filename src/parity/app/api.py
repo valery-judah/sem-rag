@@ -21,6 +21,7 @@ from parity.lifecycle.service import (
 from parity.lifecycle.worker import DocumentLifecycleWorker
 from parity.query import (
     CorpusSnapshot,
+    EvidenceSet,
     InterpretedQuery,
     QueryRequest,
     QueryRunStatus,
@@ -48,7 +49,7 @@ class RetrievalQueryRequest(BaseModel):
 
 
 class QuerySubmissionResult(BaseModel):
-    """Internal response payload for Stage 3 retrieval execution."""
+    """Internal response payload for Stage 4 selection execution."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -58,6 +59,8 @@ class QuerySubmissionResult(BaseModel):
     snapshot: CorpusSnapshot
     interpreted_query: InterpretedQuery
     retrieved_candidates: list[RetrievedCandidate] = Field(default_factory=list)
+    selected_candidates: list[RetrievedCandidate] = Field(default_factory=list)
+    evidence_sets: list[EvidenceSet] = Field(default_factory=list)
     message: str = Field(min_length=1)
 
 
@@ -189,7 +192,7 @@ def create_app() -> FastAPI:
         service: Annotated[QueryService, Depends(get_query_service)],
     ) -> QuerySubmissionResult:
         try:
-            state = service.execute_until_retrieval(request)
+            state = service.execute_until_selection(request)
         except CorpusBoundaryUnavailableError as exc:
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
@@ -207,7 +210,9 @@ def create_app() -> FastAPI:
             snapshot=state.snapshot,
             interpreted_query=state.interpreted_query,
             retrieved_candidates=state.retrieved_candidates,
-            message="query retrieval completed; downstream stages are not implemented yet",
+            selected_candidates=state.selected_candidates,
+            evidence_sets=state.evidence_sets,
+            message="query selection completed; downstream stages are not implemented yet",
         )
 
     @app.post("/internal/run-next-job")

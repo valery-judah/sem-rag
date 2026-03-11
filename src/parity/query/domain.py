@@ -29,6 +29,7 @@ class QueryRuntimeState(BaseModel):
     snapshot: CorpusSnapshot | None = None
     interpreted_query: InterpretedQuery | None = None
     retrieved_candidates: list[RetrievedCandidate] = Field(default_factory=list)
+    selected_candidates: list[RetrievedCandidate] = Field(default_factory=list)
     evidence_sets: list[EvidenceSet] = Field(default_factory=list)
     context_manifest: ContextManifest | None = None
     support_assessment: SupportAssessment | None = None

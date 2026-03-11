@@ -14,8 +14,10 @@ from .interpretation import DeterministicQueryInterpreter, QueryInterpreter
 from .persistence import QueryRunStore, QuerySnapshotStore, QueryTraceStore
 from .policies import QueryPolicy, QueryPolicyDefaults, apply_policy_overrides
 from .retrieval import DenseQueryRetriever
+from .selection import QuerySelector
 from .stages.interpret import run as run_interpret_stage
 from .stages.retrieve import run as run_retrieve_stage
+from .stages.select import run as run_select_stage
 
 
 class QueryService:
@@ -31,6 +33,7 @@ class QueryService:
         trace_store: QueryTraceStore | None = None,
         interpreter: QueryInterpreter | None = None,
         retriever: DenseQueryRetriever | None = None,
+        selector: QuerySelector | None = None,
     ) -> None:
         self._base_policy = base_policy or QueryPolicyDefaults.build()
         self._corpus_read_model = corpus_read_model
@@ -39,6 +42,7 @@ class QueryService:
         self._trace_store = trace_store
         self._interpreter = interpreter or DeterministicQueryInterpreter()
         self._retriever = retriever
+        self._selector = selector
 
     @property
     def base_policy(self) -> QueryPolicy:
@@ -162,15 +166,44 @@ class QueryService:
             self._trace_store.append_stage_trace(result.trace)
         return state
 
+    def execute_until_selection(self, request: QueryRequest) -> QueryRuntimeState:
+        """Run the query lifecycle through the Stage-4 selection stage."""
+
+        if self._selector is None:
+            raise QueryStageNotImplementedError("select stage is not configured")
+        state = self.execute_until_retrieval(request)
+        if state.snapshot is None:
+            raise CorpusBoundaryUnavailableError("query corpus snapshot was not captured")
+        if state.interpreted_query is None:
+            raise QueryStageNotImplementedError(
+                "interpret stage did not produce an interpreted query"
+            )
+        result = run_select_stage(
+            query_id=state.run.query_id,
+            request=request,
+            snapshot=state.snapshot,
+            interpreted_query=state.interpreted_query,
+            retrieved_candidates=state.retrieved_candidates,
+            policy=self.resolve_policy(request),
+            selector=self._selector,
+        )
+        state.selected_candidates = result.selection.selected_candidates
+        state.evidence_sets = result.selection.evidence_sets
+        if self._trace_store is not None:
+            self._trace_store.append_stage_trace(result.trace)
+        return state
+
     def execute(self, request: QueryRequest) -> QueryRuntimeState:
         """Reject execution until later stages are implemented."""
 
         if self._corpus_read_model is None:
             state = self.initialize_runtime_state(request)
+        elif self._selector is not None:
+            state = self.execute_until_selection(request)
         elif self._retriever is not None:
             state = self.execute_until_retrieval(request)
         else:
             state = self.execute_until_interpretation(request)
         raise QueryStageNotImplementedError(
-            f"Query execution is not implemented beyond retrieval for {state.run.query_id}",
+            f"Query execution is not implemented beyond selection for {state.run.query_id}",
         )

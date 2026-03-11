@@ -1,14 +1,30 @@
-"""Evidence-set construction stage placeholder."""
+"""Helpers for building evidence sets during the select stage."""
 
 from __future__ import annotations
 
-from parity.query.contracts import QueryStageName
-from parity.query.errors import QueryStageNotImplementedError
+from parity.query.contracts import EvidenceGroupingMode, EvidenceSet, EvidenceUnit, QueryStageName
 
 STAGE_NAME = QueryStageName.SELECT
 
 
-def run() -> None:
-    """Placeholder Stage 0 entrypoint for evidence-set construction."""
+def build_evidence_set(
+    *,
+    evidence_set_id: str,
+    grouping_mode: EvidenceGroupingMode,
+    evidence_units: list[EvidenceUnit],
+    purpose: str,
+    coverage_notes: list[str],
+    conflict_flags: list[str],
+    assembly_reason: str,
+) -> EvidenceSet:
+    """Return a validated evidence-set object for Stage 4."""
 
-    raise QueryStageNotImplementedError(f"{STAGE_NAME.value} stage is not implemented")
+    return EvidenceSet(
+        evidence_set_id=evidence_set_id,
+        grouping_mode=grouping_mode,
+        evidence_units=evidence_units,
+        purpose=purpose,
+        coverage_notes=coverage_notes,
+        conflict_flags=conflict_flags,
+        assembly_reason=assembly_reason,
+    )
