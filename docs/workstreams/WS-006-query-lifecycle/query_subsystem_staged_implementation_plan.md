@@ -1,51 +1,72 @@
 # Staged Implementation and Delivery Plan for `07_design.md`
 
+**Status:** Draft  
+**Applies to:** MVP / Version 1  
+**Last updated:** 2026-03-11
+
 ## Purpose
 
-This plan translates `07_design.md` into an implementation sequence that a coding agent can execute incrementally without collapsing the intended semantics of the query subsystem.
+This document translates `07_design.md` into an implementation and delivery sequence that a coding agent can execute incrementally without collapsing the intended semantics of the query subsystem.
 
-The goal is not to implement “chat over files” quickly. The goal is to implement the explicit query lifecycle in a way that preserves the MVP trust contract:
+The goal is not to implement a generic "chat over files" loop quickly. The goal is to implement the explicit query lifecycle in a way that preserves the MVP trust contract:
 
 - only `READY` documents are queryable;
 - each query executes against a stable corpus snapshot;
 - evidence is explicit rather than implicit prompt context;
 - support assessment is first-class;
 - answer posture is policy-driven rather than model-improvised;
-- citations come from stored provenance rather than model invention;
-- traces are durable enough for debugging, evaluation, and replay.
+- citations derive from stored provenance rather than model invention;
+- traces are durable enough for debugging, replay, and evaluation.
 
 This plan assumes the document lifecycle is already implemented and available as the upstream system of record.
 
 ---
 
-## Guiding implementation rules
+## Related authoritative inputs
 
-1. Do not skip semantic stages just because one prompt can do more in a demo.
-2. Keep one FastAPI service, one Postgres database, and the existing artifact storage split.
-3. Build thin vertical slices early, but keep stage boundaries explicit in code and persisted traces.
-4. Prefer deterministic policy code wherever trust semantics depend on it.
-5. Keep inference adapters replaceable and subordinate to stage contracts.
-6. Prefer JSON stage traces over premature relational normalization.
-7. Use the existing document lifecycle as a read-only dependency; do not duplicate document ownership logic inside query.
-8. Treat unsupported or partial support behavior as a primary success path, not as an error case.
+This staged plan should be read in the following authority order:
+
+1. `mvp.md`
+2. `07_design.md`
+3. `eval-vocabulary.md`
+4. `eval-support-semantics.md`
+5. `21_critical_failures.md`
+6. `workflow.md`
+7. `21-design-exploration.md`
+
+When these documents differ in emphasis:
+
+- `mvp.md` governs product scope and trust guarantees;
+- `07_design.md` governs the intended query architecture and runtime path;
+- `eval-support-semantics.md` governs support-state and abstention behavior;
+- `21_critical_failures.md` governs release-relevant failure priorities;
+- `workflow.md` governs the modeling-first delivery posture.
 
 ---
 
-## Global target architecture to grow toward
+## Design commitments this plan preserves
 
-The final MVP query path should remain:
+The query subsystem must preserve the normative runtime path from `07_design.md`:
 
-`Interpret -> Retrieve -> Select -> Evidence Sets -> Assemble Context -> Assess Support -> Decide Answer Mode -> Generate -> Render Citations`
+`Interpret -> Retrieve -> Select -> Assemble Context -> Assess Support -> Decide Answer Mode -> Generate -> Cite or Abstain`
 
-The coding sequence below intentionally does **not** implement everything at once. It introduces this path in stages while keeping each earlier stage compatible with the final design.
+The staged implementation plan treats that path as binding runtime structure, not as explanatory prose.
+
+In particular:
+
+- `Assess Support` must remain a first-class stage.
+- `Decide Answer Mode` must remain explicit and policy-driven.
+- Later stages may preserve or narrow posture, but must not widen it.
+- Only `READY` documents may participate in answering.
+- Each query must run against a stable corpus snapshot.
 
 ---
 
-## Delivery strategy
+## Delivery philosophy
 
 Use staged vertical delivery with hard acceptance gates.
 
-Each stage should produce:
+Each stage must produce:
 
 - runnable code;
 - explicit tests;
@@ -54,25 +75,47 @@ Each stage should produce:
 
 Do not let later stages force rewrites of earlier contracts unless a contract is clearly wrong.
 
+The delivery posture should stay model-first rather than architecture-first:
+
+- freeze semantics early;
+- keep infrastructure simple;
+- use implementation pressure to validate seams;
+- prefer inspectable deterministic policy over hidden prompt behavior.
+
 ---
 
-# Stage 0 — Freeze contracts and establish scaffolding
+## Global target architecture to grow toward
+
+The final MVP query subsystem should provide:
+
+- one FastAPI service;
+- one Postgres database;
+- reuse of the existing document lifecycle read surface;
+- explicit query lifecycle stages;
+- durable query traces;
+- support-state-aware grounded answering;
+- provenance-derived citations;
+- evaluation hooks tied to trust failures.
+
+The coding sequence below introduces that architecture in a controlled order.
+
+---
+
+# Stage 0 — Freeze contracts and scaffolding
 
 ## Goal
 
-Create the minimal structural scaffolding so later implementation does not drift into ad hoc prompt orchestration.
+Create the minimum internal structure needed so later implementation does not collapse into ad hoc retrieval-plus-generation logic.
 
 ## Why this stage exists
 
-Without this stage, the coding agent will likely implement a direct `/queries` endpoint with retrieval and generation fused together. That would violate the design before the subsystem is even bootstrapped.
+Without this stage, the coding agent will likely implement a direct `/queries` endpoint with retrieval and generation fused together. That would violate `07_design.md` before the subsystem is even bootstrapped.
 
 ## Deliverables
 
-### 0.1 Package layout skeleton
+### 0.1 Query package skeleton
 
-Create the initial package structure aligned to the design, but keep files few and substantial.
-
-Suggested starting layout:
+Create the initial package structure aligned to the design:
 
 ```text
 src/<app>/
@@ -102,48 +145,49 @@ src/<app>/
     schemas.py
 ```
 
-Early in implementation, `contracts.py`, `domain.py`, and `persistence.py` may stay consolidated. Split only when pressure is real.
+Early on, `contracts.py`, `domain.py`, and `persistence.py` may remain consolidated. Split only when real pressure appears.
 
-### 0.2 Core domain contracts
+### 0.2 Core semantic objects
 
-Define the minimum stable internal objects:
+Define stable internal objects for at least:
 
 - `QueryRequest`
 - `QueryRun`
 - `CorpusSnapshot`
 - `InterpretedQuery`
-- `RetrievalCandidate`
+- `RetrievedCandidate`
+- `EvidenceUnit`
 - `EvidenceSet`
 - `ContextManifest`
 - `SupportAssessment`
-- `AnswerMode`
-- `GeneratedAnswer`
-- `RenderedCitation`
+- `AnswerModeDecision`
+- `AnswerDraft`
+- `CitationBundle`
 
 ### 0.3 Enumerations and invariant constants
 
 Define enums or equivalent constants for:
 
-- query run status
-- support state
-- answer mode
-- stage names
-- primary query failure labels
+- query run status;
+- stage names;
+- support states;
+- answer modes;
+- primary trust failure labels.
 
-### 0.4 Policy object
+### 0.4 Central policy object
 
-Create a central `QueryPolicy` / `QueryPolicyDefaults` object that holds explicit defaults for:
+Create a canonical `QueryPolicy` / `QueryPolicyDefaults` object for:
 
-- retrieval candidate count
-- evidence set limits
-- neighbor expansion policy
-- duplicate suppression policy
-- context budget
-- tie-break order
-- support-state to answer-mode mapping
-- citation rendering defaults
+- retrieval candidate count;
+- evidence-set limits;
+- neighbor expansion policy;
+- duplicate suppression policy;
+- context budget;
+- deterministic tie-break order;
+- support-state to answer-mode mapping;
+- citation rendering defaults.
 
-Do **not** leave these embedded in prompt text.
+Do not leave these embedded in prompt text.
 
 ## Acceptance gate
 
@@ -154,11 +198,11 @@ This stage is done when:
 - there is one canonical place for query-time defaults;
 - tests verify enum values and support-state to answer-mode mapping tables exist.
 
-## Coding-agent instructions
+## Coding-agent notes
 
 - Do not implement real retrieval or LLM calls yet.
 - Do not create transport-first DTO sprawl.
-- Optimize for semantic clarity of the internal contracts.
+- Optimize for semantic clarity of internal contracts.
 
 ---
 
@@ -170,7 +214,7 @@ Make the query subsystem capable of reading a stable queryable corpus from the d
 
 ## Why this stage exists
 
-The design makes `READY` the hard boundary for queryability. If this rule is not implemented first, every downstream behavior becomes semantically unstable.
+`READY` is the hard boundary for queryability. If this rule is not implemented first, every downstream behavior becomes semantically unstable.
 
 ## Deliverables
 
@@ -180,36 +224,36 @@ Implement a read model over document-lifecycle persistence that can:
 
 - list `READY` documents for a workspace;
 - return the query-time corpus snapshot;
-- expose chunks with provenance-bearing metadata;
-- expose section and heading path data;
+- expose sections and chunks with provenance-bearing metadata;
+- expose heading or section path data;
 - expose only query-relevant fields, not raw lifecycle internals.
 
 ### 1.2 Corpus snapshot capture
 
-Implement a `CorpusSnapshot` artifact for each query run containing, at minimum:
+Implement a `CorpusSnapshot` artifact for each query run containing at minimum:
 
-- workspace id
-- query start time
-- list of eligible `doc_id`s
-- optional retrieval/index version markers if available
+- workspace id;
+- query start timestamp;
+- list of eligible `doc_id`s;
+- optional retrieval/index version markers if available.
 
 ### 1.3 Query-time boundary validation
 
 Implement preflight validation logic for:
 
-- workspace existence
-- visibility / ownership boundary
-- non-empty or empty-but-valid corpus snapshot
-- `READY`-only eligibility filtering
+- workspace existence;
+- visibility / ownership boundary;
+- `READY`-only eligibility filtering;
+- explicit handling of empty but valid corpus snapshots.
 
-### 1.4 Minimal `/queries` request path
+### 1.4 Minimal `/queries` path
 
 Implement a thin internal endpoint that:
 
-- accepts a user question and workspace id;
+- accepts question + workspace id;
 - captures a query run record;
 - captures the corpus snapshot;
-- returns a temporary stub response while downstream stages are still placeholders.
+- returns a stub response while downstream stages remain placeholders.
 
 ## Tests
 
@@ -226,7 +270,7 @@ This stage is done when:
 - the query subsystem can only see `READY` documents;
 - snapshot behavior is deterministic and test-covered.
 
-## Coding-agent instructions
+## Coding-agent notes
 
 - Keep this adapter read-only.
 - Do not query raw artifact files directly from query logic.
@@ -234,55 +278,125 @@ This stage is done when:
 
 ---
 
-# Stage 2 — Retrieval skeleton with provenance-preserving candidates
+# Stage 2 — Interpretation foundation
 
 ## Goal
 
-Implement the first real evidence discovery path using dense passage retrieval over the query-time snapshot.
+Establish structured query interpretation as an explicit runtime contract before retrieval begins.
 
 ## Why this stage exists
 
-Retrieval is the first place where the subsystem produces candidate evidence. It must preserve identity and provenance before any support reasoning can be trustworthy.
+`07_design.md` makes `Interpret` the first semantic stage after intake. If retrieval is implemented first, the subsystem will drift toward raw-query search and collapse the intended runtime backbone.
 
 ## Deliverables
 
-### 2.1 Query embedding adapter
+### 2.1 Interpretation stage
 
-Implement a narrow embeddings interface for query text.
+Implement one structured LLM call with strict schema for:
 
-### 2.2 Dense-first passage retrieval
+- request type;
+- answer-shape implications;
+- scope and specificity;
+- likely source-navigation intent;
+- likely synthesis intent;
+- obvious unsupported-question-type signals.
+
+Follow with deterministic normalization and policy checks.
+
+### 2.2 Stable `InterpretedQuery` contract
+
+Define and persist an `InterpretedQuery` shape that later stages can consume without lossy translation.
+
+### 2.3 Interpretation stage trace
+
+Persist the interpretation payload including:
+
+- the normalized `InterpretedQuery`;
+- policy flags or unsupported-question-type signals;
+- model/schema version metadata where relevant.
+
+### 2.4 Endpoint integration
+
+`POST /queries` should now run:
+
+`boundary validation -> interpret -> persist interpretation trace -> return temporary developer-visible response`
+
+## Tests
+
+- interpretation preserves distinctions among factual lookup, explanation, synthesis, source navigation, and unsupported question type;
+- normalization is deterministic for equivalent requests;
+- interpreted-query artifacts serialize cleanly and are traceable;
+- empty but valid corpus state does not bypass interpretation.
+
+## Acceptance gate
+
+This stage is done when:
+
+- the system has an explicit interpreted-query contract;
+- retrieval can be implemented downstream of interpretation rather than against raw request text alone;
+- every query run has a persisted interpretation trace.
+
+## Coding-agent notes
+
+- Interpretation is not support assessment.
+- Keep the schema constrained and inspectable.
+- Do not bypass this stage by letting downstream stages depend semantically on raw request text.
+
+---
+
+# Stage 3 — Retrieval foundation with provenance-preserving candidates
+
+## Goal
+
+Implement the first real evidence discovery path using dense passage retrieval over the query-time snapshot, explicitly downstream of `InterpretedQuery`.
+
+## Why this stage exists
+
+Retrieval is the first place where the subsystem produces candidate evidence. It must preserve identity and provenance before any support reasoning can be trustworthy, and it must consume the interpreted query contract rather than stand in for it.
+
+## Deliverables
+
+### 3.1 Query embedding adapter
+
+Implement a narrow embeddings interface for the retrieval-ready query representation derived from `InterpretedQuery`.
+
+### 3.2 Dense-first passage retrieval
 
 Implement retrieval that:
 
 - searches only within the query-time snapshot;
+- takes `InterpretedQuery` as the primary semantic input;
 - returns passage-level candidates;
 - preserves `doc_id`, `chunk_id`, `section_id`, `heading_path`, locator data, score, and rank;
 - performs no external search.
 
-### 2.3 Retrieval candidate contract
+Raw query text may remain available only as a bootstrap diagnostic fallback during retrieval investigation, not as the intended runtime contract.
 
-Define and persist a stable candidate shape. It must support later selection, evidence grouping, and citation rendering without re-querying unrelated stores.
+### 3.3 Stable retrieval candidate contract
 
-### 2.4 Retrieval stage trace
+Define and persist a candidate shape that later stages can consume without lossy translation.
 
-Persist the retrieval stage payload, including:
+### 3.4 Retrieval stage trace
 
-- candidate list
-- ranks and scores
-- snapshot id or embedded snapshot reference
-- retrieval config used
+Persist the retrieval stage payload including:
 
-### 2.5 Minimal retrieval-stage endpoint integration
+- candidate list;
+- ranks and scores;
+- interpreted-query reference;
+- snapshot id or embedded snapshot reference;
+- retrieval config used.
+
+### 3.5 Endpoint integration
 
 `POST /queries` should now run:
 
-`boundary validation -> retrieve -> persist retrieval trace -> return stub or temporary developer response`
+`boundary validation -> interpret -> retrieve -> persist interpretation/retrieval traces -> return temporary developer-visible response`
 
 ## Tests
 
 - retrieval never returns a chunk outside the captured snapshot;
 - candidate objects always include provenance-bearing fields;
-- retrieval over a fixture corpus returns at least some expected passage matches;
+- retrieval over a fixture corpus returns expected passage matches in at least basic cases;
 - retrieval on empty snapshot returns a valid empty candidate list.
 
 ## Acceptance gate
@@ -291,9 +405,10 @@ This stage is done when:
 
 - retrieval is real, bounded, and traceable;
 - candidate identity and provenance are stable;
+- retrieval is explicitly downstream of `InterpretedQuery`;
 - every query run has a persisted retrieval trace.
 
-## Coding-agent instructions
+## Coding-agent notes
 
 - Do not implement reranking here.
 - Do not collapse retrieval output into prompt text.
@@ -301,7 +416,7 @@ This stage is done when:
 
 ---
 
-# Stage 3 — Selection and evidence-set construction
+# Stage 4 — Selection and evidence-set construction
 
 ## Goal
 
@@ -313,49 +428,49 @@ The design explicitly rejects naive top-k prompting. This stage is the bridge fr
 
 ## Deliverables
 
-### 3.1 Heuristic reranking / selection stage
+### 4.1 Heuristic reranking / selection stage
 
 Implement deterministic heuristic reranking using signals such as:
 
-- closeness to interpreted query or raw query
-- heading/path relevance
-- local coherence potential
-- candidate completeness
-- source-navigation precision
-- provenance quality
-- synthesis diversity when needed
+- closeness to interpreted query;
+- heading/path relevance;
+- local coherence potential;
+- candidate completeness;
+- source-navigation precision;
+- provenance quality;
+- synthesis diversity when needed.
 
-### 3.2 Duplicate suppression
+### 4.2 Duplicate suppression
 
 Implement deterministic duplicate and near-duplicate suppression.
 
-### 3.3 Neighbor expansion policy
+### 4.3 Neighbor expansion policy
 
 Implement limited adjacent-passage expansion where local coherence matters.
 
-### 3.4 Evidence-set builder
+### 4.4 Evidence-set builder
 
 Implement MVP evidence grouping modes:
 
-- single-passage support
-- passage plus neighbor support
-- same-document multi-passage grouping
-- small cross-document grouping for clear synthesis cases
+- single-passage support;
+- passage plus neighbor support;
+- same-document multi-passage grouping;
+- small cross-document grouping for clear synthesis cases.
 
-### 3.5 Selection and evidence-set traces
+### 4.5 Selection and evidence-set traces
 
 Persist structured outputs for:
 
-- selected candidates
-- candidates dropped and why
-- evidence-set membership
-- grouping rationale
+- selected candidates;
+- dropped candidates and why;
+- evidence-set membership;
+- grouping rationale.
 
 ## Tests
 
 - duplicate suppression is deterministic;
 - neighbor expansion stays within allowed policy bounds;
-- single-document explanation requests can group multiple passages from one document;
+- explanation queries can group multiple passages from one document;
 - synthesis grouping does not create oversized or incoherent evidence bundles.
 
 ## Acceptance gate
@@ -366,40 +481,28 @@ This stage is done when:
 - evidence sets exist as first-class runtime objects;
 - the system no longer depends on naive raw top-k prompt assembly.
 
-## Coding-agent instructions
+## Coding-agent notes
 
 - Keep reranking heuristic and inspectable for MVP.
 - Do not add neural rerankers yet.
+- Do not make raw query text part of the semantic primary path for selection; treat it as retrieval-stage diagnostics only if needed.
 - Prefer conservative grouping over aggressive synthesis.
 
 ---
 
-# Stage 4 — Interpretation and explicit context assembly
+# Stage 5 — Deterministic context assembly
 
 ## Goal
 
-Add structured query interpretation and deterministic context assembly over evidence sets.
+Build a deterministic, inspectable model-facing context from explicit evidence sets.
 
 ## Why this stage exists
 
-Interpretation determines answer-shape expectations and unsupported-question-type handling. Context assembly determines what the generator actually sees. Both are required before support assessment is meaningful.
+Context assembly determines what the generator actually sees. It should remain its own stage so inclusion, ordering, and truncation are inspectable rather than disappearing into interpretation or generation.
 
 ## Deliverables
 
-### 4.1 Interpretation stage
-
-Implement one structured LLM call with strict schema for:
-
-- request type
-- answer-shape implications
-- scope and specificity
-- likely source-navigation intent
-- likely synthesis intent
-- obvious unsupported-question-type signal
-
-Follow with deterministic normalization and policy checks.
-
-### 4.2 Context assembly stage
+### 5.1 Context assembly stage
 
 Build a deterministic `ContextManifest` that:
 
@@ -410,23 +513,22 @@ Build a deterministic `ContextManifest` that:
 - drops lower-value evidence sets first when over budget;
 - records inclusion and exclusion reasons.
 
-### 4.3 Interpretation and context traces
+The unit of truncation should normally be the lower-value evidence set, not arbitrary clipping through already selected support.
 
-Persist both stage outputs as structured artifacts.
+### 5.2 Context trace
 
-### 4.4 Temporary developer-visible response
+Persist the context-assembly output as a structured artifact.
+
+### 5.3 Temporary developer-visible response
 
 Until answer generation is implemented, allow an internal debug response mode that returns:
 
-- interpreted query summary
-- selected evidence sets
-- context manifest
-
-This helps validate semantics before generation is added.
+- interpreted query summary;
+- selected evidence sets;
+- context manifest.
 
 ## Tests
 
-- interpretation preserves distinctions among factual lookup, explanation, synthesis, source navigation, and unsupported question type;
 - context ordering is deterministic;
 - budget overflow drops lower-priority evidence sets first;
 - context manifest always references included evidence set ids.
@@ -435,19 +537,17 @@ This helps validate semantics before generation is added.
 
 This stage is done when:
 
-- the system can interpret question shape explicitly;
 - the final model-facing context is structured and inspectable;
 - context inclusion/exclusion decisions are persisted.
 
-## Coding-agent instructions
+## Coding-agent notes
 
-- Interpretation is not support assessment.
 - Context assembly is not answer generation.
-- Keep those contracts separate even if implemented in the same sprint.
+- Keep this stage separate from interpretation even if both are implemented close together.
 
 ---
 
-# Stage 5 — Support assessment and answer-mode policy
+# Stage 6 — Support assessment and answer-mode policy
 
 ## Goal
 
@@ -459,7 +559,7 @@ This is the main semantic difference between a trustworthy RAG system and a prom
 
 ## Deliverables
 
-### 5.1 Support assessment stage
+### 6.1 Support assessment stage
 
 Implement a hybrid stage with:
 
@@ -467,45 +567,52 @@ Implement a hybrid stage with:
 - structured LLM judgment over interpreted query, evidence sets, and context manifest;
 - deterministic post-rules that can preserve or narrow support, but never widen it.
 
-Support states should align to the existing support semantics used elsewhere in the project.
+Support states must align to the live semantics:
 
-### 5.2 Answer-mode decision stage
+- `SUFFICIENT`
+- `PARTIAL`
+- `INSUFFICIENT`
+
+### 6.2 Answer-mode decision stage
 
 Implement deterministic policy mapping from support state plus qualifying reasons to allowed answer posture.
 
 Supported answer modes should include at least:
 
-- direct answer
-- narrowed answer
-- qualified answer
-- full abstention
-- scoped abstention
-- qualified uncertainty
+- direct answer;
+- narrowed answer;
+- qualified answer;
+- full abstention;
+- scoped abstention;
+- qualified uncertainty.
 
-### 5.3 Stage traces
+### 6.3 Stage traces
 
 Persist:
 
-- support assessment output
-- qualifying reasons
-- answer mode decision
-- policy version / config snapshot
+- support assessment output;
+- qualifying reasons;
+- answer mode decision;
+- policy version / config snapshot.
 
-### 5.4 Failure classification hooks
+### 6.4 Failure-label hooks
 
-Attach provisional primary failure labels when obvious, such as:
+Attach provisional primary trust-failure labels when obvious, such as:
 
-- failed abstention risk
-- wrong abstention risk
-- scope-boundary handling
-- provenance insufficiency
+- unsupported answer risk (`U1`);
+- partially supported answer presented as complete risk (`U2`);
+- wrong abstention risk (`A1`);
+- failed abstention risk (`A2`);
+- provenance too weak risk (`P1`);
+- incorrect provenance risk (`P2`);
+- scope-boundary failure risk (`S1`).
 
 ## Tests
 
 - empty evidence cannot yield direct answer mode;
 - unsupported question types cannot yield direct answer mode;
 - partial support cannot widen to direct complete answer mode;
-- deterministic policy post-rules can only preserve or narrow posture;
+- deterministic post-rules can only preserve or narrow posture;
 - answer-mode mapping is testable without invoking generation.
 
 ## Acceptance gate
@@ -516,7 +623,7 @@ This stage is done when:
 - answer posture is selected by policy logic;
 - unsupported or partial-support cases are first-class and test-covered.
 
-## Coding-agent instructions
+## Coding-agent notes
 
 - Do not hide answer-mode choice in the generation prompt.
 - Do not let the LLM invent new support states.
@@ -524,7 +631,7 @@ This stage is done when:
 
 ---
 
-# Stage 6 — Grounded generation and citation rendering
+# Stage 7 — Grounded generation and citation rendering
 
 ## Goal
 
@@ -536,15 +643,15 @@ Only after support and posture are explicit can generation be safely introduced.
 
 ## Deliverables
 
-### 6.1 Grounded generation stage
+### 7.1 Grounded generation stage
 
 Implement one generation call that consumes:
 
-- interpreted query
-- context manifest
-- support assessment
-- answer mode
-- visible limitation guidance
+- interpreted query;
+- context manifest;
+- support assessment;
+- answer mode;
+- visible limitation guidance.
 
 Generation rules:
 
@@ -554,39 +661,39 @@ Generation rules:
 - conflicting evidence must not be flattened into false consensus;
 - unsupported gaps must not be silently filled.
 
-### 6.2 Citation rendering stage
+### 7.2 Citation rendering stage
 
 Derive citations from stored provenance, not from the generation model.
 
 Implement citation objects that can represent:
 
-- contributing `doc_id`
-- heading path or section path when available
-- page range or coarse locator when available
-- citation support role
-- multi-source bundles where needed
+- contributing `doc_id`;
+- heading path or section path when available;
+- page range or coarse locator when available;
+- citation support role;
+- multi-source bundles where needed.
 
-### 6.3 Final answer persistence
+### 7.3 Final answer persistence
 
 Persist:
 
-- answer text
-- support state
-- qualifying reasons
-- answer mode
-- visible limitations
-- citations
+- answer text;
+- support state;
+- qualifying reasons;
+- answer mode;
+- visible limitations;
+- citations.
 
-### 6.4 Complete `/queries` response
+### 7.4 Complete `/queries` response
 
 Return:
 
-- `query_id`
-- `answer`
-- `support_state`
-- `answer_mode`
-- `visible_limitations`
-- `citations`
+- `query_id`;
+- `answer`;
+- `support_state`;
+- `answer_mode`;
+- `visible_limitations`;
+- `citations`.
 
 ## Tests
 
@@ -600,11 +707,11 @@ Return:
 
 This stage is done when:
 
-- the system can answer end-to-end over `READY` documents;
+- the system can answer end to end over `READY` documents;
 - citations are derived from provenance-bearing evidence objects;
 - abstention and narrowing behaviors are visible in final answers.
 
-## Coding-agent instructions
+## Coding-agent notes
 
 - Keep generation constrained to supportable evidence only.
 - Fail closed on missing citation provenance.
@@ -612,7 +719,7 @@ This stage is done when:
 
 ---
 
-# Stage 7 — Trace persistence, review endpoints, and replay support
+# Stage 8 — Trace persistence, review endpoints, and replay foundation
 
 ## Goal
 
@@ -624,7 +731,7 @@ A grounded answer is not trustworthy if the team cannot inspect why it happened.
 
 ## Deliverables
 
-### 7.1 Persistence tables
+### 8.1 Persistence tables
 
 Implement the initial persistence model with a bias toward structured JSON traces:
 
@@ -635,7 +742,7 @@ Implement the initial persistence model with a bias toward structured JSON trace
 - optional `query_retrieval_candidate`
 - optional `query_failure`
 
-### 7.2 Review endpoints
+### 8.2 Review endpoints
 
 Implement internal endpoints:
 
@@ -643,26 +750,26 @@ Implement internal endpoints:
 - `GET /queries/{query_id}/trace`
 - `GET /queries/{query_id}/citations`
 
-### 7.3 Replay foundation
+### 8.3 Replay foundation
 
 Implement replay first as an internal service/test primitive rather than a required public HTTP feature.
 
-### 7.4 Diagnostic utilities
+### 8.4 Diagnostic utilities
 
 Add review helpers for:
 
-- stage timing
-- candidate inspection
-- evidence-set inspection
-- context manifest inspection
-- support and answer-mode decision review
+- stage timing;
+- candidate inspection;
+- evidence-set inspection;
+- context manifest inspection;
+- support and answer-mode decision review.
 
 ## Tests
 
 - every successful query has a full trace chain;
 - every stage trace is linked to the owning query run;
 - citations endpoint is derived from persisted answer/citation state rather than recomputed ad hoc;
-- replay can reconstruct a prior run’s stage inputs from persisted artifacts.
+- replay can reconstruct a prior run's stage inputs from persisted artifacts.
 
 ## Acceptance gate
 
@@ -672,73 +779,73 @@ This stage is done when:
 - retrieval, support, and citation defects are localizable;
 - the subsystem is evaluation-ready rather than demo-only.
 
-## Coding-agent instructions
+## Coding-agent notes
 
 - Prefer structured JSON payloads over premature relational decomposition.
 - Keep trace payloads stable enough for regression tooling.
-- Do not defer trace persistence until after “the core works.” The trace is part of the core.
+- Do not defer trace persistence until after "the core works." The trace is part of the core.
 
 ---
 
-# Stage 8 — Evaluation hardening and release gating
+# Stage 9 — Evaluation hardening and release gates
 
 ## Goal
 
-Move from “it runs” to “it meets the MVP trust contract.”
+Move from "it runs" to "it meets the MVP trust contract."
 
 ## Why this stage exists
 
-The subsystem should not be considered complete until it is measured against the project’s explicit support, citation, and failure semantics.
+The subsystem should not be considered complete until it is measured against the project's explicit support, citation, and failure semantics.
 
 ## Deliverables
 
-### 8.1 Stage-level tests
+### 9.1 Stage-level tests
 
 Add isolated tests for:
 
-- interpretation
-- retrieval
-- selection
-- evidence-set building
-- context assembly
-- support assessment
-- answer-mode decision
-- citation rendering
+- interpretation;
+- retrieval;
+- selection;
+- evidence-set building;
+- context assembly;
+- support assessment;
+- answer-mode decision;
+- citation rendering.
 
-### 8.2 End-to-end scenario suite
+### 9.2 End-to-end scenario suite
 
 Cover at least:
 
-- direct factual lookup
-- section-scoped explanation
-- one-document synthesis
-- limited cross-document synthesis
-- unsupported-in-corpus
-- unsupported-question-type
-- ambiguous/conflicting evidence
-- provenance-sensitive navigation
+- direct factual lookup;
+- section-scoped explanation;
+- one-document synthesis;
+- limited cross-document synthesis;
+- unsupported-in-corpus;
+- unsupported-question-type;
+- ambiguous/conflicting evidence;
+- provenance-sensitive navigation.
 
-### 8.3 Failure-oriented suite
+### 9.3 Failure-oriented suite
 
-Track failures such as:
+Track at minimum:
 
-- unsupported answer
-- partial evidence presented as complete
-- wrong abstention
-- failed abstention
-- provenance missing / too weak
-- incorrect provenance
-- scope-boundary failure
-- document-side defect surfacing as query-time trust failure
+- unsupported answer (`U1`);
+- partially supported answer presented as complete (`U2`);
+- wrong abstention (`A1`);
+- failed abstention (`A2`);
+- provenance missing or too weak (`P1`);
+- incorrect provenance (`P2`);
+- ingestion/structure defect visible at query time (`I1`);
+- scope-boundary failure (`S1`).
 
-### 8.4 Release gates
+### 9.4 Release gates
 
-Require that no stage-implementation change can increase:
+Require that no change can increase:
 
-- unsupported answers
-- failed abstentions
-- incorrect provenance
-- scope-boundary dishonesty
+- unsupported answers;
+- failed abstentions;
+- incorrect provenance;
+- scope-boundary dishonesty.
 
 without explicit review and justification.
 
@@ -750,7 +857,7 @@ This stage is done when:
 - failure categories are visible in evaluation output;
 - changes can be judged as regressions or improvements.
 
-## Coding-agent instructions
+## Coding-agent notes
 
 - Do not optimize only for answer rate.
 - Treat unsupported answers and false provenance as release-blocking classes.
@@ -758,11 +865,11 @@ This stage is done when:
 
 ---
 
-# Recommended milestone grouping
+# Milestone grouping
 
-If you want fewer, larger milestones for the coding agent, use this grouping:
+If you want fewer, larger milestones for the coding agent, use this grouping.
 
-## Milestone A — Query boundary and retrieval foundation
+## Milestone A — Query boundary and interpretation foundation
 
 Includes Stages 0, 1, and 2.
 
@@ -770,19 +877,20 @@ Outcome:
 
 - query runs exist;
 - corpus snapshots are stable;
-- retrieval over `READY` documents is real and traceable.
+- interpreted queries are explicit and traceable.
 
-## Milestone B — Evidence structuring and context path
+## Milestone B — Retrieval, evidence structuring, and context path
 
-Includes Stages 3 and 4.
+Includes Stages 3, 4, and 5.
 
 Outcome:
 
+- retrieval is explicitly downstream of `InterpretedQuery`;
 - raw retrieval is converted into evidence sets and deterministic context manifests.
 
 ## Milestone C — Trust decision path
 
-Includes Stage 5.
+Includes Stage 6.
 
 Outcome:
 
@@ -790,7 +898,7 @@ Outcome:
 
 ## Milestone D — End-to-end answer delivery
 
-Includes Stage 6.
+Includes Stage 7.
 
 Outcome:
 
@@ -798,7 +906,7 @@ Outcome:
 
 ## Milestone E — Reviewability and hardening
 
-Includes Stages 7 and 8.
+Includes Stages 8 and 9.
 
 Outcome:
 
@@ -806,39 +914,40 @@ Outcome:
 
 ---
 
-# Order constraints that should not be violated
+# Order constraints that must not be violated
 
-1. Do not implement final answer generation before support assessment and answer-mode policy exist.
-2. Do not implement citation rendering from model text.
-3. Do not let retrieval read directly from “latest ready docs” after query start; use the captured snapshot.
-4. Do not substitute section retrieval for passage-first retrieval in MVP.
-5. Do not skip evidence-set construction and dump top-k passages straight into generation as the default architecture.
-6. Do not treat empty evidence as a soft prompt hint; handle it as a first-class support signal.
-7. Do not make replay or trace inspection impossible by over-compressing stage outputs.
+1. Do not implement retrieval before interpretation exists as an explicit stage contract.
+2. Do not implement final answer generation before support assessment and answer-mode policy exist.
+3. Do not implement citation rendering from model text.
+4. Do not let retrieval read directly from "latest ready docs" after query start; use the captured snapshot.
+5. Do not substitute section retrieval for passage-first retrieval in MVP.
+6. Do not skip evidence-set construction and dump top-k passages straight into generation as the default architecture.
+7. Do not treat empty evidence as a soft prompt hint; handle it as a first-class support signal.
+8. Do not make replay or trace inspection impossible by over-compressing stage outputs.
 
 ---
 
 # Minimal MVP defaults to freeze early
 
-These values can change later, but they must be explicit before serious implementation proceeds:
+These values may change later, but they must be explicit before serious implementation proceeds:
 
-- dense-first retrieval only
-- passage-first retrieval unit
-- deterministic tie-break ordering
-- explicit candidate cap
-- explicit evidence-set cap
-- explicit context budget
-- limited neighboring-passage expansion
-- deterministic duplicate suppression
-- support-state-driven answer posture
-- provenance-derived citation rendering
-- internal HTTP surface only
+- dense-first retrieval only;
+- passage-first retrieval unit;
+- deterministic tie-break ordering;
+- explicit candidate cap;
+- explicit evidence-set cap;
+- explicit context budget;
+- limited neighboring-passage expansion;
+- deterministic duplicate suppression;
+- support-state-driven answer posture;
+- provenance-derived citation rendering;
+- internal HTTP surface only.
 
 ---
 
 # Suggested coding-agent execution template per stage
 
-For each stage, ask the coding agent to deliver in this order:
+For each stage, instruct the coding agent to deliver in this order:
 
 1. update or create internal domain contracts;
 2. implement the stage service logic;
@@ -846,24 +955,37 @@ For each stage, ask the coding agent to deliver in this order:
 4. wire the stage into `query/service.py` orchestration;
 5. add focused unit/contract tests;
 6. add one end-to-end fixture test;
-7. document the stage invariants and failure modes in code comments or nearby markdown.
+7. document stage invariants and likely failure modes near the code.
 
 That sequence keeps delivery incremental while preserving inspectability.
 
 ---
 
+# Definition of done for the subsystem
+
+The query subsystem is only done for MVP when all of the following are true:
+
+- it answers only from the active query-time corpus snapshot;
+- it treats support state as an explicit semantic object rather than a generation side effect;
+- it can narrow, qualify, or abstain according to explicit policy;
+- it returns inspectable citations derived from stored provenance;
+- it persists enough trace state to explain why it answered or abstained;
+- it is evaluated against the primary trust failures rather than raw answer rate alone.
+
+---
+
 # Final recommendation
 
-Build the query subsystem in the following strict order:
+Build the query subsystem in this strict order:
 
-1. scaffold contracts and policies;
+1. scaffold contracts and policy defaults;
 2. enforce `READY`-snapshot query boundaries;
-3. implement provenance-preserving retrieval;
-4. implement selection and evidence sets;
-5. implement interpretation and deterministic context assembly;
-6. implement support assessment and answer-mode policy;
-7. implement grounded generation and citation rendering;
-8. implement trace/review surfaces and evaluation hardening.
+3. implement structured interpretation;
+4. implement provenance-preserving retrieval;
+5. implement selection and evidence sets;
+6. implement deterministic context assembly;
+7. implement support assessment and answer-mode policy;
+8. implement grounded generation and citation rendering;
+9. implement trace/review surfaces and evaluation hardening.
 
 That is the shortest path to a working system that still respects `07_design.md` rather than accidentally replacing it with a simpler but semantically weaker architecture.
-
