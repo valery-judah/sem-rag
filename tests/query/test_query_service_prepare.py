@@ -144,15 +144,11 @@ def test_prepare_query_freezes_snapshot_membership_across_later_ready_transition
         ],
     )
 
-    first = service.prepare_query(
-        QueryRequest(question="first query", workspace_id="ws-1")
-    )
+    first = service.prepare_query(QueryRequest(question="first query", workspace_id="ws-1"))
 
     documents.update_status(doc_id="doc-later", status=ProcessingStatus.READY)
 
-    second = service.prepare_query(
-        QueryRequest(question="second query", workspace_id="ws-1")
-    )
+    second = service.prepare_query(QueryRequest(question="second query", workspace_id="ws-1"))
 
     assert first.snapshot is not None
     assert second.snapshot is not None

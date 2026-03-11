@@ -102,9 +102,7 @@ def test_worker_wraps_unexpected_exception_as_internal_stage_error() -> None:
         documents=documents,
         lifecycle_events=lifecycle_events,
         orchestrator=DocumentLifecycleOrchestrator(jobs=jobs),
-        stage_runners={
-            DocumentJobStage.EXTRACT: FailingStageRunner(RuntimeError("boom"))
-        },
+        stage_runners={DocumentJobStage.EXTRACT: FailingStageRunner(RuntimeError("boom"))},
     )
 
     result = worker.run_next()
@@ -156,9 +154,7 @@ def test_worker_does_not_enqueue_when_runner_returns_no_next_stage() -> None:
         documents=InMemoryDocumentRepository([document]),
         lifecycle_events=InMemoryLifecycleEventRepository(),
         orchestrator=DocumentLifecycleOrchestrator(jobs=jobs),
-        stage_runners={
-            DocumentJobStage.READY_CHECK: SuccessfulStageRunner(next_stage=None)
-        },
+        stage_runners={DocumentJobStage.READY_CHECK: SuccessfulStageRunner(next_stage=None)},
     )
 
     result = worker.run_next()
@@ -177,9 +173,7 @@ def test_worker_skips_document_status_update_when_document_row_is_missing() -> N
         documents=documents,
         lifecycle_events=lifecycle_events,
         orchestrator=DocumentLifecycleOrchestrator(jobs=jobs),
-        stage_runners={
-            DocumentJobStage.EXTRACT: FailingStageRunner(make_stage_error())
-        },
+        stage_runners={DocumentJobStage.EXTRACT: FailingStageRunner(make_stage_error())},
     )
 
     result = worker.run_next()
@@ -205,9 +199,7 @@ def test_worker_does_not_append_duplicate_failure_when_document_already_failed()
         documents=documents,
         lifecycle_events=lifecycle_events,
         orchestrator=DocumentLifecycleOrchestrator(jobs=jobs),
-        stage_runners={
-            DocumentJobStage.EXTRACT: FailingStageRunner(make_stage_error())
-        },
+        stage_runners={DocumentJobStage.EXTRACT: FailingStageRunner(make_stage_error())},
     )
 
     result = worker.run_next()
@@ -231,9 +223,7 @@ def test_worker_stops_failure_transition_when_invariant_disallows_failed_state()
         documents=documents,
         lifecycle_events=lifecycle_events,
         orchestrator=DocumentLifecycleOrchestrator(jobs=jobs),
-        stage_runners={
-            DocumentJobStage.EXTRACT: FailingStageRunner(make_stage_error())
-        },
+        stage_runners={DocumentJobStage.EXTRACT: FailingStageRunner(make_stage_error())},
     )
 
     result = worker.run_next()

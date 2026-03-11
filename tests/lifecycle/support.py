@@ -188,11 +188,7 @@ class InMemoryJobRepository:
 
     def claim_next(self) -> DocumentJob | None:
         queued = sorted(
-            (
-                job
-                for job in self.jobs.values()
-                if job.status is DocumentJobStatus.QUEUED
-            ),
+            (job for job in self.jobs.values() if job.status is DocumentJobStatus.QUEUED),
             key=lambda job: (job.created_at, job.job_id),
         )
         if not queued:

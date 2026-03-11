@@ -7,6 +7,7 @@ from uuid import uuid4
 
 from parity.readmodels import QueryableCorpusReadModel
 
+from .answer_mode_policy import AnswerModePolicy
 from .context_assembly import ContextAssembler
 from .contracts import CorpusSnapshot, QueryRequest, QueryRun, QueryRunStatus
 from .domain import QueryRuntimeState
@@ -16,10 +17,13 @@ from .persistence import QueryRunStore, QuerySnapshotStore, QueryTraceStore
 from .policies import QueryPolicy, QueryPolicyDefaults, apply_policy_overrides
 from .retrieval import DenseQueryRetriever
 from .selection import QuerySelector
+from .stages.assess_support import run as run_assess_support_stage
 from .stages.context import run as run_context_stage
+from .stages.decide_answer_mode import run as run_decide_answer_mode_stage
 from .stages.interpret import run as run_interpret_stage
 from .stages.retrieve import run as run_retrieve_stage
 from .stages.select import run as run_select_stage
+from .support_assessment import HybridSupportAssessor
 
 
 class QueryService:
@@ -37,6 +41,8 @@ class QueryService:
         retriever: DenseQueryRetriever | None = None,
         selector: QuerySelector | None = None,
         context_assembler: ContextAssembler | None = None,
+        support_assessor: HybridSupportAssessor | None = None,
+        answer_mode_policy: AnswerModePolicy | None = None,
     ) -> None:
         self._base_policy = base_policy or QueryPolicyDefaults.build()
         self._corpus_read_model = corpus_read_model
@@ -47,6 +53,8 @@ class QueryService:
         self._retriever = retriever
         self._selector = selector
         self._context_assembler = context_assembler
+        self._support_assessor = support_assessor
+        self._answer_mode_policy = answer_mode_policy
 
     @property
     def base_policy(self) -> QueryPolicy:
@@ -202,6 +210,8 @@ class QueryService:
 
         if self._corpus_read_model is None:
             state = self.initialize_runtime_state(request)
+        elif self._support_assessor is not None and self._answer_mode_policy is not None:
+            state = self.execute_until_answer_mode(request)
         elif self._context_assembler is not None:
             state = self.execute_until_context_assembly(request)
         elif self._selector is not None:
@@ -211,7 +221,8 @@ class QueryService:
         else:
             state = self.execute_until_interpretation(request)
         raise QueryStageNotImplementedError(
-            f"Query execution is not implemented beyond context assembly for {state.run.query_id}",
+            "Query execution is not implemented beyond answer-mode decision for "
+            f"{state.run.query_id}",
         )
 
     def execute_until_context_assembly(self, request: QueryRequest) -> QueryRuntimeState:
@@ -238,4 +249,49 @@ class QueryService:
         state.context_manifest = result.context_assembly.manifest
         if self._trace_store is not None:
             self._trace_store.append_stage_trace(result.trace)
+        return state
+
+    def execute_until_answer_mode(self, request: QueryRequest) -> QueryRuntimeState:
+        """Run the query lifecycle through the Stage-6 answer-mode stage."""
+
+        if self._support_assessor is None:
+            raise QueryStageNotImplementedError("assess_support stage is not configured")
+        if self._answer_mode_policy is None:
+            raise QueryStageNotImplementedError("decide_answer_mode stage is not configured")
+        state = self.execute_until_context_assembly(request)
+        if state.snapshot is None:
+            raise CorpusBoundaryUnavailableError("query corpus snapshot was not captured")
+        if state.interpreted_query is None:
+            raise QueryStageNotImplementedError(
+                "interpret stage did not produce an interpreted query"
+            )
+        if state.context_manifest is None:
+            raise QueryStageNotImplementedError(
+                "assemble_context stage did not produce a context manifest"
+            )
+        support_result = run_assess_support_stage(
+            query_id=state.run.query_id,
+            request=request,
+            snapshot=state.snapshot,
+            interpreted_query=state.interpreted_query,
+            evidence_sets=state.evidence_sets,
+            context_manifest=state.context_manifest,
+            policy=self.resolve_policy(request),
+            assessor=self._support_assessor,
+        )
+        state.support_assessment = support_result.support_assessment.assessment
+        if self._trace_store is not None:
+            self._trace_store.append_stage_trace(support_result.trace)
+        answer_mode_result = run_decide_answer_mode_stage(
+            query_id=state.run.query_id,
+            request=request,
+            snapshot=state.snapshot,
+            interpreted_query=state.interpreted_query,
+            support_assessment=state.support_assessment,
+            policy=self.resolve_policy(request),
+            answer_mode_policy=self._answer_mode_policy,
+        )
+        state.answer_mode_decision = answer_mode_result.answer_mode_policy.decision
+        if self._trace_store is not None:
+            self._trace_store.append_stage_trace(answer_mode_result.trace)
         return state

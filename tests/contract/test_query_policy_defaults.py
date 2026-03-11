@@ -23,6 +23,11 @@ def test_query_policy_defaults_are_explicit() -> None:
         "doc_id_asc",
         "chunk_id_asc",
     )
+    assert policy.support_assessment_policy_version == "support_assessment.deterministic.v1"
+    assert policy.answer_mode_policy_version == "answer_mode_policy.deterministic.v1"
+    assert policy.source_navigation_requires_locator is True
+    assert policy.conflict_caps_support_at_partial is True
+    assert policy.provenance_weakness_caps_support_at_partial is True
 
 
 def test_query_policy_defaults_cover_every_support_state() -> None:

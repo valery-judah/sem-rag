@@ -397,14 +397,20 @@ def test_retry_document_cleans_expected_downstream_state(
     result = service.retry_document(doc_id=document.doc_id)
 
     assert result.ingest_status is expected_status
-    assert artifact_store.extracted_path(
-        workspace_id=document.workspace_id,
-        doc_id=document.doc_id,
-    ).exists() is expect_extracted
-    assert artifact_store.normalized_path(
-        workspace_id=document.workspace_id,
-        doc_id=document.doc_id,
-    ).exists() is expect_normalized
+    assert (
+        artifact_store.extracted_path(
+            workspace_id=document.workspace_id,
+            doc_id=document.doc_id,
+        ).exists()
+        is expect_extracted
+    )
+    assert (
+        artifact_store.normalized_path(
+            workspace_id=document.workspace_id,
+            doc_id=document.doc_id,
+        ).exists()
+        is expect_normalized
+    )
     assert len(sections.replacements) == expected_counts["sections"]
     assert len(chunks.replacements) == expected_counts["chunks"]
     assert len(index_entries.replacements) == expected_counts["index_entries"]
@@ -459,6 +465,4 @@ def test_query_document_returns_vector_hits() -> None:
     result = service.query_document(doc_id=document.doc_id, text="consensus", k=1)
 
     assert vector_store.calls == [(document.doc_id, "consensus", 1)]
-    assert result.hits == [
-        VectorSearchHit(chunk_id="chunk-1", doc_id=document.doc_id, score=0.75)
-    ]
+    assert result.hits == [VectorSearchHit(chunk_id="chunk-1", doc_id=document.doc_id, score=0.75)]

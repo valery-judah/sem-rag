@@ -20,6 +20,7 @@ from parity.lifecycle.service import (
 )
 from parity.lifecycle.worker import DocumentLifecycleWorker
 from parity.query import (
+    AnswerModeDecision,
     ContextManifest,
     CorpusSnapshot,
     EvidenceSet,
@@ -28,6 +29,7 @@ from parity.query import (
     QueryRunStatus,
     QueryService,
     RetrievedCandidate,
+    SupportAssessment,
 )
 from parity.query.errors import CorpusBoundaryUnavailableError
 from parity.stages import DocumentRegistrationError
@@ -50,7 +52,7 @@ class RetrievalQueryRequest(BaseModel):
 
 
 class QuerySubmissionResult(BaseModel):
-    """Internal response payload for Stage 5 context-assembly execution."""
+    """Internal response payload for Stage 6 answer-mode execution."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -63,6 +65,8 @@ class QuerySubmissionResult(BaseModel):
     selected_candidates: list[RetrievedCandidate] = Field(default_factory=list)
     evidence_sets: list[EvidenceSet] = Field(default_factory=list)
     context_manifest: ContextManifest
+    support_assessment: SupportAssessment
+    answer_mode_decision: AnswerModeDecision
     message: str = Field(min_length=1)
 
 
@@ -194,7 +198,7 @@ def create_app() -> FastAPI:
         service: Annotated[QueryService, Depends(get_query_service)],
     ) -> QuerySubmissionResult:
         try:
-            state = service.execute_until_context_assembly(request)
+            state = service.execute_until_answer_mode(request)
         except CorpusBoundaryUnavailableError as exc:
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
@@ -204,6 +208,8 @@ def create_app() -> FastAPI:
             state.snapshot is None
             or state.interpreted_query is None
             or state.context_manifest is None
+            or state.support_assessment is None
+            or state.answer_mode_decision is None
         ):
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -219,7 +225,12 @@ def create_app() -> FastAPI:
             selected_candidates=state.selected_candidates,
             evidence_sets=state.evidence_sets,
             context_manifest=state.context_manifest,
-            message="query context assembly completed; downstream stages are not implemented yet",
+            support_assessment=state.support_assessment,
+            answer_mode_decision=state.answer_mode_decision,
+            message=(
+                "query support assessment completed; grounded generation and "
+                "citation rendering are not implemented yet"
+            ),
         )
 
     @app.post("/internal/run-next-job")

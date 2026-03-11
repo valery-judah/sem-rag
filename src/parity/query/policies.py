@@ -20,6 +20,11 @@ class QueryPolicy(BaseModel):
     context_token_budget: int = Field(ge=1)
     deterministic_tie_break_order: tuple[str, ...] = Field(min_length=1)
     answer_mode_by_support_state: dict[SupportState, AnswerMode]
+    support_assessment_policy_version: str = Field(min_length=1)
+    answer_mode_policy_version: str = Field(min_length=1)
+    source_navigation_requires_locator: bool
+    conflict_caps_support_at_partial: bool
+    provenance_weakness_caps_support_at_partial: bool
     citation_include_heading_path: bool
     citation_include_locator: bool
 
@@ -39,6 +44,11 @@ class QueryPolicyDefaults:
         SupportState.PARTIAL: AnswerMode.QUALIFIED_ANSWER,
         SupportState.INSUFFICIENT: AnswerMode.FULL_ABSTENTION,
     }
+    SUPPORT_ASSESSMENT_POLICY_VERSION = "support_assessment.deterministic.v1"
+    ANSWER_MODE_POLICY_VERSION = "answer_mode_policy.deterministic.v1"
+    SOURCE_NAVIGATION_REQUIRES_LOCATOR = True
+    CONFLICT_CAPS_SUPPORT_AT_PARTIAL = True
+    PROVENANCE_WEAKNESS_CAPS_SUPPORT_AT_PARTIAL = True
     CITATION_INCLUDE_HEADING_PATH = True
     CITATION_INCLUDE_LOCATOR = True
 
@@ -55,6 +65,11 @@ class QueryPolicyDefaults:
             context_token_budget=cls.CONTEXT_TOKEN_BUDGET,
             deterministic_tie_break_order=cls.DETERMINISTIC_TIE_BREAK_ORDER,
             answer_mode_by_support_state=cls.ANSWER_MODE_BY_SUPPORT_STATE,
+            support_assessment_policy_version=cls.SUPPORT_ASSESSMENT_POLICY_VERSION,
+            answer_mode_policy_version=cls.ANSWER_MODE_POLICY_VERSION,
+            source_navigation_requires_locator=cls.SOURCE_NAVIGATION_REQUIRES_LOCATOR,
+            conflict_caps_support_at_partial=cls.CONFLICT_CAPS_SUPPORT_AT_PARTIAL,
+            provenance_weakness_caps_support_at_partial=cls.PROVENANCE_WEAKNESS_CAPS_SUPPORT_AT_PARTIAL,
             citation_include_heading_path=cls.CITATION_INCLUDE_HEADING_PATH,
             citation_include_locator=cls.CITATION_INCLUDE_LOCATOR,
         )

@@ -29,11 +29,13 @@ from parity.persistence import (
     SqlSectionRepository,
 )
 from parity.query import QueryService
+from parity.query.answer_mode_policy import DeterministicAnswerModePolicy
 from parity.query.context_assembly import DeterministicContextAssembler
 from parity.query.interpretation import DeterministicQueryInterpreter
 from parity.query.persistence import SqlQueryRunStore, SqlQuerySnapshotStore, SqlQueryTraceStore
 from parity.query.retrieval import SnapshotDenseQueryRetriever
 from parity.query.selection import DeterministicQuerySelector
+from parity.query.support_assessment import HybridSupportAssessor
 from parity.readmodels import SqlQueryableCorpusReadModel
 from parity.stages import (
     ChunkDocumentStage,
@@ -257,6 +259,8 @@ def get_query_service(
         ),
         selector=DeterministicQuerySelector(corpus_read_model=corpus_read_model),
         context_assembler=DeterministicContextAssembler(),
+        support_assessor=HybridSupportAssessor(),
+        answer_mode_policy=DeterministicAnswerModePolicy(),
     )
 
 

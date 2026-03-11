@@ -69,6 +69,18 @@ class TrustFailureLabel(StrEnum):
     S1 = "S1"
 
 
+class SupportQualifierReason(StrEnum):
+    """Deterministic reason codes that narrow or block answer posture."""
+
+    UNSUPPORTED_QUESTION_TYPE = "unsupported_question_type"
+    NO_EVIDENCE_AVAILABLE = "no_evidence_available"
+    MISSING_MATERIAL_COVERAGE = "missing_material_coverage"
+    SCOPE_NARROWING_REQUIRED = "scope_narrowing_required"
+    MATERIAL_CONFLICT = "material_conflict"
+    PROVENANCE_TOO_WEAK = "provenance_too_weak"
+    SOURCE_NAVIGATION_LOCATOR_MISSING = "source_navigation_locator_missing"
+
+
 class QueryRequestType(StrEnum):
     """High-level query intent family used by interpretation."""
 
@@ -298,9 +310,12 @@ class SupportAssessment(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     support_state: SupportState
-    qualifying_reasons: list[str] = Field(default_factory=list)
+    qualifying_reason_codes: list[SupportQualifierReason] = Field(default_factory=list)
     trust_failure_labels: list[TrustFailureLabel] = Field(default_factory=list)
     summary: str | None = None
+    unsupported_gaps: list[str] = Field(default_factory=list)
+    conflicting_evidence_notes: list[str] = Field(default_factory=list)
+    provenance_warnings: list[str] = Field(default_factory=list)
 
 
 class AnswerModeDecision(BaseModel):
@@ -311,6 +326,9 @@ class AnswerModeDecision(BaseModel):
     answer_mode: AnswerMode
     rationale: str = Field(min_length=1)
     based_on_support_state: SupportState
+    required_qualifying_reason_codes: list[SupportQualifierReason] = Field(default_factory=list)
+    allowed_scope_summary: str | None = None
+    must_surface_conflict: bool = False
 
 
 class AnswerDraft(BaseModel):

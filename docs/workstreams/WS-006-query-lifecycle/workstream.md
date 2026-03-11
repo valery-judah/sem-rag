@@ -72,3 +72,4 @@ Ship the MVP query path as explicit executable stages:
 - `13_stage-3-retrieval-foundation-design.md`
 - `14_stage-4-selection-evidence-set-construction-design.md`
 - `15_stage-5-deterministic-context-assembly-design.md`
+- `16_stage-6-support-assessment-answer-mode-design.md`

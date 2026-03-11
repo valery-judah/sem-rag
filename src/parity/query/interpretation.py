@@ -281,8 +281,7 @@ def _requires_source_navigation(normalized_question: str) -> bool:
 def _detect_unsupported_capabilities(normalized_question: str) -> list[UnsupportedCapability]:
     flags: list[UnsupportedCapability] = []
     if any(
-        token in normalized_question
-        for token in ("outside the corpus", "latest", "current events")
+        token in normalized_question for token in ("outside the corpus", "latest", "current events")
     ):
         flags.append(UnsupportedCapability.EXTERNAL_KNOWLEDGE)
     if any(

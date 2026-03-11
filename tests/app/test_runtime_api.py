@@ -268,19 +268,23 @@ async def test_queries_route_returns_stage5_result_and_persists_traces(
     assert result.evidence_sets[0].evidence_units[0].candidate.chunk_id == "chunk-ready"
     assert result.context_manifest.included_evidence_set_ids == ["es-1"]
     assert result.context_manifest.context_items[0].evidence_set_id == "es-1"
+    assert result.support_assessment.support_state.value == "sufficient"
+    assert result.answer_mode_decision.answer_mode.value == "direct_answer"
     assert (
-        result.message
-        == "query context assembly completed; downstream stages are not implemented yet"
+        result.message == "query support assessment completed; grounded generation and "
+        "citation rendering are not implemented yet"
     )
     persisted_snapshot = snapshot_store.get_snapshot(result.query_id)
     persisted_traces = trace_store.list_stage_traces(result.query_id)
     assert persisted_snapshot is not None
     assert persisted_snapshot.model_dump() == result.snapshot.model_dump()
-    assert len(persisted_traces) == 4
+    assert len(persisted_traces) == 6
     assert persisted_traces[0].stage_name.value == "interpret"
     assert persisted_traces[1].stage_name.value == "retrieve"
     assert persisted_traces[2].stage_name.value == "select"
     assert persisted_traces[3].stage_name.value == "assemble_context"
+    assert persisted_traces[4].stage_name.value == "assess_support"
+    assert persisted_traces[5].stage_name.value == "decide_answer_mode"
 
 
 async def test_queries_route_allows_empty_snapshot(
@@ -301,6 +305,8 @@ async def test_queries_route_allows_empty_snapshot(
     assert result.evidence_sets == []
     assert result.context_manifest.included_evidence_set_ids == []
     assert result.context_manifest.context_items == []
+    assert result.support_assessment.support_state.value == "insufficient"
+    assert result.answer_mode_decision.answer_mode.value == "full_abstention"
 
 
 async def test_healthz_returns_ok(app: FastAPI) -> None:

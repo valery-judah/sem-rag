@@ -21,9 +21,7 @@ def test_enqueue_stage_creates_job_when_document_has_no_active_work() -> None:
 
 
 def test_enqueue_stage_returns_none_when_document_has_active_job() -> None:
-    jobs = InMemoryJobRepository(
-        [make_job(doc_id="doc-1", status=DocumentJobStatus.QUEUED)]
-    )
+    jobs = InMemoryJobRepository([make_job(doc_id="doc-1", status=DocumentJobStatus.QUEUED)])
     orchestrator = DocumentLifecycleOrchestrator(jobs=jobs)
 
     created = orchestrator.enqueue_stage(

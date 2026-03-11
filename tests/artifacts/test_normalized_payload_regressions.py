@@ -41,9 +41,7 @@ def test_design_exploration_snapshot_preserves_heading_paths() -> None:
     )
     normalized = MarkdownNormalizer().normalize(extracted=extracted)
     expected = NormalizedArtifact.model_validate_json(
-        _normalized_snapshot_path("design-exploration.normalized.json").read_text(
-            encoding="utf-8"
-        )
+        _normalized_snapshot_path("design-exploration.normalized.json").read_text(encoding="utf-8")
     )
 
     assert normalized == expected
@@ -52,7 +50,8 @@ def test_design_exploration_snapshot_preserves_heading_paths() -> None:
         for block in normalized.blocks
     )
     assert any(
-        block.heading_path == [
+        block.heading_path
+        == [
             "Document Lifecycle Architecture for MVP",
             "Scope alignment",
             "Inputs",

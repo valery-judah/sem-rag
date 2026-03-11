@@ -10,9 +10,7 @@ from parity.artifacts import ExtractedArtifact, FilesystemArtifactStore
 
 
 def test_extracted_artifact_store_round_trips_fixture_snapshot(tmp_path: Path) -> None:
-    fixture_path = (
-        Path(__file__).parent / "fixtures" / "extracted" / "smoke.extracted.json"
-    )
+    fixture_path = Path(__file__).parent / "fixtures" / "extracted" / "smoke.extracted.json"
     artifact = ExtractedArtifact.model_validate_json(fixture_path.read_text(encoding="utf-8"))
     store = FilesystemArtifactStore(tmp_path / "artifacts")
 
@@ -35,14 +33,14 @@ def test_extracted_artifact_store_rejects_invalid_schema_on_load(tmp_path: Path)
 def test_extracted_artifact_store_overwrites_document_path(tmp_path: Path) -> None:
     store = FilesystemArtifactStore(tmp_path / "artifacts")
     first = ExtractedArtifact.model_validate_json(
-        (
-            Path(__file__).parent / "fixtures" / "extracted" / "smoke.extracted.json"
-        ).read_text(encoding="utf-8")
+        (Path(__file__).parent / "fixtures" / "extracted" / "smoke.extracted.json").read_text(
+            encoding="utf-8"
+        )
     )
     second = ExtractedArtifact.model_validate_json(
-        (
-            Path(__file__).parent / "fixtures" / "extracted" / "mvp.extracted.json"
-        ).read_text(encoding="utf-8")
+        (Path(__file__).parent / "fixtures" / "extracted" / "mvp.extracted.json").read_text(
+            encoding="utf-8"
+        )
     ).model_copy(update={"doc_id": first.doc_id})
 
     store.write_extracted(workspace_id="ws-fixtures", artifact=first)

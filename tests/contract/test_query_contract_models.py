@@ -25,6 +25,7 @@ from parity.query import (
     QuerySpecificity,
     RetrievedCandidate,
     SupportAssessment,
+    SupportQualifierReason,
     SupportState,
     SynthesisMode,
     TrustFailureLabel,
@@ -263,13 +264,19 @@ def test_context_manifest_requires_context_items_to_match_included_ids() -> None
 def test_support_assessment_and_answer_decision_round_trip() -> None:
     assessment = SupportAssessment(
         support_state=SupportState.PARTIAL,
-        qualifying_reasons=["Evidence answers part of the question but not all of it."],
+        qualifying_reason_codes=[
+            SupportQualifierReason.MISSING_MATERIAL_COVERAGE,
+            SupportQualifierReason.SCOPE_NARROWING_REQUIRED,
+        ],
         trust_failure_labels=[TrustFailureLabel.U2],
+        unsupported_gaps=["The corpus does not fully cover the requested scope."],
     )
     decision = AnswerModeDecision(
         answer_mode=AnswerMode.QUALIFIED_ANSWER,
         rationale="Partial support requires visible qualification.",
         based_on_support_state=assessment.support_state,
+        required_qualifying_reason_codes=[SupportQualifierReason.SCOPE_NARROWING_REQUIRED],
+        allowed_scope_summary="Only the supported portion may be answered.",
     )
     draft = AnswerDraft(
         answer_text="The corpus partially addresses the question.",
@@ -277,4 +284,8 @@ def test_support_assessment_and_answer_decision_round_trip() -> None:
     )
 
     assert decision.based_on_support_state is SupportState.PARTIAL
+    assert assessment.qualifying_reason_codes == [
+        SupportQualifierReason.MISSING_MATERIAL_COVERAGE,
+        SupportQualifierReason.SCOPE_NARROWING_REQUIRED,
+    ]
     assert draft.should_render_citations is True

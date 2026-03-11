@@ -12,10 +12,12 @@ from parity.persistence import (
     SqlSectionRepository,
 )
 from parity.query import QueryRequest, QueryService
+from parity.query.answer_mode_policy import DeterministicAnswerModePolicy
 from parity.query.context_assembly import DeterministicContextAssembler
 from parity.query.persistence import SqlQueryRunStore, SqlQuerySnapshotStore, SqlQueryTraceStore
 from parity.query.retrieval import SnapshotDenseQueryRetriever
 from parity.query.selection import DeterministicQuerySelector
+from parity.query.support_assessment import HybridSupportAssessor
 from parity.readmodels import SqlQueryableCorpusReadModel
 
 pytestmark = pytest.mark.anyio
@@ -44,6 +46,8 @@ def _service(sql_engine) -> QueryService:
         ),
         selector=DeterministicQuerySelector(corpus_read_model=read_model),
         context_assembler=DeterministicContextAssembler(),
+        support_assessor=HybridSupportAssessor(),
+        answer_mode_policy=DeterministicAnswerModePolicy(),
     )
 
 
@@ -205,3 +209,84 @@ def test_execute_until_context_assembly_handles_empty_snapshot(sql_engine) -> No
     assert len(traces) == 4
     assert traces[3].stage_name.value == "assemble_context"
     assert traces[3].payload["context_items"] == []
+
+
+def test_execute_until_answer_mode_persists_support_and_answer_mode_traces(
+    sql_engine,
+    persisted_document_factory,
+    chunk_factory,
+) -> None:
+    documents = SqlDocumentRepository(sql_engine)
+    chunks = SqlChunkRepository(sql_engine)
+    trace_store = SqlQueryTraceStore(sql_engine)
+    documents.create(
+        persisted_document_factory(
+            doc_id="doc-ready",
+            workspace_id="ws-1",
+            ingest_status=ProcessingStatus.READY,
+        )
+    )
+    ready_chunk = chunk_factory(
+        doc_id="doc-ready",
+        chunk_id="chunk-ready",
+        page_start=4,
+        page_end=4,
+        text="vector search uses embeddings to retrieve related passages",
+    )
+    chunks.save([ready_chunk])
+    SqlVectorStore(
+        engine=sql_engine,
+        embedding_adapter=DeterministicEmbeddingAdapter(),
+        index_entries=SqlIndexEntryRepository(sql_engine),
+        chunk_embeddings=SqlChunkEmbeddingRepository(sql_engine),
+    ).publish_document(doc_id="doc-ready", chunks=[ready_chunk])
+
+    state = _service(sql_engine).execute_until_answer_mode(
+        QueryRequest(
+            question="What uses embeddings to retrieve related passages?",
+            workspace_id="ws-1",
+        )
+    )
+
+    traces = trace_store.list_stage_traces(state.run.query_id)
+
+    assert state.support_assessment is not None
+    assert state.support_assessment.support_state.value == "sufficient"
+    assert state.support_assessment.qualifying_reason_codes == []
+    assert state.answer_mode_decision is not None
+    assert state.answer_mode_decision.answer_mode.value == "direct_answer"
+    assert len(traces) == 6
+    assert [trace.stage_name.value for trace in traces] == [
+        "interpret",
+        "retrieve",
+        "select",
+        "assemble_context",
+        "assess_support",
+        "decide_answer_mode",
+    ]
+    assert traces[4].payload["final_support_state"] == "sufficient"
+    assert traces[5].payload["final_answer_mode"] == "direct_answer"
+
+
+def test_execute_until_answer_mode_handles_empty_snapshot_with_abstention(sql_engine) -> None:
+    trace_store = SqlQueryTraceStore(sql_engine)
+
+    state = _service(sql_engine).execute_until_answer_mode(
+        QueryRequest(
+            question="What is available in the corpus?",
+            workspace_id="empty-ws",
+        )
+    )
+
+    traces = trace_store.list_stage_traces(state.run.query_id)
+
+    assert state.support_assessment is not None
+    assert state.support_assessment.support_state.value == "insufficient"
+    assert [reason.value for reason in state.support_assessment.qualifying_reason_codes] == [
+        "no_evidence_available"
+    ]
+    assert state.answer_mode_decision is not None
+    assert state.answer_mode_decision.answer_mode.value == "full_abstention"
+    assert len(traces) == 6
+    assert traces[4].payload["qualifying_reason_codes"] == ["no_evidence_available"]
+    assert traces[5].payload["final_answer_mode"] == "full_abstention"

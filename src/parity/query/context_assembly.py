@@ -102,10 +102,8 @@ class DeterministicContextAssembler:
                 dropped_ids.append(evidence_set.evidence_set_id)
                 exclusion_reasons[evidence_set.evidence_set_id] = "dropped_duplicate_rendering"
                 duplicate_suppression_notes.append(
-                    
-                        f"{evidence_set.evidence_set_id} dropped because rendered context "
-                        "duplicated an earlier item"
-                    
+                    f"{evidence_set.evidence_set_id} dropped because rendered context "
+                    "duplicated an earlier item"
                 )
                 decisions.append(
                     ContextAssemblyDecision(
