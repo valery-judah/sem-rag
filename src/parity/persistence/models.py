@@ -9,6 +9,7 @@ import sqlalchemy as sa
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from parity._contracts import Chunk, Document, ProcessingStatus, Section, SourceType
+from parity.indexing import ChunkEmbedding, IndexEntry
 from parity.lifecycle.models import FailureCategory, LifecycleEvent, LifecycleStage
 
 
@@ -113,6 +114,49 @@ chunks_table = sa.Table(
         ["sections.doc_id", "sections.section_id"],
         ondelete="CASCADE",
     ),
+)
+
+index_entries_table = sa.Table(
+    "index_entries",
+    metadata,
+    sa.Column(
+        "chunk_id",
+        sa.Text(),
+        sa.ForeignKey("chunks.chunk_id", ondelete="CASCADE"),
+        primary_key=True,
+    ),
+    sa.Column(
+        "doc_id",
+        sa.Text(),
+        sa.ForeignKey("documents.doc_id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    ),
+    sa.Column("index_backend", sa.Text(), nullable=False),
+    sa.Column("index_key", sa.Text(), nullable=False),
+    sa.Column("index_version", sa.Text(), nullable=False),
+    sa.Column("published_at", sa.DateTime(timezone=True), nullable=False),
+)
+
+chunk_embeddings_table = sa.Table(
+    "chunk_embeddings",
+    metadata,
+    sa.Column(
+        "chunk_id",
+        sa.Text(),
+        sa.ForeignKey("chunks.chunk_id", ondelete="CASCADE"),
+        primary_key=True,
+    ),
+    sa.Column(
+        "doc_id",
+        sa.Text(),
+        sa.ForeignKey("documents.doc_id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    ),
+    sa.Column("embedding_model", sa.Text(), nullable=False),
+    sa.Column("embedding_vector_json", sa.JSON(), nullable=False),
+    sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
 )
 
 
@@ -407,6 +451,73 @@ class PersistedChunk(BaseModel):
         return self.model_dump(mode="python")
 
 
+class PersistedIndexEntry(BaseModel):
+    """Storage-facing index-entry row."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    chunk_id: str
+    doc_id: str
+    index_backend: str
+    index_key: str
+    index_version: str
+    published_at: datetime
+
+    @field_validator("published_at", mode="before")
+    @classmethod
+    def normalize_published_at(cls, value: object) -> datetime:
+        return _coerce_datetime(value)
+
+    @classmethod
+    def from_runtime(cls, entry: IndexEntry) -> PersistedIndexEntry:
+        return cls(**entry.model_dump(mode="python"))
+
+    def to_runtime(self) -> IndexEntry:
+        return IndexEntry(**self.model_dump(mode="python"))
+
+    def to_row(self) -> dict[str, object]:
+        return self.model_dump(mode="python")
+
+
+class PersistedChunkEmbedding(BaseModel):
+    """Storage-facing chunk-embedding row."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    chunk_id: str
+    doc_id: str
+    embedding_model: str
+    embedding_vector_json: list[float]
+    created_at: datetime
+
+    @field_validator("created_at", mode="before")
+    @classmethod
+    def normalize_created_at(cls, value: object) -> datetime:
+        return _coerce_datetime(value)
+
+    @classmethod
+    def from_runtime(cls, embedding: ChunkEmbedding) -> PersistedChunkEmbedding:
+        return cls(
+            chunk_id=embedding.chunk_id,
+            doc_id=embedding.doc_id,
+            embedding_model=embedding.embedding_model,
+            embedding_vector_json=embedding.embedding_vector,
+            created_at=embedding.created_at,
+        )
+
+    def to_runtime(self) -> ChunkEmbedding:
+        return ChunkEmbedding(
+            chunk_id=self.chunk_id,
+            doc_id=self.doc_id,
+            embedding_model=self.embedding_model,
+            embedding_vector=self.embedding_vector_json,
+            created_at=self.created_at,
+        )
+
+    def to_row(self) -> dict[str, object]:
+        return self.model_dump(mode="python")
+
+
 def persisted_document_to_row(document: PersistedDocument) -> dict[str, object]:
     """Serialize a persisted document model into a SQLAlchemy row mapping."""
 
@@ -453,6 +564,30 @@ def row_to_persisted_chunk(row: Mapping[str, object]) -> PersistedChunk:
     """Rehydrate a persisted chunk from a SQLAlchemy mapping row."""
 
     return PersistedChunk.model_validate(dict(row))
+
+
+def index_entry_to_row(entry: IndexEntry) -> dict[str, object]:
+    """Serialize a runtime index entry into a SQLAlchemy row mapping."""
+
+    return PersistedIndexEntry.from_runtime(entry).to_row()
+
+
+def row_to_index_entry(row: Mapping[str, object]) -> IndexEntry:
+    """Rehydrate an index entry from a SQLAlchemy mapping row."""
+
+    return PersistedIndexEntry.model_validate(dict(row)).to_runtime()
+
+
+def chunk_embedding_to_row(embedding: ChunkEmbedding) -> dict[str, object]:
+    """Serialize a runtime chunk embedding into a SQLAlchemy row mapping."""
+
+    return PersistedChunkEmbedding.from_runtime(embedding).to_row()
+
+
+def row_to_chunk_embedding(row: Mapping[str, object]) -> ChunkEmbedding:
+    """Rehydrate a chunk embedding from a SQLAlchemy mapping row."""
+
+    return PersistedChunkEmbedding.model_validate(dict(row)).to_runtime()
 
 
 def _coerce_datetime(value: object) -> datetime:

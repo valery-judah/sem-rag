@@ -88,6 +88,17 @@ def test_fake_pdf_content_with_pdf_extension_is_rejected_explicitly(
     assert "PDF header bytes" in response.json()["detail"]
 
 
+def test_unsupported_png_is_rejected_explicitly(client: TestClient) -> None:
+    response = client.post(
+        "/documents",
+        data={"workspace_id": "ws-1"},
+        files={"file": ("image.png", b"\x89PNG\r\n\x1a\n", "image/png")},
+    )
+
+    assert response.status_code == 415
+    assert "text-based PDF and Markdown" in response.json()["detail"]
+
+
 def test_omitted_title_falls_back_to_filename_stem(client: TestClient) -> None:
     response = client.post(
         "/documents",

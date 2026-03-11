@@ -1,17 +1,23 @@
 """Persistence package for compatibility SQLite helpers and lifecycle metadata storage."""
 
+from parity.indexing import ChunkEmbedding, IndexEntry
+
 from .jobs import DocumentJob, DocumentJobStage, DocumentJobStatus
 from .migrations import apply_migrations
 from .models import PersistedDocument
 from .repositories import (
+    ChunkEmbeddingRepository,
     ChunkRepository,
     DocumentJobRepository,
     DocumentRepository,
+    IndexEntryRepository,
     LifecycleEventRepository,
     SectionRepository,
+    SqlChunkEmbeddingRepository,
     SqlChunkRepository,
     SqlDocumentJobRepository,
     SqlDocumentRepository,
+    SqlIndexEntryRepository,
     SqlLifecycleEventRepository,
     SqlSectionRepository,
 )
@@ -28,18 +34,24 @@ from .sqlite_compat import (
 )
 
 __all__ = [
+    "ChunkEmbedding",
+    "ChunkEmbeddingRepository",
     "DocumentJob",
     "ChunkRepository",
     "DocumentJobRepository",
     "DocumentJobStage",
     "DocumentJobStatus",
     "DocumentRepository",
+    "IndexEntry",
+    "IndexEntryRepository",
     "LifecycleEventRepository",
     "PersistedDocument",
     "SectionRepository",
+    "SqlChunkEmbeddingRepository",
     "SqlChunkRepository",
     "SqlDocumentJobRepository",
     "SqlDocumentRepository",
+    "SqlIndexEntryRepository",
     "SqlLifecycleEventRepository",
     "SqlSectionRepository",
     "apply_migrations",

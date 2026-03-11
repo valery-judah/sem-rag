@@ -58,6 +58,14 @@ install-git-hooks: ## Configure git to use repo-managed hooks
 run: install ## Run parity demo CLI
 	uv run python -m parity.cli
 
+.PHONY: run-api
+run-api: install ## Run the internal lifecycle FastAPI app
+	uv run uvicorn parity.app.api:app --reload
+
+.PHONY: run-worker
+run-worker: install ## Run the internal lifecycle worker loop
+	uv run python -m parity.lifecycle.worker
+
 .PHONY: migrate
 migrate: install ## Apply Alembic migrations using DATABASE_URL
 	@if [ -z "$(DATABASE_URL)" ]; then echo "DATABASE_URL is required"; exit 1; fi

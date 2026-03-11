@@ -18,6 +18,7 @@ class DocumentJobStage(StrEnum):
     REGISTER = "REGISTER"
     EXTRACT = "EXTRACT"
     NORMALIZE = "NORMALIZE"
+    SECTIONIZE = "SECTIONIZE"
     CHUNK = "CHUNK"
     INDEX = "INDEX"
     READY_CHECK = "READY_CHECK"

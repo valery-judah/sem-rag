@@ -29,12 +29,14 @@ def sql_engine(db_url: str) -> Engine:
     apply_migrations(db_url)
     engine = sa.create_engine(db_url)
     if engine.dialect.name == "sqlite":
+
         @event.listens_for(engine, "connect")
         def _set_sqlite_pragma(dbapi_connection, connection_record) -> None:  # type: ignore[no-untyped-def]
             del connection_record
             cursor = dbapi_connection.cursor()
             cursor.execute("PRAGMA foreign_keys = ON")
             cursor.close()
+
     try:
         yield engine
     finally:

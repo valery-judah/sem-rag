@@ -121,19 +121,25 @@ def test_register_stage_persists_raw_artifact_linkage_and_checksum(
     assert loaded is not None
     assert loaded.checksum == "sha256:abc123"
     assert loaded.raw_storage_path == "raw/ws-1/doc_123/source.md"
-    assert loaded.storage_ref == artifact_store.raw_path(
-        workspace_id="ws-1",
-        doc_id="doc_123",
-        source_type=SourceType.MARKDOWN,
-    ).as_uri()
-    assert artifact_store.read_raw(
-        RawArtifactRef(
+    assert (
+        loaded.storage_ref
+        == artifact_store.raw_path(
             workspace_id="ws-1",
             doc_id="doc_123",
             source_type=SourceType.MARKDOWN,
-            relative_path="raw/ws-1/doc_123/source.md",
+        ).as_uri()
+    )
+    assert (
+        artifact_store.read_raw(
+            RawArtifactRef(
+                workspace_id="ws-1",
+                doc_id="doc_123",
+                source_type=SourceType.MARKDOWN,
+                relative_path="raw/ws-1/doc_123/source.md",
+            )
         )
-    ) == registration_request.content
+        == registration_request.content
+    )
 
 
 def test_register_stage_appends_exactly_one_register_lifecycle_event(

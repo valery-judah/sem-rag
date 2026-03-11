@@ -7,14 +7,37 @@ from datetime import UTC, datetime
 from pathlib import Path
 from uuid import uuid4
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
-from parity._contracts import ProcessingStatus, SourceType
+from parity._contracts import Chunk, ProcessingStatus, Section, SourceType
+from parity.artifacts import FilesystemArtifactStore
+from parity.indexing import ChunkEmbedding, IndexEntry, VectorSearchHit, VectorStore
+from parity.persistence import (
+    ChunkEmbeddingRepository,
+    ChunkRepository,
+    DocumentJobRepository,
+    DocumentJobStage,
+    DocumentRepository,
+    IndexEntryRepository,
+    LifecycleEventRepository,
+    PersistedDocument,
+    SectionRepository,
+)
 from parity.stages import RegisterDocumentRequest, RegisterDocumentStage
+
+from .orchestrator import DocumentLifecycleOrchestrator
 
 
 class UnsupportedDocumentError(ValueError):
     """Raised when an upload falls outside the MVP-supported source types."""
+
+
+class DocumentNotFoundError(LookupError):
+    """Raised when a document-scoped lifecycle operation cannot find the document."""
+
+
+class RetryNotAllowedError(ValueError):
+    """Raised when retry cannot be safely queued for the current document state."""
 
 
 class UploadDocumentResult(BaseModel):
@@ -31,11 +54,80 @@ class UploadDocumentResult(BaseModel):
     checksum: str
 
 
+class DocumentStatusResult(BaseModel):
+    """Internal status payload for one persisted document."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    doc_id: str
+    ingest_status: ProcessingStatus
+    source_type: SourceType
+    title: str
+    filename: str
+    failure_code: str | None = None
+    failure_detail: str | None = None
+    active_job_stage: DocumentJobStage | None = None
+
+
+class RetryDocumentResult(BaseModel):
+    """Internal response payload for a queued retry."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    doc_id: str
+    ingest_status: ProcessingStatus
+    queued_stage: DocumentJobStage
+
+
+class RetrievalQueryResult(BaseModel):
+    """Internal retrieval smoke-query payload."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    doc_id: str
+    hits: list[VectorSearchHit] = Field(default_factory=list)
+
+
+class DocumentArtifactRefs(BaseModel):
+    """Internal artifact-inspection response payload."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    doc_id: str
+    raw_path: str
+    extracted_path: str | None = None
+    normalized_path: str | None = None
+
+
 class DocumentLifecycleService:
     """Coordinate upload intake and durable registration."""
 
-    def __init__(self, *, register_stage: RegisterDocumentStage) -> None:
+    def __init__(
+        self,
+        *,
+        register_stage: RegisterDocumentStage,
+        orchestrator: DocumentLifecycleOrchestrator | None = None,
+        documents: DocumentRepository | None = None,
+        jobs: DocumentJobRepository | None = None,
+        lifecycle_events: LifecycleEventRepository | None = None,
+        artifact_store: FilesystemArtifactStore | None = None,
+        sections: SectionRepository | None = None,
+        chunks: ChunkRepository | None = None,
+        index_entries: IndexEntryRepository | None = None,
+        chunk_embeddings: ChunkEmbeddingRepository | None = None,
+        vector_store: VectorStore | None = None,
+    ) -> None:
         self._register_stage = register_stage
+        self._orchestrator = orchestrator
+        self._documents = documents
+        self._jobs = jobs
+        self._lifecycle_events = lifecycle_events
+        self._artifact_store = artifact_store
+        self._sections = sections
+        self._chunks = chunks
+        self._index_entries = index_entries
+        self._chunk_embeddings = chunk_embeddings
+        self._vector_store = vector_store
 
     def upload_document(
         self,
@@ -66,6 +158,11 @@ class DocumentLifecycleService:
             content=content,
         )
         document = self._register_stage.run(request)
+        if self._orchestrator is not None:
+            self._orchestrator.enqueue_stage(
+                doc_id=document.doc_id,
+                target_stage=DocumentJobStage.EXTRACT,
+            )
         return UploadDocumentResult(
             doc_id=document.doc_id,
             ingest_status=document.ingest_status,
@@ -75,6 +172,197 @@ class DocumentLifecycleService:
             uploaded_at=document.uploaded_at,
             checksum=document.checksum or checksum,
         )
+
+    def get_document_status(self, *, doc_id: str) -> DocumentStatusResult:
+        """Load the current persisted status plus any active queued work."""
+
+        document = self._require_document(doc_id)
+        active_job_stage = None
+        if self._jobs is not None:
+            for job in self._jobs.list_for_document(doc_id):
+                if job.status.value in {"queued", "running"}:
+                    active_job_stage = job.target_stage
+                    break
+        return DocumentStatusResult(
+            doc_id=document.doc_id,
+            ingest_status=document.ingest_status,
+            source_type=document.source_type,
+            title=document.title,
+            filename=document.filename,
+            failure_code=document.failure_code,
+            failure_detail=document.failure_detail,
+            active_job_stage=active_job_stage,
+        )
+
+    def query_document(self, *, doc_id: str, text: str, k: int = 3) -> RetrievalQueryResult:
+        """Run a document-scoped smoke query against the internal vector store."""
+
+        self._require_document(doc_id)
+        if self._vector_store is None:
+            raise RuntimeError("vector store is not configured")
+        return RetrievalQueryResult(
+            doc_id=doc_id,
+            hits=self._vector_store.smoke_query(doc_id=doc_id, text=text, k=k),
+        )
+
+    def retry_document(self, *, doc_id: str) -> RetryDocumentResult:
+        """Queue a retry for the latest failed lifecycle stage."""
+
+        document = self._require_document(doc_id)
+        if document.ingest_status is ProcessingStatus.READY:
+            raise RetryNotAllowedError("ready documents cannot be retried")
+        if self._jobs is None or self._orchestrator is None or self._lifecycle_events is None:
+            raise RuntimeError("retry dependencies are not configured")
+        if self._jobs.has_active_job(doc_id):
+            raise RetryNotAllowedError("document already has queued or running work")
+        if document.ingest_status is not ProcessingStatus.FAILED:
+            raise RetryNotAllowedError("retry is only supported for failed documents")
+
+        failed_event = next(
+            (
+                event
+                for event in reversed(self._lifecycle_events.list_for_document(doc_id))
+                if event.to_status is ProcessingStatus.FAILED
+            ),
+            None,
+        )
+        if failed_event is None:
+            raise RetryNotAllowedError("document has no failed lifecycle event to retry")
+
+        job_stage_name = failed_event.detail.get("job_stage")
+        if not job_stage_name:
+            raise RetryNotAllowedError("failed lifecycle event does not identify a retry stage")
+        target_stage = DocumentJobStage(job_stage_name)
+        reset_status = self._reset_status_for_stage(target_stage)
+
+        self._cleanup_downstream(document.doc_id, stage=target_stage)
+        documents = self._documents
+        if documents is None:
+            raise RuntimeError("document repository is not configured")
+        documents.update_status(doc_id=document.doc_id, status=reset_status)
+        queued = self._orchestrator.enqueue_stage(doc_id=document.doc_id, target_stage=target_stage)
+        if queued is None:
+            raise RetryNotAllowedError("document already has queued or running work")
+        return RetryDocumentResult(
+            doc_id=document.doc_id,
+            ingest_status=reset_status,
+            queued_stage=target_stage,
+        )
+
+    def get_artifact_refs(self, *, doc_id: str) -> DocumentArtifactRefs:
+        """Return current managed artifact paths for debugging."""
+
+        document = self._require_document(doc_id)
+        if self._artifact_store is None:
+            raise RuntimeError("artifact store is not configured")
+        raw_path = self._artifact_store.raw_path(
+            workspace_id=document.workspace_id,
+            doc_id=document.doc_id,
+            source_type=document.source_type,
+        )
+        extracted_path = self._artifact_store.extracted_path(
+            workspace_id=document.workspace_id,
+            doc_id=document.doc_id,
+        )
+        normalized_path = self._artifact_store.normalized_path(
+            workspace_id=document.workspace_id,
+            doc_id=document.doc_id,
+        )
+        return DocumentArtifactRefs(
+            doc_id=document.doc_id,
+            raw_path=str(raw_path),
+            extracted_path=str(extracted_path) if extracted_path.exists() else None,
+            normalized_path=str(normalized_path) if normalized_path.exists() else None,
+        )
+
+    def _require_document(self, doc_id: str) -> PersistedDocument:
+        if self._documents is None:
+            raise RuntimeError("document repository is not configured")
+        document = self._documents.get(doc_id)
+        if document is None:
+            raise DocumentNotFoundError(f"document {doc_id!r} was not found")
+        return document
+
+    def _reset_status_for_stage(self, stage: DocumentJobStage) -> ProcessingStatus:
+        if stage is DocumentJobStage.EXTRACT:
+            return ProcessingStatus.REGISTERED
+        if stage is DocumentJobStage.NORMALIZE:
+            return ProcessingStatus.EXTRACTING
+        if stage in {DocumentJobStage.SECTIONIZE, DocumentJobStage.CHUNK}:
+            return ProcessingStatus.NORMALIZED
+        if stage is DocumentJobStage.INDEX:
+            return ProcessingStatus.CHUNKED
+        if stage is DocumentJobStage.READY_CHECK:
+            return ProcessingStatus.INDEXED
+        raise RetryNotAllowedError(f"unsupported retry stage {stage.value}")
+
+    def _cleanup_downstream(self, doc_id: str, *, stage: DocumentJobStage) -> None:
+        if self._artifact_store is None or self._documents is None:
+            return
+        document = self._documents.get(doc_id)
+        if document is None:
+            return
+        if stage is DocumentJobStage.EXTRACT:
+            self._delete_extracted(document)
+            self._delete_normalized(document)
+            self._replace_sections(doc_id, [])
+            self._replace_chunks(doc_id, [])
+            self._replace_index_entries(doc_id, [])
+            self._replace_chunk_embeddings(doc_id, [])
+            return
+        if stage is DocumentJobStage.NORMALIZE:
+            self._delete_normalized(document)
+            self._replace_sections(doc_id, [])
+            self._replace_chunks(doc_id, [])
+            self._replace_index_entries(doc_id, [])
+            self._replace_chunk_embeddings(doc_id, [])
+            return
+        if stage is DocumentJobStage.SECTIONIZE:
+            self._replace_sections(doc_id, [])
+            self._replace_chunks(doc_id, [])
+            self._replace_index_entries(doc_id, [])
+            self._replace_chunk_embeddings(doc_id, [])
+            return
+        if stage is DocumentJobStage.CHUNK:
+            self._replace_chunks(doc_id, [])
+            self._replace_index_entries(doc_id, [])
+            self._replace_chunk_embeddings(doc_id, [])
+            return
+        if stage is DocumentJobStage.INDEX:
+            self._replace_index_entries(doc_id, [])
+            self._replace_chunk_embeddings(doc_id, [])
+
+    def _delete_extracted(self, document: PersistedDocument) -> None:
+        if self._artifact_store is None:
+            return
+        self._artifact_store.delete_extracted(
+            workspace_id=document.workspace_id,
+            doc_id=document.doc_id,
+        )
+
+    def _delete_normalized(self, document: PersistedDocument) -> None:
+        if self._artifact_store is None:
+            return
+        self._artifact_store.delete_normalized(
+            workspace_id=document.workspace_id,
+            doc_id=document.doc_id,
+        )
+
+    def _replace_sections(self, doc_id: str, sections: list[Section]) -> None:
+        if self._sections is not None:
+            self._sections.replace_for_document(doc_id, sections)
+
+    def _replace_chunks(self, doc_id: str, chunks: list[Chunk]) -> None:
+        if self._chunks is not None:
+            self._chunks.replace_for_document(doc_id, chunks)
+
+    def _replace_index_entries(self, doc_id: str, entries: list[IndexEntry]) -> None:
+        if self._index_entries is not None:
+            self._index_entries.replace_for_document(doc_id, entries)
+
+    def _replace_chunk_embeddings(self, doc_id: str, embeddings: list[ChunkEmbedding]) -> None:
+        if self._chunk_embeddings is not None:
+            self._chunk_embeddings.replace_for_document(doc_id, embeddings)
 
     def _require_filename(self, filename: str | None) -> str:
         normalized = (filename or "").strip()

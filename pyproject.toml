@@ -53,4 +53,5 @@ markers = [
   "persistence: db-backed integrity and repository tests",
   "artifacts: filesystem-backed artifact persistence tests",
 ]
+norecursedirs = ["tests/mvp_document_lifecycle_tests_split"]
 testpaths = ["tests"]

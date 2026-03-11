@@ -164,8 +164,7 @@ class RegisterDocumentStage:
         if mismatches:
             mismatch_summary = ", ".join(sorted(mismatches))
             raise LifecycleInvariantError(
-                "existing document does not match the intake context: "
-                f"{mismatch_summary}",
+                f"existing document does not match the intake context: {mismatch_summary}",
             )
 
         return existing

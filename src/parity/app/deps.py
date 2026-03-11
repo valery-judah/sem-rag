@@ -1,4 +1,4 @@
-"""Dependency wiring for the internal upload app."""
+"""Dependency wiring for the internal lifecycle app and worker."""
 
 from __future__ import annotations
 
@@ -11,9 +11,35 @@ from sqlalchemy import event
 from sqlalchemy.engine import Engine
 
 from parity.artifacts import FilesystemArtifactStore
+from parity.chunking import ChunkingService
+from parity.extractors import ExtractorRegistry, MarkdownExtractor, PdfExtractor
+from parity.indexing import DeterministicEmbeddingAdapter, SqlVectorStore
+from parity.lifecycle.orchestrator import DocumentLifecycleOrchestrator
+from parity.lifecycle.readiness import ReadinessService
 from parity.lifecycle.service import DocumentLifecycleService
-from parity.persistence import SqlDocumentRepository, SqlLifecycleEventRepository
-from parity.stages import RegisterDocumentStage
+from parity.lifecycle.worker import DocumentLifecycleWorker
+from parity.normalizers import MarkdownNormalizer, NormalizerRegistry, PdfNormalizer
+from parity.persistence import (
+    SqlChunkEmbeddingRepository,
+    SqlChunkRepository,
+    SqlDocumentJobRepository,
+    SqlDocumentRepository,
+    SqlIndexEntryRepository,
+    SqlLifecycleEventRepository,
+    SqlSectionRepository,
+)
+from parity.stages import (
+    ChunkDocumentStage,
+    ExtractDocumentJobStage,
+    ExtractDocumentStage,
+    IndexDocumentStage,
+    NormalizeDocumentJobStage,
+    NormalizeDocumentStage,
+    ReadyDocumentStage,
+    RegisterDocumentStage,
+    SectionizeDocumentStage,
+)
+from parity.structure import SectionDerivationService
 
 from .settings import AppSettings, load_settings
 
@@ -63,15 +89,130 @@ def get_document_lifecycle_service(
     engine: Annotated[Engine, Depends(get_engine)],
     artifact_store: Annotated[FilesystemArtifactStore, Depends(get_artifact_store)],
 ) -> DocumentLifecycleService:
-    """Build the lifecycle service used by the internal upload route."""
+    """Build the lifecycle service used by the internal app."""
 
+    documents = SqlDocumentRepository(engine)
+    jobs = SqlDocumentJobRepository(engine)
+    lifecycle_events = SqlLifecycleEventRepository(engine)
+    sections = SqlSectionRepository(engine)
+    chunks = SqlChunkRepository(engine)
+    index_entries = SqlIndexEntryRepository(engine)
+    chunk_embeddings = SqlChunkEmbeddingRepository(engine)
+    orchestrator = DocumentLifecycleOrchestrator(jobs=jobs)
+    vector_store = SqlVectorStore(
+        engine=engine,
+        embedding_adapter=DeterministicEmbeddingAdapter(),
+        index_entries=index_entries,
+        chunk_embeddings=chunk_embeddings,
+    )
     register_stage = RegisterDocumentStage(
         engine=engine,
-        documents=SqlDocumentRepository(engine),
-        lifecycle_events=SqlLifecycleEventRepository(engine),
+        documents=documents,
+        lifecycle_events=lifecycle_events,
         artifact_store=artifact_store,
     )
-    return DocumentLifecycleService(register_stage=register_stage)
+    return DocumentLifecycleService(
+        register_stage=register_stage,
+        orchestrator=orchestrator,
+        documents=documents,
+        jobs=jobs,
+        lifecycle_events=lifecycle_events,
+        artifact_store=artifact_store,
+        sections=sections,
+        chunks=chunks,
+        index_entries=index_entries,
+        chunk_embeddings=chunk_embeddings,
+        vector_store=vector_store,
+    )
+
+
+def get_document_lifecycle_worker(
+    engine: Annotated[Engine, Depends(get_engine)],
+    artifact_store: Annotated[FilesystemArtifactStore, Depends(get_artifact_store)],
+) -> DocumentLifecycleWorker:
+    """Build the internal lifecycle worker with the full stage registry."""
+
+    documents = SqlDocumentRepository(engine)
+    jobs = SqlDocumentJobRepository(engine)
+    lifecycle_events = SqlLifecycleEventRepository(engine)
+    sections = SqlSectionRepository(engine)
+    chunks = SqlChunkRepository(engine)
+    index_entries = SqlIndexEntryRepository(engine)
+    chunk_embeddings = SqlChunkEmbeddingRepository(engine)
+    orchestrator = DocumentLifecycleOrchestrator(jobs=jobs)
+
+    extract_stage = ExtractDocumentStage(
+        engine=engine,
+        documents=documents,
+        lifecycle_events=lifecycle_events,
+        artifact_store=artifact_store,
+        extractors=ExtractorRegistry(
+            markdown=MarkdownExtractor(),
+            pdf=PdfExtractor(),
+        ),
+    )
+    normalize_stage = NormalizeDocumentStage(
+        engine=engine,
+        documents=documents,
+        lifecycle_events=lifecycle_events,
+        artifact_store=artifact_store,
+        normalizers=NormalizerRegistry(
+            markdown=MarkdownNormalizer(),
+            pdf=PdfNormalizer(),
+        ),
+    )
+    vector_store = SqlVectorStore(
+        engine=engine,
+        embedding_adapter=DeterministicEmbeddingAdapter(),
+        index_entries=index_entries,
+        chunk_embeddings=chunk_embeddings,
+    )
+    readiness = ReadinessService(
+        documents=documents,
+        sections=sections,
+        chunks=chunks,
+        index_entries=index_entries,
+        artifact_store=artifact_store,
+        vector_store=vector_store,
+    )
+    stage_runners = {
+        ExtractDocumentJobStage.target_stage: ExtractDocumentJobStage(stage=extract_stage),
+        NormalizeDocumentJobStage.target_stage: NormalizeDocumentJobStage(stage=normalize_stage),
+        SectionizeDocumentStage.target_stage: SectionizeDocumentStage(
+            documents=documents,
+            sections=sections,
+            artifact_store=artifact_store,
+            service=SectionDerivationService(),
+        ),
+        ChunkDocumentStage.target_stage: ChunkDocumentStage(
+            documents=documents,
+            sections=sections,
+            chunks=chunks,
+            lifecycle_events=lifecycle_events,
+            artifact_store=artifact_store,
+            service=ChunkingService(),
+        ),
+        IndexDocumentStage.target_stage: IndexDocumentStage(
+            documents=documents,
+            chunks=chunks,
+            lifecycle_events=lifecycle_events,
+            vector_store=vector_store,
+            index_entries=index_entries,
+            chunk_embeddings=chunk_embeddings,
+        ),
+        ReadyDocumentStage.target_stage: ReadyDocumentStage(
+            documents=documents,
+            lifecycle_events=lifecycle_events,
+            readiness=readiness,
+        ),
+    }
+    return DocumentLifecycleWorker(
+        jobs=jobs,
+        documents=documents,
+        lifecycle_events=lifecycle_events,
+        orchestrator=orchestrator,
+        stage_runners=stage_runners,
+    )
 
 
 def reset_runtime_caches() -> None:
