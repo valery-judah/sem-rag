@@ -64,6 +64,13 @@ class DocumentRepository(Protocol):
         connection: Connection | None = None,
     ) -> PersistedDocument | None: ...
 
+    def delete(
+        self,
+        doc_id: DocId,
+        *,
+        connection: Connection | None = None,
+    ) -> None: ...
+
     def list_by_workspace(self, workspace_id: WorkspaceId) -> list[PersistedDocument]: ...
 
     def update_status(
@@ -199,6 +206,19 @@ class SqlDocumentRepository:
         if row is None:
             return None
         return row_to_persisted_document(dict(row))
+
+    def delete(
+        self,
+        doc_id: DocId,
+        *,
+        connection: Connection | None = None,
+    ) -> None:
+        stmt = sa.delete(documents_table).where(documents_table.c.doc_id == doc_id)
+        if connection is not None:
+            connection.execute(stmt)
+        else:
+            with self._engine.begin() as conn:
+                conn.execute(stmt)
 
     def list_by_workspace(self, workspace_id: WorkspaceId) -> list[PersistedDocument]:
         stmt = (

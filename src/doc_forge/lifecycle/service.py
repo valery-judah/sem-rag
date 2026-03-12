@@ -300,6 +300,31 @@ class DocumentLifecycleService:
             hits=self._vector_store.smoke_query(doc_id=doc_id, text=text, k=k),
         )
 
+    def delete_document(self, *, doc_id: DocId) -> None:
+        """Completely remove a document, its artifacts, vectors, and lifecycle history."""
+        document = self._require_document(doc_id)
+        
+        if self._vector_store is not None:
+            self._vector_store.delete_document(doc_id=doc_id)
+            
+        if self._artifact_store is not None:
+            self._artifact_store.delete_raw_by_id(
+                workspace_id=document.workspace_id,
+                doc_id=doc_id,
+                source_type=document.source_type,
+            )
+            self._artifact_store.delete_extracted(
+                workspace_id=document.workspace_id,
+                doc_id=doc_id,
+            )
+            self._artifact_store.delete_normalized(
+                workspace_id=document.workspace_id,
+                doc_id=doc_id,
+            )
+            
+        if self._documents is not None:
+            self._documents.delete(doc_id=doc_id)
+
     def retry_document(self, *, doc_id: DocId) -> RetryDocumentResult:
         """Queue a retry for the latest failed lifecycle stage."""
 

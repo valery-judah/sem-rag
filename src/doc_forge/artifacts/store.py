@@ -107,6 +107,20 @@ class FilesystemArtifactStore:
             raise ValueError("raw artifact reference does not match the managed path layout")
         self._unlink_if_exists(self._resolve_relative_path(ref.relative_path))
 
+    def delete_raw_by_id(
+        self,
+        *,
+        workspace_id: WorkspaceId,
+        doc_id: DocId,
+        source_type: SourceType,
+    ) -> None:
+        path = self.raw_path(
+            workspace_id=workspace_id,
+            doc_id=doc_id,
+            source_type=source_type,
+        )
+        self._unlink_if_exists(path)
+
     def write_extracted(self, *, workspace_id: WorkspaceId, artifact: ExtractedArtifact) -> Path:
         path = self.extracted_path(workspace_id=workspace_id, doc_id=artifact.doc_id)
         path.parent.mkdir(parents=True, exist_ok=True)

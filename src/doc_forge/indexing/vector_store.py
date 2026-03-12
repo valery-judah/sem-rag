@@ -105,6 +105,19 @@ class SqlVectorStore(VectorStore):
         scored.sort(key=lambda item: item.score, reverse=True)
         return scored[:k]
 
+    def delete_document(self, *, doc_id: DocId) -> None:
+        with self._engine.begin() as connection:
+            self._chunk_embeddings.replace_for_document(
+                doc_id,
+                [],
+                connection=connection,
+            )
+            self._index_entries.replace_for_document(
+                doc_id,
+                [],
+                connection=connection,
+            )
+
 
 def _cosine_similarity(left: list[float], right: list[float]) -> float:
     if not left or not right or len(left) != len(right):

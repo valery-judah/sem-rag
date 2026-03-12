@@ -276,6 +276,31 @@ def create_app() -> FastAPI:
                 detail="document registration failed",
             ) from exc
 
+    @app.delete(
+        "/documents/{doc_id}",
+        status_code=status.HTTP_204_NO_CONTENT,
+        summary="Delete Document",
+        tags=["Documents"],
+        description="Completely remove a document, its artifacts, and its indexing data.",
+        responses={
+            status.HTTP_404_NOT_FOUND: {
+                "model": ErrorResponse,
+                "description": "Document not found",
+            },
+        },
+    )
+    async def delete_document(
+        doc_id: Annotated[DocId, Field(..., description="The unique identifier of the document.")],
+        service: Annotated[
+            DocumentLifecycleService,
+            Depends(get_document_lifecycle_service),
+        ],
+    ) -> None:
+        try:
+            service.delete_document(doc_id=doc_id)
+        except DocumentNotFoundError as exc:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+
     @app.get(
         "/documents/{doc_id}",
         summary="Get Document",
