@@ -48,7 +48,7 @@ test: install ## Run unit tests
 
 .PHONY: test-e2e
 test-e2e: install ## Run docker-backed end-to-end tests
-	uv run pytest tests/e2e -m e2e -o addopts=-q
+	uv run pytest tests/e2e -m e2e -o addopts="-q -s"
 
 .PHONY: smoke-llm
 smoke-llm: ## Verify the optional embedding dependency group is installed

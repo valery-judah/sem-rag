@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import shutil
 import time
 from dataclasses import dataclass, field
 from pathlib import Path, PurePosixPath
@@ -23,6 +24,8 @@ from parity.persistence.models import (
     index_entries_table,
     lifecycle_events_table,
 )
+from parity.persistence.jobs import document_jobs_table
+from parity.query.persistence import query_runs_table
 
 
 @pytest.hookimpl(hookwrapper=True)
@@ -65,6 +68,12 @@ def _env_flag(name: str) -> bool:
     return value.lower() in {"1", "true", "yes", "on"}
 
 
+def _emit_e2e_log(message: str, **fields: object) -> None:
+    details = ", ".join(f"{key}={value!r}" for key, value in sorted(fields.items()))
+    suffix = f" | {details}" if details else ""
+    print(f"[e2e] {message}{suffix}", flush=True)
+
+
 def _runtime_user() -> str | None:
     getuid = getattr(os, "getuid", None)
     getgid = getattr(os, "getgid", None)
@@ -91,9 +100,7 @@ class RunningStack:
     def log(self, message: str, **fields: object) -> None:
         if not self.verbose:
             return
-        details = ", ".join(f"{key}={value!r}" for key, value in sorted(fields.items()))
-        suffix = f" | {details}" if details else ""
-        print(f"[e2e] {message}{suffix}", flush=True)
+        _emit_e2e_log(message, **fields)
 
     def track_document(self, doc_id: str) -> None:
         if doc_id not in self.tracked_doc_ids:
@@ -323,18 +330,19 @@ def e2e_image_tag() -> str:
     if not _docker_daemon_available():
         pytest.skip("Docker daemon is not available")
     tag = f"parity-e2e:{uuid4().hex}"
-    if _env_flag("PARITY_E2E_VERBOSE"):
-        print(f"[e2e] building image {tag}", flush=True)
+    _emit_e2e_log("building e2e image", tag=tag, dockerfile="Dockerfile.e2e")
     image = DockerImage(
         path=str(_repo_root()),
         tag=tag,
-        dockerfile_path="Dockerfile",
+        dockerfile_path="Dockerfile.e2e",
         clean_up=False,
     )
     image.build()
+    _emit_e2e_log("e2e image ready", tag=tag)
     try:
         yield tag
     finally:
+        _emit_e2e_log("e2e image retained", tag=tag)
         image.remove()
 
 
@@ -357,12 +365,11 @@ def _run_migrations(
     if runtime_user is not None:
         container = container.with_kwargs(user=runtime_user)
     verbose = _env_flag("PARITY_E2E_VERBOSE")
-    if verbose:
-        print(
-            "[e2e] running migrations"
-            f" | image_tag={image_tag!r}, artifact_root={str(artifact_root)!r}",
-            flush=True,
-        )
+    _emit_e2e_log(
+        "running migrations",
+        image_tag=image_tag,
+        artifact_root=str(artifact_root),
+    )
     container.start()
     try:
         result = container.get_wrapped_container().wait(timeout=60)
@@ -371,6 +378,8 @@ def _run_migrations(
             raise AssertionError(_format_logs("migrate", container))
     finally:
         container.stop()
+    if verbose:
+        _emit_e2e_log("migrations complete", image_tag=image_tag)
 
 
 def _normalize_host_database_url(database_url: str) -> str:
@@ -385,14 +394,12 @@ def _wait_for_api(base_url: str, api_container: DockerContainer) -> None:
     deadline = time.monotonic() + 45.0
     last_error: str | None = None
     verbose = _env_flag("PARITY_E2E_VERBOSE")
-    if verbose:
-        print(f"[e2e] waiting for api readiness | base_url={base_url!r}", flush=True)
+    _emit_e2e_log("waiting for api readiness", base_url=base_url)
     while time.monotonic() < deadline:
         try:
             response = httpx.get(f"{base_url}/readyz", timeout=2.0)
             if response.status_code == 200 and response.json() == {"status": "ok"}:
-                if verbose:
-                    print("[e2e] api readiness probe succeeded", flush=True)
+                _emit_e2e_log("api readiness probe succeeded", base_url=base_url)
                 return
             last_error = f"unexpected response: {response.status_code} {response.text}"
         except Exception as exc:
@@ -403,100 +410,192 @@ def _wait_for_api(base_url: str, api_container: DockerContainer) -> None:
     )
 
 
-@pytest.fixture
-def e2e_stack(
+def _cleanup_resource(label: str, action: Any) -> None:
+    try:
+        action()
+        _emit_e2e_log("cleanup complete", resource=label)
+    except Exception as exc:
+        _emit_e2e_log("cleanup failed", resource=label, error=str(exc))
+
+
+def _wait_for_idle_jobs(database_url: str, *, timeout_seconds: float = 45.0) -> None:
+    deadline = time.monotonic() + timeout_seconds
+    engine = sa.create_engine(database_url)
+    try:
+        while time.monotonic() < deadline:
+            with engine.connect() as connection:
+                active_job_count = int(
+                    connection.scalar(
+                        sa.select(sa.func.count())
+                        .select_from(document_jobs_table)
+                        .where(document_jobs_table.c.status.in_(("queued", "running")))
+                    )
+                    or 0
+                )
+            if active_job_count == 0:
+                return
+            time.sleep(0.25)
+    finally:
+        engine.dispose()
+    raise AssertionError(f"document jobs did not become idle within {timeout_seconds} seconds")
+
+
+def _clear_artifact_root(artifact_root: Path) -> None:
+    artifact_root.mkdir(parents=True, exist_ok=True)
+    for child in artifact_root.iterdir():
+        if child.is_dir():
+            shutil.rmtree(child)
+            continue
+        child.unlink()
+
+
+def _reset_runtime_state(stack: RunningStack) -> None:
+    _wait_for_idle_jobs(stack.database_url)
+    engine = sa.create_engine(stack.database_url)
+    try:
+        with engine.begin() as connection:
+            connection.execute(sa.delete(query_runs_table))
+            connection.execute(sa.delete(documents_table))
+    finally:
+        engine.dispose()
+    _clear_artifact_root(stack.artifact_root)
+    stack.tracked_doc_ids.clear()
+
+
+@pytest.fixture(scope="session")
+def e2e_runtime(
     e2e_image_tag: str,
-    tmp_path: Path,
-    request: pytest.FixtureRequest,
+    tmp_path_factory: pytest.TempPathFactory,
 ) -> RunningStack:
     verbose = _env_flag("PARITY_E2E_VERBOSE")
-    artifact_root = tmp_path / "artifacts"
-    artifact_root.mkdir()
-    if verbose:
-        print(
-            "[e2e] creating test stack"
-            f" | artifact_root={str(artifact_root)!r}, test_id={request.node.nodeid!r}",
-            flush=True,
-        )
+    artifact_root = tmp_path_factory.mktemp("e2e-artifacts")
+    artifact_root.mkdir(exist_ok=True)
+    _emit_e2e_log("creating session runtime", artifact_root=str(artifact_root))
 
     network = Network().create()
-    postgres = (
-        PostgresContainer(
-            "postgres:16-alpine",
-            username="parity",
-            password="parity",
-            dbname="parity",
-            driver="psycopg",
+    _emit_e2e_log("network created")
+    postgres: PostgresContainer | None = None
+    api_container: DockerContainer | None = None
+    worker_container: DockerContainer | None = None
+    try:
+        postgres = (
+            PostgresContainer(
+                "postgres:16-alpine",
+                username="parity",
+                password="parity",
+                dbname="parity",
+                driver="psycopg",
+            )
+            .with_network(network)
+            .with_network_aliases("pg")
         )
-        .with_network(network)
-        .with_network_aliases("pg")
-    )
-    postgres.start()
-    database_url = "postgresql+psycopg://parity:parity@pg:5432/parity"
-    host_database_url = _normalize_host_database_url(postgres.get_connection_url())
-    _run_migrations(
-        image_tag=e2e_image_tag,
-        database_url=database_url,
-        artifact_root=artifact_root,
-        network=network,
-    )
+        postgres.start()
+        _emit_e2e_log("postgres started")
+        database_url = "postgresql+psycopg://parity:parity@pg:5432/parity"
+        host_database_url = _normalize_host_database_url(postgres.get_connection_url())
+        _run_migrations(
+            image_tag=e2e_image_tag,
+            database_url=database_url,
+            artifact_root=artifact_root,
+            network=network,
+        )
 
-    api_container = (
-        DockerContainer(e2e_image_tag)
-        .with_command("api")
-        .with_network(network)
-        .with_env("DATABASE_URL", database_url)
-        .with_env("PARITY_ARTIFACT_ROOT", "/artifacts")
-        .with_env("PORT", "8000")
-        .with_volume_mapping(str(artifact_root), "/artifacts", mode="rw")
-        .with_exposed_ports(8000)
-    )
-    runtime_user = _runtime_user()
-    if runtime_user is not None:
-        api_container = api_container.with_kwargs(user=runtime_user)
-    worker_container = (
-        DockerContainer(e2e_image_tag)
-        .with_command("worker")
-        .with_network(network)
-        .with_env("DATABASE_URL", database_url)
-        .with_env("PARITY_ARTIFACT_ROOT", "/artifacts")
-        .with_env("PARITY_WORKER_POLL_SECONDS", "0.1")
-        .with_volume_mapping(str(artifact_root), "/artifacts", mode="rw")
-    )
-    if runtime_user is not None:
-        worker_container = worker_container.with_kwargs(user=runtime_user)
+        api_container = (
+            DockerContainer(e2e_image_tag)
+            .with_command("api")
+            .with_network(network)
+            .with_env("DATABASE_URL", database_url)
+            .with_env("PARITY_ARTIFACT_ROOT", "/artifacts")
+            .with_env("PORT", "8000")
+            .with_volume_mapping(str(artifact_root), "/artifacts", mode="rw")
+            .with_exposed_ports(8000)
+        )
+        runtime_user = _runtime_user()
+        if runtime_user is not None:
+            api_container = api_container.with_kwargs(user=runtime_user)
+        worker_container = (
+            DockerContainer(e2e_image_tag)
+            .with_command("worker")
+            .with_network(network)
+            .with_env("DATABASE_URL", database_url)
+            .with_env("PARITY_ARTIFACT_ROOT", "/artifacts")
+            .with_env("PARITY_WORKER_POLL_SECONDS", "0.1")
+            .with_volume_mapping(str(artifact_root), "/artifacts", mode="rw")
+        )
+        if runtime_user is not None:
+            worker_container = worker_container.with_kwargs(user=runtime_user)
 
-    api_container.start()
-    worker_container.start()
+        _emit_e2e_log("starting api and worker containers")
+        api_container.start()
+        worker_container.start()
 
-    host = api_container.get_container_host_ip()
-    port = api_container.get_exposed_port(8000)
-    base_url = f"http://{host}:{port}"
-    _wait_for_api(base_url, api_container)
+        host = api_container.get_container_host_ip()
+        port = api_container.get_exposed_port(8000)
+        base_url = f"http://{host}:{port}"
+        _wait_for_api(base_url, api_container)
 
+        stack = RunningStack(
+            base_url=base_url,
+            database_url=host_database_url,
+            artifact_root=artifact_root,
+            api_container=api_container,
+            worker_container=worker_container,
+            postgres_container=postgres,
+            network=network,
+            verbose=verbose,
+        )
+        stack.log(
+            "session runtime ready",
+            base_url=base_url,
+            database_url=host_database_url,
+            artifact_root=str(artifact_root),
+        )
+    except Exception:
+        _emit_e2e_log("session runtime startup failed")
+        if worker_container is not None:
+            _cleanup_resource("worker container", worker_container.stop)
+        if api_container is not None:
+            _cleanup_resource("api container", api_container.stop)
+        if postgres is not None:
+            _cleanup_resource("postgres container", postgres.stop)
+        _cleanup_resource("network", network.remove)
+        raise
+    try:
+        yield stack
+    finally:
+        _cleanup_resource("worker container", stack.worker_container.stop)
+        _cleanup_resource("api container", stack.api_container.stop)
+        _cleanup_resource("postgres container", stack.postgres_container.stop)
+        _cleanup_resource("network", network.remove)
+
+
+@pytest.fixture
+def e2e_stack(
+    e2e_runtime: RunningStack,
+    request: pytest.FixtureRequest,
+) -> RunningStack:
+    _emit_e2e_log("scenario setup", test_id=request.node.nodeid)
+    _reset_runtime_state(e2e_runtime)
     stack = RunningStack(
-        base_url=base_url,
-        database_url=host_database_url,
-        artifact_root=artifact_root,
-        api_container=api_container,
-        worker_container=worker_container,
-        postgres_container=postgres,
-        network=network,
-        verbose=verbose,
+        base_url=e2e_runtime.base_url,
+        database_url=e2e_runtime.database_url,
+        artifact_root=e2e_runtime.artifact_root,
+        api_container=e2e_runtime.api_container,
+        worker_container=e2e_runtime.worker_container,
+        postgres_container=e2e_runtime.postgres_container,
+        network=e2e_runtime.network,
+        verbose=e2e_runtime.verbose,
     )
-    stack.log(
-        "stack ready",
-        base_url=base_url,
-        database_url=host_database_url,
-        artifact_root=str(artifact_root),
-    )
+    stack.log("scenario ready", test_id=request.node.nodeid)
     try:
         yield stack
     finally:
         failed = bool(getattr(getattr(request.node, "rep_call", None), "failed", False))
+        _emit_e2e_log(
+            "scenario complete",
+            test_id=request.node.nodeid,
+            status="failed" if failed else "passed",
+        )
         if failed:
             print(stack.failure_report(test_id=request.node.nodeid), flush=True)
-        worker_container.stop()
-        api_container.stop()
-        postgres.stop()
-        network.remove()
+        _reset_runtime_state(e2e_runtime)
