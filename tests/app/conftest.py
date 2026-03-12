@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from collections.abc import Iterator
+
 import pytest
 from fastapi import FastAPI
 
@@ -13,7 +15,7 @@ def app(
     db_url: str,
     tmp_path,
     monkeypatch: pytest.MonkeyPatch,
-) -> FastAPI:
+) -> Iterator[FastAPI]:
     del sql_engine
     artifact_root = tmp_path / "artifacts"
     monkeypatch.setenv("DATABASE_URL", db_url)

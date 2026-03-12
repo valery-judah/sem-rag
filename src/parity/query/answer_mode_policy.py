@@ -45,6 +45,7 @@ class AnswerModePolicy(Protocol):
         policy: QueryPolicy,
     ) -> AnswerModePolicyDecision:
         """Return the answer-mode decision allowed by current support."""
+        ...
 
 
 class DeterministicAnswerModePolicy:

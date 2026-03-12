@@ -89,6 +89,7 @@ class QuerySelector(Protocol):
         policy: QueryPolicy,
     ) -> SelectionResult:
         """Return selected candidates and explicit evidence sets."""
+        ...
 
 
 class DeterministicQuerySelector:
@@ -264,8 +265,10 @@ class DeterministicQuerySelector:
     ) -> tuple[list[EvidenceSet], list[NeighborExpansionRecord]]:
         units: list[EvidenceUnit] = []
         selected_docs: set[str] = set()
-        selected_doc_cap = 2 if interpreted_query.request_type is QueryRequestType.COMPARISON else min(
-            3, policy.evidence_set_cap
+        selected_doc_cap = (
+            2
+            if interpreted_query.request_type is QueryRequestType.COMPARISON
+            else min(3, policy.evidence_set_cap)
         )
         comparison_targeted = [
             decision
@@ -273,9 +276,10 @@ class DeterministicQuerySelector:
             if decision.rerank_signals.get("comparison_target_bonus", 0.0) > 0.0
         ]
         source_decisions = survivors
-        if interpreted_query.request_type is QueryRequestType.COMPARISON and len(
-            {decision.candidate.doc_id for decision in comparison_targeted}
-        ) >= 2:
+        if (
+            interpreted_query.request_type is QueryRequestType.COMPARISON
+            and len({decision.candidate.doc_id for decision in comparison_targeted}) >= 2
+        ):
             source_decisions = comparison_targeted
 
         for decision in source_decisions:

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Iterator
 from datetime import UTC, datetime
 
 import pytest
@@ -25,7 +26,7 @@ def db_url(tmp_path) -> str:
 
 
 @pytest.fixture
-def sql_engine(db_url: str) -> Engine:
+def sql_engine(db_url: str) -> Iterator[Engine]:
     apply_migrations(db_url)
     engine = sa.create_engine(db_url)
     if engine.dialect.name == "sqlite":

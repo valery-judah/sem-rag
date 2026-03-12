@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import shutil
 import time
+from collections.abc import Iterator
 from dataclasses import dataclass, field
 from pathlib import Path, PurePosixPath
 from typing import Any
@@ -17,6 +18,7 @@ from testcontainers.core.image import DockerImage
 from testcontainers.core.network import Network
 from testcontainers.postgres import PostgresContainer
 
+from parity.persistence.jobs import document_jobs_table
 from parity.persistence.models import (
     chunk_embeddings_table,
     chunks_table,
@@ -24,7 +26,6 @@ from parity.persistence.models import (
     index_entries_table,
     lifecycle_events_table,
 )
-from parity.persistence.jobs import document_jobs_table
 from parity.query.persistence import query_runs_table
 
 
@@ -326,7 +327,7 @@ class RunningStack:
 
 
 @pytest.fixture(scope="session")
-def e2e_image_tag() -> str:
+def e2e_image_tag() -> Iterator[str]:
     if not _docker_daemon_available():
         pytest.skip("Docker daemon is not available")
     tag = f"parity-e2e:{uuid4().hex}"
@@ -466,7 +467,7 @@ def _reset_runtime_state(stack: RunningStack) -> None:
 def e2e_runtime(
     e2e_image_tag: str,
     tmp_path_factory: pytest.TempPathFactory,
-) -> RunningStack:
+) -> Iterator[RunningStack]:
     verbose = _env_flag("PARITY_E2E_VERBOSE")
     artifact_root = tmp_path_factory.mktemp("e2e-artifacts")
     artifact_root.mkdir(exist_ok=True)
@@ -573,7 +574,7 @@ def e2e_runtime(
 def e2e_stack(
     e2e_runtime: RunningStack,
     request: pytest.FixtureRequest,
-) -> RunningStack:
+) -> Iterator[RunningStack]:
     _emit_e2e_log("scenario setup", test_id=request.node.nodeid)
     _reset_runtime_state(e2e_runtime)
     stack = RunningStack(

@@ -130,20 +130,20 @@ def _context_manifest(*, evidence_set_ids: list[str]) -> ContextManifest:
     )
 
 
-def _interpreted_query(*, requires_synthesis: bool = False, **overrides: object) -> InterpretedQuery:
-    payload: dict[str, object] = {
-        "normalized_question": "what uses embeddings to retrieve related passages",
-        "request_type": QueryRequestType.FACT_LOOKUP,
-        "answer_shape": "direct answer",
-        "specificity": QuerySpecificity.PRECISE,
-        "requires_synthesis": requires_synthesis,
-        "synthesis_mode": SynthesisMode.CROSS_DOCUMENT if requires_synthesis else SynthesisMode.NONE,
-        "requires_source_navigation": False,
-        "unsupported_capability_flags": [],
-        "normalization_notes": [],
-    }
-    payload.update(overrides)
-    return InterpretedQuery(**payload)
+def _interpreted_query(
+    *, requires_synthesis: bool = False, **overrides: object
+) -> InterpretedQuery:
+    return InterpretedQuery(
+        normalized_question="what uses embeddings to retrieve related passages",
+        request_type=QueryRequestType.FACT_LOOKUP,
+        answer_shape="direct answer",
+        specificity=QuerySpecificity.PRECISE,
+        requires_synthesis=requires_synthesis,
+        synthesis_mode=SynthesisMode.CROSS_DOCUMENT if requires_synthesis else SynthesisMode.NONE,
+        requires_source_navigation=False,
+        unsupported_capability_flags=[],
+        normalization_notes=[],
+    ).model_copy(update=overrides)
 
 
 def test_grounded_generator_returns_direct_answer_with_grounded_ids() -> None:

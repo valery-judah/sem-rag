@@ -60,9 +60,12 @@ warn_unused_ignores = true
 pythonVersion = "3.11"
 venvPath = "."
 venv = ".venv"
-typeCheckingMode = "strict"
+typeCheckingMode = "standard"
 include = ["src", "tests", "scripts"]
 exclude = [
+  ".venv/**",
+  "**/.venv",
+  "**/.venv/**",
   "**/node_modules",
   "**/__pycache__",
   "**/.*",

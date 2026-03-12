@@ -18,10 +18,12 @@ pytestmark = pytest.mark.contract
 
 def test_lifecycle_event_requires_stage_and_to_status() -> None:
     with pytest.raises(ValidationError) as excinfo:
-        LifecycleEvent(
-            event_id="event-1",
-            doc_id="doc-1",
-            occurred_at=datetime(2026, 3, 11, tzinfo=UTC),
+        LifecycleEvent.model_validate(
+            {
+                "event_id": "event-1",
+                "doc_id": "doc-1",
+                "occurred_at": datetime(2026, 3, 11, tzinfo=UTC),
+            }
         )
 
     message = str(excinfo.value)

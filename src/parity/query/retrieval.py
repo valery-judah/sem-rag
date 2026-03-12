@@ -53,6 +53,7 @@ class DenseQueryRetriever(Protocol):
         policy: QueryPolicy,
     ) -> QueryRetrievalResult:
         """Return structured retrieval candidates for a query run."""
+        ...
 
 
 class SnapshotDenseQueryRetriever:

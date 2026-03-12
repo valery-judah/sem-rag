@@ -102,9 +102,11 @@ class QueryRunStore(Protocol):
 
     def get_query_run(self, query_id: str) -> QueryRun | None:
         """Load one persisted query run."""
+        ...
 
     def create_query_run(self, run: QueryRun) -> QueryRun:
         """Persist a newly created query run."""
+        ...
 
     def update_query_run_status(
         self,
@@ -115,6 +117,7 @@ class QueryRunStore(Protocol):
         terminal_failure: QueryTerminalFailure | None = None,
     ) -> QueryRun:
         """Update the lifecycle status for an existing query run."""
+        ...
 
 
 class QuerySnapshotStore(Protocol):
@@ -122,9 +125,11 @@ class QuerySnapshotStore(Protocol):
 
     def save_snapshot(self, query_id: str, snapshot: CorpusSnapshot) -> None:
         """Persist the captured corpus snapshot for a query run."""
+        ...
 
     def get_snapshot(self, query_id: str) -> CorpusSnapshot | None:
         """Load the captured corpus snapshot for a query run."""
+        ...
 
 
 class QueryTraceStore(Protocol):
@@ -132,9 +137,11 @@ class QueryTraceStore(Protocol):
 
     def append_stage_trace(self, trace: QueryStageTrace) -> None:
         """Persist a stage trace for a query run."""
+        ...
 
     def list_stage_traces(self, query_id: str) -> list[QueryStageTrace]:
         """Load stage traces for a query run in execution order."""
+        ...
 
 
 class QueryAnswerStore(Protocol):
@@ -146,9 +153,11 @@ class QueryAnswerStore(Protocol):
         artifacts: FinalQueryArtifacts,
     ) -> None:
         """Persist final answer and citation artifacts for a query run."""
+        ...
 
     def get_answer_artifacts(self, query_id: str) -> FinalQueryArtifacts | None:
         """Load persisted final answer artifacts for a query run."""
+        ...
 
 
 class SqlQueryRunStore:

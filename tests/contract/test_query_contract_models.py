@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
+from typing import Any
 
 import pytest
 from pydantic import ValidationError
@@ -40,7 +41,7 @@ from parity.query import (
 pytestmark = pytest.mark.contract
 
 
-def make_source_reference(**overrides: object) -> SourceReference:
+def make_source_reference(**overrides: Any) -> SourceReference:
     return SourceReference(
         doc_id="doc-1",
         document_title="Doc 1",
@@ -51,8 +52,8 @@ def make_source_reference(**overrides: object) -> SourceReference:
     )
 
 
-def make_candidate(**overrides: object) -> RetrievedCandidate:
-    payload: dict[str, object] = {
+def make_candidate(**overrides: Any) -> RetrievedCandidate:
+    payload: dict[str, Any] = {
         "doc_id": "doc-1",
         "chunk_id": "chunk-1",
         "heading_path": ["Chapter 1"],
@@ -96,11 +97,13 @@ def test_query_run_requires_policy_snapshot() -> None:
     assert run.query_id == "qry-1"
 
     with pytest.raises(ValidationError, match="policy_snapshot"):
-        QueryRun(
-            query_id="qry-1",
-            workspace_id="workspace-1",
-            question="What is semantic retrieval?",
-            policy_snapshot=None,
+        QueryRun.model_validate(
+            {
+                "query_id": "qry-1",
+                "workspace_id": "workspace-1",
+                "question": "What is semantic retrieval?",
+                "policy_snapshot": None,
+            }
         )
 
 

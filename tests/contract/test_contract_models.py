@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
+from typing import Any, cast
 
 import pytest
 from pydantic import ValidationError
@@ -20,7 +21,7 @@ from parity._contracts import (
 pytestmark = pytest.mark.contract
 
 
-def make_source_reference(**overrides: object) -> SourceReference:
+def make_source_reference(**overrides: Any) -> SourceReference:
     return SourceReference(
         doc_id="doc-1",
         document_title="Doc 1",
@@ -49,7 +50,7 @@ def test_document_rejects_invalid_source_type() -> None:
         Document(
             doc_id="doc-1",
             workspace_id="workspace-1",
-            source_type="txt",
+            source_type=cast(Any, "txt"),
             title="Book",
             filename="book.txt",
             uploaded_at=datetime(2026, 3, 8, tzinfo=UTC),
@@ -67,7 +68,7 @@ def test_document_rejects_invalid_ingest_status() -> None:
             title="Notes",
             filename="notes.md",
             uploaded_at=datetime(2026, 3, 8, tzinfo=UTC),
-            ingest_status="queued",
+            ingest_status=cast(Any, "queued"),
             storage_ref="file:///notes.md",
         )
 
@@ -150,9 +151,11 @@ def test_source_reference_can_omit_heading_and_page_but_not_document_identity() 
     assert degraded.snippet == "Relevant supporting passage."
 
     with pytest.raises(ValidationError, match="doc_id"):
-        SourceReference(
-            document_title="Doc 1",
-            snippet="Relevant supporting passage.",
+        SourceReference.model_validate(
+            {
+                "document_title": "Doc 1",
+                "snippet": "Relevant supporting passage.",
+            }
         )
 
     with pytest.raises(ValidationError, match="heading_path"):
@@ -177,7 +180,7 @@ def test_retrieval_hit_requires_nested_source_reference() -> None:
 def test_answer_rejects_invalid_status() -> None:
     with pytest.raises(ValidationError, match="status"):
         Answer(
-            status="partial",
+            status=cast(Any, "partial"),
             answer_text="Maybe.",
             source_references=[],
         )

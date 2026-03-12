@@ -99,5 +99,7 @@ def test_chunk_stage_persists_chunks_and_marks_document_chunked(
     assert len(stored) == 2
     assert all(chunk.section_id == f"{doc_id}:section:0" for chunk in stored)
     assert stored[1].debug_metadata == {"token_count": "3"}
-    assert documents.get(doc_id).ingest_status is ProcessingStatus.CHUNKED
+    document = documents.get(doc_id)
+    assert document is not None
+    assert document.ingest_status is ProcessingStatus.CHUNKED
     assert lifecycle_events.list_for_document(doc_id)[-1].to_status is ProcessingStatus.CHUNKED

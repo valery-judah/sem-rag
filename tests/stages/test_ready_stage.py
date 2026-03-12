@@ -117,7 +117,9 @@ def test_ready_stage_requires_provenance_and_smoke_query(
         )
     )
 
-    assert documents.get(doc_id).ingest_status is ProcessingStatus.READY
+    document = documents.get(doc_id)
+    assert document is not None
+    assert document.ingest_status is ProcessingStatus.READY
     assert lifecycle_events.list_for_document(doc_id)[-1].to_status is ProcessingStatus.READY
 
 

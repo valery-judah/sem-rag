@@ -1,0 +1,400 @@
+Loading pyproject.toml file at /Users/val/projects/rag/sem-rag/pyproject.toml
+Execution environment: python
+  Extra paths:
+    /Users/val/projects/rag/sem-rag/src
+  Python version: 3.11
+  Python platform: Darwin
+  Search paths:
+    /Users/val/projects/rag/sem-rag/.venv/lib/python3.11/site-packages/pyright/dist/dist/typeshed-fallback/stdlib
+    /Users/val/projects/rag/sem-rag
+    /Users/val/projects/rag/sem-rag/src
+    /Users/val/projects/rag/sem-rag/typings
+    /Users/val/projects/rag/sem-rag/.venv/lib/python3.11/site-packages/pyright/dist/dist/typeshed-fallback/stubs/...
+    /Users/val/projects/rag/sem-rag/.venv/lib/python3.11/site-packages
+    /Users/val/projects/rag/sem-rag/src
+Found 182 source files
+
+/Users/val/projects/rag/sem-rag/src/parity/query/answer_generation.py
+  /Users/val/projects/rag/sem-rag/src/parity/query/answer_generation.py:61:10 - error: Function with declared return type "GroundedGenerationResult" must return value on all code paths
+    "None" is not assignable to "GroundedGenerationResult" (reportReturnType)
+/Users/val/projects/rag/sem-rag/src/parity/query/answer_mode_policy.py
+  /Users/val/projects/rag/sem-rag/src/parity/query/answer_mode_policy.py:46:10 - error: Function with declared return type "AnswerModePolicyDecision" must return value on all code paths
+    "None" is not assignable to "AnswerModePolicyDecision" (reportReturnType)
+/Users/val/projects/rag/sem-rag/src/parity/query/citation_rendering.py
+  /Users/val/projects/rag/sem-rag/src/parity/query/citation_rendering.py:52:10 - error: Function with declared return type "CitationRenderingResult" must return value on all code paths
+    "None" is not assignable to "CitationRenderingResult" (reportReturnType)
+/Users/val/projects/rag/sem-rag/src/parity/query/context_assembly.py
+  /Users/val/projects/rag/sem-rag/src/parity/query/context_assembly.py:54:10 - error: Function with declared return type "ContextAssemblyResult" must return value on all code paths
+    "None" is not assignable to "ContextAssemblyResult" (reportReturnType)
+/Users/val/projects/rag/sem-rag/src/parity/query/interpretation.py
+  /Users/val/projects/rag/sem-rag/src/parity/query/interpretation.py:145:10 - error: Function with declared return type "QueryInterpretationResult" must return value on all code paths
+    "None" is not assignable to "QueryInterpretationResult" (reportReturnType)
+/Users/val/projects/rag/sem-rag/src/parity/query/persistence.py
+  /Users/val/projects/rag/sem-rag/src/parity/query/persistence.py:106:50 - error: Function with declared return type "QueryRun" must return value on all code paths
+    "None" is not assignable to "QueryRun" (reportReturnType)
+  /Users/val/projects/rag/sem-rag/src/parity/query/persistence.py:116:10 - error: Function with declared return type "QueryRun" must return value on all code paths
+    "None" is not assignable to "QueryRun" (reportReturnType)
+  /Users/val/projects/rag/sem-rag/src/parity/query/persistence.py:136:51 - error: Function with declared return type "list[QueryStageTrace]" must return value on all code paths
+    "None" is not assignable to "list[QueryStageTrace]" (reportReturnType)
+/Users/val/projects/rag/sem-rag/src/parity/query/retrieval.py
+  /Users/val/projects/rag/sem-rag/src/parity/query/retrieval.py:54:10 - error: Function with declared return type "QueryRetrievalResult" must return value on all code paths
+    "None" is not assignable to "QueryRetrievalResult" (reportReturnType)
+/Users/val/projects/rag/sem-rag/src/parity/query/selection.py
+  /Users/val/projects/rag/sem-rag/src/parity/query/selection.py:90:10 - error: Function with declared return type "SelectionResult" must return value on all code paths
+    "None" is not assignable to "SelectionResult" (reportReturnType)
+/Users/val/projects/rag/sem-rag/src/parity/query/support_assessment.py
+  /Users/val/projects/rag/sem-rag/src/parity/query/support_assessment.py:78:10 - error: Function with declared return type "StructuredSupportJudgment" must return value on all code paths
+    "None" is not assignable to "StructuredSupportJudgment" (reportReturnType)
+/Users/val/projects/rag/sem-rag/src/parity/readmodels/documents.py
+  /Users/val/projects/rag/sem-rag/src/parity/readmodels/documents.py:90:10 - error: Function with declared return type "CorpusSnapshot" must return value on all code paths
+    "None" is not assignable to "CorpusSnapshot" (reportReturnType)
+  /Users/val/projects/rag/sem-rag/src/parity/readmodels/documents.py:93:58 - error: Function with declared return type "list[QueryableDocumentRecord]" must return value on all code paths
+    "None" is not assignable to "list[QueryableDocumentRecord]" (reportReturnType)
+  /Users/val/projects/rag/sem-rag/src/parity/readmodels/documents.py:99:10 - error: Function with declared return type "list[QueryableSectionRecord]" must return value on all code paths
+    "None" is not assignable to "list[QueryableSectionRecord]" (reportReturnType)
+  /Users/val/projects/rag/sem-rag/src/parity/readmodels/documents.py:105:10 - error: Function with declared return type "list[QueryableChunkRecord]" must return value on all code paths
+    "None" is not assignable to "list[QueryableChunkRecord]" (reportReturnType)
+  /Users/val/projects/rag/sem-rag/src/parity/readmodels/documents.py:111:10 - error: Function with declared return type "list[QueryableEmbeddedChunkRecord]" must return value on all code paths
+    "None" is not assignable to "list[QueryableEmbeddedChunkRecord]" (reportReturnType)
+/Users/val/projects/rag/sem-rag/tests/app/conftest.py
+  /Users/val/projects/rag/sem-rag/tests/app/conftest.py:16:6 - error: Return type of generator function must be compatible with "Generator[Any, Any, Any]"
+    "Generator[Any, Any, Any]" is not assignable to "FastAPI" (reportInvalidTypeForm)
+  /Users/val/projects/rag/sem-rag/tests/app/conftest.py:24:11 - error: Return type of generator function must be compatible with "Generator[FastAPI, Any, Any]"
+    "Generator[FastAPI, Unknown, Unknown]" is not assignable to "FastAPI" (reportReturnType)
+/Users/val/projects/rag/sem-rag/tests/app/test_documents_api.py
+  /Users/val/projects/rag/sem-rag/tests/app/test_documents_api.py:17:77 - error: Cannot access attribute "methods" for class "BaseRoute"
+    Attribute "methods" is unknown (reportAttributeAccessIssue)
+  /Users/val/projects/rag/sem-rag/tests/app/test_documents_api.py:18:26 - error: Cannot access attribute "endpoint" for class "BaseRoute"
+    Attribute "endpoint" is unknown (reportAttributeAccessIssue)
+/Users/val/projects/rag/sem-rag/tests/app/test_runtime_api.py
+  /Users/val/projects/rag/sem-rag/tests/app/test_runtime_api.py:47:69 - error: Cannot access attribute "methods" for class "BaseRoute"
+    Attribute "methods" is unknown (reportAttributeAccessIssue)
+  /Users/val/projects/rag/sem-rag/tests/app/test_runtime_api.py:48:26 - error: Cannot access attribute "endpoint" for class "BaseRoute"
+    Attribute "endpoint" is unknown (reportAttributeAccessIssue)
+  /Users/val/projects/rag/sem-rag/tests/app/test_runtime_api.py:619:12 - error: Argument of type "Literal['query_id']" cannot be assigned to parameter "key" of type "SupportsIndex | slice[Any, Any, Any]" in function "__getitem__"
+    Type "Literal['query_id']" is not assignable to type "SupportsIndex | slice[Any, Any, Any]"
+      "Literal['query_id']" is incompatible with protocol "SupportsIndex"
+        "__index__" is not present
+      "Literal['query_id']" is not assignable to "slice[Any, Any, Any]" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/app/test_runtime_api.py:620:12 - error: Argument of type "Literal['status']" cannot be assigned to parameter "key" of type "SupportsIndex | slice[Any, Any, Any]" in function "__getitem__"
+    Type "Literal['status']" is not assignable to type "SupportsIndex | slice[Any, Any, Any]"
+      "Literal['status']" is incompatible with protocol "SupportsIndex"
+        "__index__" is not present
+      "Literal['status']" is not assignable to "slice[Any, Any, Any]" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/app/test_runtime_api.py:621:12 - error: Argument of type "Literal['terminal_failure']" cannot be assigned to parameter "key" of type "SupportsIndex | slice[Any, Any, Any]" in function "__getitem__"
+    Type "Literal['terminal_failure']" is not assignable to type "SupportsIndex | slice[Any, Any, Any]"
+      "Literal['terminal_failure']" is incompatible with protocol "SupportsIndex"
+        "__index__" is not present
+      "Literal['terminal_failure']" is not assignable to "slice[Any, Any, Any]" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/app/test_runtime_api.py:621:12 - error: Argument of type "Literal['stage_name']" cannot be assigned to parameter "key" of type "SupportsIndex | slice[Any, Any, Any]" in function "__getitem__"
+    Type "Literal['stage_name']" is not assignable to type "SupportsIndex | slice[Any, Any, Any]"
+      "Literal['stage_name']" is incompatible with protocol "SupportsIndex"
+        "__index__" is not present
+      "Literal['stage_name']" is not assignable to "slice[Any, Any, Any]" (reportArgumentType)
+/Users/val/projects/rag/sem-rag/tests/contract/test_contract_models.py
+  /Users/val/projects/rag/sem-rag/tests/contract/test_contract_models.py:28:11 - error: Argument of type "object" cannot be assigned to parameter "section_id" of type "str | None" in function "__init__"
+    Type "object" is not assignable to type "str | None"
+      "object" is not assignable to "str"
+      "object" is not assignable to "None" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/contract/test_contract_models.py:28:11 - error: Argument of type "object" cannot be assigned to parameter "heading_path" of type "list[str] | None" in function "__init__"
+    Type "object" is not assignable to type "list[str] | None"
+      "object" is not assignable to "list[str]"
+      "object" is not assignable to "None" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/contract/test_contract_models.py:28:11 - error: Argument of type "object" cannot be assigned to parameter "page_label" of type "str | None" in function "__init__"
+    Type "object" is not assignable to type "str | None"
+      "object" is not assignable to "str"
+      "object" is not assignable to "None" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/contract/test_contract_models.py:28:11 - error: Argument of type "object" cannot be assigned to parameter "chunk_id" of type "str | None" in function "__init__"
+    Type "object" is not assignable to type "str | None"
+      "object" is not assignable to "str"
+      "object" is not assignable to "None" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/contract/test_contract_models.py:28:11 - error: Argument of type "object" cannot be assigned to parameter "passage_anchor" of type "str | None" in function "__init__"
+    Type "object" is not assignable to type "str | None"
+      "object" is not assignable to "str"
+      "object" is not assignable to "None" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/contract/test_contract_models.py:52:25 - error: Argument of type "Literal['txt']" cannot be assigned to parameter "source_type" of type "SourceType" in function "__init__"
+    "Literal['txt']" is not assignable to "SourceType" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/contract/test_contract_models.py:70:27 - error: Argument of type "Literal['queued']" cannot be assigned to parameter "ingest_status" of type "ProcessingStatus" in function "__init__"
+    "Literal['queued']" is not assignable to "ProcessingStatus" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/contract/test_contract_models.py:153:9 - error: Argument missing for parameter "doc_id" (reportCallIssue)
+  /Users/val/projects/rag/sem-rag/tests/contract/test_contract_models.py:180:20 - error: Argument of type "Literal['partial']" cannot be assigned to parameter "status" of type "AnswerStatus" in function "__init__"
+    "Literal['partial']" is not assignable to "AnswerStatus" (reportArgumentType)
+/Users/val/projects/rag/sem-rag/tests/contract/test_lifecycle_models.py
+  /Users/val/projects/rag/sem-rag/tests/contract/test_lifecycle_models.py:21:9 - error: Arguments missing for parameters "stage", "to_status" (reportCallIssue)
+/Users/val/projects/rag/sem-rag/tests/contract/test_query_contract_models.py
+  /Users/val/projects/rag/sem-rag/tests/contract/test_query_contract_models.py:50:11 - error: Argument of type "object" cannot be assigned to parameter "section_id" of type "str | None" in function "__init__"
+    Type "object" is not assignable to type "str | None"
+      "object" is not assignable to "str"
+      "object" is not assignable to "None" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/contract/test_query_contract_models.py:50:11 - error: Argument of type "object" cannot be assigned to parameter "page_label" of type "str | None" in function "__init__"
+    Type "object" is not assignable to type "str | None"
+      "object" is not assignable to "str"
+      "object" is not assignable to "None" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/contract/test_query_contract_models.py:50:11 - error: Argument of type "object" cannot be assigned to parameter "passage_anchor" of type "str | None" in function "__init__"
+    Type "object" is not assignable to type "str | None"
+      "object" is not assignable to "str"
+      "object" is not assignable to "None" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/contract/test_query_contract_models.py:65:11 - error: Argument of type "object" cannot be assigned to parameter "doc_id" of type "str" in function "__init__"
+    "object" is not assignable to "str" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/contract/test_query_contract_models.py:65:11 - error: Argument of type "object" cannot be assigned to parameter "chunk_id" of type "str" in function "__init__"
+    "object" is not assignable to "str" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/contract/test_query_contract_models.py:65:11 - error: Argument of type "object" cannot be assigned to parameter "section_id" of type "str | None" in function "__init__"
+    Type "object" is not assignable to type "str | None"
+      "object" is not assignable to "str"
+      "object" is not assignable to "None" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/contract/test_query_contract_models.py:65:11 - error: Argument of type "object" cannot be assigned to parameter "heading_path" of type "list[str]" in function "__init__"
+    "object" is not assignable to "list[str]" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/contract/test_query_contract_models.py:65:11 - error: Argument of type "object" cannot be assigned to parameter "locator" of type "str | None" in function "__init__"
+    Type "object" is not assignable to type "str | None"
+      "object" is not assignable to "str"
+      "object" is not assignable to "None" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/contract/test_query_contract_models.py:65:11 - error: Argument of type "object" cannot be assigned to parameter "retrieval_score" of type "float" in function "__init__"
+    "object" is not assignable to "float" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/contract/test_query_contract_models.py:65:11 - error: Argument of type "object" cannot be assigned to parameter "retrieval_rank" of type "int" in function "__init__"
+    "object" is not assignable to "int" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/contract/test_query_contract_models.py:103:29 - error: Argument of type "None" cannot be assigned to parameter "policy_snapshot" of type "dict[str, object]" in function "__init__"
+    "None" is not assignable to "dict[str, object]" (reportArgumentType)
+/Users/val/projects/rag/sem-rag/tests/e2e/conftest.py
+  /Users/val/projects/rag/sem-rag/tests/e2e/conftest.py:329:24 - error: Return type of generator function must be compatible with "Generator[Any, Any, Any]"
+    "Generator[Any, Any, Any]" is not assignable to "str" (reportInvalidTypeForm)
+  /Users/val/projects/rag/sem-rag/tests/e2e/conftest.py:343:15 - error: Return type of generator function must be compatible with "Generator[str, Any, Any]"
+    "Generator[str, Unknown, Unknown]" is not assignable to "str" (reportReturnType)
+  /Users/val/projects/rag/sem-rag/tests/e2e/conftest.py:469:6 - error: Return type of generator function must be compatible with "Generator[Any, Any, Any]"
+    "Generator[Any, Any, Any]" is not assignable to "RunningStack" (reportInvalidTypeForm)
+  /Users/val/projects/rag/sem-rag/tests/e2e/conftest.py:564:15 - error: Return type of generator function must be compatible with "Generator[RunningStack, Any, Any]"
+    "Generator[RunningStack, Unknown, Unknown]" is not assignable to "RunningStack" (reportReturnType)
+  /Users/val/projects/rag/sem-rag/tests/e2e/conftest.py:576:6 - error: Return type of generator function must be compatible with "Generator[Any, Any, Any]"
+    "Generator[Any, Any, Any]" is not assignable to "RunningStack" (reportInvalidTypeForm)
+  /Users/val/projects/rag/sem-rag/tests/e2e/conftest.py:591:15 - error: Return type of generator function must be compatible with "Generator[RunningStack, Any, Any]"
+    "Generator[RunningStack, Unknown, Unknown]" is not assignable to "RunningStack" (reportReturnType)
+/Users/val/projects/rag/sem-rag/tests/e2e/test_real_markdown_docs.py
+  /Users/val/projects/rag/sem-rag/tests/e2e/test_real_markdown_docs.py:96:12 - error: Operator ">" not supported for types "object" and "Literal[0]" (reportOperatorIssue)
+  /Users/val/projects/rag/sem-rag/tests/e2e/test_real_markdown_docs.py:97:12 - error: Operator ">" not supported for types "object" and "Literal[0]" (reportOperatorIssue)
+  /Users/val/projects/rag/sem-rag/tests/e2e/test_real_markdown_docs.py:98:12 - error: Operator ">" not supported for types "object" and "Literal[0]" (reportOperatorIssue)
+/Users/val/projects/rag/sem-rag/tests/lifecycle/test_service.py
+  /Users/val/projects/rag/sem-rag/tests/lifecycle/test_service.py:37:24 - error: Argument of type "RecordingRegisterStage" cannot be assigned to parameter "register_stage" of type "RegisterDocumentStage" in function "__init__"
+    "RecordingRegisterStage" is not assignable to "RegisterDocumentStage" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/lifecycle/test_service.py:55:55 - error: Argument of type "RecordingRegisterStage" cannot be assigned to parameter "register_stage" of type "RegisterDocumentStage" in function "__init__"
+    "RecordingRegisterStage" is not assignable to "RegisterDocumentStage" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/lifecycle/test_service.py:70:55 - error: Argument of type "RecordingRegisterStage" cannot be assigned to parameter "register_stage" of type "RegisterDocumentStage" in function "__init__"
+    "RecordingRegisterStage" is not assignable to "RegisterDocumentStage" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/lifecycle/test_service.py:82:55 - error: Argument of type "RecordingRegisterStage" cannot be assigned to parameter "register_stage" of type "RegisterDocumentStage" in function "__init__"
+    "RecordingRegisterStage" is not assignable to "RegisterDocumentStage" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/lifecycle/test_service.py:112:24 - error: Argument of type "RecordingRegisterStage" cannot be assigned to parameter "register_stage" of type "RegisterDocumentStage" in function "__init__"
+    "RecordingRegisterStage" is not assignable to "RegisterDocumentStage" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/lifecycle/test_service.py:125:24 - error: Argument of type "RecordingRegisterStage" cannot be assigned to parameter "register_stage" of type "RegisterDocumentStage" in function "__init__"
+    "RecordingRegisterStage" is not assignable to "RegisterDocumentStage" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/lifecycle/test_service.py:135:24 - error: Argument of type "RecordingRegisterStage" cannot be assigned to parameter "register_stage" of type "RegisterDocumentStage" in function "__init__"
+    "RecordingRegisterStage" is not assignable to "RegisterDocumentStage" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/lifecycle/test_service.py:146:24 - error: Argument of type "RecordingRegisterStage" cannot be assigned to parameter "register_stage" of type "RegisterDocumentStage" in function "__init__"
+    "RecordingRegisterStage" is not assignable to "RegisterDocumentStage" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/lifecycle/test_service.py:160:24 - error: Argument of type "RecordingRegisterStage" cannot be assigned to parameter "register_stage" of type "RegisterDocumentStage" in function "__init__"
+    "RecordingRegisterStage" is not assignable to "RegisterDocumentStage" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/lifecycle/test_service.py:175:24 - error: Argument of type "RecordingRegisterStage" cannot be assigned to parameter "register_stage" of type "RegisterDocumentStage" in function "__init__"
+    "RecordingRegisterStage" is not assignable to "RegisterDocumentStage" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/lifecycle/test_service.py:202:24 - error: Argument of type "RecordingRegisterStage" cannot be assigned to parameter "register_stage" of type "RegisterDocumentStage" in function "__init__"
+    "RecordingRegisterStage" is not assignable to "RegisterDocumentStage" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/lifecycle/test_service.py:226:24 - error: Argument of type "RecordingRegisterStage" cannot be assigned to parameter "register_stage" of type "RegisterDocumentStage" in function "__init__"
+    "RecordingRegisterStage" is not assignable to "RegisterDocumentStage" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/lifecycle/test_service.py:247:24 - error: Argument of type "RecordingRegisterStage" cannot be assigned to parameter "register_stage" of type "RegisterDocumentStage" in function "__init__"
+    "RecordingRegisterStage" is not assignable to "RegisterDocumentStage" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/lifecycle/test_service.py:261:43 - error: "ingest_status" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /Users/val/projects/rag/sem-rag/tests/lifecycle/test_service.py:275:24 - error: Argument of type "RecordingRegisterStage" cannot be assigned to parameter "register_stage" of type "RegisterDocumentStage" in function "__init__"
+    "RecordingRegisterStage" is not assignable to "RegisterDocumentStage" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/lifecycle/test_service.py:289:43 - error: "ingest_status" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /Users/val/projects/rag/sem-rag/tests/lifecycle/test_service.py:383:24 - error: Argument of type "RecordingRegisterStage" cannot be assigned to parameter "register_stage" of type "RegisterDocumentStage" in function "__init__"
+    "RecordingRegisterStage" is not assignable to "RegisterDocumentStage" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/lifecycle/test_service.py:391:18 - error: Argument of type "InMemoryReplaceRepository" cannot be assigned to parameter "sections" of type "SectionRepository | None" in function "__init__"
+    Type "InMemoryReplaceRepository" is not assignable to type "SectionRepository | None"
+      "InMemoryReplaceRepository" is incompatible with protocol "SectionRepository"
+        "save" is not present
+          "list_for_document" is an incompatible type
+            Type "(doc_id: str) -> list[object]" is not assignable to type "(doc_id: str) -> list[Section]"
+          "replace_for_document" is an incompatible type
+            Type "(doc_id: str, items: list[object], **kwargs: Unknown) -> None" is not assignable to type "(doc_id: str, sections: list[Section]) -> None"
+      "InMemoryReplaceRepository" is not assignable to "None" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/lifecycle/test_service.py:392:16 - error: Argument of type "InMemoryReplaceRepository" cannot be assigned to parameter "chunks" of type "ChunkRepository | None" in function "__init__"
+    Type "InMemoryReplaceRepository" is not assignable to type "ChunkRepository | None"
+      "InMemoryReplaceRepository" is incompatible with protocol "ChunkRepository"
+        "save" is not present
+          "list_for_document" is an incompatible type
+            Type "(doc_id: str) -> list[object]" is not assignable to type "(doc_id: str) -> list[Chunk]"
+          "replace_for_document" is an incompatible type
+            Type "(doc_id: str, items: list[object], **kwargs: Unknown) -> None" is not assignable to type "(doc_id: str, chunks: list[Chunk]) -> None"
+      "InMemoryReplaceRepository" is not assignable to "None" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/lifecycle/test_service.py:393:23 - error: Argument of type "InMemoryReplaceRepository" cannot be assigned to parameter "index_entries" of type "IndexEntryRepository | None" in function "__init__"
+    Type "InMemoryReplaceRepository" is not assignable to type "IndexEntryRepository | None"
+      "InMemoryReplaceRepository" is incompatible with protocol "IndexEntryRepository"
+        "clock" is not present
+          "list_for_document" is an incompatible type
+            Type "(doc_id: str) -> list[object]" is not assignable to type "(doc_id: str) -> list[IndexEntry]"
+          "replace_for_document" is an incompatible type
+            Type "(doc_id: str, items: list[object], **kwargs: Unknown) -> None" is not assignable to type "(doc_id: str, entries: list[IndexEntry], *, connection: Connection | None = None) -> None"
+      "InMemoryReplaceRepository" is not assignable to "None" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/lifecycle/test_service.py:394:26 - error: Argument of type "InMemoryReplaceRepository" cannot be assigned to parameter "chunk_embeddings" of type "ChunkEmbeddingRepository | None" in function "__init__"
+    Type "InMemoryReplaceRepository" is not assignable to type "ChunkEmbeddingRepository | None"
+      "InMemoryReplaceRepository" is incompatible with protocol "ChunkEmbeddingRepository"
+        "list_for_document" is an incompatible type
+          Type "(doc_id: str) -> list[object]" is not assignable to type "(doc_id: str) -> list[ChunkEmbedding]"
+            Function return type "list[object]" is incompatible with type "list[ChunkEmbedding]"
+        "replace_for_document" is an incompatible type
+          Type "(doc_id: str, items: list[object], **kwargs: Unknown) -> None" is not assignable to type "(doc_id: str, embeddings: list[ChunkEmbedding], *, connection: Connection | None = None) -> None"
+            Parameter name mismatch: "embeddings" versus "items"
+    ... (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/lifecycle/test_service.py:438:24 - error: Argument of type "RecordingRegisterStage" cannot be assigned to parameter "register_stage" of type "RegisterDocumentStage" in function "__init__"
+    "RecordingRegisterStage" is not assignable to "RegisterDocumentStage" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/lifecycle/test_service.py:460:24 - error: Argument of type "RecordingRegisterStage" cannot be assigned to parameter "register_stage" of type "RegisterDocumentStage" in function "__init__"
+    "RecordingRegisterStage" is not assignable to "RegisterDocumentStage" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/lifecycle/test_service.py:462:22 - error: Argument of type "StubVectorStore" cannot be assigned to parameter "vector_store" of type "VectorStore | None" in function "__init__"
+    Type "StubVectorStore" is not assignable to type "VectorStore | None"
+      "StubVectorStore" is incompatible with protocol "VectorStore"
+        "publish_document" is an incompatible type
+          Type "(*, doc_id: str, chunks: list[object]) -> list[object]" is not assignable to type "(*, doc_id: str, chunks: list[Chunk]) -> list[IndexEntry]"
+            Keyword parameter "chunks" of type "list[Chunk]" is incompatible with type "list[object]"
+            Function return type "list[object]" is incompatible with type "list[IndexEntry]"
+      "StubVectorStore" is not assignable to "None" (reportArgumentType)
+/Users/val/projects/rag/sem-rag/tests/lifecycle/test_worker.py
+  /Users/val/projects/rag/sem-rag/tests/lifecycle/test_worker.py:54:43 - error: "ingest_status" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /Users/val/projects/rag/sem-rag/tests/lifecycle/test_worker.py:88:43 - error: "failure_code" is not a known attribute of "None" (reportOptionalMemberAccess)
+/Users/val/projects/rag/sem-rag/tests/persistence/conftest.py
+  /Users/val/projects/rag/sem-rag/tests/persistence/conftest.py:28:32 - error: Return type of generator function must be compatible with "Generator[Any, Any, Any]"
+    "Generator[Any, Any, Any]" is not assignable to "Engine" (reportInvalidTypeForm)
+  /Users/val/projects/rag/sem-rag/tests/persistence/conftest.py:41:15 - error: Return type of generator function must be compatible with "Generator[Engine, Any, Any]"
+    "Generator[Engine, Unknown, Unknown]" is not assignable to "Engine" (reportReturnType)
+/Users/val/projects/rag/sem-rag/tests/query/test_query_llm_generation.py
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_llm_generation.py:58:31 - error: Argument of type "object" cannot be assigned to parameter "normalized_question" of type "str" in function "__init__"
+    "object" is not assignable to "str" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_llm_generation.py:58:31 - error: Argument of type "object" cannot be assigned to parameter "request_type" of type "QueryRequestType" in function "__init__"
+    "object" is not assignable to "QueryRequestType" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_llm_generation.py:58:31 - error: Argument of type "object" cannot be assigned to parameter "answer_shape" of type "str" in function "__init__"
+    "object" is not assignable to "str" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_llm_generation.py:58:31 - error: Argument of type "object" cannot be assigned to parameter "specificity" of type "QuerySpecificity" in function "__init__"
+    "object" is not assignable to "QuerySpecificity" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_llm_generation.py:58:31 - error: Argument of type "object" cannot be assigned to parameter "scope_hints" of type "list[str]" in function "__init__"
+    "object" is not assignable to "list[str]" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_llm_generation.py:58:31 - error: Argument of type "object" cannot be assigned to parameter "requires_synthesis" of type "bool" in function "__init__"
+    "object" is not assignable to "bool" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_llm_generation.py:58:31 - error: Argument of type "object" cannot be assigned to parameter "synthesis_mode" of type "SynthesisMode" in function "__init__"
+    "object" is not assignable to "SynthesisMode" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_llm_generation.py:58:31 - error: Argument of type "object" cannot be assigned to parameter "requires_source_navigation" of type "bool" in function "__init__"
+    "object" is not assignable to "bool" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_llm_generation.py:58:31 - error: Argument of type "object" cannot be assigned to parameter "unsupported_capability_flags" of type "list[UnsupportedCapability]" in function "__init__"
+    "object" is not assignable to "list[UnsupportedCapability]" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_llm_generation.py:58:31 - error: Argument of type "object" cannot be assigned to parameter "normalization_notes" of type "list[str]" in function "__init__"
+    "object" is not assignable to "list[str]" (reportArgumentType)
+/Users/val/projects/rag/sem-rag/tests/query/test_query_replay.py
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_replay.py:186:35 - error: "ordered_evidence_set_ids" is not a known attribute of "None" (reportOptionalMemberAccess)
+/Users/val/projects/rag/sem-rag/tests/query/test_query_selection.py
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_selection.py:53:31 - error: Argument of type "object" cannot be assigned to parameter "normalized_question" of type "str" in function "__init__"
+    "object" is not assignable to "str" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_selection.py:53:31 - error: Argument of type "object" cannot be assigned to parameter "request_type" of type "QueryRequestType" in function "__init__"
+    "object" is not assignable to "QueryRequestType" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_selection.py:53:31 - error: Argument of type "object" cannot be assigned to parameter "answer_shape" of type "str" in function "__init__"
+    "object" is not assignable to "str" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_selection.py:53:31 - error: Argument of type "object" cannot be assigned to parameter "specificity" of type "QuerySpecificity" in function "__init__"
+    "object" is not assignable to "QuerySpecificity" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_selection.py:53:31 - error: Argument of type "object" cannot be assigned to parameter "scope_hints" of type "list[str]" in function "__init__"
+    "object" is not assignable to "list[str]" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_selection.py:53:31 - error: Argument of type "object" cannot be assigned to parameter "requires_synthesis" of type "bool" in function "__init__"
+    "object" is not assignable to "bool" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_selection.py:53:31 - error: Argument of type "object" cannot be assigned to parameter "synthesis_mode" of type "SynthesisMode" in function "__init__"
+    "object" is not assignable to "SynthesisMode" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_selection.py:53:31 - error: Argument of type "object" cannot be assigned to parameter "requires_source_navigation" of type "bool" in function "__init__"
+    "object" is not assignable to "bool" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_selection.py:53:31 - error: Argument of type "object" cannot be assigned to parameter "unsupported_capability_flags" of type "list[UnsupportedCapability]" in function "__init__"
+    "object" is not assignable to "list[UnsupportedCapability]" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_selection.py:53:31 - error: Argument of type "object" cannot be assigned to parameter "normalization_notes" of type "list[str]" in function "__init__"
+    "object" is not assignable to "list[str]" (reportArgumentType)
+/Users/val/projects/rag/sem-rag/tests/query/test_query_service_retrieve.py
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_service_retrieve.py:107:12 - error: "__getitem__" method not defined on type "object" (reportIndexIssue)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_service_retrieve.py:108:12 - error: "__getitem__" method not defined on type "object" (reportIndexIssue)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_service_retrieve.py:110:9 - error: "__getitem__" method not defined on type "object" (reportIndexIssue)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_service_retrieve.py:196:12 - error: "__getitem__" method not defined on type "object" (reportIndexIssue)
+/Users/val/projects/rag/sem-rag/tests/query/test_query_stage6.py
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_stage6.py:37:33 - error: Argument of type "object" cannot be assigned to parameter "doc_id" of type "str" in function "__init__"
+    "object" is not assignable to "str" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_stage6.py:37:33 - error: Argument of type "object" cannot be assigned to parameter "chunk_id" of type "str" in function "__init__"
+    "object" is not assignable to "str" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_stage6.py:37:33 - error: Argument of type "object" cannot be assigned to parameter "section_id" of type "str | None" in function "__init__"
+    Type "object" is not assignable to type "str | None"
+      "object" is not assignable to "str"
+      "object" is not assignable to "None" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_stage6.py:37:33 - error: Argument of type "object" cannot be assigned to parameter "heading_path" of type "list[str]" in function "__init__"
+    "object" is not assignable to "list[str]" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_stage6.py:37:33 - error: Argument of type "object" cannot be assigned to parameter "locator" of type "str | None" in function "__init__"
+    Type "object" is not assignable to type "str | None"
+      "object" is not assignable to "str"
+      "object" is not assignable to "None" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_stage6.py:37:33 - error: Argument of type "object" cannot be assigned to parameter "retrieval_score" of type "float" in function "__init__"
+    "object" is not assignable to "float" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_stage6.py:37:33 - error: Argument of type "object" cannot be assigned to parameter "retrieval_rank" of type "int" in function "__init__"
+    "object" is not assignable to "int" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_stage6.py:123:31 - error: Argument of type "object" cannot be assigned to parameter "normalized_question" of type "str" in function "__init__"
+    "object" is not assignable to "str" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_stage6.py:123:31 - error: Argument of type "object" cannot be assigned to parameter "request_type" of type "QueryRequestType" in function "__init__"
+    "object" is not assignable to "QueryRequestType" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_stage6.py:123:31 - error: Argument of type "object" cannot be assigned to parameter "answer_shape" of type "str" in function "__init__"
+    "object" is not assignable to "str" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_stage6.py:123:31 - error: Argument of type "object" cannot be assigned to parameter "specificity" of type "QuerySpecificity" in function "__init__"
+    "object" is not assignable to "QuerySpecificity" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_stage6.py:123:31 - error: Argument of type "object" cannot be assigned to parameter "scope_hints" of type "list[str]" in function "__init__"
+    "object" is not assignable to "list[str]" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_stage6.py:123:31 - error: Argument of type "object" cannot be assigned to parameter "requires_synthesis" of type "bool" in function "__init__"
+    "object" is not assignable to "bool" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_stage6.py:123:31 - error: Argument of type "object" cannot be assigned to parameter "synthesis_mode" of type "SynthesisMode" in function "__init__"
+    "object" is not assignable to "SynthesisMode" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_stage6.py:123:31 - error: Argument of type "object" cannot be assigned to parameter "requires_source_navigation" of type "bool" in function "__init__"
+    "object" is not assignable to "bool" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_stage6.py:123:31 - error: Argument of type "object" cannot be assigned to parameter "unsupported_capability_flags" of type "list[UnsupportedCapability]" in function "__init__"
+    "object" is not assignable to "list[UnsupportedCapability]" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_stage6.py:123:31 - error: Argument of type "object" cannot be assigned to parameter "normalization_notes" of type "list[str]" in function "__init__"
+    "object" is not assignable to "list[str]" (reportArgumentType)
+/Users/val/projects/rag/sem-rag/tests/query/test_query_stage7.py
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_stage7.py:146:31 - error: Argument of type "object" cannot be assigned to parameter "normalized_question" of type "str" in function "__init__"
+    "object" is not assignable to "str" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_stage7.py:146:31 - error: Argument of type "object" cannot be assigned to parameter "request_type" of type "QueryRequestType" in function "__init__"
+    "object" is not assignable to "QueryRequestType" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_stage7.py:146:31 - error: Argument of type "object" cannot be assigned to parameter "answer_shape" of type "str" in function "__init__"
+    "object" is not assignable to "str" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_stage7.py:146:31 - error: Argument of type "object" cannot be assigned to parameter "specificity" of type "QuerySpecificity" in function "__init__"
+    "object" is not assignable to "QuerySpecificity" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_stage7.py:146:31 - error: Argument of type "object" cannot be assigned to parameter "scope_hints" of type "list[str]" in function "__init__"
+    "object" is not assignable to "list[str]" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_stage7.py:146:31 - error: Argument of type "object" cannot be assigned to parameter "requires_synthesis" of type "bool" in function "__init__"
+    "object" is not assignable to "bool" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_stage7.py:146:31 - error: Argument of type "object" cannot be assigned to parameter "synthesis_mode" of type "SynthesisMode" in function "__init__"
+    "object" is not assignable to "SynthesisMode" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_stage7.py:146:31 - error: Argument of type "object" cannot be assigned to parameter "requires_source_navigation" of type "bool" in function "__init__"
+    "object" is not assignable to "bool" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_stage7.py:146:31 - error: Argument of type "object" cannot be assigned to parameter "unsupported_capability_flags" of type "list[UnsupportedCapability]" in function "__init__"
+    "object" is not assignable to "list[UnsupportedCapability]" (reportArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_stage7.py:146:31 - error: Argument of type "object" cannot be assigned to parameter "normalization_notes" of type "list[str]" in function "__init__"
+    "object" is not assignable to "list[str]" (reportArgumentType)
+/Users/val/projects/rag/sem-rag/tests/stages/test_chunk_stage.py
+  /Users/val/projects/rag/sem-rag/tests/stages/test_chunk_stage.py:102:34 - error: "ingest_status" is not a known attribute of "None" (reportOptionalMemberAccess)
+/Users/val/projects/rag/sem-rag/tests/stages/test_extract_stage_markdown.py
+  /Users/val/projects/rag/sem-rag/tests/stages/test_extract_stage_markdown.py:153:12 - error: Operator ">" not supported for types "int | None" and "int | None"
+    Operator ">" not supported for types "int" and "None"
+    Operator ">" not supported for types "None" and "int"
+    Operator ">" not supported for types "None" and "None" (reportOperatorIssue)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_extract_stage_markdown.py:154:46 - error: Operator "+" not supported for "None" (reportOptionalOperand)
+/Users/val/projects/rag/sem-rag/tests/stages/test_index_stage.py
+  /Users/val/projects/rag/sem-rag/tests/stages/test_index_stage.py:104:34 - error: "ingest_status" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_index_stage.py:197:22 - error: Argument of type "_FailingVectorStore" cannot be assigned to parameter "vector_store" of type "VectorStore" in function "__init__"
+    "_FailingVectorStore" is incompatible with protocol "VectorStore"
+      "smoke_query" is not present (reportArgumentType)
+/Users/val/projects/rag/sem-rag/tests/stages/test_normalize_stage_pdf.py
+  /Users/val/projects/rag/sem-rag/tests/stages/test_normalize_stage_pdf.py:226:16 - error: Operator "not in" not supported for types "Literal['layout']" and "dict[str, str] | None"
+    Operator "not in" not supported for types "Literal['layout']" and "None" (reportOperatorIssue)
+/Users/val/projects/rag/sem-rag/tests/stages/test_ready_stage.py
+  /Users/val/projects/rag/sem-rag/tests/stages/test_ready_stage.py:120:34 - error: "ingest_status" is not a known attribute of "None" (reportOptionalMemberAccess)
+/Users/val/projects/rag/sem-rag/tests/stages/test_register_stage.py
+  /Users/val/projects/rag/sem-rag/tests/stages/test_register_stage.py:33:32 - error: Return type of generator function must be compatible with "Generator[Any, Any, Any]"
+    "Generator[Any, Any, Any]" is not assignable to "Engine" (reportInvalidTypeForm)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_register_stage.py:46:15 - error: Return type of generator function must be compatible with "Generator[Engine, Any, Any]"
+    "Generator[Engine, Unknown, Unknown]" is not assignable to "Engine" (reportReturnType)
+/Users/val/projects/rag/sem-rag/tests/test_cli.py
+  /Users/val/projects/rag/sem-rag/tests/test_cli.py:9:23 - error: Cannot access attribute "readouterr" for class "object"
+    Attribute "readouterr" is unknown (reportAttributeAccessIssue)
+146 errors, 0 warnings, 0 informations
+Completed in 2.235sec

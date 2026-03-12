@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import pytest
+
 from parity.cli import main
 
 
-def test_cli_prints_ranked_results(capsys: object) -> None:
+def test_cli_prints_ranked_results(capsys: pytest.CaptureFixture[str]) -> None:
     main()
 
     captured = capsys.readouterr()

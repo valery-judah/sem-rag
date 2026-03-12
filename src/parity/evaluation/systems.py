@@ -19,10 +19,12 @@ class SeamResult(Protocol):
     @property
     def retrieval_hits(self) -> list[RetrievalHit]:
         """Deterministic retrieval trace for the seam."""
+        ...
 
     @property
     def answer(self) -> Answer:
         """Deterministic answer payload for the seam."""
+        ...
 
 
 class DeterministicSeamSystem:

@@ -3,8 +3,10 @@ from __future__ import annotations
 from collections import defaultdict
 from datetime import UTC, datetime
 
-from parity._contracts import ProcessingStatus, SourceType
-from parity.indexing import VectorSearchHit
+from sqlalchemy.engine import Connection
+
+from parity._contracts import Chunk, ProcessingStatus, Section, SourceType
+from parity.indexing import ChunkEmbedding, IndexEntry, VectorSearchHit
 from parity.lifecycle.models import FailureCategory, LifecycleEvent, LifecycleStage
 from parity.persistence import (
     DocumentJob,
@@ -288,13 +290,100 @@ class StubVectorStore:
         self.hits = hits or []
         self.calls: list[tuple[str, str, int]] = []
 
-    def publish_document(self, *, doc_id: str, chunks: list[object]) -> list[object]:
+    def publish_document(self, *, doc_id: str, chunks: list[Chunk]) -> list[IndexEntry]:
         del doc_id, chunks
         raise NotImplementedError
 
     def smoke_query(self, *, doc_id: str, text: str, k: int = 1) -> list[VectorSearchHit]:
         self.calls.append((doc_id, text, k))
         return self.hits[:k]
+
+
+class InMemorySectionRepository:
+    def __init__(self, initial_by_doc: dict[str, list[Section]] | None = None) -> None:
+        self.items_by_doc = {
+            doc_id: list(items) for doc_id, items in (initial_by_doc or {}).items()
+        }
+        self.replacements: list[tuple[str, list[Section]]] = []
+
+    def save(self, sections: list[Section]) -> None:
+        for section in sections:
+            current = self.items_by_doc.setdefault(section.doc_id, [])
+            current.append(section)
+
+    def list_for_document(self, doc_id: str) -> list[Section]:
+        return list(self.items_by_doc.get(doc_id, []))
+
+    def replace_for_document(self, doc_id: str, sections: list[Section]) -> None:
+        self.items_by_doc[doc_id] = list(sections)
+        self.replacements.append((doc_id, list(sections)))
+
+
+class InMemoryChunkRepository:
+    def __init__(self, initial_by_doc: dict[str, list[Chunk]] | None = None) -> None:
+        self.items_by_doc = {
+            doc_id: list(items) for doc_id, items in (initial_by_doc or {}).items()
+        }
+        self.replacements: list[tuple[str, list[Chunk]]] = []
+
+    def save(self, chunks: list[Chunk]) -> None:
+        for chunk in chunks:
+            current = self.items_by_doc.setdefault(chunk.doc_id, [])
+            current.append(chunk)
+
+    def list_for_document(self, doc_id: str) -> list[Chunk]:
+        return list(self.items_by_doc.get(doc_id, []))
+
+    def replace_for_document(self, doc_id: str, chunks: list[Chunk]) -> None:
+        self.items_by_doc[doc_id] = list(chunks)
+        self.replacements.append((doc_id, list(chunks)))
+
+
+class InMemoryIndexEntryRepository:
+    def __init__(self, initial_by_doc: dict[str, list[IndexEntry]] | None = None) -> None:
+        self.items_by_doc = {
+            doc_id: list(items) for doc_id, items in (initial_by_doc or {}).items()
+        }
+        self.replacements: list[tuple[str, list[IndexEntry]]] = []
+
+    def clock(self) -> datetime:
+        return FIXED_NOW
+
+    def list_for_document(self, doc_id: str) -> list[IndexEntry]:
+        return list(self.items_by_doc.get(doc_id, []))
+
+    def replace_for_document(
+        self,
+        doc_id: str,
+        entries: list[IndexEntry],
+        *,
+        connection: Connection | None = None,
+    ) -> None:
+        del connection
+        self.items_by_doc[doc_id] = list(entries)
+        self.replacements.append((doc_id, list(entries)))
+
+
+class InMemoryChunkEmbeddingRepository:
+    def __init__(self, initial_by_doc: dict[str, list[ChunkEmbedding]] | None = None) -> None:
+        self.items_by_doc = {
+            doc_id: list(items) for doc_id, items in (initial_by_doc or {}).items()
+        }
+        self.replacements: list[tuple[str, list[ChunkEmbedding]]] = []
+
+    def list_for_document(self, doc_id: str) -> list[ChunkEmbedding]:
+        return list(self.items_by_doc.get(doc_id, []))
+
+    def replace_for_document(
+        self,
+        doc_id: str,
+        embeddings: list[ChunkEmbedding],
+        *,
+        connection: Connection | None = None,
+    ) -> None:
+        del connection
+        self.items_by_doc[doc_id] = list(embeddings)
+        self.replacements.append((doc_id, list(embeddings)))
 
 
 class SuccessfulStageRunner:

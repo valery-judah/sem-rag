@@ -4,6 +4,7 @@ import hashlib
 
 import pytest
 from fastapi import FastAPI, HTTPException
+from fastapi.routing import APIRoute
 
 from parity.app.deps import get_document_lifecycle_service
 from parity.artifacts import FilesystemArtifactStore
@@ -14,7 +15,7 @@ pytestmark = pytest.mark.anyio
 
 def _upload_endpoint(app: FastAPI):
     for route in app.routes:
-        if getattr(route, "path", None) == "/documents" and "POST" in route.methods:
+        if isinstance(route, APIRoute) and route.path == "/documents" and "POST" in route.methods:
             return route.endpoint
     raise AssertionError("upload route was not found")
 

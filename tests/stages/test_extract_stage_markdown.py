@@ -150,6 +150,9 @@ def test_markdown_extract_records_offsets_when_available(
 
     assert first_block.source_start_offset == 0
     assert first_block.source_end_offset == len("# Title")
+    assert first_block.source_end_offset is not None
+    assert second_block.source_start_offset is not None
+    assert second_block.source_end_offset is not None
     assert second_block.source_start_offset > first_block.source_end_offset
     assert second_block.source_end_offset == second_block.source_start_offset + len(
         "Paragraph text."

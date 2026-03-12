@@ -181,6 +181,7 @@ def test_replay_reconstructs_stage_inputs_from_persisted_traces(
         "es-1"
     ]
     assert reconstructed.context_manifest is not None
+    assert state.context_manifest is not None
     assert (
         reconstructed.context_manifest.ordered_evidence_set_ids
         == state.context_manifest.ordered_evidence_set_ids

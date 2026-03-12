@@ -51,6 +51,7 @@ class CitationRenderer(Protocol):
         policy: QueryPolicy,
     ) -> CitationRenderingResult:
         """Render final citations from provenance-bearing evidence only."""
+        ...
 
 
 class DeterministicCitationRenderer:

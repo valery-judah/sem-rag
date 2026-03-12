@@ -25,16 +25,14 @@ from parity.query.support_assessment import HybridSupportAssessor
 
 
 def _candidate(**overrides: object) -> RetrievedCandidate:
-    payload: dict[str, object] = {
-        "doc_id": "doc-1",
-        "chunk_id": "chunk-1",
-        "heading_path": ["Chapter 1"],
-        "locator": "p. 3",
-        "retrieval_score": 0.9,
-        "retrieval_rank": 1,
-    }
-    payload.update(overrides)
-    return RetrievedCandidate(**payload)
+    return RetrievedCandidate(
+        doc_id="doc-1",
+        chunk_id="chunk-1",
+        heading_path=["Chapter 1"],
+        locator="p. 3",
+        retrieval_score=0.9,
+        retrieval_rank=1,
+    ).model_copy(update=overrides)
 
 
 def _evidence_set(
@@ -107,20 +105,18 @@ def _manifest(
 
 
 def _interpreted_query(**overrides: object) -> InterpretedQuery:
-    payload: dict[str, object] = {
-        "normalized_question": "what uses embeddings",
-        "request_type": QueryRequestType.FACT_LOOKUP,
-        "answer_shape": "direct_answer",
-        "specificity": QuerySpecificity.PRECISE,
-        "scope_hints": ["embeddings"],
-        "requires_synthesis": False,
-        "synthesis_mode": SynthesisMode.NONE,
-        "requires_source_navigation": False,
-        "unsupported_capability_flags": [],
-        "normalization_notes": [],
-    }
-    payload.update(overrides)
-    return InterpretedQuery(**payload)
+    return InterpretedQuery(
+        normalized_question="what uses embeddings",
+        request_type=QueryRequestType.FACT_LOOKUP,
+        answer_shape="direct_answer",
+        specificity=QuerySpecificity.PRECISE,
+        scope_hints=["embeddings"],
+        requires_synthesis=False,
+        synthesis_mode=SynthesisMode.NONE,
+        requires_source_navigation=False,
+        unsupported_capability_flags=[],
+        normalization_notes=[],
+    ).model_copy(update=overrides)
 
 
 def test_support_assessment_marks_unsupported_question_type_as_insufficient() -> None:

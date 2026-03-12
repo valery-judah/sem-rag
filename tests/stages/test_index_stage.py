@@ -10,6 +10,7 @@ from parity.indexing import (
     DeterministicEmbeddingAdapter,
     IndexEntry,
     SqlVectorStore,
+    VectorSearchHit,
 )
 from parity.persistence import (
     DocumentJobStage,
@@ -101,7 +102,9 @@ def test_index_stage_publishes_all_chunks(sql_engine, document_job_factory) -> N
 
     assert len(index_entries.list_for_document(doc_id)) == 2
     assert len(chunk_embeddings.list_for_document(doc_id)) == 2
-    assert documents.get(doc_id).ingest_status is ProcessingStatus.INDEXED
+    document = documents.get(doc_id)
+    assert document is not None
+    assert document.ingest_status is ProcessingStatus.INDEXED
     assert lifecycle_events.list_for_document(doc_id)[-1].to_status is ProcessingStatus.INDEXED
 
 
@@ -138,6 +141,10 @@ class _FailingVectorStore:
             ],
         )
         raise RuntimeError("vector backend write failed")
+
+    def smoke_query(self, *, doc_id: str, text: str, k: int = 1) -> list[VectorSearchHit]:
+        del doc_id, text, k
+        raise NotImplementedError
 
 
 def test_index_stage_cleans_up_partial_publication_on_failure(

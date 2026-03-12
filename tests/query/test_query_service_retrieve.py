@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Any, cast
+
 import pytest
 
 from parity._contracts import ProcessingStatus
@@ -26,6 +28,10 @@ from parity.query.support_assessment import HybridSupportAssessor
 from parity.readmodels import SqlQueryableCorpusReadModel
 
 pytestmark = pytest.mark.anyio
+
+
+def _payload_dict(value: object) -> dict[str, Any]:
+    return cast(dict[str, Any], value)
 
 
 def _read_model(sql_engine) -> SqlQueryableCorpusReadModel:
@@ -103,11 +109,21 @@ def test_execute_until_selection_persists_selection_trace_and_evidence_sets(
     assert state.evidence_sets[0].grouping_mode.value == "single_passage"
     assert len(traces) == 3
     assert [trace.stage_name.value for trace in traces] == ["interpret", "retrieve", "select"]
-    assert traces[1].payload["retrievable_chunk_count"] == 1
-    assert traces[1].payload["candidates"][0]["chunk_id"] == "chunk-ready"
-    assert traces[2].payload["selected_candidates"][0]["chunk_id"] == "chunk-ready"
+    retrieve_payload = _payload_dict(traces[1].payload)
+    select_payload = _payload_dict(traces[2].payload)
+    assert retrieve_payload["retrievable_chunk_count"] == 1
     assert (
-        traces[2].payload["evidence_sets"][0]["evidence_units"][0]["candidate"]["chunk_id"]
+        cast(list[dict[str, Any]], retrieve_payload["candidates"])[0]["chunk_id"] == "chunk-ready"
+    )
+    assert (
+        cast(list[dict[str, Any]], select_payload["selected_candidates"])[0]["chunk_id"]
+        == "chunk-ready"
+    )
+    assert (
+        cast(
+            list[dict[str, Any]],
+            select_payload["evidence_sets"],
+        )[0]["evidence_units"][0]["candidate"]["chunk_id"]
         == "chunk-ready"
     )
 
@@ -131,9 +147,9 @@ def test_execute_until_selection_handles_empty_snapshot(sql_engine) -> None:
     assert state.evidence_sets == []
     assert len(traces) == 3
     assert traces[1].stage_name.value == "retrieve"
-    assert traces[1].payload["candidates"] == []
+    assert _payload_dict(traces[1].payload)["candidates"] == []
     assert traces[2].stage_name.value == "select"
-    assert traces[2].payload["evidence_sets"] == []
+    assert _payload_dict(traces[2].payload)["evidence_sets"] == []
 
 
 def test_execute_until_context_assembly_persists_context_trace_and_manifest(
@@ -192,8 +208,12 @@ def test_execute_until_context_assembly_persists_context_trace_and_manifest(
         "select",
         "assemble_context",
     ]
-    assert traces[3].payload["included_evidence_set_ids"] == ["es-1"]
-    assert traces[3].payload["context_items"][0]["evidence_set_id"] == "es-1"
+    assemble_payload = _payload_dict(traces[3].payload)
+    assert assemble_payload["included_evidence_set_ids"] == ["es-1"]
+    assert (
+        cast(list[dict[str, Any]], assemble_payload["context_items"])[0]["evidence_set_id"]
+        == "es-1"
+    )
 
 
 def test_execute_until_context_assembly_handles_empty_snapshot(sql_engine) -> None:

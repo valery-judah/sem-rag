@@ -53,6 +53,7 @@ class ContextAssembler(Protocol):
         policy: QueryPolicy,
     ) -> ContextAssemblyResult:
         """Return a deterministic context manifest over selected evidence sets."""
+        ...
 
 
 class DeterministicContextAssembler:

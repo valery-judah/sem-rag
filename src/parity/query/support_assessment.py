@@ -77,6 +77,7 @@ class SupportJudge(Protocol):
         policy: QueryPolicy,
     ) -> StructuredSupportJudgment:
         """Return a structured support judgment for the assembled evidence."""
+        ...
 
 
 class DeterministicSupportJudge:

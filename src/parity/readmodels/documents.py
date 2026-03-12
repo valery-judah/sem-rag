@@ -89,27 +89,32 @@ class QueryableCorpusReadModel(Protocol):
         query_started_at: datetime | None = None,
     ) -> CorpusSnapshot:
         """Return a stable query-time corpus snapshot for a workspace."""
+        ...
 
     def list_ready_documents(self, workspace_id: str) -> list[QueryableDocumentRecord]:
         """Return queryable document projections for a workspace."""
+        ...
 
     def list_sections_for_snapshot(
         self,
         snapshot: CorpusSnapshot,
     ) -> list[QueryableSectionRecord]:
         """Return queryable sections for a fixed snapshot."""
+        ...
 
     def list_chunks_for_snapshot(
         self,
         snapshot: CorpusSnapshot,
     ) -> list[QueryableChunkRecord]:
         """Return provenance-bearing queryable chunks for a fixed snapshot."""
+        ...
 
     def list_embedded_chunks_for_snapshot(
         self,
         snapshot: CorpusSnapshot,
     ) -> list[QueryableEmbeddedChunkRecord]:
         """Return provenance-bearing queryable chunks with active embeddings."""
+        ...
 
 
 class SqlQueryableCorpusReadModel:

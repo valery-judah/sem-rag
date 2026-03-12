@@ -60,6 +60,7 @@ class GroundedAnswerGenerator(Protocol):
         policy: QueryPolicy,
     ) -> GroundedGenerationResult:
         """Render the final answer draft under the Stage-6 support ceiling."""
+        ...
 
 
 class DeterministicGroundedAnswerGenerator:

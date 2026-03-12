@@ -144,6 +144,7 @@ class QueryInterpreter(Protocol):
         snapshot: CorpusSnapshot,
     ) -> QueryInterpretationResult:
         """Return a normalized interpretation for a query request."""
+        ...
 
 
 class DeterministicQueryInterpreter:

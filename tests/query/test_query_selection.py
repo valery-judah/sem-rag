@@ -37,20 +37,18 @@ def _read_model(sql_engine) -> SqlQueryableCorpusReadModel:
 
 
 def _base_interpreted_query(**overrides: object) -> InterpretedQuery:
-    payload: dict[str, object] = {
-        "normalized_question": "explain semantic retrieval",
-        "request_type": QueryRequestType.EXPLANATION,
-        "answer_shape": "explanatory paragraph",
-        "specificity": QuerySpecificity.SECTION_SCOPED,
-        "scope_hints": ["retrieval"],
-        "requires_synthesis": False,
-        "synthesis_mode": SynthesisMode.NONE,
-        "requires_source_navigation": False,
-        "unsupported_capability_flags": [],
-        "normalization_notes": [],
-    }
-    payload.update(overrides)
-    return InterpretedQuery(**payload)
+    return InterpretedQuery(
+        normalized_question="explain semantic retrieval",
+        request_type=QueryRequestType.EXPLANATION,
+        answer_shape="explanatory paragraph",
+        specificity=QuerySpecificity.SECTION_SCOPED,
+        scope_hints=["retrieval"],
+        requires_synthesis=False,
+        synthesis_mode=SynthesisMode.NONE,
+        requires_source_navigation=False,
+        unsupported_capability_flags=[],
+        normalization_notes=[],
+    ).model_copy(update=overrides)
 
 
 def test_selector_groups_multiple_same_document_passages_for_explanation(

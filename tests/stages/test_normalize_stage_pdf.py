@@ -223,4 +223,4 @@ def test_pdf_normalize_never_claims_unrecovered_layout_semantics(
     artifact = normalize_stage.run(doc_id)
 
     assert all(block.kind in {"paragraph", "page_break", "heading"} for block in artifact.blocks)
-    assert all("layout" not in block.meta for block in artifact.blocks)
+    assert all(block.meta is None or "layout" not in block.meta for block in artifact.blocks)

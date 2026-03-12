@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import cast
+
 import pytest
 
 from parity._contracts import ProcessingStatus, SourceType
@@ -17,11 +19,15 @@ from parity.lifecycle.service import (
     UnsupportedDocumentError,
 )
 from parity.persistence import DocumentJobStage, DocumentJobStatus
+from parity.stages import RegisterDocumentStage
 from tests.lifecycle.support import (
+    InMemoryChunkEmbeddingRepository,
+    InMemoryChunkRepository,
     InMemoryDocumentRepository,
+    InMemoryIndexEntryRepository,
     InMemoryJobRepository,
     InMemoryLifecycleEventRepository,
-    InMemoryReplaceRepository,
+    InMemorySectionRepository,
     RecordingRegisterStage,
     StubVectorStore,
     make_failure_event,
@@ -30,11 +36,15 @@ from tests.lifecycle.support import (
 )
 
 
+def _register_stage() -> RegisterDocumentStage:
+    return cast(RegisterDocumentStage, RecordingRegisterStage())
+
+
 def test_upload_document_enqueues_extract_when_orchestrator_is_configured() -> None:
     register_stage = RecordingRegisterStage()
     jobs = InMemoryJobRepository()
     service = DocumentLifecycleService(
-        register_stage=register_stage,
+        register_stage=cast(RegisterDocumentStage, register_stage),
         orchestrator=DocumentLifecycleOrchestrator(jobs=jobs),
     )
 
@@ -52,7 +62,7 @@ def test_upload_document_enqueues_extract_when_orchestrator_is_configured() -> N
 
 def test_upload_document_accepts_markdown_and_resolves_title_fallback() -> None:
     register_stage = RecordingRegisterStage()
-    service = DocumentLifecycleService(register_stage=register_stage)
+    service = DocumentLifecycleService(register_stage=cast(RegisterDocumentStage, register_stage))
 
     result = service.upload_document(
         workspace_id="ws-1",
@@ -67,7 +77,7 @@ def test_upload_document_accepts_markdown_and_resolves_title_fallback() -> None:
 
 
 def test_upload_document_rejects_missing_filename() -> None:
-    service = DocumentLifecycleService(register_stage=RecordingRegisterStage())
+    service = DocumentLifecycleService(register_stage=_register_stage())
 
     with pytest.raises(UnsupportedDocumentError, match="must include a filename"):
         service.upload_document(
@@ -79,7 +89,7 @@ def test_upload_document_rejects_missing_filename() -> None:
 
 
 def test_upload_document_rejects_non_utf8_markdown() -> None:
-    service = DocumentLifecycleService(register_stage=RecordingRegisterStage())
+    service = DocumentLifecycleService(register_stage=_register_stage())
 
     with pytest.raises(UnsupportedDocumentError, match="valid UTF-8 text"):
         service.upload_document(
@@ -109,7 +119,7 @@ def test_get_document_status_reports_first_active_job_stage() -> None:
         ]
     )
     service = DocumentLifecycleService(
-        register_stage=RecordingRegisterStage(),
+        register_stage=_register_stage(),
         documents=InMemoryDocumentRepository([document]),
         jobs=jobs,
     )
@@ -122,7 +132,7 @@ def test_get_document_status_reports_first_active_job_stage() -> None:
 
 def test_get_document_status_raises_for_unknown_document() -> None:
     service = DocumentLifecycleService(
-        register_stage=RecordingRegisterStage(),
+        register_stage=_register_stage(),
         documents=InMemoryDocumentRepository(),
     )
 
@@ -132,7 +142,7 @@ def test_get_document_status_raises_for_unknown_document() -> None:
 
 def test_query_document_raises_for_unknown_document() -> None:
     service = DocumentLifecycleService(
-        register_stage=RecordingRegisterStage(),
+        register_stage=_register_stage(),
         documents=InMemoryDocumentRepository(),
     )
 
@@ -143,7 +153,7 @@ def test_query_document_raises_for_unknown_document() -> None:
 def test_query_document_requires_vector_store_configuration() -> None:
     document = make_persisted_document(doc_id="doc-1")
     service = DocumentLifecycleService(
-        register_stage=RecordingRegisterStage(),
+        register_stage=_register_stage(),
         documents=InMemoryDocumentRepository([document]),
     )
 
@@ -157,7 +167,7 @@ def test_retry_document_rejects_ready_document() -> None:
         ingest_status=ProcessingStatus.READY,
     )
     service = DocumentLifecycleService(
-        register_stage=RecordingRegisterStage(),
+        register_stage=_register_stage(),
         documents=InMemoryDocumentRepository([document]),
     )
 
@@ -172,7 +182,7 @@ def test_retry_document_rejects_non_failed_document() -> None:
     )
     jobs = InMemoryJobRepository()
     service = DocumentLifecycleService(
-        register_stage=RecordingRegisterStage(),
+        register_stage=_register_stage(),
         documents=InMemoryDocumentRepository([document]),
         jobs=jobs,
         lifecycle_events=InMemoryLifecycleEventRepository(),
@@ -199,7 +209,7 @@ def test_retry_document_rejects_when_active_job_exists() -> None:
         ]
     )
     service = DocumentLifecycleService(
-        register_stage=RecordingRegisterStage(),
+        register_stage=_register_stage(),
         documents=InMemoryDocumentRepository([document]),
         jobs=jobs,
         lifecycle_events=InMemoryLifecycleEventRepository(
@@ -223,7 +233,7 @@ def test_retry_document_rejects_when_failed_event_has_no_job_stage() -> None:
     event = event.model_copy(update={"detail": {"error_code": "extract_failed"}})
     jobs = InMemoryJobRepository()
     service = DocumentLifecycleService(
-        register_stage=RecordingRegisterStage(),
+        register_stage=_register_stage(),
         documents=InMemoryDocumentRepository([document]),
         jobs=jobs,
         lifecycle_events=InMemoryLifecycleEventRepository([event]),
@@ -244,7 +254,7 @@ def test_retry_document_resets_to_registered_for_extract_retry(tmp_path) -> None
     jobs = InMemoryJobRepository()
     documents = InMemoryDocumentRepository([document])
     service = DocumentLifecycleService(
-        register_stage=RecordingRegisterStage(),
+        register_stage=_register_stage(),
         documents=documents,
         jobs=jobs,
         lifecycle_events=InMemoryLifecycleEventRepository(
@@ -258,7 +268,9 @@ def test_retry_document_resets_to_registered_for_extract_retry(tmp_path) -> None
 
     assert result.ingest_status is ProcessingStatus.REGISTERED
     assert result.queued_stage is DocumentJobStage.EXTRACT
-    assert documents.get(document.doc_id).ingest_status is ProcessingStatus.REGISTERED
+    retried = documents.get(document.doc_id)
+    assert retried is not None
+    assert retried.ingest_status is ProcessingStatus.REGISTERED
     assert jobs.list_for_document(document.doc_id)[0].target_stage is DocumentJobStage.EXTRACT
 
 
@@ -272,7 +284,7 @@ def test_retry_document_resets_to_extracting_for_normalize_retry(tmp_path) -> No
     jobs = InMemoryJobRepository()
     documents = InMemoryDocumentRepository([document])
     service = DocumentLifecycleService(
-        register_stage=RecordingRegisterStage(),
+        register_stage=_register_stage(),
         documents=documents,
         jobs=jobs,
         lifecycle_events=InMemoryLifecycleEventRepository(
@@ -286,7 +298,9 @@ def test_retry_document_resets_to_extracting_for_normalize_retry(tmp_path) -> No
 
     assert result.ingest_status is ProcessingStatus.EXTRACTING
     assert result.queued_stage is DocumentJobStage.NORMALIZE
-    assert documents.get(document.doc_id).ingest_status is ProcessingStatus.EXTRACTING
+    retried = documents.get(document.doc_id)
+    assert retried is not None
+    assert retried.ingest_status is ProcessingStatus.EXTRACTING
 
 
 @pytest.mark.parametrize(
@@ -353,10 +367,10 @@ def test_retry_document_cleans_expected_downstream_state(
     )
     docs = InMemoryDocumentRepository([document])
     jobs = InMemoryJobRepository()
-    sections = InMemoryReplaceRepository({document.doc_id: ["section-1"]})
-    chunks = InMemoryReplaceRepository({document.doc_id: ["chunk-1"]})
-    index_entries = InMemoryReplaceRepository({document.doc_id: ["entry-1"]})
-    chunk_embeddings = InMemoryReplaceRepository({document.doc_id: ["embedding-1"]})
+    sections = InMemorySectionRepository({document.doc_id: []})
+    chunks = InMemoryChunkRepository({document.doc_id: []})
+    index_entries = InMemoryIndexEntryRepository({document.doc_id: []})
+    chunk_embeddings = InMemoryChunkEmbeddingRepository({document.doc_id: []})
     artifact_store.write_raw(
         workspace_id=document.workspace_id,
         doc_id=document.doc_id,
@@ -380,7 +394,7 @@ def test_retry_document_cleans_expected_downstream_state(
         ),
     )
     service = DocumentLifecycleService(
-        register_stage=RecordingRegisterStage(),
+        register_stage=_register_stage(),
         documents=docs,
         jobs=jobs,
         lifecycle_events=InMemoryLifecycleEventRepository(
@@ -435,7 +449,7 @@ def test_get_artifact_refs_returns_existing_and_missing_paths_correctly(tmp_path
         ),
     )
     service = DocumentLifecycleService(
-        register_stage=RecordingRegisterStage(),
+        register_stage=_register_stage(),
         documents=InMemoryDocumentRepository([document]),
         artifact_store=artifact_store,
     )
@@ -457,7 +471,7 @@ def test_query_document_returns_vector_hits() -> None:
         ]
     )
     service = DocumentLifecycleService(
-        register_stage=RecordingRegisterStage(),
+        register_stage=_register_stage(),
         documents=InMemoryDocumentRepository([document]),
         vector_store=vector_store,
     )

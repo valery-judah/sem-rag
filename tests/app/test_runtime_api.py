@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
+from typing import Any, cast
 
 import httpx
 import pytest
 from fastapi import FastAPI, HTTPException
+from fastapi.routing import APIRoute
 from pydantic import ValidationError
 from sqlalchemy.engine import Engine
 
@@ -44,7 +46,7 @@ pytestmark = pytest.mark.anyio
 
 def _route_endpoint(app: FastAPI, *, path: str, method: str):
     for route in app.routes:
-        if getattr(route, "path", None) == path and method in route.methods:
+        if isinstance(route, APIRoute) and route.path == path and method in route.methods:
             return route.endpoint
     raise AssertionError(f"route {method} {path} was not found")
 
@@ -616,9 +618,11 @@ async def test_queries_route_returns_failed_query_id_when_execution_fails(
         )
 
     assert exc_info.value.status_code == 500
-    assert exc_info.value.detail["query_id"] == "qry-failed-route"
-    assert exc_info.value.detail["status"] == "failed"
-    assert exc_info.value.detail["terminal_failure"]["stage_name"] == "render_citations"
+    detail = cast(dict[str, Any], exc_info.value.detail)
+    terminal_failure = cast(dict[str, Any], detail["terminal_failure"])
+    assert detail["query_id"] == "qry-failed-route"
+    assert detail["status"] == "failed"
+    assert terminal_failure["stage_name"] == "render_citations"
 
 
 async def test_http_and_query_logs_are_json_and_correlated(

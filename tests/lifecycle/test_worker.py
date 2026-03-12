@@ -51,7 +51,9 @@ def test_worker_marks_job_failed_when_stage_runner_is_missing() -> None:
     assert result is not None
     assert result.status is DocumentJobStatus.FAILED
     assert result.error_code == "missing_stage_runner"
-    assert documents.get(document.doc_id).ingest_status is ProcessingStatus.FAILED
+    stored = documents.get(document.doc_id)
+    assert stored is not None
+    assert stored.ingest_status is ProcessingStatus.FAILED
     assert lifecycle_events.appended[0].failure_category is FailureCategory.INTERNAL
     assert lifecycle_events.appended[0].detail["job_stage"] == DocumentJobStage.EXTRACT.value
 
@@ -85,7 +87,9 @@ def test_worker_marks_job_failed_on_stage_execution_error() -> None:
     assert result.status is DocumentJobStatus.FAILED
     assert result.error_code == "extract_failed"
     assert result.error_detail == "extract stage failed"
-    assert documents.get(document.doc_id).failure_code == "extract_failed"
+    stored = documents.get(document.doc_id)
+    assert stored is not None
+    assert stored.failure_code == "extract_failed"
     assert lifecycle_events.appended[0].failure_category is FailureCategory.PROCESSING
 
 

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import cast
 
 import pytest
 
@@ -93,11 +94,14 @@ def _upload_markdown_bytes(
 
 
 def _assert_vector_snapshot(snapshot: dict[str, object]) -> None:
-    assert snapshot["chunk_count"] > 0
-    assert snapshot["embedding_count"] > 0
-    assert snapshot["index_entry_count"] > 0
-    assert snapshot["embedding_count"] == snapshot["chunk_count"]
-    assert snapshot["index_entry_count"] == snapshot["chunk_count"]
+    chunk_count = cast(int, snapshot["chunk_count"])
+    embedding_count = cast(int, snapshot["embedding_count"])
+    index_entry_count = cast(int, snapshot["index_entry_count"])
+    assert chunk_count > 0
+    assert embedding_count > 0
+    assert index_entry_count > 0
+    assert embedding_count == chunk_count
+    assert index_entry_count == chunk_count
 
 
 def test_design_exploration_reaches_ready_and_is_queryable(e2e_stack) -> None:

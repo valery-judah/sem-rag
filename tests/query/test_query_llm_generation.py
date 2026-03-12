@@ -43,19 +43,17 @@ class _FakeLlmBackend:
 
 
 def _interpreted_query(**overrides: object) -> InterpretedQuery:
-    payload: dict[str, object] = {
-        "normalized_question": "what uses embeddings to retrieve related passages",
-        "request_type": QueryRequestType.FACT_LOOKUP,
-        "answer_shape": "direct answer",
-        "specificity": QuerySpecificity.PRECISE,
-        "requires_synthesis": False,
-        "synthesis_mode": SynthesisMode.NONE,
-        "requires_source_navigation": False,
-        "unsupported_capability_flags": [],
-        "normalization_notes": [],
-    }
-    payload.update(overrides)
-    return InterpretedQuery(**payload)
+    return InterpretedQuery(
+        normalized_question="what uses embeddings to retrieve related passages",
+        request_type=QueryRequestType.FACT_LOOKUP,
+        answer_shape="direct answer",
+        specificity=QuerySpecificity.PRECISE,
+        requires_synthesis=False,
+        synthesis_mode=SynthesisMode.NONE,
+        requires_source_navigation=False,
+        unsupported_capability_flags=[],
+        normalization_notes=[],
+    ).model_copy(update=overrides)
 
 
 def _context_manifest(*, evidence_set_ids: list[str]) -> ContextManifest:

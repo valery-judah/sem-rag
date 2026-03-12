@@ -114,3 +114,4 @@ class SystemUnderTest(Protocol):
 
     def __call__(self, case: EvaluationCase) -> EvaluationOutput:
         """Execute one case and return retrieval hits plus the answer payload."""
+        ...
