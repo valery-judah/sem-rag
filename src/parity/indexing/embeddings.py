@@ -89,6 +89,11 @@ class SentenceTransformerEmbeddingAdapter(EmbeddingAdapter):
         self._model = (loader or _default_sentence_transformer_loader)(model_name)
 
     def embed_texts(self, texts: Sequence[str]) -> list[list[float]]:
+        import structlog
+
+        structlog.get_logger(__name__).info(
+            "embedding model generated", model_name=self.model_name, count=len(texts)
+        )
         encoded = self._model.encode(
             list(texts),
             normalize_embeddings=True,

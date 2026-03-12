@@ -211,3 +211,121 @@ def test_selector_suppresses_heading_and_locator_duplicates_deterministically(
     assert [candidate.chunk_id for candidate in result.selected_candidates] == ["chunk-a"]
     assert any(decision.drop_reason == "duplicate_suppression" for decision in result.decisions)
     assert result.duplicate_suppression_notes == ["chunk-b suppressed as duplicate of chunk-a"]
+
+
+def test_selector_prefers_scope_matching_documents_for_comparison(
+    sql_engine,
+    persisted_document_factory,
+    chunk_factory,
+) -> None:
+    documents = SqlDocumentRepository(sql_engine)
+    chunks = SqlChunkRepository(sql_engine)
+    documents.create(
+        persisted_document_factory(
+            doc_id="doc-atlas",
+            workspace_id="ws-1",
+            title="Atlas Cache Design",
+            ingest_status=ProcessingStatus.READY,
+        )
+    )
+    documents.create(
+        persisted_document_factory(
+            doc_id="doc-beacon",
+            workspace_id="ws-1",
+            title="Beacon Dashboard Cache",
+            ingest_status=ProcessingStatus.READY,
+        )
+    )
+    documents.create(
+        persisted_document_factory(
+            doc_id="doc-comet",
+            workspace_id="ws-1",
+            title="Comet Background Notes",
+            ingest_status=ProcessingStatus.READY,
+        )
+    )
+    chunks.save(
+        [
+            chunk_factory(
+                doc_id="doc-atlas",
+                chunk_id="chunk-atlas",
+                heading_path=["Atlas", "Caching"],
+                ordinal=0,
+                text="Atlas uses immediate invalidation and write-through caching.",
+            ),
+            chunk_factory(
+                doc_id="doc-beacon",
+                chunk_id="chunk-beacon",
+                heading_path=["Beacon", "Caching"],
+                ordinal=0,
+                text="Beacon uses a 15-minute TTL and allows stale reads.",
+            ),
+            chunk_factory(
+                doc_id="doc-comet",
+                chunk_id="chunk-comet",
+                heading_path=["Comet", "Reports"],
+                ordinal=0,
+                text="Comet runs unrelated overnight batch analytics jobs.",
+            ),
+        ]
+    )
+
+    snapshot = _read_model(sql_engine).capture_snapshot("ws-1")
+    result = DeterministicQuerySelector(corpus_read_model=_read_model(sql_engine)).select(
+        request=QueryRequest(
+            question=(
+                "Compare Atlas and Beacon caching strategies. "
+                "Which system has stricter freshness guarantees?"
+            ),
+            workspace_id="ws-1",
+        ),
+        snapshot=snapshot,
+        interpreted_query=_base_interpreted_query(
+            normalized_question=(
+                "compare atlas and beacon caching strategies which system has "
+                "stricter freshness guarantees"
+            ),
+            request_type=QueryRequestType.COMPARISON,
+            answer_shape="qualified_comparison",
+            specificity=QuerySpecificity.BROAD,
+            scope_hints=["atlas", "beacon", "caching", "freshness"],
+            requires_synthesis=True,
+            synthesis_mode=SynthesisMode.CROSS_DOCUMENT,
+        ),
+        retrieved_candidates=[
+            RetrievedCandidate(
+                doc_id="doc-comet",
+                chunk_id="chunk-comet",
+                section_id="section-comet",
+                heading_path=["Comet", "Reports"],
+                locator="p. 5",
+                retrieval_score=0.99,
+                retrieval_rank=1,
+            ),
+            RetrievedCandidate(
+                doc_id="doc-atlas",
+                chunk_id="chunk-atlas",
+                section_id="section-atlas",
+                heading_path=["Atlas", "Caching"],
+                locator="p. 2",
+                retrieval_score=0.96,
+                retrieval_rank=2,
+            ),
+            RetrievedCandidate(
+                doc_id="doc-beacon",
+                chunk_id="chunk-beacon",
+                section_id="section-beacon",
+                heading_path=["Beacon", "Caching"],
+                locator="p. 4",
+                retrieval_score=0.95,
+                retrieval_rank=3,
+            ),
+        ],
+        policy=QueryPolicyDefaults.build(),
+    )
+
+    assert len(result.evidence_sets) == 1
+    assert [unit.candidate.doc_id for unit in result.evidence_sets[0].evidence_units] == [
+        "doc-atlas",
+        "doc-beacon",
+    ]

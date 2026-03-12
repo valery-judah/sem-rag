@@ -38,6 +38,7 @@ from parity.query.answer_generation import (
     DeterministicGroundedAnswerGenerator,
     GroundedAnswerGenerator,
     MlxGroundedAnswerGenerator,
+    OllamaGroundedAnswerGenerator,
 )
 from parity.query.answer_mode_policy import DeterministicAnswerModePolicy
 from parity.query.context_assembly import DeterministicContextAssembler
@@ -150,7 +151,13 @@ def _build_answer_generator(
             max_new_tokens=max_new_tokens,
             temperature=temperature,
         )
-    raise RuntimeError("PARITY_ANSWER_GENERATOR_BACKEND must be one of: deterministic, mlx")
+    if normalized == "ollama":
+        return OllamaGroundedAnswerGenerator(
+            model_name=model_name,
+            max_new_tokens=max_new_tokens,
+            temperature=temperature,
+        )
+    raise RuntimeError("PARITY_ANSWER_GENERATOR_BACKEND must be one of: deterministic, mlx, ollama")
 
 
 def get_answer_generator() -> GroundedAnswerGenerator:

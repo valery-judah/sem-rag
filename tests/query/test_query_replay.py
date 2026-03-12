@@ -171,9 +171,15 @@ def test_replay_reconstructs_stage_inputs_from_persisted_traces(
     assert reconstructed.snapshot.eligible_doc_ids == ["doc-ready"]
     assert reconstructed.interpreted_query is not None
     assert reconstructed.interpreted_query.request_type.value == "fact_lookup"
-    assert [candidate.chunk_id for candidate in reconstructed.retrieved_candidates] == ["chunk-ready"]
-    assert [candidate.chunk_id for candidate in reconstructed.selected_candidates] == ["chunk-ready"]
-    assert [evidence_set.evidence_set_id for evidence_set in reconstructed.evidence_sets] == ["es-1"]
+    assert [candidate.chunk_id for candidate in reconstructed.retrieved_candidates] == [
+        "chunk-ready"
+    ]
+    assert [candidate.chunk_id for candidate in reconstructed.selected_candidates] == [
+        "chunk-ready"
+    ]
+    assert [evidence_set.evidence_set_id for evidence_set in reconstructed.evidence_sets] == [
+        "es-1"
+    ]
     assert reconstructed.context_manifest is not None
     assert (
         reconstructed.context_manifest.ordered_evidence_set_ids

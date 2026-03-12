@@ -183,3 +183,91 @@ def test_context_assembly_context_items_match_included_evidence_set_ids() -> Non
 
     assert [item.evidence_set_id for item in result.manifest.context_items] == ["es-1"]
     assert result.manifest.included_evidence_set_ids == ["es-1"]
+
+
+def test_context_assembly_prefixes_multi_document_snippets_with_document_titles() -> None:
+    assembler = DeterministicContextAssembler()
+    result = assembler.assemble(
+        request=QueryRequest(
+            question="Compare Atlas and Beacon caching strategies.",
+            workspace_id="ws-1",
+        ),
+        snapshot=_snapshot(),
+        interpreted_query=InterpretedQuery(
+            normalized_question="compare atlas and beacon caching strategies",
+            request_type=QueryRequestType.COMPARISON,
+            answer_shape="qualified_comparison",
+            specificity=QuerySpecificity.BROAD,
+            scope_hints=["atlas", "beacon", "caching"],
+            requires_synthesis=True,
+            synthesis_mode=SynthesisMode.CROSS_DOCUMENT,
+            requires_source_navigation=False,
+            unsupported_capability_flags=[],
+            normalization_notes=[],
+        ),
+        evidence_sets=[
+            EvidenceSet(
+                evidence_set_id="es-1",
+                grouping_mode=EvidenceGroupingMode.MULTI_DOCUMENT,
+                evidence_units=[
+                    EvidenceUnit(
+                        evidence_unit_id="eu-atlas",
+                        candidate=RetrievedCandidate(
+                            doc_id="doc-atlas",
+                            chunk_id="chunk-atlas",
+                            section_id="section-atlas",
+                            heading_path=["Atlas", "Caching"],
+                            locator="p. 2",
+                            retrieval_score=0.9,
+                            retrieval_rank=1,
+                        ),
+                        source_reference=SourceReference(
+                            doc_id="doc-atlas",
+                            document_title="Atlas Cache Design",
+                            snippet="Atlas uses immediate invalidation.",
+                            section_id="section-atlas",
+                            heading_path=["Atlas", "Caching"],
+                            page_label="p. 2",
+                            chunk_id="chunk-atlas",
+                            passage_anchor="doc-atlas#chunk-atlas",
+                        ),
+                        unit_rank=1,
+                        selection_reason="selected for comparison",
+                    ),
+                    EvidenceUnit(
+                        evidence_unit_id="eu-beacon",
+                        candidate=RetrievedCandidate(
+                            doc_id="doc-beacon",
+                            chunk_id="chunk-beacon",
+                            section_id="section-beacon",
+                            heading_path=["Beacon", "Caching"],
+                            locator="p. 4",
+                            retrieval_score=0.89,
+                            retrieval_rank=2,
+                        ),
+                        source_reference=SourceReference(
+                            doc_id="doc-beacon",
+                            document_title="Beacon Dashboard Cache",
+                            snippet="Beacon uses a 15-minute TTL and allows stale reads.",
+                            section_id="section-beacon",
+                            heading_path=["Beacon", "Caching"],
+                            page_label="p. 4",
+                            chunk_id="chunk-beacon",
+                            passage_anchor="doc-beacon#chunk-beacon",
+                        ),
+                        unit_rank=2,
+                        selection_reason="selected for comparison",
+                    ),
+                ],
+                purpose="cross_document_synthesis",
+                coverage_notes=[],
+                conflict_flags=[],
+                assembly_reason="assembled for comparison test",
+            )
+        ],
+        policy=QueryPolicyDefaults.build(),
+    )
+
+    rendered = result.manifest.context_items[0].rendered_text
+    assert "Atlas Cache Design: Atlas uses immediate invalidation." in rendered
+    assert "Beacon Dashboard Cache: Beacon uses a 15-minute TTL and allows stale reads." in rendered

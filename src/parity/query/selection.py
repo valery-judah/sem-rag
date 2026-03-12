@@ -169,6 +169,7 @@ class DeterministicQuerySelector:
                 candidate=candidate,
                 interpreted_query=interpreted_query,
                 chunk=index.chunks_by_id.get(candidate.chunk_id),
+                document=index.documents_by_id.get(candidate.doc_id),
             )
             decisions.append(
                 SelectionDecision(
@@ -263,7 +264,21 @@ class DeterministicQuerySelector:
     ) -> tuple[list[EvidenceSet], list[NeighborExpansionRecord]]:
         units: list[EvidenceUnit] = []
         selected_docs: set[str] = set()
-        for decision in survivors:
+        selected_doc_cap = 2 if interpreted_query.request_type is QueryRequestType.COMPARISON else min(
+            3, policy.evidence_set_cap
+        )
+        comparison_targeted = [
+            decision
+            for decision in survivors
+            if decision.rerank_signals.get("comparison_target_bonus", 0.0) > 0.0
+        ]
+        source_decisions = survivors
+        if interpreted_query.request_type is QueryRequestType.COMPARISON and len(
+            {decision.candidate.doc_id for decision in comparison_targeted}
+        ) >= 2:
+            source_decisions = comparison_targeted
+
+        for decision in source_decisions:
             candidate = decision.candidate
             if candidate.doc_id in selected_docs:
                 continue
@@ -278,7 +293,7 @@ class DeterministicQuerySelector:
                 )
             )
             selected_docs.add(candidate.doc_id)
-            if len(units) >= min(3, policy.evidence_set_cap):
+            if len(units) >= selected_doc_cap:
                 break
         if not units:
             return [], []
@@ -454,12 +469,23 @@ def _compute_rerank_signals(
     candidate: RetrievedCandidate,
     interpreted_query: InterpretedQuery,
     chunk: QueryableChunkRecord | None,
+    document: QueryableDocumentRecord | None,
 ) -> dict[str, float]:
     heading_text = " ".join(candidate.heading_path).lower()
+    chunk_text = "" if chunk is None else chunk.text.lower()
+    document_title = "" if document is None else document.title.lower()
     scope_bonus = 0.0
     for hint in interpreted_query.scope_hints:
         if hint.lower() in heading_text:
             scope_bonus += 0.1
+    comparison_target_bonus = 0.0
+    if interpreted_query.request_type is QueryRequestType.COMPARISON:
+        for hint in interpreted_query.scope_hints:
+            normalized_hint = hint.lower()
+            if normalized_hint in document_title:
+                comparison_target_bonus += 0.35
+            if normalized_hint in chunk_text:
+                comparison_target_bonus += 0.2
     provenance_bonus = 0.1 if candidate.locator and candidate.heading_path else 0.0
     source_navigation_bonus = (
         0.15
@@ -482,6 +508,7 @@ def _compute_rerank_signals(
     return {
         "retrieval_score": candidate.retrieval_score,
         "scope_hint_bonus": scope_bonus,
+        "comparison_target_bonus": comparison_target_bonus,
         "source_navigation_bonus": source_navigation_bonus,
         "local_coherence_bonus": local_coherence_bonus,
         "provenance_bonus": provenance_bonus,

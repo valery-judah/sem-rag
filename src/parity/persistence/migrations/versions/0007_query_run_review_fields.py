@@ -14,7 +14,9 @@ depends_on = None
 def upgrade() -> None:
     """Add completed-at and terminal-failure fields for query review surfaces."""
 
-    op.add_column("query_runs", sa.Column("completed_at", sa.DateTime(timezone=True), nullable=True))
+    op.add_column(
+        "query_runs", sa.Column("completed_at", sa.DateTime(timezone=True), nullable=True)
+    )
     op.add_column("query_runs", sa.Column("terminal_failure_json", sa.JSON(), nullable=True))
 
 

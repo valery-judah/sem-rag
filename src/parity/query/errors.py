@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .contracts import QueryTerminalFailure
 
+
 class QueryError(Exception):
     """Base exception for internal query subsystem failures."""
 

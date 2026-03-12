@@ -130,18 +130,20 @@ def _context_manifest(*, evidence_set_ids: list[str]) -> ContextManifest:
     )
 
 
-def _interpreted_query(*, requires_synthesis: bool = False) -> InterpretedQuery:
-    return InterpretedQuery(
-        normalized_question="what uses embeddings to retrieve related passages",
-        request_type=QueryRequestType.FACT_LOOKUP,
-        answer_shape="direct answer",
-        specificity=QuerySpecificity.PRECISE,
-        requires_synthesis=requires_synthesis,
-        synthesis_mode=SynthesisMode.CROSS_DOCUMENT if requires_synthesis else SynthesisMode.NONE,
-        requires_source_navigation=False,
-        unsupported_capability_flags=[],
-        normalization_notes=[],
-    )
+def _interpreted_query(*, requires_synthesis: bool = False, **overrides: object) -> InterpretedQuery:
+    payload: dict[str, object] = {
+        "normalized_question": "what uses embeddings to retrieve related passages",
+        "request_type": QueryRequestType.FACT_LOOKUP,
+        "answer_shape": "direct answer",
+        "specificity": QuerySpecificity.PRECISE,
+        "requires_synthesis": requires_synthesis,
+        "synthesis_mode": SynthesisMode.CROSS_DOCUMENT if requires_synthesis else SynthesisMode.NONE,
+        "requires_source_navigation": False,
+        "unsupported_capability_flags": [],
+        "normalization_notes": [],
+    }
+    payload.update(overrides)
+    return InterpretedQuery(**payload)
 
 
 def test_grounded_generator_returns_direct_answer_with_grounded_ids() -> None:
@@ -250,3 +252,54 @@ def test_citation_renderer_returns_multi_document_citations_for_synthesis() -> N
 
     assert len(result.citation_bundle.citations) == 2
     assert result.citation_bundle.material_doc_ids == ["doc-1", "doc-2"]
+
+
+def test_grounded_generator_returns_comparison_answer_that_mentions_both_documents() -> None:
+    generator = DeterministicGroundedAnswerGenerator()
+
+    result = generator.generate(
+        request=QueryRequest(
+            question="Compare Atlas and Beacon caching strategies. Which is stricter?",
+            workspace_id="ws-1",
+        ),
+        snapshot=CorpusSnapshot(workspace_id="ws-1", eligible_doc_ids=["doc-atlas", "doc-beacon"]),
+        interpreted_query=_interpreted_query(
+            requires_synthesis=True,
+            normalized_question="compare atlas and beacon caching strategies which is stricter",
+            request_type=QueryRequestType.COMPARISON,
+            answer_shape="qualified_comparison",
+            specificity=QuerySpecificity.BROAD,
+        ),
+        context_manifest=ContextManifest(
+            ordered_evidence_set_ids=["es-1"],
+            included_evidence_set_ids=["es-1"],
+            inclusion_reasons={"es-1": "included_within_budget"},
+            token_budget=4000,
+            token_budget_used=64,
+            context_items=[
+                ContextItem(
+                    evidence_set_id="es-1",
+                    assembly_rank=1,
+                    rendered_text=(
+                        "Atlas Cache Design | cross_document_synthesis | Atlas > Caching\n"
+                        "[p. 2] Atlas Cache Design: Atlas uses a write-through cache and immediate invalidation.\n"
+                        "[p. 4] Beacon Dashboard Cache: Beacon uses a 15-minute TTL and allows stale reads."
+                    ),
+                    contributing_doc_ids=["doc-atlas", "doc-beacon"],
+                    heading_paths=[["Atlas", "Caching"], ["Beacon", "Caching"]],
+                    locators=["p. 2", "p. 4"],
+                    estimated_token_count=32,
+                )
+            ],
+        ),
+        support_assessment=SupportAssessment(support_state=SupportState.SUFFICIENT),
+        answer_mode_decision=AnswerModeDecision(
+            answer_mode=AnswerMode.DIRECT_ANSWER,
+            rationale="Sufficient support allows a direct answer.",
+            based_on_support_state=SupportState.SUFFICIENT,
+        ),
+        policy=QueryPolicyDefaults.build(),
+    )
+
+    assert "Atlas Cache Design has stricter freshness guarantees" in result.answer_draft.answer_text
+    assert "Beacon Dashboard Cache is looser" in result.answer_draft.answer_text

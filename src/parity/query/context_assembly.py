@@ -187,6 +187,7 @@ def _render_context_item(
     title = primary.source_reference.document_title
     heading = _render_heading_path(primary)
     rendered_lines.append(f"{title} | {evidence_set.purpose} | {heading}")
+    is_multi_document = len({unit.source_reference.doc_id for unit in units}) > 1
 
     for unit in units:
         unit_key = (
@@ -214,7 +215,12 @@ def _render_context_item(
         if not snippet:
             continue
         locator_prefix = f"[{locator}] " if locator else ""
-        rendered_lines.append(f"{locator_prefix}{snippet}")
+        if is_multi_document:
+            rendered_lines.append(
+                f"{locator_prefix}{unit.source_reference.document_title}: {snippet}"
+            )
+        else:
+            rendered_lines.append(f"{locator_prefix}{snippet}")
 
     rendered_text = "\n".join(line for line in rendered_lines if line.strip()).strip()
     if len(rendered_lines) <= 1 or not rendered_text:

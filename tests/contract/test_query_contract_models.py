@@ -27,12 +27,12 @@ from parity.query import (
     QueryRun,
     QueryRunStatus,
     QuerySpecificity,
+    QueryTerminalFailure,
     RetrievedCandidate,
     SupportAssessment,
     SupportQualifierReason,
     SupportState,
     SynthesisMode,
-    QueryTerminalFailure,
     TrustFailureLabel,
     UnsupportedCapability,
 )

@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, Field
 import structlog
+from pydantic import BaseModel, ConfigDict, Field
 
 from .contracts import (
     AnswerMode,
@@ -244,7 +244,9 @@ def _build_trace_timing_summary(traces: list[QueryStageTrace]) -> QueryTraceTimi
         )
         for trace in traces
     ]
-    durations = [summary.duration_ms for summary in stage_summaries if summary.duration_ms is not None]
+    durations = [
+        summary.duration_ms for summary in stage_summaries if summary.duration_ms is not None
+    ]
     return QueryTraceTimingSummary(
         trace_count=len(traces),
         total_duration_ms=None if not durations else sum(durations),

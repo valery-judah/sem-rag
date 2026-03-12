@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from pydantic import BaseModel, ConfigDict, Field
 import structlog
+from pydantic import BaseModel, ConfigDict, Field
 
 from .contracts import (
     AnswerDraft,

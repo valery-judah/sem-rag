@@ -32,6 +32,13 @@ services:
     environment:
       DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-parity}:${POSTGRES_PASSWORD:-parity}@db:5432/${POSTGRES_DB:-parity}
       PARITY_ARTIFACT_ROOT: /artifacts
+      PARITY_EMBEDDING_BACKEND: ${PARITY_EMBEDDING_BACKEND:-sentence-transformers}
+      PARITY_ANSWER_GENERATOR_BACKEND: ${PARITY_ANSWER_GENERATOR_BACKEND:-ollama}
+      PARITY_ANSWER_GENERATOR_MODEL: ${PARITY_ANSWER_GENERATOR_MODEL:-llama3.2:1b}
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://ollama:11434}
+      TORCH_COMPILE_DISABLE: 1
+      TORCHINDUCTOR_CACHE_DIR: /tmp/torch_cache
+      HF_HOME: /tmp/hf_cache
     volumes:
       - ./data:/artifacts
     restart: "no"
@@ -49,6 +56,13 @@ services:
     environment:
       DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-parity}:${POSTGRES_PASSWORD:-parity}@db:5432/${POSTGRES_DB:-parity}
       PARITY_ARTIFACT_ROOT: /artifacts
+      PARITY_EMBEDDING_BACKEND: ${PARITY_EMBEDDING_BACKEND:-sentence-transformers}
+      PARITY_ANSWER_GENERATOR_BACKEND: ${PARITY_ANSWER_GENERATOR_BACKEND:-ollama}
+      PARITY_ANSWER_GENERATOR_MODEL: ${PARITY_ANSWER_GENERATOR_MODEL:-llama3.2:1b}
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://ollama:11434}
+      TORCH_COMPILE_DISABLE: 1
+      TORCHINDUCTOR_CACHE_DIR: /tmp/torch_cache
+      HF_HOME: /tmp/hf_cache
       PORT: "${PORT:-8000}"
     volumes:
       - ./data:/artifacts
@@ -81,10 +95,25 @@ services:
     environment:
       DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-parity}:${POSTGRES_PASSWORD:-parity}@db:5432/${POSTGRES_DB:-parity}
       PARITY_ARTIFACT_ROOT: /artifacts
+      PARITY_EMBEDDING_BACKEND: ${PARITY_EMBEDDING_BACKEND:-sentence-transformers}
+      PARITY_ANSWER_GENERATOR_BACKEND: ${PARITY_ANSWER_GENERATOR_BACKEND:-ollama}
+      PARITY_ANSWER_GENERATOR_MODEL: ${PARITY_ANSWER_GENERATOR_MODEL:-llama3.2:1b}
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://ollama:11434}
+      TORCH_COMPILE_DISABLE: 1
+      TORCHINDUCTOR_CACHE_DIR: /tmp/torch_cache
+      HF_HOME: /tmp/hf_cache
       PARITY_WORKER_POLL_SECONDS: "${PARITY_WORKER_POLL_SECONDS:-0.1}"
     volumes:
       - ./data:/artifacts
     restart: unless-stopped
 
+  ollama:
+    image: ollama/ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+
 volumes:
   db-data:
+  ollama-data:

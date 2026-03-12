@@ -1,7 +1,6 @@
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict
 
 
 @dataclass
@@ -33,7 +32,7 @@ def print_row(name: str, stats: Stats, indent: int = 0):
 def main():
     target_dirs = ["src", "tests"]
 
-    dir_stats: Dict[Path, Stats] = defaultdict(Stats)
+    dir_stats: dict[Path, Stats] = defaultdict(Stats)
     overall_stats = Stats()
 
     for d in target_dirs:
@@ -81,7 +80,9 @@ def main():
         if p in dir_stats:
             print_row(str(p), dir_stats[p], indent=0)
 
-            subdirs = [subdir for subdir in dir_stats.keys() if subdir.is_relative_to(p) and subdir != p]
+            subdirs = [
+                subdir for subdir in dir_stats.keys() if subdir.is_relative_to(p) and subdir != p
+            ]
             subdirs.sort()
 
             for subdir in subdirs:

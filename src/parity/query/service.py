@@ -6,9 +6,10 @@ import hashlib
 from datetime import datetime
 from uuid import uuid4
 
-from parity.readmodels import QueryableCorpusReadModel
 import structlog
 from structlog.contextvars import bind_contextvars, unbind_contextvars
+
+from parity.readmodels import QueryableCorpusReadModel
 
 from .answer_generation import DeterministicGroundedAnswerGenerator, GroundedAnswerGenerator
 from .answer_mode_policy import AnswerModePolicy
@@ -587,7 +588,9 @@ class QueryService:
                 error_code=terminal_failure.error_code,
                 error_class=terminal_failure.error_class,
                 message=terminal_failure.message,
-                trust_failure_labels=[label.value for label in terminal_failure.trust_failure_labels],
+                trust_failure_labels=[
+                    label.value for label in terminal_failure.trust_failure_labels
+                ],
             )
             raise QueryExecutionFailedError(
                 query_id=state.run.query_id,

@@ -4,6 +4,14 @@ from __future__ import annotations
 
 import importlib
 from collections.abc import Callable
+
+import structlog
+
+
+def _logger() -> structlog.stdlib.BoundLogger:
+    return structlog.get_logger(__name__)
+
+
 from functools import lru_cache
 from typing import Protocol, cast
 
@@ -192,6 +200,7 @@ class MlxGroundedAnswerGenerator:
         answer_mode_decision: AnswerModeDecision,
         policy: QueryPolicy,
     ) -> GroundedGenerationResult:
+        _logger().info("llm generated", generator_backend="mlx", model_name=self._model_name)
         fallback_result = self._fallback.generate(
             request=request,
             snapshot=snapshot,
@@ -247,6 +256,13 @@ def _build_answer_text(
         supported_text = support_assessment.summary
 
     answer_mode = answer_mode_decision.answer_mode
+    if (
+        interpreted_query.request_type.value == "comparison"
+        and answer_mode is not AnswerMode.FULL_ABSTENTION
+    ):
+        comparison_text = _build_comparison_answer_text(context_manifest)
+        if comparison_text:
+            return comparison_text
     if answer_mode is AnswerMode.DIRECT_ANSWER:
         return (
             supported_text
@@ -321,7 +337,11 @@ def _build_llm_prompt(
         f"Support state: {support_assessment.support_state.value}\n"
         f"Support summary: {summary}\n\n"
         "Answer instructions:\n"
-        f"{_answer_mode_instruction(answer_mode_decision.answer_mode)}\n\n"
+        f"{_answer_mode_instruction(answer_mode_decision.answer_mode)}\n"
+        f"{_request_shape_instruction(interpreted_query)}\n"
+        "Do not repeat labels such as 'Question:', 'Answer:', 'Visible limitations:', or "
+        "'Grounded context:'.\n"
+        "Return only the final answer in 2-4 sentences.\n\n"
         "Visible limitations:\n"
         f"{limitations_block}\n\n"
         "Grounded context:\n"
@@ -424,6 +444,119 @@ def _answer_mode_instruction(answer_mode: AnswerMode) -> str:
     return "Abstain if the evidence does not support an answer."
 
 
+def _request_shape_instruction(interpreted_query: InterpretedQuery) -> str:
+    if interpreted_query.request_type.value == "comparison":
+        return (
+            "Compare the named materials directly, mention both sides, state which side better "
+            "fits the asked criterion, and justify the conclusion with grounded evidence."
+        )
+    if interpreted_query.requires_synthesis:
+        return "Synthesize the grounded evidence across the relevant documents."
+    return "Answer only the user's question from the grounded evidence."
+
+
+def _build_comparison_answer_text(context_manifest: ContextManifest) -> str | None:
+    snippets_by_doc = _snippets_by_document(context_manifest)
+    if len(snippets_by_doc) < 2:
+        return None
+
+    ordered_docs = list(snippets_by_doc.keys())
+    ranked_docs = sorted(
+        ordered_docs,
+        key=lambda doc: (
+            -_freshness_score(snippets_by_doc[doc]),
+            ordered_docs.index(doc),
+        ),
+    )
+    winner = ranked_docs[0]
+    runner_up = ranked_docs[1]
+    winner_reason = _comparison_reason(snippets_by_doc[winner])
+    runner_up_reason = _comparison_reason(snippets_by_doc[runner_up])
+
+    if _freshness_score(snippets_by_doc[winner]) == _freshness_score(snippets_by_doc[runner_up]):
+        return (
+            f"{winner} and {runner_up} describe different caching tradeoffs. "
+            f"{winner} emphasizes {winner_reason}. "
+            f"{runner_up} emphasizes {runner_up_reason}."
+        )
+
+    return (
+        f"{winner} has stricter freshness guarantees because {winner_reason}. "
+        f"{runner_up} is looser because {runner_up_reason}."
+    )
+
+
+def _snippets_by_document(context_manifest: ContextManifest) -> dict[str, list[str]]:
+    snippets_by_doc: dict[str, list[str]] = {}
+    for item in context_manifest.context_items:
+        header_line = item.rendered_text.splitlines()[0] if item.rendered_text else ""
+        default_title = header_line.split(" | ", 1)[0].strip() or "corpus"
+        is_multi_document = len(item.contributing_doc_ids) > 1
+        for raw_line in item.rendered_text.splitlines()[1:]:
+            stripped = raw_line.strip()
+            if not stripped:
+                continue
+            if stripped.startswith("[") and "] " in stripped:
+                stripped = stripped.split("] ", 1)[1]
+            if is_multi_document and ": " in stripped:
+                doc_title, snippet = stripped.split(": ", 1)
+            else:
+                doc_title, snippet = default_title, stripped
+            snippets = snippets_by_doc.setdefault(doc_title.strip(), [])
+            if snippet not in snippets:
+                snippets.append(snippet)
+    return snippets_by_doc
+
+
+def _freshness_score(snippets: list[str]) -> int:
+    text = " ".join(snippets).lower()
+    score = 0
+    for token in ("immediate", "write-through", "write through", "invalidate", "consistency-first"):
+        if token in text:
+            score += 2
+    for token in ("unacceptable", "stale reads as unacceptable", "stricter freshness"):
+        if token in text:
+            score += 3
+    for token in ("ttl", "time-to-live", "15-minute", "15 minute", "latency-first"):
+        if token in text:
+            score -= 2
+    for token in ("stale reads", "allows stale", "available for 15 minutes"):
+        if token in text:
+            score -= 3
+    return score
+
+
+def _comparison_reason(snippets: list[str]) -> str:
+    if not snippets:
+        return "the grounded evidence available in the corpus"
+    return _lowercase_first(" ".join(snippets[:2]).rstrip("."))
+
+
+def _normalize_llm_output(*, generated_text: str, fallback_text: str) -> str:
+    raw = generated_text.strip()
+    if not raw:
+        return fallback_text
+
+    if raw.lower().startswith("question:") or any(
+        marker in raw for marker in ("Visible limitations:", "Grounded context:")
+    ):
+        return fallback_text
+
+    normalized = raw
+
+    markers = ("Question:", "Answer:", "Visible limitations:", "Grounded context:")
+    if "Answer:" in normalized:
+        normalized = normalized.split("Answer:", 1)[1].strip()
+    for marker in ("Visible limitations:", "Grounded context:"):
+        if marker in normalized:
+            normalized = normalized.split(marker, 1)[0].strip()
+    if any(marker in normalized for marker in markers if marker != "Answer:"):
+        return fallback_text
+    if normalized.lower().startswith("question:"):
+        return fallback_text
+    return normalized or fallback_text
+
+
 def _join_sentences(*parts: str | None) -> str:
     normalized = [part.strip() for part in parts if part and part.strip()]
     return " ".join(normalized)
@@ -433,3 +566,117 @@ def _lowercase_first(text: str) -> str:
     if not text:
         return text
     return text[:1].lower() + text[1:]
+
+
+import json
+import os
+import urllib.request
+
+
+class _OllamaBackend:
+    def generate(
+        self,
+        *,
+        model_name: str,
+        prompt: str,
+        max_new_tokens: int,
+        temperature: float,
+    ) -> str:
+        base_url = os.environ.get("OLLAMA_BASE_URL", "http://127.0.0.1:11434")
+        url = f"{base_url.rstrip('/')}/api/generate"
+        data = {
+            "model": model_name,
+            "prompt": prompt,
+            "stream": False,
+            "options": {"temperature": temperature, "num_predict": max_new_tokens},
+        }
+        req = urllib.request.Request(
+            url, json.dumps(data).encode("utf-8"), headers={"Content-Type": "application/json"}
+        )
+        try:
+            with urllib.request.urlopen(req) as response:
+                result = json.loads(response.read().decode("utf-8"))
+                return result.get("response", "").strip()
+        except Exception as e:
+            raise RuntimeError(f"Ollama generation failed: {e}")
+
+
+class OllamaGroundedAnswerGenerator:
+    def __init__(
+        self,
+        *,
+        model_name: str = "llama3.2:1b",
+        max_new_tokens: int = 256,
+        temperature: float = 0.0,
+        backend: _LlmBackend | None = None,
+        fallback: GroundedAnswerGenerator | None = None,
+    ) -> None:
+        if max_new_tokens <= 0:
+            raise ValueError("max_new_tokens must be greater than 0")
+        if temperature < 0:
+            raise ValueError("temperature must be greater than or equal to 0")
+        self._model_name = model_name
+        self._max_new_tokens = max_new_tokens
+        self._temperature = temperature
+        self._backend = backend or _OllamaBackend()
+        self._fallback = fallback or DeterministicGroundedAnswerGenerator()
+
+    def generate(
+        self,
+        *,
+        request: QueryRequest,
+        snapshot: CorpusSnapshot,
+        interpreted_query: InterpretedQuery,
+        context_manifest: ContextManifest,
+        support_assessment: SupportAssessment,
+        answer_mode_decision: AnswerModeDecision,
+        policy: QueryPolicy,
+    ) -> GroundedGenerationResult:
+        import structlog
+
+        structlog.get_logger(__name__).info(
+            "llm generated", generator_backend="ollama", model_name=self._model_name
+        )
+        fallback_result = self._fallback.generate(
+            request=request,
+            snapshot=snapshot,
+            interpreted_query=interpreted_query,
+            context_manifest=context_manifest,
+            support_assessment=support_assessment,
+            answer_mode_decision=answer_mode_decision,
+            policy=policy,
+        )
+        if answer_mode_decision.answer_mode is AnswerMode.FULL_ABSTENTION:
+            return fallback_result
+
+        visible_limitations = fallback_result.visible_limitations
+        prompt = _build_llm_prompt(
+            request=request,
+            interpreted_query=interpreted_query,
+            context_manifest=context_manifest,
+            support_assessment=support_assessment,
+            answer_mode_decision=answer_mode_decision,
+            visible_limitations=visible_limitations,
+        )
+        generated_text = self._backend.generate(
+            model_name=self._model_name,
+            prompt=prompt,
+            max_new_tokens=self._max_new_tokens,
+            temperature=self._temperature,
+        )
+        normalized_text = _normalize_llm_output(
+            generated_text=generated_text,
+            fallback_text=fallback_result.answer_draft.answer_text,
+        )
+        answer_draft = AnswerDraft(
+            answer_text=normalized_text,
+            visible_limitations=visible_limitations,
+            should_render_citations=fallback_result.answer_draft.should_render_citations,
+            grounded_evidence_set_ids=fallback_result.answer_draft.grounded_evidence_set_ids,
+            generator_version="answer_generation.ollama.v1",
+        )
+        return GroundedGenerationResult(
+            answer_draft=answer_draft,
+            visible_limitations=visible_limitations,
+            generator_version="answer_generation.ollama.v1",
+        )

@@ -41,4 +41,4 @@ Describe what is already true, what changed recently, and what still matters.
 - List the tests, checks, or evidence needed before closure.
 
 ## Linked artifacts
-- Add related notes, decisions, evidence, ADRs, and evergreen docs here when they exist.
+- [`01_local_llm_runtime_note.md`](./01_local_llm_runtime_note.md): Current implementation note for optional local embeddings, local answer generation, and the multi-document comparison smoke harness.
