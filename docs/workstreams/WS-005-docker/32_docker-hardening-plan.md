@@ -12,7 +12,7 @@ The hardening work remained intentionally scoped to the current runtime shape:
 
 * keep separate `db`, `migrate`, `api`, and `worker` services
 * keep one shared application image
-* keep `python -m parity.runtime` as the container entrypoint
+* keep `python -m doc_forge.runtime` as the container entrypoint
 
 This was not a runtime-topology refactor, and it does not promote any stable public FastAPI contract.
 
@@ -54,9 +54,9 @@ The following ideas from the reference snippets were compatible with the current
 
 These ideas were translated into current repo terminology and layout:
 
-* package and runtime name remains `parity`
-* runtime environment variables remain `DATABASE_URL`, `PARITY_ARTIFACT_ROOT`, `PORT`, and `PARITY_WORKER_POLL_SECONDS`
-* local Compose operator variables may additionally expose `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_PORT`, `PARITY_UID`, and `PARITY_GID`
+* package and runtime name remains `doc_forge`
+* runtime environment variables remain `DATABASE_URL`, `DOC_FORGE_ARTIFACT_ROOT`, `PORT`, and `DOC_FORGE_WORKER_POLL_SECONDS`
+* local Compose operator variables may additionally expose `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_PORT`, `DOC_FORGE_UID`, and `DOC_FORGE_GID`
 * runtime commands remain `api`, `worker`, and `migrate`
 
 ## Deferred Or Rejected Ideas
@@ -91,7 +91,7 @@ Implemented changes:
   * copy `src/`
   * run `uv sync --frozen --no-dev`
 * clear the uv cache after each sync step
-* keep `ENTRYPOINT ["python", "-m", "parity.runtime"]`
+* keep `ENTRYPOINT ["python", "-m", "doc_forge.runtime"]`
 * keep `CMD ["api"]`
 * add a dedicated non-root runtime user in the image
 * keep `/app` plus image-local `/artifacts` owned by that user
@@ -110,11 +110,11 @@ Implemented changes:
   * `POSTGRES_PASSWORD`
   * `POSTGRES_PORT`
   * `PORT`
-  * `PARITY_WORKER_POLL_SECONDS`
-  * `PARITY_UID`
-  * `PARITY_GID`
+  * `DOC_FORGE_WORKER_POLL_SECONDS`
+  * `DOC_FORGE_UID`
+  * `DOC_FORGE_GID`
 * derive service `DATABASE_URL` values from those Compose variables
-* keep `PARITY_ARTIFACT_ROOT=/artifacts`
+* keep `DOC_FORGE_ARTIFACT_ROOT=/artifacts`
 * add a named Postgres volume for database persistence
 * keep the artifact bind mount for the current filesystem-backed workflow
 * add `init: true`
@@ -130,7 +130,7 @@ The readiness semantics were tightened before `/readyz` was used as the main con
 Implemented changes:
 
 * `/readyz` now verifies database connectivity instead of only constructing runtime dependencies
-* `/readyz` now verifies that `PARITY_ARTIFACT_ROOT` exists and is writable
+* `/readyz` now verifies that `DOC_FORGE_ARTIFACT_ROOT` exists and is writable
 * the filesystem artifact store gained a small write probe used by readiness checks
 * `make docker-smoke` is now meaningful as a compose-path readiness check because it depends on the tighter `/readyz` behavior
 
@@ -164,7 +164,7 @@ The Docker-backed e2e harness also gained better diagnostics while this hardenin
 Implemented changes:
 
 * failed e2e tests now emit a fuller stack failure report with container state, artifact-tree detail, tracked-document diagnostics, lifecycle events, vector snapshot detail, and container logs
-* `PARITY_E2E_VERBOSE=1` now enables step-by-step e2e progress logs during Docker-backed runs
+* `DOC_FORGE_E2E_VERBOSE=1` now enables step-by-step e2e progress logs during Docker-backed runs
 
 ### Docs
 

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from parity.lifecycle.status import ProcessingStatus
+from doc_forge.lifecycle.status import ProcessingStatus
 
 
 class LifecycleInvariantError(ValueError):

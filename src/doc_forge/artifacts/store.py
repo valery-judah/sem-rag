@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path, PurePosixPath
 from uuid import uuid4
 
-from parity._contracts import SourceType
+from doc_forge._contracts import SourceType
 
 from .schemas import ExtractedArtifact, NormalizedArtifact, RawArtifactRef
 
@@ -130,7 +130,7 @@ class FilesystemArtifactStore:
         """Create the managed root if needed and verify it is writable."""
 
         self._root.mkdir(parents=True, exist_ok=True)
-        probe_path = self._root / f".parity-write-probe-{uuid4().hex}"
+        probe_path = self._root / f".doc_forge-write-probe-{uuid4().hex}"
         probe_path.write_text("", encoding="utf-8")
         probe_path.unlink()
 

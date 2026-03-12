@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from parity.artifacts import FilesystemArtifactStore, NormalizedArtifact
+from doc_forge.artifacts import FilesystemArtifactStore, NormalizedArtifact
 
 
 def test_normalized_artifact_store_round_trips_fixture_snapshot(tmp_path: Path) -> None:

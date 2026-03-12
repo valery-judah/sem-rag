@@ -7,18 +7,18 @@ from uuid import uuid4
 
 from sqlalchemy.engine import Engine
 
-from parity._contracts import ProcessingStatus
-from parity.artifacts import ExtractedArtifact, FilesystemArtifactStore, RawArtifactRef
-from parity.extractors import ExtractorRegistry
-from parity.lifecycle import LifecycleEvent, LifecycleInvariantError, LifecycleStage
-from parity.persistence import (
+from doc_forge._contracts import ProcessingStatus
+from doc_forge.artifacts import ExtractedArtifact, FilesystemArtifactStore, RawArtifactRef
+from doc_forge.extractors import ExtractorRegistry
+from doc_forge.lifecycle import LifecycleEvent, LifecycleInvariantError, LifecycleStage
+from doc_forge.persistence import (
     DocumentJob,
     DocumentJobStage,
     DocumentRepository,
     LifecycleEventRepository,
     PersistedDocument,
 )
-from parity.stages.base import StageExecutionError, StageRunner
+from doc_forge.stages.base import StageExecutionError, StageRunner
 
 
 class DocumentExtractionError(RuntimeError):

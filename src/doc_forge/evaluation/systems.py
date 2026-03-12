@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Protocol
 
-from parity._contracts import Answer, RetrievalHit
+from doc_forge._contracts import Answer, RetrievalHit
 
 from .fixtures import (
     build_insufficient_evidence_corpus_question_seam,

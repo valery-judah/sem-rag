@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from typing import Protocol
 
-from parity.lifecycle import FailureCategory
-from parity.persistence import DocumentJob, DocumentJobStage
+from doc_forge.lifecycle import FailureCategory
+from doc_forge.persistence import DocumentJob, DocumentJobStage
 
 
 class StageExecutionError(RuntimeError):

@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import pytest
 
-from parity._contracts import SourceReference
-from parity.query.answer_generation import DeterministicGroundedAnswerGenerator
-from parity.query.citation_rendering import DeterministicCitationRenderer
-from parity.query.contracts import (
+from doc_forge._contracts import SourceReference
+from doc_forge.query.answer_generation import DeterministicGroundedAnswerGenerator
+from doc_forge.query.citation_rendering import DeterministicCitationRenderer
+from doc_forge.query.contracts import (
     AnswerDraft,
     AnswerMode,
     AnswerModeDecision,
@@ -25,8 +25,8 @@ from parity.query.contracts import (
     SupportState,
     SynthesisMode,
 )
-from parity.query.errors import QueryStageContractViolationError
-from parity.query.policies import QueryPolicyDefaults
+from doc_forge.query.errors import QueryStageContractViolationError
+from doc_forge.query.policies import QueryPolicyDefaults
 
 
 def _candidate(
@@ -282,8 +282,10 @@ def test_grounded_generator_returns_comparison_answer_that_mentions_both_documen
                     assembly_rank=1,
                     rendered_text=(
                         "Atlas Cache Design | cross_document_synthesis | Atlas > Caching\n"
-                        "[p. 2] Atlas Cache Design: Atlas uses a write-through cache and immediate invalidation.\n"
-                        "[p. 4] Beacon Dashboard Cache: Beacon uses a 15-minute TTL and allows stale reads."
+                        "[p. 2] Atlas Cache Design: Atlas uses a write-through cache "
+                        "and immediate invalidation.\n"
+                        "[p. 4] Beacon Dashboard Cache: Beacon uses a 15-minute TTL "
+                        "and allows stale reads."
                     ),
                     contributing_doc_ids=["doc-atlas", "doc-beacon"],
                     heading_paths=[["Atlas", "Caching"], ["Beacon", "Caching"]],

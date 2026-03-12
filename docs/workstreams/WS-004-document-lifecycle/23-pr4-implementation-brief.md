@@ -15,8 +15,8 @@ updated: 2026-03-11
 - Keep the runtime internal-only and preserve the locked lifecycle status seam.
 
 ## Implementation Changes
-- Add `src/parity/lifecycle/orchestrator.py` and `src/parity/lifecycle/worker.py`.
-- Add `src/parity/stages/base.py` for shared stage runner and failure types.
+- Add `src/doc_forge/lifecycle/orchestrator.py` and `src/doc_forge/lifecycle/worker.py`.
+- Add `src/doc_forge/stages/base.py` for shared stage runner and failure types.
 - Extend `DocumentJobRepository` with queue claim, active-job, succeed, and fail helpers.
 - Wire orchestration into `DocumentLifecycleService.upload_document(...)`.
 

@@ -4,7 +4,7 @@
 Build a deterministic, pytest-first evaluation harness that protects the MVP trust invariants already described in [`mvp.md`](/home/val/projects/sem-rag/docs/evergreen/mvp.md): supported cross-document answers, inspectable provenance, and honest insufficient-evidence behavior. The first slice will not target a future ingest pipeline or expose a user-facing eval CLI; it will run against committed synthetic fixtures and today’s contract seam plus retrieval demo.
 
 ## Implementation Changes
-- Add an internal evaluation package under `src/parity/evaluation/` and keep it out of `parity.__all__` so the public stable API remains unchanged.
+- Add an internal evaluation package under `src/doc_forge/evaluation/` and keep it out of `doc_forge.__all__` so the public stable API remains unchanged.
 - Define internal harness types:
   - `EvaluationCase`: case id, scenario name, question, expected outcome (`supported` or `insufficient_evidence`), expected supporting doc/chunk ids, and provenance expectations.
   - `CaseResult`: pass/fail, failed assertions, and the actual retrieved/supporting ids observed.
@@ -29,7 +29,7 @@ Build a deterministic, pytest-first evaluation harness that protects the MVP tru
 
 ## Public Interfaces / Contracts
 - No changes to the stable public API documented in [`api-contracts.md`](/home/val/projects/sem-rag/docs/evergreen/api-contracts.md).
-- New evaluation modules are internal-only and should not be exported from `parity` top-level imports.
+- New evaluation modules are internal-only and should not be exported from `doc_forge` top-level imports.
 - Existing internal contract models (`Answer`, `RetrievalHit`, `SourceReference`, etc.) remain the payload format used by the harness; no new evergreen runtime contract should be documented yet.
 
 ## Assumptions And Defaults

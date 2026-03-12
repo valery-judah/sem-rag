@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from fastapi.testclient import TestClient
 
-from parity.app.api import create_app
-from parity.app.deps import reset_runtime_caches
-from parity.persistence import apply_migrations
+from doc_forge.app.api import create_app
+from doc_forge.app.deps import reset_runtime_caches
+from doc_forge.persistence import apply_migrations
 
 
 def _drain_jobs(client: TestClient, limit: int = 12) -> list[dict[str, str | None]]:
@@ -24,7 +24,7 @@ def test_markdown_document_reaches_ready(tmp_path, monkeypatch) -> None:
     db_url = f"sqlite+pysqlite:///{database_path}"
     apply_migrations(db_url)
     monkeypatch.setenv("DATABASE_URL", db_url)
-    monkeypatch.setenv("PARITY_ARTIFACT_ROOT", str(artifact_root))
+    monkeypatch.setenv("DOC_FORGE_ARTIFACT_ROOT", str(artifact_root))
     reset_runtime_caches()
 
     with TestClient(create_app()) as client:

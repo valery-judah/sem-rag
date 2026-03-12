@@ -14,47 +14,47 @@ Execution environment: python
     /Users/val/projects/rag/sem-rag/src
 Found 182 source files
 
-/Users/val/projects/rag/sem-rag/src/parity/query/answer_generation.py
-  /Users/val/projects/rag/sem-rag/src/parity/query/answer_generation.py:61:10 - error: Function with declared return type "GroundedGenerationResult" must return value on all code paths
+/Users/val/projects/rag/sem-rag/src/doc_forge/query/answer_generation.py
+  /Users/val/projects/rag/sem-rag/src/doc_forge/query/answer_generation.py:61:10 - error: Function with declared return type "GroundedGenerationResult" must return value on all code paths
     "None" is not assignable to "GroundedGenerationResult" (reportReturnType)
-/Users/val/projects/rag/sem-rag/src/parity/query/answer_mode_policy.py
-  /Users/val/projects/rag/sem-rag/src/parity/query/answer_mode_policy.py:46:10 - error: Function with declared return type "AnswerModePolicyDecision" must return value on all code paths
+/Users/val/projects/rag/sem-rag/src/doc_forge/query/answer_mode_policy.py
+  /Users/val/projects/rag/sem-rag/src/doc_forge/query/answer_mode_policy.py:46:10 - error: Function with declared return type "AnswerModePolicyDecision" must return value on all code paths
     "None" is not assignable to "AnswerModePolicyDecision" (reportReturnType)
-/Users/val/projects/rag/sem-rag/src/parity/query/citation_rendering.py
-  /Users/val/projects/rag/sem-rag/src/parity/query/citation_rendering.py:52:10 - error: Function with declared return type "CitationRenderingResult" must return value on all code paths
+/Users/val/projects/rag/sem-rag/src/doc_forge/query/citation_rendering.py
+  /Users/val/projects/rag/sem-rag/src/doc_forge/query/citation_rendering.py:52:10 - error: Function with declared return type "CitationRenderingResult" must return value on all code paths
     "None" is not assignable to "CitationRenderingResult" (reportReturnType)
-/Users/val/projects/rag/sem-rag/src/parity/query/context_assembly.py
-  /Users/val/projects/rag/sem-rag/src/parity/query/context_assembly.py:54:10 - error: Function with declared return type "ContextAssemblyResult" must return value on all code paths
+/Users/val/projects/rag/sem-rag/src/doc_forge/query/context_assembly.py
+  /Users/val/projects/rag/sem-rag/src/doc_forge/query/context_assembly.py:54:10 - error: Function with declared return type "ContextAssemblyResult" must return value on all code paths
     "None" is not assignable to "ContextAssemblyResult" (reportReturnType)
-/Users/val/projects/rag/sem-rag/src/parity/query/interpretation.py
-  /Users/val/projects/rag/sem-rag/src/parity/query/interpretation.py:145:10 - error: Function with declared return type "QueryInterpretationResult" must return value on all code paths
+/Users/val/projects/rag/sem-rag/src/doc_forge/query/interpretation.py
+  /Users/val/projects/rag/sem-rag/src/doc_forge/query/interpretation.py:145:10 - error: Function with declared return type "QueryInterpretationResult" must return value on all code paths
     "None" is not assignable to "QueryInterpretationResult" (reportReturnType)
-/Users/val/projects/rag/sem-rag/src/parity/query/persistence.py
-  /Users/val/projects/rag/sem-rag/src/parity/query/persistence.py:106:50 - error: Function with declared return type "QueryRun" must return value on all code paths
+/Users/val/projects/rag/sem-rag/src/doc_forge/query/persistence.py
+  /Users/val/projects/rag/sem-rag/src/doc_forge/query/persistence.py:106:50 - error: Function with declared return type "QueryRun" must return value on all code paths
     "None" is not assignable to "QueryRun" (reportReturnType)
-  /Users/val/projects/rag/sem-rag/src/parity/query/persistence.py:116:10 - error: Function with declared return type "QueryRun" must return value on all code paths
+  /Users/val/projects/rag/sem-rag/src/doc_forge/query/persistence.py:116:10 - error: Function with declared return type "QueryRun" must return value on all code paths
     "None" is not assignable to "QueryRun" (reportReturnType)
-  /Users/val/projects/rag/sem-rag/src/parity/query/persistence.py:136:51 - error: Function with declared return type "list[QueryStageTrace]" must return value on all code paths
+  /Users/val/projects/rag/sem-rag/src/doc_forge/query/persistence.py:136:51 - error: Function with declared return type "list[QueryStageTrace]" must return value on all code paths
     "None" is not assignable to "list[QueryStageTrace]" (reportReturnType)
-/Users/val/projects/rag/sem-rag/src/parity/query/retrieval.py
-  /Users/val/projects/rag/sem-rag/src/parity/query/retrieval.py:54:10 - error: Function with declared return type "QueryRetrievalResult" must return value on all code paths
+/Users/val/projects/rag/sem-rag/src/doc_forge/query/retrieval.py
+  /Users/val/projects/rag/sem-rag/src/doc_forge/query/retrieval.py:54:10 - error: Function with declared return type "QueryRetrievalResult" must return value on all code paths
     "None" is not assignable to "QueryRetrievalResult" (reportReturnType)
-/Users/val/projects/rag/sem-rag/src/parity/query/selection.py
-  /Users/val/projects/rag/sem-rag/src/parity/query/selection.py:90:10 - error: Function with declared return type "SelectionResult" must return value on all code paths
+/Users/val/projects/rag/sem-rag/src/doc_forge/query/selection.py
+  /Users/val/projects/rag/sem-rag/src/doc_forge/query/selection.py:90:10 - error: Function with declared return type "SelectionResult" must return value on all code paths
     "None" is not assignable to "SelectionResult" (reportReturnType)
-/Users/val/projects/rag/sem-rag/src/parity/query/support_assessment.py
-  /Users/val/projects/rag/sem-rag/src/parity/query/support_assessment.py:78:10 - error: Function with declared return type "StructuredSupportJudgment" must return value on all code paths
+/Users/val/projects/rag/sem-rag/src/doc_forge/query/support_assessment.py
+  /Users/val/projects/rag/sem-rag/src/doc_forge/query/support_assessment.py:78:10 - error: Function with declared return type "StructuredSupportJudgment" must return value on all code paths
     "None" is not assignable to "StructuredSupportJudgment" (reportReturnType)
-/Users/val/projects/rag/sem-rag/src/parity/readmodels/documents.py
-  /Users/val/projects/rag/sem-rag/src/parity/readmodels/documents.py:90:10 - error: Function with declared return type "CorpusSnapshot" must return value on all code paths
+/Users/val/projects/rag/sem-rag/src/doc_forge/readmodels/documents.py
+  /Users/val/projects/rag/sem-rag/src/doc_forge/readmodels/documents.py:90:10 - error: Function with declared return type "CorpusSnapshot" must return value on all code paths
     "None" is not assignable to "CorpusSnapshot" (reportReturnType)
-  /Users/val/projects/rag/sem-rag/src/parity/readmodels/documents.py:93:58 - error: Function with declared return type "list[QueryableDocumentRecord]" must return value on all code paths
+  /Users/val/projects/rag/sem-rag/src/doc_forge/readmodels/documents.py:93:58 - error: Function with declared return type "list[QueryableDocumentRecord]" must return value on all code paths
     "None" is not assignable to "list[QueryableDocumentRecord]" (reportReturnType)
-  /Users/val/projects/rag/sem-rag/src/parity/readmodels/documents.py:99:10 - error: Function with declared return type "list[QueryableSectionRecord]" must return value on all code paths
+  /Users/val/projects/rag/sem-rag/src/doc_forge/readmodels/documents.py:99:10 - error: Function with declared return type "list[QueryableSectionRecord]" must return value on all code paths
     "None" is not assignable to "list[QueryableSectionRecord]" (reportReturnType)
-  /Users/val/projects/rag/sem-rag/src/parity/readmodels/documents.py:105:10 - error: Function with declared return type "list[QueryableChunkRecord]" must return value on all code paths
+  /Users/val/projects/rag/sem-rag/src/doc_forge/readmodels/documents.py:105:10 - error: Function with declared return type "list[QueryableChunkRecord]" must return value on all code paths
     "None" is not assignable to "list[QueryableChunkRecord]" (reportReturnType)
-  /Users/val/projects/rag/sem-rag/src/parity/readmodels/documents.py:111:10 - error: Function with declared return type "list[QueryableEmbeddedChunkRecord]" must return value on all code paths
+  /Users/val/projects/rag/sem-rag/src/doc_forge/readmodels/documents.py:111:10 - error: Function with declared return type "list[QueryableEmbeddedChunkRecord]" must return value on all code paths
     "None" is not assignable to "list[QueryableEmbeddedChunkRecord]" (reportReturnType)
 /Users/val/projects/rag/sem-rag/tests/app/conftest.py
   /Users/val/projects/rag/sem-rag/tests/app/conftest.py:16:6 - error: Return type of generator function must be compatible with "Generator[Any, Any, Any]"

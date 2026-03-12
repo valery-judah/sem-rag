@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from parity._contracts import SourceReference
-from parity.query import EvidenceGroupingMode, EvidenceSet, EvidenceUnit, QueryPolicyDefaults
-from parity.query.context_assembly import DeterministicContextAssembler
-from parity.query.contracts import (
+from doc_forge._contracts import SourceReference
+from doc_forge.query import EvidenceGroupingMode, EvidenceSet, EvidenceUnit, QueryPolicyDefaults
+from doc_forge.query.context_assembly import DeterministicContextAssembler
+from doc_forge.query.contracts import (
     CorpusSnapshot,
     InterpretedQuery,
     QueryRequest,

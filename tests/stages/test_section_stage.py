@@ -2,16 +2,16 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 
-from parity._contracts import ProcessingStatus, SourceType
-from parity.artifacts import FilesystemArtifactStore, NormalizedArtifact, NormalizedArtifactBlock
-from parity.persistence import (
+from doc_forge._contracts import ProcessingStatus, SourceType
+from doc_forge.artifacts import FilesystemArtifactStore, NormalizedArtifact, NormalizedArtifactBlock
+from doc_forge.persistence import (
     DocumentJobStage,
     PersistedDocument,
     SqlDocumentRepository,
     SqlSectionRepository,
 )
-from parity.stages.sectionize import SectionizeDocumentStage
-from parity.structure import SectionDerivationService
+from doc_forge.stages.sectionize import SectionizeDocumentStage
+from doc_forge.structure import SectionDerivationService
 
 
 def test_markdown_section_stage_recovers_parent_child_hierarchy(

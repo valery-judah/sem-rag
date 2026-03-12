@@ -15,8 +15,8 @@ updated: 2026-03-11
 - Expose internal status, artifact, and retrieval-smoke routes for operator/debug use.
 
 ## Implementation Changes
-- Add `src/parity/lifecycle/readiness.py` and `src/parity/stages/ready.py`.
-- Extend `src/parity/app/api.py` with status, artifact, retrieval-smoke, health, and ready routes.
+- Add `src/doc_forge/lifecycle/readiness.py` and `src/doc_forge/stages/ready.py`.
+- Extend `src/doc_forge/app/api.py` with status, artifact, retrieval-smoke, health, and ready routes.
 - Extend `DocumentLifecycleService` with document status and internal query helpers.
 
 ## Invariants

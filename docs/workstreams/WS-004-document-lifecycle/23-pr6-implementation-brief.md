@@ -15,9 +15,9 @@ updated: 2026-03-11
 - Advance documents to `NORMALIZED` only after the normalized artifact is persisted.
 
 ## Implementation Changes
-- Add `src/parity/normalizers/base.py`, `src/parity/normalizers/markdown.py`, and `src/parity/normalizers/pdf.py`.
-- Add normalized artifact delete support in `src/parity/artifacts/store.py`.
-- Add `src/parity/stages/normalize.py` plus a worker-facing adapter.
+- Add `src/doc_forge/normalizers/base.py`, `src/doc_forge/normalizers/markdown.py`, and `src/doc_forge/normalizers/pdf.py`.
+- Add normalized artifact delete support in `src/doc_forge/artifacts/store.py`.
+- Add `src/doc_forge/stages/normalize.py` plus a worker-facing adapter.
 
 ## Invariants
 - Markdown normalization preserves headings, list items, code blocks, and paragraphs.

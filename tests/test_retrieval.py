@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from parity import SemanticIndex
+from doc_forge import SemanticIndex
 
 
 def test_semantic_index_requires_non_empty_documents() -> None:

@@ -8,15 +8,15 @@ from uuid import uuid4
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy.engine import Engine
 
-from parity._contracts import Document, ProcessingStatus, SourceType
-from parity.artifacts import FilesystemArtifactStore, RawArtifactRef
-from parity.lifecycle import (
+from doc_forge._contracts import Document, ProcessingStatus, SourceType
+from doc_forge.artifacts import FilesystemArtifactStore, RawArtifactRef
+from doc_forge.lifecycle import (
     LifecycleEvent,
     LifecycleInvariantError,
     LifecycleStage,
     require_processing_status_transition,
 )
-from parity.persistence import (
+from doc_forge.persistence import (
     DocumentRepository,
     LifecycleEventRepository,
     PersistedDocument,

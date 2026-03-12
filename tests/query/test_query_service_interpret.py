@@ -1,16 +1,16 @@
 from __future__ import annotations
 
-from parity._contracts import ProcessingStatus
-from parity.persistence import (
+from doc_forge._contracts import ProcessingStatus
+from doc_forge.persistence import (
     SqlChunkEmbeddingRepository,
     SqlChunkRepository,
     SqlDocumentRepository,
     SqlIndexEntryRepository,
     SqlSectionRepository,
 )
-from parity.query import QueryRequest, QueryService
-from parity.query.persistence import SqlQueryRunStore, SqlQuerySnapshotStore, SqlQueryTraceStore
-from parity.readmodels import SqlQueryableCorpusReadModel
+from doc_forge.query import QueryRequest, QueryService
+from doc_forge.query.persistence import SqlQueryRunStore, SqlQuerySnapshotStore, SqlQueryTraceStore
+from doc_forge.readmodels import SqlQueryableCorpusReadModel
 
 
 def _service(sql_engine) -> QueryService:

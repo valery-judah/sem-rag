@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import pytest
 
-from parity.query import QueryStageName, QueryStageTraceStatus
-from parity.query.stages import (
+from doc_forge.query import QueryStageName, QueryStageTraceStatus
+from doc_forge.query.stages import (
     ASSESS_SUPPORT_STAGE,
     CONTEXT_STAGE,
     DECIDE_ANSWER_MODE_STAGE,

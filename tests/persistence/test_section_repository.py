@@ -3,8 +3,8 @@ from __future__ import annotations
 import pytest
 from sqlalchemy.exc import IntegrityError
 
-from parity._contracts import Section
-from parity.persistence import (
+from doc_forge._contracts import Section
+from doc_forge.persistence import (
     SqlDocumentRepository,
     SqlSectionRepository,
 )

@@ -11,12 +11,12 @@ __pycache__/
 build/
 dist/
 artifacts/
-!src/parity/artifacts/
-!src/parity/artifacts/**
+!src/doc_forge/artifacts/
+!src/doc_forge/artifacts/**
 !tests/artifacts/
 !tests/artifacts/**
-src/parity/artifacts/**/__pycache__/
-src/parity/artifacts/**/*.py[cod]
+src/doc_forge/artifacts/**/__pycache__/
+src/doc_forge/artifacts/**/*.py[cod]
 tests/artifacts/**/__pycache__/
 tests/artifacts/**/*.py[cod]
 *.egg-info/

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from parity.lifecycle import (
+from doc_forge.lifecycle import (
     IN_FLIGHT_PROCESSING_STATUSES,
     TERMINAL_PROCESSING_STATUSES,
     ProcessingStatus,

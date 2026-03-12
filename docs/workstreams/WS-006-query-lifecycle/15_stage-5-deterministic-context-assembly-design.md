@@ -6,7 +6,7 @@
 
 ## Purpose
 
-This document records the repo-facing design for Stage 5 deterministic context assembly in `parity`.
+This document records the repo-facing design for Stage 5 deterministic context assembly in `doc_forge`.
 
 Stage 5 is the first stage that defines the actual model-facing input surface.
 It turns Stage 4 evidence sets into an inspectable, policy-bounded `ContextManifest` without collapsing support semantics into prompt text or generation-time improvisation.
@@ -35,13 +35,13 @@ It does not create a stable public API.
 
 As of 2026-03-11, the repo now has the Stage 5 runtime implemented:
 
-- [contracts.py](../../../../../src/parity/query/contracts.py) already defines `ContextManifest` and `QueryStageName.ASSEMBLE_CONTEXT`;
-- [domain.py](../../../../../src/parity/query/domain.py) already reserves `QueryRuntimeState.context_manifest`;
-- [policies.py](../../../../../src/parity/query/policies.py) already defines `QueryPolicy.context_token_budget`;
-- [context_assembly.py](../../../../../src/parity/query/context_assembly.py) now owns deterministic context rendering and budget decisions;
-- [context.py](../../../../../src/parity/query/stages/context.py) now executes `assemble_context` and persists Stage 5 traces;
-- [service.py](../../../../../src/parity/query/service.py) now executes through Stage 5 with `execute_until_context_assembly()`;
-- [api.py](../../../../../src/parity/app/api.py) now returns `context_manifest` in the internal debug response;
+- [contracts.py](../../../../../src/doc_forge/query/contracts.py) already defines `ContextManifest` and `QueryStageName.ASSEMBLE_CONTEXT`;
+- [domain.py](../../../../../src/doc_forge/query/domain.py) already reserves `QueryRuntimeState.context_manifest`;
+- [policies.py](../../../../../src/doc_forge/query/policies.py) already defines `QueryPolicy.context_token_budget`;
+- [context_assembly.py](../../../../../src/doc_forge/query/context_assembly.py) now owns deterministic context rendering and budget decisions;
+- [context.py](../../../../../src/doc_forge/query/stages/context.py) now executes `assemble_context` and persists Stage 5 traces;
+- [service.py](../../../../../src/doc_forge/query/service.py) now executes through Stage 5 with `execute_until_context_assembly()`;
+- [api.py](../../../../../src/doc_forge/app/api.py) now returns `context_manifest` in the internal debug response;
 - evergreen architecture now records context assembly as implemented internal architecture.
 
 Stage 5 extends the existing Stage 4 runtime without implying that any later answering behavior already exists.
@@ -50,11 +50,11 @@ Stage 5 extends the existing Stage 4 runtime without implying that any later ans
 
 Stage 5 is implemented with:
 
-- deterministic context-assembly helpers in a new [context_assembly.py](../../../../../src/parity/query/context_assembly.py);
-- an executable `assemble_context` stage in [context.py](../../../../../src/parity/query/stages/context.py);
-- a strengthened `ContextManifest` contract in [contracts.py](../../../../../src/parity/query/contracts.py);
-- Stage 5 runtime wiring in [service.py](../../../../../src/parity/query/service.py);
-- internal route integration in [api.py](../../../../../src/parity/app/api.py) and [deps.py](../../../../../src/parity/app/deps.py);
+- deterministic context-assembly helpers in a new [context_assembly.py](../../../../../src/doc_forge/query/context_assembly.py);
+- an executable `assemble_context` stage in [context.py](../../../../../src/doc_forge/query/stages/context.py);
+- a strengthened `ContextManifest` contract in [contracts.py](../../../../../src/doc_forge/query/contracts.py);
+- Stage 5 runtime wiring in [service.py](../../../../../src/doc_forge/query/service.py);
+- internal route integration in [api.py](../../../../../src/doc_forge/app/api.py) and [deps.py](../../../../../src/doc_forge/app/deps.py);
 - tests covering deterministic ordering, budget overflow behavior, exclusion reasons, and route behavior.
 
 ## Design constraints resolved in Stage 5
@@ -83,7 +83,7 @@ The design consequence is pragmatic:
 
 ### Context-assembly helper seam
 
-[context_assembly.py](../../../../../src/parity/query/context_assembly.py) now owns the deterministic helper seam for Stage 5.
+[context_assembly.py](../../../../../src/doc_forge/query/context_assembly.py) now owns the deterministic helper seam for Stage 5.
 
 It exposes:
 
@@ -91,7 +91,7 @@ It exposes:
 - `ContextAssemblyResult`
 - `ContextAssembler`
 - `DeterministicContextAssembler`
-- reuse of `ContextItem` from [contracts.py](../../../../../src/parity/query/contracts.py) as the rendered manifest item shape
+- reuse of `ContextItem` from [contracts.py](../../../../../src/doc_forge/query/contracts.py) as the rendered manifest item shape
 
 The helper owns:
 
@@ -184,7 +184,7 @@ This keeps the model-facing context dense without silently mutating Stage 4 evid
 Stage 5 needs deterministic budget accounting before any provider-specific prompt call exists.
 
 For MVP, token accounting is an internal approximation based on rendered text length.
-The implementation uses `_estimate_token_count()` in [context_assembly.py](../../../../../src/parity/query/context_assembly.py), which estimates tokens as `ceil(len(text) / 4)`.
+The implementation uses `_estimate_token_count()` in [context_assembly.py](../../../../../src/doc_forge/query/context_assembly.py), which estimates tokens as `ceil(len(text) / 4)`.
 
 This remains intentionally simple, deterministic, and local.
 No provider-backed tokenizer is required to execute Stage 5.
@@ -231,7 +231,7 @@ The current implementation preserves honest degraded behavior:
 
 ### `assemble_context` stage
 
-[context.py](../../../../../src/parity/query/stages/context.py) is now the executable Stage 5 entrypoint.
+[context.py](../../../../../src/doc_forge/query/stages/context.py) is now the executable Stage 5 entrypoint.
 
 The stage accepts:
 
@@ -273,7 +273,7 @@ This keeps later debugging and eval work aligned with the local-failure principl
 
 ### Query service
 
-[service.py](../../../../../src/parity/query/service.py) now exposes:
+[service.py](../../../../../src/doc_forge/query/service.py) now exposes:
 
 - `execute_until_context_assembly()`
 
@@ -290,7 +290,7 @@ That method performs:
 
 ### Internal API surface
 
-[api.py](../../../../../src/parity/app/api.py) now extends the internal `POST /queries` response with:
+[api.py](../../../../../src/doc_forge/app/api.py) now extends the internal `POST /queries` response with:
 
 - `context_manifest`
 
@@ -303,7 +303,7 @@ It does not create a stable external API.
 
 ### App wiring
 
-[deps.py](../../../../../src/parity/app/deps.py) now wires:
+[deps.py](../../../../../src/doc_forge/app/deps.py) now wires:
 
 - `DeterministicContextAssembler`
 - Stage 5-ready `QueryService`

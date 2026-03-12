@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-from parity.query import (
+from doc_forge.query import (
     CorpusSnapshot,
     QueryRequest,
     QueryRequestType,
     QuerySpecificity,
     SynthesisMode,
 )
-from parity.query.interpretation import DeterministicQueryInterpreter
+from doc_forge.query.interpretation import DeterministicQueryInterpreter
 
 
 def _interpret(question: str):

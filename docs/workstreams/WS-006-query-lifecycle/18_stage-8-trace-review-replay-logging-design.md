@@ -48,10 +48,10 @@ It does not create a stable public API.
 
 As of 2026-03-11, the repo already has the persistence needed to support most Stage 8 review work:
 
-- [persistence.py](../../../../../src/parity/query/persistence.py) persists `query_runs`, `query_snapshots`, `query_stage_traces`, and `query_answers`;
-- [trace.py](../../../../../src/parity/query/trace.py) already defines the ordered stage-trace surface;
-- [service.py](../../../../../src/parity/query/service.py) already executes through Stage 7 and writes durable traces and final answer artifacts;
-- [api.py](../../../../../src/parity/app/api.py) already exposes the internal `POST /queries` route, but no review routes yet;
+- [persistence.py](../../../../../src/doc_forge/query/persistence.py) persists `query_runs`, `query_snapshots`, `query_stage_traces`, and `query_answers`;
+- [trace.py](../../../../../src/doc_forge/query/trace.py) already defines the ordered stage-trace surface;
+- [service.py](../../../../../src/doc_forge/query/service.py) already executes through Stage 7 and writes durable traces and final answer artifacts;
+- [api.py](../../../../../src/doc_forge/app/api.py) already exposes the internal `POST /queries` route, but no review routes yet;
 - [test_runtime_api.py](../../../../../tests/app/test_runtime_api.py) already proves that successful query runs persist snapshots, ordered stage traces, and final answer artifacts.
 
 What the repo still lacks is the read side and observability layer over that persisted state:
@@ -149,7 +149,7 @@ That is enough for MVP Stage 8 if the read side is clean.
 
 ## Proposed review contracts
 
-Stage 8 should introduce a small review-model layer in `src/parity/query/` rather than leaking raw SQL rows into routes.
+Stage 8 should introduce a small review-model layer in `src/doc_forge/query/` rather than leaking raw SQL rows into routes.
 
 ### `QueryRunReviewSummary`
 
@@ -218,7 +218,7 @@ The bundle is the frozen replay input.
 
 ## Review service design
 
-Stage 8 should add a dedicated review-oriented service seam, for example `src/parity/query/review.py`.
+Stage 8 should add a dedicated review-oriented service seam, for example `src/doc_forge/query/review.py`.
 
 It should own:
 
@@ -238,7 +238,7 @@ It should not mutate query state or rerun stages.
 
 ## Internal review endpoints
 
-Stage 8 should add these internal routes in [api.py](../../../../../src/parity/app/api.py):
+Stage 8 should add these internal routes in [api.py](../../../../../src/doc_forge/app/api.py):
 
 ### `GET /queries/{query_id}`
 
@@ -287,7 +287,7 @@ They do not update the evergreen API contract.
 
 ## Replay foundation design
 
-Stage 8 replay should start as an internal service and test seam, for example `src/parity/query/replay.py`.
+Stage 8 replay should start as an internal service and test seam, for example `src/doc_forge/query/replay.py`.
 
 Its first job is reconstruction, not immediate full rerun.
 
@@ -437,11 +437,11 @@ Stage 8 should route both app logs and Uvicorn access logs through the same JSON
 
 Suggested repo shape:
 
-- `src/parity/app/logging.py`:
+- `src/doc_forge/app/logging.py`:
   - logger configuration and JSON processors;
-- `src/parity/app/api.py`:
+- `src/doc_forge/app/api.py`:
   - request-id middleware and route-level binding;
-- [service.py](../../../../../src/parity/query/service.py):
+- [service.py](../../../../../src/doc_forge/query/service.py):
   - query-run and stage lifecycle events;
 - future review/replay modules:
   - read-side and replay events.

@@ -6,7 +6,7 @@
 
 ## Purpose
 
-This document turns Stage 0 of [`query_subsystem_staged_implementation_plan.md`](./query_subsystem_staged_implementation_plan.md) into a concrete internal design for the current `parity` repo.
+This document turns Stage 0 of [`query_subsystem_staged_implementation_plan.md`](./query_subsystem_staged_implementation_plan.md) into a concrete internal design for the current `doc_forge` repo.
 
 Its job is to define the minimum query-domain scaffolding that should exist before Stage 1 starts wiring queryable corpus boundaries and before any retrieval or generation logic is implemented.
 
@@ -44,24 +44,24 @@ Stage 0 must fit the current repo rather than assume a greenfield service.
 
 The design must respect the following facts from `docs/evergreen/architecture.md`:
 
-- `parity` is one FastAPI application with one Postgres-backed persistence layer and filesystem artifacts already owned by the document lifecycle;
-- `src/parity/_contracts/` already contains internal corpus contracts for documents, sections, chunks, retrieval hits, and answers;
-- `src/parity/app/` owns the current internal runtime wiring;
-- `src/parity/persistence/` already owns durable metadata persistence and migrations;
+- `doc_forge` is one FastAPI application with one Postgres-backed persistence layer and filesystem artifacts already owned by the document lifecycle;
+- `src/doc_forge/_contracts/` already contains internal corpus contracts for documents, sections, chunks, retrieval hits, and answers;
+- `src/doc_forge/app/` owns the current internal runtime wiring;
+- `src/doc_forge/persistence/` already owns durable metadata persistence and migrations;
 - `docs/evergreen/api-contracts.md` explicitly says there is no earned public API yet.
 
 So Stage 0 should add internal seams, not public promises.
 
 ## Main design decisions
 
-### 1. Add a dedicated `src/parity/query/` package
+### 1. Add a dedicated `src/doc_forge/query/` package
 
 The query subsystem needs its own internal home instead of being spread across `app/`, `retrieval.py`, and ad hoc future modules.
 
 Recommended initial layout:
 
 ```text
-src/parity/query/
+src/doc_forge/query/
   __init__.py
   contracts.py
   domain.py
@@ -86,14 +86,14 @@ src/parity/query/
 This package should own query semantics only.
 It should not absorb document-lifecycle code.
 
-### 2. Add a narrow `src/parity/readmodels/` adapter for query-facing document reads
+### 2. Add a narrow `src/doc_forge/readmodels/` adapter for query-facing document reads
 
 Stage 0 should reserve a query-facing document read surface now so Stage 1 has a clear place to implement `READY`-only snapshot reads.
 
 Recommended initial layout:
 
 ```text
-src/parity/readmodels/
+src/doc_forge/readmodels/
   __init__.py
   documents.py
 ```
@@ -117,7 +117,7 @@ Public contract promotion is not.
 
 ### 4. Keep inference seams narrow and internal
 
-The repo already has embedding-related code under `src/parity/indexing/`.
+The repo already has embedding-related code under `src/doc_forge/indexing/`.
 Stage 0 should not force a broad new `inference/` package unless implementation pressure proves it necessary.
 
 Instead:
@@ -280,7 +280,7 @@ Stage 0 only reserves the code family so later policy and trace code do not inve
 
 ## Query policy design
 
-Stage 0 should add exactly one canonical policy object under `src/parity/query/policies.py`.
+Stage 0 should add exactly one canonical policy object under `src/doc_forge/query/policies.py`.
 
 Recommended shape:
 
@@ -310,7 +310,7 @@ Recommended shape:
 
 ## Service and orchestration seam
 
-Stage 0 should create `src/parity/query/service.py` with orchestration responsibility only.
+Stage 0 should create `src/doc_forge/query/service.py` with orchestration responsibility only.
 
 Responsibilities:
 
@@ -331,7 +331,7 @@ Non-responsibilities:
 
 ## Trace seam
 
-Stage 0 should create `src/parity/query/trace.py` for structured stage trace payloads.
+Stage 0 should create `src/doc_forge/query/trace.py` for structured stage trace payloads.
 
 It should define internal trace shapes, not storage tables yet.
 
@@ -351,7 +351,7 @@ It does need the payload shapes so later stages stop inventing one-off trace blo
 
 ## Persistence seam
 
-Stage 0 should create `src/parity/query/persistence.py`, but only as an internal seam definition.
+Stage 0 should create `src/doc_forge/query/persistence.py`, but only as an internal seam definition.
 
 This file should define repository interfaces or storage models for:
 
@@ -366,7 +366,7 @@ That keeps Stage 0 small while preventing Stage 1 and Stage 8 from improvising i
 
 ## Error model
 
-Stage 0 should add `src/parity/query/errors.py` for query-domain exceptions.
+Stage 0 should add `src/doc_forge/query/errors.py` for query-domain exceptions.
 
 Minimum error families:
 
@@ -380,7 +380,7 @@ Transport translation belongs at the app boundary.
 
 ## Contract relationship to existing `_contracts`
 
-The existing `src/parity/_contracts/` package already owns document, section, chunk, provenance, and lifecycle primitives.
+The existing `src/doc_forge/_contracts/` package already owns document, section, chunk, provenance, and lifecycle primitives.
 
 Stage 0 should not duplicate those semantics blindly.
 
@@ -412,7 +412,7 @@ Those belong to later stages.
 
 Stage 0 is done when all of the following are true:
 
-- `src/parity/query/` exists with the planned internal module skeleton;
+- `src/doc_forge/query/` exists with the planned internal module skeleton;
 - query-domain contracts serialize cleanly and reject invalid shapes;
 - query stage names, support states, answer modes, and trust-failure label families are frozen in code;
 - there is one canonical query policy object with explicit defaults;
@@ -439,8 +439,8 @@ Those are all later-stage concerns.
 
 ## Recommended implementation order inside Stage 0
 
-1. Add `src/parity/query/` and placeholder `stages/` modules.
-2. Add `src/parity/readmodels/` placeholders.
+1. Add `src/doc_forge/query/` and placeholder `stages/` modules.
+2. Add `src/doc_forge/readmodels/` placeholders.
 3. Define enums and query-domain Pydantic models in `query/contracts.py`.
 4. Define `QueryPolicyDefaults` and `QueryPolicy`.
 5. Add trace payload contracts.

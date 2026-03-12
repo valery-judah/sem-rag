@@ -6,7 +6,7 @@ from typing import Any, cast
 import pytest
 from pydantic import ValidationError
 
-from parity._contracts import (
+from doc_forge._contracts import (
     Answer,
     AnswerStatus,
     Chunk,

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from parity.persistence import (
+from doc_forge.persistence import (
     SqlChunkRepository,
     SqlDocumentRepository,
     SqlSectionRepository,

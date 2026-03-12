@@ -4,28 +4,28 @@ from typing import Any, cast
 
 import pytest
 
-from parity._contracts import ProcessingStatus
-from parity.indexing import DeterministicEmbeddingAdapter, SqlVectorStore
-from parity.persistence import (
+from doc_forge._contracts import ProcessingStatus
+from doc_forge.indexing import DeterministicEmbeddingAdapter, SqlVectorStore
+from doc_forge.persistence import (
     SqlChunkEmbeddingRepository,
     SqlChunkRepository,
     SqlDocumentRepository,
     SqlIndexEntryRepository,
     SqlSectionRepository,
 )
-from parity.query import QueryRequest, QueryService
-from parity.query.answer_mode_policy import DeterministicAnswerModePolicy
-from parity.query.context_assembly import DeterministicContextAssembler
-from parity.query.persistence import (
+from doc_forge.query import QueryRequest, QueryService
+from doc_forge.query.answer_mode_policy import DeterministicAnswerModePolicy
+from doc_forge.query.context_assembly import DeterministicContextAssembler
+from doc_forge.query.persistence import (
     SqlQueryAnswerStore,
     SqlQueryRunStore,
     SqlQuerySnapshotStore,
     SqlQueryTraceStore,
 )
-from parity.query.retrieval import SnapshotDenseQueryRetriever
-from parity.query.selection import DeterministicQuerySelector
-from parity.query.support_assessment import HybridSupportAssessor
-from parity.readmodels import SqlQueryableCorpusReadModel
+from doc_forge.query.retrieval import SnapshotDenseQueryRetriever
+from doc_forge.query.selection import DeterministicQuerySelector
+from doc_forge.query.support_assessment import HybridSupportAssessor
+from doc_forge.readmodels import SqlQueryableCorpusReadModel
 
 pytestmark = pytest.mark.anyio
 

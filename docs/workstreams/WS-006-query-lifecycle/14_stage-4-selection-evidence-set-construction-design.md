@@ -6,7 +6,7 @@
 
 ## Purpose
 
-This document records the repo-facing Stage 4 design as implemented in `parity`.
+This document records the repo-facing Stage 4 design as implemented in `doc_forge`.
 
 Stage 4 implements the first explicit post-retrieval transformation from raw candidate rankings into supportable evidence structures.
 It is where the query subsystem stops behaving like "top-k passages plus a prompt" and starts behaving like an evidence-driven runtime.
@@ -34,11 +34,11 @@ It does not create a stable public API.
 
 Stage 4 is implemented with:
 
-- deterministic selection helpers in [selection.py](src/parity/query/selection.py);
-- an executable `select` stage in [select.py](src/parity/query/stages/select.py);
-- strengthened Stage 4 evidence contracts in [contracts.py](src/parity/query/contracts.py);
-- Stage 4 runtime state and orchestration in [domain.py](src/parity/query/domain.py) and [service.py](src/parity/query/service.py);
-- internal route integration in [api.py](src/parity/app/api.py) and [deps.py](src/parity/app/deps.py);
+- deterministic selection helpers in [selection.py](src/doc_forge/query/selection.py);
+- an executable `select` stage in [select.py](src/doc_forge/query/stages/select.py);
+- strengthened Stage 4 evidence contracts in [contracts.py](src/doc_forge/query/contracts.py);
+- Stage 4 runtime state and orchestration in [domain.py](src/doc_forge/query/domain.py) and [service.py](src/doc_forge/query/service.py);
+- internal route integration in [api.py](src/doc_forge/app/api.py) and [deps.py](src/doc_forge/app/deps.py);
 - tests covering duplicate suppression, same-document grouping, selection traces, and route behavior.
 
 ## Design constraints resolved in Stage 4
@@ -50,10 +50,10 @@ The relevant constraints were:
 - Stage 1 already owned stable snapshot capture and `READY`-only queryability;
 - Stage 2 already owned deterministic `InterpretedQuery` creation and durable `interpret` traces;
 - Stage 3 already owned snapshot-scoped dense retrieval and durable `retrieve` traces;
-- `src/parity/query/contracts.py` already exposed `EvidenceGroupingMode`, `DuplicateSuppressionMode`, `EvidenceUnit`, and `EvidenceSet`, but those contracts were too thin for executable selection behavior;
-- `src/parity/query/policies.py` already exposed the Stage 4 policy levers: `evidence_set_cap`, `neighbor_expansion_*`, and `duplicate_suppression_mode`;
-- `src/parity/readmodels/documents.py` already exposed snapshot-scoped chunk records with `ordinal`, `heading_path`, pages, and source offsets;
-- `parity._contracts.SourceReference` already provided the inspectable provenance shape that Stage 4 should reuse;
+- `src/doc_forge/query/contracts.py` already exposed `EvidenceGroupingMode`, `DuplicateSuppressionMode`, `EvidenceUnit`, and `EvidenceSet`, but those contracts were too thin for executable selection behavior;
+- `src/doc_forge/query/policies.py` already exposed the Stage 4 policy levers: `evidence_set_cap`, `neighbor_expansion_*`, and `duplicate_suppression_mode`;
+- `src/doc_forge/readmodels/documents.py` already exposed snapshot-scoped chunk records with `ordinal`, `heading_path`, pages, and source offsets;
+- `doc_forge._contracts.SourceReference` already provided the inspectable provenance shape that Stage 4 should reuse;
 - `query_stage_traces` already existed and needed to remain the single durable stage-trace surface.
 
 The implemented consequence is pragmatic:
@@ -67,7 +67,7 @@ The implemented consequence is pragmatic:
 
 ### Selection helper seam
 
-[selection.py](src/parity/query/selection.py) now exposes:
+[selection.py](src/doc_forge/query/selection.py) now exposes:
 
 - `SnapshotSelectionIndex`
 - `SelectionDecision`
@@ -86,7 +86,7 @@ The implemented selector owns:
 
 ### Strengthened Stage 4 contracts
 
-[contracts.py](src/parity/query/contracts.py) now extends the evidence objects used downstream.
+[contracts.py](src/doc_forge/query/contracts.py) now extends the evidence objects used downstream.
 
 `EvidenceUnit` now carries:
 
@@ -101,7 +101,7 @@ The implemented selector owns:
 - `conflict_flags`
 - `assembly_reason`
 
-[domain.py](src/parity/query/domain.py) also now tracks:
+[domain.py](src/doc_forge/query/domain.py) also now tracks:
 
 - `selected_candidates`
 - `evidence_sets`
@@ -167,7 +167,7 @@ The current grouping behavior is conservative:
 
 ### Executable `select` stage and traces
 
-[select.py](src/parity/query/stages/select.py) now runs a real Stage 4 selection step.
+[select.py](src/doc_forge/query/stages/select.py) now runs a real Stage 4 selection step.
 
 The stage:
 
@@ -178,7 +178,7 @@ The stage:
 
 ### Query service and route behavior
 
-[service.py](src/parity/query/service.py) now supports:
+[service.py](src/doc_forge/query/service.py) now supports:
 
 - `execute_until_selection()`
 
@@ -190,7 +190,7 @@ That method now performs:
 4. Stage 4 selection and `select` trace persistence
 5. return of `QueryRuntimeState` with `selected_candidates` and `evidence_sets`
 
-[api.py](src/parity/app/api.py) now exposes internal `POST /queries` with Stage 4 behavior.
+[api.py](src/doc_forge/app/api.py) now exposes internal `POST /queries` with Stage 4 behavior.
 
 It now returns:
 
@@ -208,7 +208,7 @@ The route still stops explicitly before context assembly and answer behavior.
 
 ### App wiring
 
-[deps.py](src/parity/app/deps.py) now wires:
+[deps.py](src/doc_forge/app/deps.py) now wires:
 
 - `DeterministicQuerySelector`
 - Stage 4-ready `QueryService`

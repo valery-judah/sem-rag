@@ -3,9 +3,9 @@ from __future__ import annotations
 import pytest
 from fastapi.testclient import TestClient
 
-from parity.app.api import create_app
-from parity.app.deps import reset_runtime_caches
-from parity.persistence import apply_migrations
+from doc_forge.app.api import create_app
+from doc_forge.app.deps import reset_runtime_caches
+from doc_forge.persistence import apply_migrations
 
 
 class _FakePdfPage:
@@ -35,7 +35,7 @@ def test_retry_recovers_failed_extract_stage(tmp_path, monkeypatch: pytest.Monke
     db_url = f"sqlite+pysqlite:///{database_path}"
     apply_migrations(db_url)
     monkeypatch.setenv("DATABASE_URL", db_url)
-    monkeypatch.setenv("PARITY_ARTIFACT_ROOT", str(artifact_root))
+    monkeypatch.setenv("DOC_FORGE_ARTIFACT_ROOT", str(artifact_root))
     reset_runtime_caches()
 
     with TestClient(create_app()) as client:
@@ -47,7 +47,7 @@ def test_retry_recovers_failed_extract_stage(tmp_path, monkeypatch: pytest.Monke
         doc_id = upload.json()["doc_id"]
 
         monkeypatch.setattr(
-            "parity.extractors.pdf.PdfReader",
+            "doc_forge.extractors.pdf.PdfReader",
             lambda _: (_ for _ in ()).throw(ValueError("broken pdf")),
         )
         client.post("/internal/run-next-job")
@@ -57,7 +57,7 @@ def test_retry_recovers_failed_extract_stage(tmp_path, monkeypatch: pytest.Monke
         assert failed["failure_code"] == "extract_failed"
 
         monkeypatch.setattr(
-            "parity.extractors.pdf.PdfReader",
+            "doc_forge.extractors.pdf.PdfReader",
             lambda _: _FakePdfReader(
                 [
                     "1 Introduction\n\nConsensus keeps nodes aligned.",

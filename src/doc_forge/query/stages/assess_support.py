@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from parity.query.contracts import (
+from doc_forge.query.contracts import (
     ContextManifest,
     CorpusSnapshot,
     EvidenceSet,
@@ -14,14 +14,14 @@ from parity.query.contracts import (
     SupportAssessment,
     SupportState,
 )
-from parity.query.policies import QueryPolicy
-from parity.query.support_assessment import (
+from doc_forge.query.policies import QueryPolicy
+from doc_forge.query.support_assessment import (
     HybridSupportAssessor,
     StructuredSupportJudgment,
     SupportAssessmentPrecheck,
     SupportAssessmentResult,
 )
-from parity.query.trace import QueryStageTrace, QueryStageTraceStatus, utc_now
+from doc_forge.query.trace import QueryStageTrace, QueryStageTraceStatus, utc_now
 
 STAGE_NAME = QueryStageName.ASSESS_SUPPORT
 

@@ -6,7 +6,7 @@ from typing import Protocol
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from parity._contracts import SourceReference
+from doc_forge._contracts import SourceReference
 
 from .contracts import (
     AnswerDraft,

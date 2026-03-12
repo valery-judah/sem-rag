@@ -15,10 +15,10 @@ updated: 2026-03-11
 - Move documents into `EXTRACTING` only after the extracted artifact is durably written.
 
 ## Implementation Changes
-- Add `src/parity/extractors/base.py`, `src/parity/extractors/markdown.py`, and `src/parity/extractors/pdf.py`.
+- Add `src/doc_forge/extractors/base.py`, `src/doc_forge/extractors/markdown.py`, and `src/doc_forge/extractors/pdf.py`.
 - Extend extracted artifact schemas with block `kind` and source offsets.
-- Add extracted artifact delete support in `src/parity/artifacts/store.py`.
-- Add `src/parity/stages/extract.py` plus a worker-facing adapter.
+- Add extracted artifact delete support in `src/doc_forge/artifacts/store.py`.
+- Add `src/doc_forge/stages/extract.py` plus a worker-facing adapter.
 
 ## Invariants
 - Markdown extraction preserves headings, paragraphs, and code fences with offsets.

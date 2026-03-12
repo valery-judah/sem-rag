@@ -31,30 +31,30 @@ def load_settings() -> AppSettings:
     if not database_url:
         raise RuntimeError("DATABASE_URL must be set")
 
-    artifact_root = Path(os.environ.get("PARITY_ARTIFACT_ROOT", "data")).resolve()
+    artifact_root = Path(os.environ.get("DOC_FORGE_ARTIFACT_ROOT", "data")).resolve()
     return AppSettings(
         database_url=database_url,
         artifact_root=artifact_root,
-        service_name=os.environ.get("PARITY_SERVICE_NAME", "parity-api"),
-        environment=os.environ.get("PARITY_ENVIRONMENT", "dev"),
-        log_level=os.environ.get("PARITY_LOG_LEVEL", "INFO"),
-        embedding_backend=os.environ.get("PARITY_EMBEDDING_BACKEND", "deterministic"),
+        service_name=os.environ.get("DOC_FORGE_SERVICE_NAME", "doc_forge-api"),
+        environment=os.environ.get("DOC_FORGE_ENVIRONMENT", "dev"),
+        log_level=os.environ.get("DOC_FORGE_LOG_LEVEL", "INFO"),
+        embedding_backend=os.environ.get("DOC_FORGE_EMBEDDING_BACKEND", "deterministic"),
         embedding_model_name=os.environ.get(
-            "PARITY_EMBEDDING_MODEL",
+            "DOC_FORGE_EMBEDDING_MODEL",
             "sentence-transformers/all-MiniLM-L6-v2",
         ),
         answer_generator_backend=os.environ.get(
-            "PARITY_ANSWER_GENERATOR_BACKEND",
+            "DOC_FORGE_ANSWER_GENERATOR_BACKEND",
             "deterministic",
         ),
         answer_generator_model_name=os.environ.get(
-            "PARITY_ANSWER_GENERATOR_MODEL",
+            "DOC_FORGE_ANSWER_GENERATOR_MODEL",
             "mlx-community/TinyLlama-1.1B-Chat-v1.0",
         ),
         answer_generator_max_new_tokens=int(
-            os.environ.get("PARITY_ANSWER_GENERATOR_MAX_NEW_TOKENS", "256")
+            os.environ.get("DOC_FORGE_ANSWER_GENERATOR_MAX_NEW_TOKENS", "256")
         ),
         answer_generator_temperature=float(
-            os.environ.get("PARITY_ANSWER_GENERATOR_TEMPERATURE", "0.0")
+            os.environ.get("DOC_FORGE_ANSWER_GENERATOR_TEMPERATURE", "0.0")
         ),
     )

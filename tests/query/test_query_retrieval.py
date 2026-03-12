@@ -4,16 +4,16 @@ from datetime import UTC, datetime
 
 import pytest
 
-from parity._contracts import ProcessingStatus
-from parity.indexing import ChunkEmbedding, DeterministicEmbeddingAdapter
-from parity.persistence import (
+from doc_forge._contracts import ProcessingStatus
+from doc_forge.indexing import ChunkEmbedding, DeterministicEmbeddingAdapter
+from doc_forge.persistence import (
     SqlChunkEmbeddingRepository,
     SqlChunkRepository,
     SqlDocumentRepository,
     SqlIndexEntryRepository,
     SqlSectionRepository,
 )
-from parity.query import (
+from doc_forge.query import (
     InterpretedQuery,
     QueryPolicyDefaults,
     QueryRequest,
@@ -21,8 +21,8 @@ from parity.query import (
     QuerySpecificity,
     SynthesisMode,
 )
-from parity.query.retrieval import SnapshotDenseQueryRetriever
-from parity.readmodels import SqlQueryableCorpusReadModel
+from doc_forge.query.retrieval import SnapshotDenseQueryRetriever
+from doc_forge.readmodels import SqlQueryableCorpusReadModel
 
 pytestmark = pytest.mark.anyio
 

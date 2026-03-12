@@ -14,8 +14,8 @@ from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy.engine import Engine
 from structlog.contextvars import bind_contextvars, clear_contextvars
 
-from parity.artifacts import FilesystemArtifactStore
-from parity.lifecycle.service import (
+from doc_forge.artifacts import FilesystemArtifactStore
+from doc_forge.lifecycle.service import (
     DocumentArtifactRefs,
     DocumentLifecycleService,
     DocumentNotFoundError,
@@ -26,8 +26,8 @@ from parity.lifecycle.service import (
     UnsupportedDocumentError,
     UploadDocumentResult,
 )
-from parity.lifecycle.worker import DocumentLifecycleWorker
-from parity.query import (
+from doc_forge.lifecycle.worker import DocumentLifecycleWorker
+from doc_forge.query import (
     AnswerDraft,
     AnswerMode,
     AnswerModeDecision,
@@ -43,14 +43,14 @@ from parity.query import (
     SupportAssessment,
     SupportState,
 )
-from parity.query.errors import CorpusBoundaryUnavailableError, QueryExecutionFailedError
-from parity.query.review import (
+from doc_forge.query.errors import CorpusBoundaryUnavailableError, QueryExecutionFailedError
+from doc_forge.query.review import (
     QueryCitationReview,
     QueryReviewService,
     QueryRunReviewSummary,
     QueryTraceReview,
 )
-from parity.stages import DocumentRegistrationError
+from doc_forge.stages import DocumentRegistrationError
 
 from .deps import (
     get_artifact_store,
@@ -115,9 +115,9 @@ def create_app() -> FastAPI:
     """Create the internal lifecycle app."""
 
     configure_logging(
-        service=os.environ.get("PARITY_SERVICE_NAME", "parity-api"),
-        environment=os.environ.get("PARITY_ENVIRONMENT", "dev"),
-        level=os.environ.get("PARITY_LOG_LEVEL", "INFO"),
+        service=os.environ.get("DOC_FORGE_SERVICE_NAME", "doc_forge-api"),
+        environment=os.environ.get("DOC_FORGE_ENVIRONMENT", "dev"),
+        level=os.environ.get("DOC_FORGE_LOG_LEVEL", "INFO"),
     )
     app = FastAPI()
 

@@ -1,11 +1,11 @@
-# parity
+# doc_forge
 
 Minimal question-answering MVP scaffold for a user-provided document corpus.
 
 The current codebase is intentionally small. Today it exposes:
 
-- `src/parity/retrieval.py`: an in-memory `SemanticIndex` demo
-- `src/parity/cli.py`: a CLI that runs the retrieval demo
+- `src/doc_forge/retrieval.py`: an in-memory `SemanticIndex` demo
+- `src/doc_forge/cli.py`: a CLI that runs the retrieval demo
 
 The product target is broader than the current implementation. The product north star lives in `docs/evergreen/mvp.md`, which defines the MVP scope for question answering over a bounded PDF and Markdown corpus with inspectable evidence. Supporting delivery and workflow material may exist in `docs/delivery/`, but it is not the canonical scope definition.
 
@@ -19,9 +19,9 @@ The product target is broader than the current implementation. The product north
 
 ## Current Repository Shape
 
-- `src/parity/__init__.py`: package export surface
-- `src/parity/retrieval.py`: retrieval demo logic
-- `src/parity/cli.py`: demo CLI entry point
+- `src/doc_forge/__init__.py`: package export surface
+- `src/doc_forge/retrieval.py`: retrieval demo logic
+- `src/doc_forge/cli.py`: demo CLI entry point
 - `docs/evergreen/`: durable canonical product and repo documentation
 - `docs/delivery/`: planning, architecture, and workflow drafts retained for reference; not the product north star
 - `docs/workstreams/`: optional time-scoped execution records
@@ -62,7 +62,7 @@ docs/
   workstreams/
   adrs/
   harness/
-src/parity/
+src/doc_forge/
   __init__.py
   cli.py
   retrieval.py

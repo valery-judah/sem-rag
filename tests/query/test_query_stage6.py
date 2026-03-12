@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from parity._contracts import SourceReference
-from parity.query import (
+from doc_forge._contracts import SourceReference
+from doc_forge.query import (
     AnswerMode,
     ContextItem,
     ContextManifest,
@@ -19,9 +19,9 @@ from parity.query import (
     SynthesisMode,
     UnsupportedCapability,
 )
-from parity.query.answer_mode_policy import DeterministicAnswerModePolicy
-from parity.query.policies import QueryPolicyDefaults
-from parity.query.support_assessment import HybridSupportAssessor
+from doc_forge.query.answer_mode_policy import DeterministicAnswerModePolicy
+from doc_forge.query.policies import QueryPolicyDefaults
+from doc_forge.query.support_assessment import HybridSupportAssessor
 
 
 def _candidate(**overrides: object) -> RetrievedCandidate:

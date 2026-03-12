@@ -4,12 +4,12 @@ from __future__ import annotations
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from parity.query.context_assembly import (
+from doc_forge.query.context_assembly import (
     ContextAssembler,
     ContextAssemblyDecision,
     ContextAssemblyResult,
 )
-from parity.query.contracts import (
+from doc_forge.query.contracts import (
     ContextItem,
     ContextManifest,
     CorpusSnapshot,
@@ -18,8 +18,8 @@ from parity.query.contracts import (
     QueryRequest,
     QueryStageName,
 )
-from parity.query.policies import QueryPolicy
-from parity.query.trace import QueryStageTrace, QueryStageTraceStatus, utc_now
+from doc_forge.query.policies import QueryPolicy
+from doc_forge.query.trace import QueryStageTrace, QueryStageTraceStatus, utc_now
 
 STAGE_NAME = QueryStageName.ASSEMBLE_CONTEXT
 

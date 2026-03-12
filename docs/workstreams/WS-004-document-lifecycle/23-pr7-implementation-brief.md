@@ -15,7 +15,7 @@ updated: 2026-03-11
 - Use deterministic section replacement on retry.
 
 ## Implementation Changes
-- Add `src/parity/structure/sections.py` and `src/parity/stages/sectionize.py`.
+- Add `src/doc_forge/structure/sections.py` and `src/doc_forge/stages/sectionize.py`.
 - Extend `DocumentJobStage` with `SECTIONIZE`.
 - Use existing section repositories and normalized artifact storage.
 

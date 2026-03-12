@@ -5,15 +5,15 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from uuid import uuid4
 
-from parity.lifecycle import LifecycleEvent, LifecycleStage, ProcessingStatus
-from parity.lifecycle.readiness import ReadinessService
-from parity.persistence import (
+from doc_forge.lifecycle import LifecycleEvent, LifecycleStage, ProcessingStatus
+from doc_forge.lifecycle.readiness import ReadinessService
+from doc_forge.persistence import (
     DocumentJob,
     DocumentJobStage,
     DocumentRepository,
     LifecycleEventRepository,
 )
-from parity.stages.base import StageExecutionError, StageRunner
+from doc_forge.stages.base import StageExecutionError, StageRunner
 
 
 class ReadyDocumentStage(StageRunner):

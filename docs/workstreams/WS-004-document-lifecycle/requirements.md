@@ -247,9 +247,9 @@ Representative documents can reach `READY`, and later retrieval work can consume
 - `docs/evergreen/mvp.md`
 - `docs/evergreen/architecture.md`
 - `docs/delivery/workflow.md`
-- `src/parity/_contracts/models.py`
-- `src/parity/_contracts/lifecycle.py`
-- `src/parity/persistence.py`
+- `src/doc_forge/_contracts/models.py`
+- `src/doc_forge/_contracts/lifecycle.py`
+- `src/doc_forge/persistence.py`
 
 ## Open questions
 - Should normalization produce an explicit intermediate artifact in code, or can section/chunk derivation operate directly from a persisted normalized text representation?

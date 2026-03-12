@@ -8,16 +8,16 @@ import sqlalchemy as sa
 from sqlalchemy import event
 from sqlalchemy.engine import Engine
 
-from parity._contracts import ProcessingStatus, SourceType
-from parity.artifacts import FilesystemArtifactStore, RawArtifactRef
-from parity.lifecycle import LifecycleEvent
-from parity.persistence import (
+from doc_forge._contracts import ProcessingStatus, SourceType
+from doc_forge.artifacts import FilesystemArtifactStore, RawArtifactRef
+from doc_forge.lifecycle import LifecycleEvent
+from doc_forge.persistence import (
     SqlDocumentJobRepository,
     SqlDocumentRepository,
     SqlLifecycleEventRepository,
     apply_migrations,
 )
-from parity.stages import (
+from doc_forge.stages import (
     DocumentRegistrationError,
     RegisterDocumentRequest,
     RegisterDocumentStage,

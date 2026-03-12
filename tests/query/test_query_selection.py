@@ -2,15 +2,15 @@ from __future__ import annotations
 
 import pytest
 
-from parity._contracts import ProcessingStatus
-from parity.persistence import (
+from doc_forge._contracts import ProcessingStatus
+from doc_forge.persistence import (
     SqlChunkEmbeddingRepository,
     SqlChunkRepository,
     SqlDocumentRepository,
     SqlIndexEntryRepository,
     SqlSectionRepository,
 )
-from parity.query import (
+from doc_forge.query import (
     DuplicateSuppressionMode,
     InterpretedQuery,
     QueryPolicyDefaults,
@@ -20,8 +20,8 @@ from parity.query import (
     RetrievedCandidate,
     SynthesisMode,
 )
-from parity.query.selection import DeterministicQuerySelector
-from parity.readmodels import SqlQueryableCorpusReadModel
+from doc_forge.query.selection import DeterministicQuerySelector
+from doc_forge.readmodels import SqlQueryableCorpusReadModel
 
 pytestmark = pytest.mark.anyio
 

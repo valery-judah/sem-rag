@@ -17,7 +17,7 @@ updated: 2026-03-11
 ## Implementation Changes
 - Add `tests/pipeline/` end-to-end coverage and `tests/lifecycle/test_worker.py`.
 - Add `make run-api` and `make run-worker`.
-- Add a `python -m parity.lifecycle.worker` entrypoint and update evergreen docs.
+- Add a `python -m doc_forge.lifecycle.worker` entrypoint and update evergreen docs.
 
 ## Invariants
 - Developers can start the app and worker locally, upload documents, and observe them reach `READY`.

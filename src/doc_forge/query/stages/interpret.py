@@ -4,9 +4,9 @@ from __future__ import annotations
 
 from pydantic import BaseModel, ConfigDict
 
-from parity.query.contracts import CorpusSnapshot, QueryRequest, QueryStageName
-from parity.query.interpretation import QueryInterpretationResult, QueryInterpreter
-from parity.query.trace import QueryStageTrace, QueryStageTraceStatus, utc_now
+from doc_forge.query.contracts import CorpusSnapshot, QueryRequest, QueryStageName
+from doc_forge.query.interpretation import QueryInterpretationResult, QueryInterpreter
+from doc_forge.query.trace import QueryStageTrace, QueryStageTraceStatus, utc_now
 
 STAGE_NAME = QueryStageName.INTERPRET
 

@@ -52,11 +52,11 @@ test-e2e: install ## Run docker-backed end-to-end tests
 
 .PHONY: smoke-llm
 smoke-llm: ## Verify the optional embedding dependency group is installed
-	uv run python -c "from parity.indexing import require_sentence_transformers; require_sentence_transformers(); print('smoke-llm-ok')"
+	uv run python -c "from doc_forge.indexing import require_sentence_transformers; require_sentence_transformers(); print('smoke-llm-ok')"
 
 .PHONY: smoke-mac
 smoke-mac: ## Verify the optional Apple Silicon generation dependency group is installed
-	uv run python -c "from parity.indexing import require_sentence_transformers; from parity.query.answer_generation import require_mlx_lm; require_sentence_transformers(); require_mlx_lm(); print('smoke-mac-ok')"
+	uv run python -c "from doc_forge.indexing import require_sentence_transformers; from doc_forge.query.answer_generation import require_mlx_lm; require_sentence_transformers(); require_mlx_lm(); print('smoke-mac-ok')"
 
 .PHONY: verify
 verify: fmt-check lint type test ## Run the read-only verification suite
@@ -66,27 +66,27 @@ check: verify ## Alias for the read-only verification suite
 
 .PHONY: secret-scan
 secret-scan: ## Scan tracked repository files for leaked Gemini API keys
-	uv run python -m parity.devtools.secret_scan --scope repo
+	uv run python -m doc_forge.devtools.secret_scan --scope repo
 
 .PHONY: secret-scan-staged
 secret-scan-staged: ## Scan staged added lines for leaked Gemini API keys
-	uv run python -m parity.devtools.secret_scan --scope staged-added
+	uv run python -m doc_forge.devtools.secret_scan --scope staged-added
 
 .PHONY: install-git-hooks
 install-git-hooks: ## Configure git to use repo-managed hooks
 	git config core.hooksPath .githooks
 
 .PHONY: run
-run: install ## Run parity demo CLI
-	uv run python -m parity.cli
+run: install ## Run doc-forge demo CLI
+	uv run python -m doc_forge.cli
 
 .PHONY: run-api
 run-api: install ## Run the internal lifecycle FastAPI app
-	uv run uvicorn parity.app.api:app --reload
+	uv run uvicorn doc_forge.app.api:app --reload
 
 .PHONY: run-worker
 run-worker: install ## Run the internal lifecycle worker loop
-	uv run python -m parity.lifecycle.worker
+	uv run python -m doc_forge.lifecycle.worker
 
 .PHONY: migrate
 migrate: install ## Apply Alembic migrations using DATABASE_URL
@@ -124,7 +124,7 @@ docker-logs: ## Show recent API logs from the Docker stack
 
 .PHONY: docker-db-shell
 docker-db-shell: ## Open a psql shell inside the Docker Postgres service
-	$(DOCKER_COMPOSE) exec db psql -U "$${POSTGRES_USER:-parity}" -d "$${POSTGRES_DB:-parity}"
+	$(DOCKER_COMPOSE) exec db psql -U "$${POSTGRES_USER:-doc-forge}" -d "$${POSTGRES_DB:-doc-forge}"
 
 .PHONY: docker-smoke
 docker-smoke: ## Build, start, and probe the Docker stack readiness path

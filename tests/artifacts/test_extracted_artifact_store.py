@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from parity.artifacts import ExtractedArtifact, FilesystemArtifactStore
+from doc_forge.artifacts import ExtractedArtifact, FilesystemArtifactStore
 
 
 def test_extracted_artifact_store_round_trips_fixture_snapshot(tmp_path: Path) -> None:

@@ -30,8 +30,8 @@ Turn RFC Phase 2 into the first reviewable seed-corpus package for the eval harn
 - `docs/workstreams/WS-002-semantic-lock/eval-scenario-taxonomy-extracted-baseline.md`
 
 #### Current Implementation And Validation Artifacts
-- `src/parity/evaluation/`
-- `src/parity/_contracts/`
+- `src/doc_forge/evaluation/`
+- `src/doc_forge/_contracts/`
 - `tests/test_evaluation_harness.py`
 - `tests/test_contracts.py`
 - `tests/test_contract_seam.py`

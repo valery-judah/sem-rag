@@ -6,8 +6,8 @@ from typing import Any
 import pytest
 from pydantic import ValidationError
 
-from parity._contracts import SourceReference
-from parity.query import (
+from doc_forge._contracts import SourceReference
+from doc_forge.query import (
     AnswerDraft,
     AnswerMode,
     AnswerModeDecision,

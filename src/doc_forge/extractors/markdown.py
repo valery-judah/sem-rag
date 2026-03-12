@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import re
 
-from parity._contracts import SourceType
-from parity.artifacts import ExtractedArtifact, ExtractedArtifactBlock, ExtractedArtifactPage
+from doc_forge._contracts import SourceType
+from doc_forge.artifacts import ExtractedArtifact, ExtractedArtifactBlock, ExtractedArtifactPage
 
 from .base import ExtractionError
 

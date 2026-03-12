@@ -7,8 +7,8 @@ from typing import Protocol
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from parity.indexing import EmbeddingAdapter
-from parity.readmodels import QueryableCorpusReadModel, QueryableEmbeddedChunkRecord
+from doc_forge.indexing import EmbeddingAdapter
+from doc_forge.readmodels import QueryableCorpusReadModel, QueryableEmbeddedChunkRecord
 
 from .contracts import CorpusSnapshot, InterpretedQuery, QueryRequest, RetrievedCandidate
 from .policies import QueryPolicy

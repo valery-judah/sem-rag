@@ -118,7 +118,7 @@ Examples:
 ## Track Convention
 Use the path and ID prefix to show which system the work changes.
 
-- `docs/workstreams/WS-...`: parity service and runtime-related work
+- `docs/workstreams/WS-...`: doc_forge service and runtime-related work
 - `docs/harness-maintain/HR-...`: agentic-harness maintenance work for the documentation system that guides coding agents
 
 Use `work_type` for the kind of work and `WS` versus `HR` for the affected system.
@@ -146,7 +146,7 @@ status: active
 tags: [security, reliability]
 ```
 
-This avoids path churn when work evolves from `spike` to `feature` or from `defect` to a broader follow-on, while keeping the parity/runtime track separate from the agentic-harness track.
+This avoids path churn when work evolves from `spike` to `feature` or from `defect` to a broader follow-on, while keeping the doc_forge/runtime track separate from the agentic-harness track.
 
 ## Examples
 - Investigate whether to move auth cache to Redis: `spike`

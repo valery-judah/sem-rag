@@ -4,15 +4,15 @@ from __future__ import annotations
 
 from pydantic import BaseModel, ConfigDict
 
-from parity.query.contracts import (
+from doc_forge.query.contracts import (
     CorpusSnapshot,
     InterpretedQuery,
     QueryRequest,
     QueryStageName,
 )
-from parity.query.policies import QueryPolicy
-from parity.query.retrieval import DenseQueryRetriever, QueryRetrievalResult
-from parity.query.trace import QueryStageTrace, QueryStageTraceStatus, utc_now
+from doc_forge.query.policies import QueryPolicy
+from doc_forge.query.retrieval import DenseQueryRetriever, QueryRetrievalResult
+from doc_forge.query.trace import QueryStageTrace, QueryStageTraceStatus, utc_now
 
 STAGE_NAME = QueryStageName.RETRIEVE
 

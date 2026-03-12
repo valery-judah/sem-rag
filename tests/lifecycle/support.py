@@ -5,17 +5,17 @@ from datetime import UTC, datetime
 
 from sqlalchemy.engine import Connection
 
-from parity._contracts import Chunk, ProcessingStatus, Section, SourceType
-from parity.indexing import ChunkEmbedding, IndexEntry, VectorSearchHit
-from parity.lifecycle.models import FailureCategory, LifecycleEvent, LifecycleStage
-from parity.persistence import (
+from doc_forge._contracts import Chunk, ProcessingStatus, Section, SourceType
+from doc_forge.indexing import ChunkEmbedding, IndexEntry, VectorSearchHit
+from doc_forge.lifecycle.models import FailureCategory, LifecycleEvent, LifecycleStage
+from doc_forge.persistence import (
     DocumentJob,
     DocumentJobStage,
     DocumentJobStatus,
     PersistedDocument,
 )
-from parity.stages import RegisterDocumentRequest
-from parity.stages.base import StageExecutionError
+from doc_forge.stages import RegisterDocumentRequest
+from doc_forge.stages.base import StageExecutionError
 
 FIXED_NOW = datetime(2026, 3, 11, 12, 0, tzinfo=UTC)
 

@@ -4,11 +4,11 @@ from datetime import UTC, datetime
 
 import pytest
 
-from parity._contracts import ProcessingStatus, SourceType
-from parity.artifacts import FilesystemArtifactStore, NormalizedArtifact, NormalizedArtifactBlock
-from parity.indexing import DeterministicEmbeddingAdapter, SqlVectorStore
-from parity.lifecycle.readiness import ReadinessService
-from parity.persistence import (
+from doc_forge._contracts import ProcessingStatus, SourceType
+from doc_forge.artifacts import FilesystemArtifactStore, NormalizedArtifact, NormalizedArtifactBlock
+from doc_forge.indexing import DeterministicEmbeddingAdapter, SqlVectorStore
+from doc_forge.lifecycle.readiness import ReadinessService
+from doc_forge.persistence import (
     SqlChunkEmbeddingRepository,
     SqlChunkRepository,
     SqlDocumentRepository,

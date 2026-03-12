@@ -2,7 +2,12 @@
 
 from __future__ import annotations
 
-from parity.query.contracts import EvidenceGroupingMode, EvidenceSet, EvidenceUnit, QueryStageName
+from doc_forge.query.contracts import (
+    EvidenceGroupingMode,
+    EvidenceSet,
+    EvidenceUnit,
+    QueryStageName,
+)
 
 STAGE_NAME = QueryStageName.SELECT
 

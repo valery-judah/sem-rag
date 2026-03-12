@@ -8,8 +8,8 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
-from parity.persistence.jobs import document_jobs_table
-from parity.persistence.models import metadata
+from doc_forge.persistence.jobs import document_jobs_table
+from doc_forge.persistence.models import metadata
 
 config = context.config
 

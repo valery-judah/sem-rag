@@ -57,9 +57,9 @@ For query subsystem work, use this stable route before adding phase-specific dis
 5. `docs/workstreams/WS-006-query-lifecycle/query_subsystem_staged_implementation_plan.md`
 6. `docs/workstreams/WS-006-query-lifecycle/07_design.md`
 7. the latest implemented WS-006 stage note
-8. `src/parity/query/service.py`, `src/parity/query/contracts.py`, `src/parity/query/persistence.py`, and `src/parity/query/stages/`
-9. `src/parity/readmodels/documents.py`
-10. `src/parity/app/api.py` and `src/parity/app/deps.py`
+8. `src/doc_forge/query/service.py`, `src/doc_forge/query/contracts.py`, `src/doc_forge/query/persistence.py`, and `src/doc_forge/query/stages/`
+9. `src/doc_forge/readmodels/documents.py`
+10. `src/doc_forge/app/api.py` and `src/doc_forge/app/deps.py`
 11. `tests/readmodels/test_queryable_corpus_read_model.py`, `tests/query/`, and `tests/app/test_runtime_api.py`
 
 The current workstream stage note should then add only the phase-specific route changes on top of this baseline.

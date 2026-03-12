@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from parity._contracts import SourceReference
+from doc_forge._contracts import SourceReference
 
 from .models import CaseResult, EvaluationCase, SystemUnderTest
 

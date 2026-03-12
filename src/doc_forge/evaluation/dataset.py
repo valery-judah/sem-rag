@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from parity._contracts import AnswerStatus
+from doc_forge._contracts import AnswerStatus
 
 from .fixtures import INSUFFICIENT_EVIDENCE_QUESTION, SUPPORTED_QUESTION
 from .models import EvaluationCase, ProvenanceExpectation

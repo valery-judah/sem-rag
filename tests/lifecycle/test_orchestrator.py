@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from parity.lifecycle.orchestrator import DocumentLifecycleOrchestrator
-from parity.persistence import DocumentJobStage, DocumentJobStatus
+from doc_forge.lifecycle.orchestrator import DocumentLifecycleOrchestrator
+from doc_forge.persistence import DocumentJobStage, DocumentJobStatus
 from tests.lifecycle.support import InMemoryJobRepository, make_job
 
 

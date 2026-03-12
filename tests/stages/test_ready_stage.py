@@ -4,11 +4,11 @@ from datetime import UTC, datetime
 
 import pytest
 
-from parity._contracts import Chunk, ProcessingStatus, Section, SourceType
-from parity.artifacts import FilesystemArtifactStore, NormalizedArtifact, NormalizedArtifactBlock
-from parity.indexing import DeterministicEmbeddingAdapter, SqlVectorStore
-from parity.lifecycle.readiness import ReadinessService
-from parity.persistence import (
+from doc_forge._contracts import Chunk, ProcessingStatus, Section, SourceType
+from doc_forge.artifacts import FilesystemArtifactStore, NormalizedArtifact, NormalizedArtifactBlock
+from doc_forge.indexing import DeterministicEmbeddingAdapter, SqlVectorStore
+from doc_forge.lifecycle.readiness import ReadinessService
+from doc_forge.persistence import (
     DocumentJobStage,
     PersistedDocument,
     SqlChunkEmbeddingRepository,
@@ -18,8 +18,8 @@ from parity.persistence import (
     SqlLifecycleEventRepository,
     SqlSectionRepository,
 )
-from parity.stages.base import StageExecutionError
-from parity.stages.ready import ReadyDocumentStage
+from doc_forge.stages.base import StageExecutionError
+from doc_forge.stages.ready import ReadyDocumentStage
 
 
 def test_ready_stage_requires_provenance_and_smoke_query(

@@ -257,14 +257,14 @@ extract_scalar() {
 }
 
 echo "==> Configuring Docker permissions..."
-export PARITY_UID="$(id -u)"
-export PARITY_GID="$(id -g)"
+export DOC_FORGE_UID="$(id -u)"
+export DOC_FORGE_GID="$(id -g)"
 
 echo "==> Setting shared backend variables..."
-export PARITY_EMBEDDING_BACKEND="sentence-transformers"
-export PARITY_ANSWER_GENERATOR_BACKEND="deterministic"
+export DOC_FORGE_EMBEDDING_BACKEND="sentence-transformers"
+export DOC_FORGE_ANSWER_GENERATOR_BACKEND="deterministic"
 export OLLAMA_BASE_URL="$OLLAMA_BASE_URL_FOR_CONTAINERS"
-unset PARITY_ANSWER_GENERATOR_MODEL
+unset DOC_FORGE_ANSWER_GENERATOR_MODEL
 
 if [ "$USE_HOST_OLLAMA" = "1" ]; then
   echo "==> Using host Ollama for GPU-backed generation..."
@@ -379,8 +379,8 @@ else
 fi
 
 echo "==> Recreating only the API service with Ollama generation..."
-export PARITY_ANSWER_GENERATOR_BACKEND="ollama"
-export PARITY_ANSWER_GENERATOR_MODEL="$OLLAMA_MODEL"
+export DOC_FORGE_ANSWER_GENERATOR_BACKEND="ollama"
+export DOC_FORGE_ANSWER_GENERATOR_MODEL="$OLLAMA_MODEL"
 docker compose up -d --force-recreate api
 
 wait_for_http_ready "API" "$API_URL/readyz" 30 2 \

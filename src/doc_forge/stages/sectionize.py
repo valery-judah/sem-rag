@@ -2,16 +2,16 @@
 
 from __future__ import annotations
 
-from parity.artifacts import FilesystemArtifactStore
-from parity.lifecycle import ProcessingStatus
-from parity.persistence import (
+from doc_forge.artifacts import FilesystemArtifactStore
+from doc_forge.lifecycle import ProcessingStatus
+from doc_forge.persistence import (
     DocumentJob,
     DocumentJobStage,
     DocumentRepository,
     SectionRepository,
 )
-from parity.stages.base import StageExecutionError, StageRunner
-from parity.structure import SectionDerivationService
+from doc_forge.stages.base import StageExecutionError, StageRunner
+from doc_forge.structure import SectionDerivationService
 
 
 class SectionizeDocumentStage(StageRunner):

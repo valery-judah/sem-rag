@@ -26,9 +26,9 @@ It does not create a public API contract or broaden MVP scope.
 ## Problem statement
 The repo already contains internal retrieval and answer-related seams:
 
-- `src/parity/retrieval.py` provides a demo retriever
-- `src/parity/app/api.py` exposes an internal document-scoped retrieval smoke route
-- `src/parity/_contracts/models.py` defines internal `Answer`, `RetrievalHit`, and `SourceReference` shapes
+- `src/doc_forge/retrieval.py` provides a demo retriever
+- `src/doc_forge/app/api.py` exposes an internal document-scoped retrieval smoke route
+- `src/doc_forge/_contracts/models.py` defines internal `Answer`, `RetrievalHit`, and `SourceReference` shapes
 
 Those seams do not yet add up to the MVP query lifecycle described in `docs/delivery/workflow.md`.
 
@@ -327,10 +327,10 @@ Representative unsupported or degraded scenarios abstain or narrow scope honestl
 - `docs/evergreen/eval-scenario-taxonomy.md`
 - `docs/evergreen/eval-failure-taxonomy.md`
 - `docs/workstreams/WS-003-seed-corpus/21_critical_failures.md`
-- `src/parity/_contracts/models.py`
-- `src/parity/retrieval.py`
-- `src/parity/app/api.py`
-- `src/parity/evaluation/`
+- `src/doc_forge/_contracts/models.py`
+- `src/doc_forge/retrieval.py`
+- `src/doc_forge/app/api.py`
+- `src/doc_forge/evaluation/`
 
 ## Open questions
 - Should MVP query execution operate corpus-wide immediately, or should it temporarily route through document-scoped retrieval seams while the broader query path is being built?

@@ -5,9 +5,9 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from uuid import uuid4
 
-from parity.indexing import VectorStore
-from parity.lifecycle import LifecycleEvent, LifecycleStage, ProcessingStatus
-from parity.persistence import (
+from doc_forge.indexing import VectorStore
+from doc_forge.lifecycle import LifecycleEvent, LifecycleStage, ProcessingStatus
+from doc_forge.persistence import (
     ChunkEmbeddingRepository,
     ChunkRepository,
     DocumentJob,
@@ -16,7 +16,7 @@ from parity.persistence import (
     IndexEntryRepository,
     LifecycleEventRepository,
 )
-from parity.stages.base import StageExecutionError, StageRunner
+from doc_forge.stages.base import StageExecutionError, StageRunner
 
 
 class IndexDocumentStage(StageRunner):

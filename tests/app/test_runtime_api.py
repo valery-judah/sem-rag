@@ -10,18 +10,18 @@ from fastapi.routing import APIRoute
 from pydantic import ValidationError
 from sqlalchemy.engine import Engine
 
-from parity._contracts import ProcessingStatus
-from parity.app.api import QuerySubmissionResult, RetrievalQueryRequest
-from parity.app.deps import (
+from doc_forge._contracts import ProcessingStatus
+from doc_forge.app.api import QuerySubmissionResult, RetrievalQueryRequest
+from doc_forge.app.deps import (
     get_document_lifecycle_service,
     get_query_review_service,
     get_query_service,
     get_queryable_corpus_read_model,
 )
-from parity.artifacts import FilesystemArtifactStore
-from parity.indexing import DeterministicEmbeddingAdapter, SqlVectorStore
-from parity.lifecycle import FailureCategory, LifecycleStage
-from parity.persistence import (
+from doc_forge.artifacts import FilesystemArtifactStore
+from doc_forge.indexing import DeterministicEmbeddingAdapter, SqlVectorStore
+from doc_forge.lifecycle import FailureCategory, LifecycleStage
+from doc_forge.persistence import (
     DocumentJob,
     DocumentJobStage,
     DocumentJobStatus,
@@ -31,10 +31,10 @@ from parity.persistence import (
     SqlIndexEntryRepository,
     SqlLifecycleEventRepository,
 )
-from parity.query import QueryRequest
-from parity.query.contracts import QueryRun, QueryRunStatus, QueryStageName, QueryTerminalFailure
-from parity.query.errors import QueryExecutionFailedError
-from parity.query.persistence import (
+from doc_forge.query import QueryRequest
+from doc_forge.query.contracts import QueryRun, QueryRunStatus, QueryStageName, QueryTerminalFailure
+from doc_forge.query.errors import QueryExecutionFailedError
+from doc_forge.query.persistence import (
     SqlQueryAnswerStore,
     SqlQueryRunStore,
     SqlQuerySnapshotStore,

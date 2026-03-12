@@ -9,10 +9,10 @@ from uuid import uuid4
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from parity._contracts import Chunk, ProcessingStatus, Section, SourceType
-from parity.artifacts import FilesystemArtifactStore
-from parity.indexing import ChunkEmbedding, IndexEntry, VectorSearchHit, VectorStore
-from parity.persistence import (
+from doc_forge._contracts import Chunk, ProcessingStatus, Section, SourceType
+from doc_forge.artifacts import FilesystemArtifactStore
+from doc_forge.indexing import ChunkEmbedding, IndexEntry, VectorSearchHit, VectorStore
+from doc_forge.persistence import (
     ChunkEmbeddingRepository,
     ChunkRepository,
     DocumentJobRepository,
@@ -23,7 +23,7 @@ from parity.persistence import (
     PersistedDocument,
     SectionRepository,
 )
-from parity.stages import RegisterDocumentRequest, RegisterDocumentStage
+from doc_forge.stages import RegisterDocumentRequest, RegisterDocumentStage
 
 from .orchestrator import DocumentLifecycleOrchestrator
 

@@ -4,8 +4,8 @@ from datetime import UTC, datetime
 
 import pytest
 
-from parity.indexing import IndexEntry
-from parity.persistence import (
+from doc_forge.indexing import IndexEntry
+from doc_forge.persistence import (
     SqlChunkRepository,
     SqlDocumentRepository,
     SqlIndexEntryRepository,

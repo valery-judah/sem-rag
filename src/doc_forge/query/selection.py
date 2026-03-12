@@ -8,8 +8,8 @@ from typing import Protocol
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from parity._contracts import SourceReference
-from parity.readmodels import (
+from doc_forge._contracts import SourceReference
+from doc_forge.readmodels import (
     QueryableChunkRecord,
     QueryableCorpusReadModel,
     QueryableDocumentRecord,

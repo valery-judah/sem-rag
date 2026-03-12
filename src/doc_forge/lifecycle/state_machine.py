@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from parity.lifecycle.errors import InvalidLifecycleTransitionError
-from parity.lifecycle.status import ProcessingStatus
+from doc_forge.lifecycle.errors import InvalidLifecycleTransitionError
+from doc_forge.lifecycle.status import ProcessingStatus
 
 _LINEAR_TRANSITIONS: dict[ProcessingStatus, frozenset[ProcessingStatus]] = {
     ProcessingStatus.UPLOADED: frozenset({ProcessingStatus.REGISTERED}),

@@ -5,8 +5,8 @@ from datetime import UTC, datetime
 import pytest
 from pydantic import ValidationError
 
-import parity._contracts as contracts
-from parity.lifecycle import (
+import doc_forge._contracts as contracts
+from doc_forge.lifecycle import (
     FailureCategory,
     LifecycleEvent,
     LifecycleStage,

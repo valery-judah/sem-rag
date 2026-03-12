@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import re
 
-from parity.artifacts import ExtractedArtifact, NormalizedArtifact, NormalizedArtifactBlock
+from doc_forge.artifacts import ExtractedArtifact, NormalizedArtifact, NormalizedArtifactBlock
 
 from .base import NormalizationError
 

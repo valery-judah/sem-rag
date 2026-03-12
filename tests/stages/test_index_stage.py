@@ -4,15 +4,15 @@ from datetime import UTC, datetime
 
 import pytest
 
-from parity._contracts import Chunk, ProcessingStatus, Section, SourceType
-from parity.indexing import (
+from doc_forge._contracts import Chunk, ProcessingStatus, Section, SourceType
+from doc_forge.indexing import (
     ChunkEmbedding,
     DeterministicEmbeddingAdapter,
     IndexEntry,
     SqlVectorStore,
     VectorSearchHit,
 )
-from parity.persistence import (
+from doc_forge.persistence import (
     DocumentJobStage,
     PersistedDocument,
     SqlChunkEmbeddingRepository,
@@ -22,8 +22,8 @@ from parity.persistence import (
     SqlLifecycleEventRepository,
     SqlSectionRepository,
 )
-from parity.stages.base import StageExecutionError
-from parity.stages.index import IndexDocumentStage
+from doc_forge.stages.base import StageExecutionError
+from doc_forge.stages.index import IndexDocumentStage
 
 
 def test_index_stage_publishes_all_chunks(sql_engine, document_job_factory) -> None:

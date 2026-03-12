@@ -4,17 +4,10 @@ from __future__ import annotations
 
 import importlib
 from collections.abc import Callable
-
-import structlog
-
-
-def _logger() -> structlog.stdlib.BoundLogger:
-    return structlog.get_logger(__name__)
-
-
 from functools import lru_cache
 from typing import Protocol, cast
 
+import structlog
 from pydantic import BaseModel, ConfigDict, Field
 
 from .contracts import (
@@ -30,6 +23,11 @@ from .contracts import (
     SupportState,
 )
 from .policies import QueryPolicy
+
+
+def _logger() -> structlog.stdlib.BoundLogger:
+    return structlog.get_logger(__name__)
+
 
 GENERATOR_VERSION = "answer_generation.deterministic.v1"
 MLX_GENERATOR_VERSION = "answer_generation.mlx.v1"
@@ -569,11 +567,6 @@ def _lowercase_first(text: str) -> str:
     return text[:1].lower() + text[1:]
 
 
-import json
-import os
-import urllib.request
-
-
 class _OllamaBackend:
     def generate(
         self,
@@ -583,6 +576,10 @@ class _OllamaBackend:
         max_new_tokens: int,
         temperature: float,
     ) -> str:
+        import json
+        import os
+        import urllib.request
+
         base_url = os.environ.get("OLLAMA_BASE_URL", "http://127.0.0.1:11434")
         url = f"{base_url.rstrip('/')}/api/generate"
         data = {
@@ -599,7 +596,7 @@ class _OllamaBackend:
                 result = json.loads(response.read().decode("utf-8"))
                 return result.get("response", "").strip()
         except Exception as e:
-            raise RuntimeError(f"Ollama generation failed: {e}")
+            raise RuntimeError(f"Ollama generation failed: {e}") from e
 
 
 class OllamaGroundedAnswerGenerator:

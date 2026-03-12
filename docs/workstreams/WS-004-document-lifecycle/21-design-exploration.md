@@ -1418,7 +1418,7 @@ For MVP local deployment, security is intentionally simple.
 Suggested Python package layout:
 
 ```text
-src/parity/
+src/doc_forge/
   app/
     api.py
     deps.py

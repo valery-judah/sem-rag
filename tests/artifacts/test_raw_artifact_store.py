@@ -4,8 +4,8 @@ from pathlib import Path
 
 import pytest
 
-from parity._contracts import SourceType
-from parity.artifacts import FilesystemArtifactStore
+from doc_forge._contracts import SourceType
+from doc_forge.artifacts import FilesystemArtifactStore
 
 
 def test_raw_artifact_store_round_trips_markdown_bytes(tmp_path: Path) -> None:

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from parity.indexing import SentenceTransformerEmbeddingAdapter
+from doc_forge.indexing import SentenceTransformerEmbeddingAdapter
 
 
 class _FakeSentenceTransformerModel:

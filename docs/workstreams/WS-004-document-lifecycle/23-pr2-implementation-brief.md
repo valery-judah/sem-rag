@@ -11,25 +11,25 @@ updated: 2026-03-11
 
 ## Summary
 - Introduce the durable storage foundation for the document lifecycle: Postgres metadata plus filesystem-backed raw and intermediate artifacts.
-- Convert `parity.persistence` from a single SQLite module into a package with an explicit migration path, while keeping current import sites working.
+- Convert `doc_forge.persistence` from a single SQLite module into a package with an explicit migration path, while keeping current import sites working.
 - Add storage seams for documents, lifecycle events, document jobs, and raw/extracted/normalized artifacts without yet implementing intake, extraction, or worker execution.
 
 ## Implementation Changes
-- Replace `src/parity/persistence.py` with a `src/parity/persistence/` package.
-- Add `src/parity/persistence/__init__.py` as the compatibility surface for existing `parity.persistence` imports.
-- Move the current SQLite helpers into a compatibility module such as `src/parity/persistence/sqlite_compat.py` and re-export them from `__init__.py` so current contract and persistence tests do not break during PR 2.
-- Add `src/parity/persistence/models.py` as the canonical schema definition for the new Postgres-backed lifecycle tables.
-- Add `src/parity/persistence/repositories.py` for explicit repository protocols and first concrete Postgres implementations for:
+- Replace `src/doc_forge/persistence.py` with a `src/doc_forge/persistence/` package.
+- Add `src/doc_forge/persistence/__init__.py` as the compatibility surface for existing `doc_forge.persistence` imports.
+- Move the current SQLite helpers into a compatibility module such as `src/doc_forge/persistence/sqlite_compat.py` and re-export them from `__init__.py` so current contract and persistence tests do not break during PR 2.
+- Add `src/doc_forge/persistence/models.py` as the canonical schema definition for the new Postgres-backed lifecycle tables.
+- Add `src/doc_forge/persistence/repositories.py` for explicit repository protocols and first concrete Postgres implementations for:
   - document metadata
   - lifecycle event persistence
   - document job persistence
-- Add `src/parity/persistence/jobs.py` for job-row runtime types and repository helpers, but do not implement worker claiming or execution loops yet.
-- Add `src/parity/persistence/migrations/` with the initial migration and migration bootstrap.
-- Add `src/parity/artifacts/schemas.py` for storage-facing artifact payloads and references:
+- Add `src/doc_forge/persistence/jobs.py` for job-row runtime types and repository helpers, but do not implement worker claiming or execution loops yet.
+- Add `src/doc_forge/persistence/migrations/` with the initial migration and migration bootstrap.
+- Add `src/doc_forge/artifacts/schemas.py` for storage-facing artifact payloads and references:
   - `RawArtifactRef`
   - `ExtractedArtifact`
   - `NormalizedArtifact`
-- Add `src/parity/artifacts/store.py` for a filesystem-backed `ArtifactStore` that reads and writes:
+- Add `src/doc_forge/artifacts/store.py` for a filesystem-backed `ArtifactStore` that reads and writes:
   - raw uploaded files as bytes
   - extracted artifacts as JSON
   - normalized artifacts as JSON
@@ -38,7 +38,7 @@ updated: 2026-03-11
 ## Persistence Design Decisions
 - Use Postgres for lifecycle metadata and filesystem storage for large inspectable artifacts. This matches the workstream design split and keeps raw/extracted/normalized payloads easy to inspect.
 - Use SQLAlchemy Core plus Alembic for schema definition and migrations. PR 2 should avoid an ORM-heavy domain rewrite; the repository layer remains responsible for mapping storage rows into internal runtime models.
-- Keep `Document`, `Section`, and `Chunk` under `src/parity/_contracts/` for now. PR 2 should not combine persistence work with another shared-model namespace migration.
+- Keep `Document`, `Section`, and `Chunk` under `src/doc_forge/_contracts/` for now. PR 2 should not combine persistence work with another shared-model namespace migration.
 - Keep the current `Document` contract shape stable in PR 2 even if the new `documents` table carries forward-looking columns such as `checksum`, `raw_storage_path`, `failure_code`, and `failure_detail`.
 - Persist `LifecycleEvent.failure_category` explicitly rather than dropping it into opaque JSON, because PR 1 made failure taxonomy a real lifecycle concept.
 - Add `document_jobs` now as a durable queue foundation, but keep job dispatch, retry policy, and worker ownership rules for PR 4.
@@ -98,7 +98,7 @@ data/
 ## Public And Internal Boundaries
 - This PR does not create a stable public API, CLI contract, or HTTP contract.
 - The new Postgres schema is an internal implementation seam, not an evergreen API contract.
-- Do not wire the retrieval demo in `src/parity/retrieval.py` to this new persistence layer in PR 2.
+- Do not wire the retrieval demo in `src/doc_forge/retrieval.py` to this new persistence layer in PR 2.
 - Do not implement upload endpoints, file-type validation, checksum derivation, extraction, normalization, or readiness checks in PR 2.
 - Do not delete the current SQLite-backed helpers outright. Keep them as an internal compatibility seam until later PRs finish moving runtime call sites onto the new repositories.
 
@@ -138,7 +138,7 @@ data/
 - Use a disposable Postgres database for migration and repository tests. These tests should exercise the real schema path, not in-memory fakes.
 - Use a real temp filesystem for artifact-store tests so path handling, directory creation, and overwrite behavior are verified against actual files.
 - Keep synthetic factories for storage-facing models in the relevant package-level `conftest.py` files rather than introducing stage-runner fixtures prematurely.
-- Preserve the current SQLite compatibility tests during the package conversion so `parity.persistence` import compatibility remains covered while the new Postgres seam is added.
+- Preserve the current SQLite compatibility tests during the package conversion so `doc_forge.persistence` import compatibility remains covered while the new Postgres seam is added.
 
 ### Explicitly Deferred Test Work
 - Do not add `tests/stages/` in PR 2. Stage-runner tests belong to the PRs that introduce registration, extraction, normalization, chunking, indexing, and readiness runtimes.

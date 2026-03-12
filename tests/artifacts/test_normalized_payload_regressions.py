@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from parity._contracts import SourceType
-from parity.artifacts import NormalizedArtifact
-from parity.extractors import MarkdownExtractor
-from parity.normalizers import MarkdownNormalizer
+from doc_forge._contracts import SourceType
+from doc_forge.artifacts import NormalizedArtifact
+from doc_forge.extractors import MarkdownExtractor
+from doc_forge.normalizers import MarkdownNormalizer
 
 
 def _source_path(name: str) -> Path:

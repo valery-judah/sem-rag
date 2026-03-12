@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from parity.app.deps import (
+from doc_forge.app.deps import (
     get_document_lifecycle_service,
     get_query_service,
     get_queryable_corpus_read_model,
     reset_runtime_caches,
 )
-from parity.artifacts import FilesystemArtifactStore
+from doc_forge.artifacts import FilesystemArtifactStore
 
 
 class _FakeSentenceEmbeddingAdapter:
@@ -40,10 +40,10 @@ def test_runtime_services_use_sentence_transformers_when_configured(
     tmp_path,
 ) -> None:
     monkeypatch.setenv("DATABASE_URL", db_url)
-    monkeypatch.setenv("PARITY_EMBEDDING_BACKEND", "sentence-transformers")
-    monkeypatch.setenv("PARITY_EMBEDDING_MODEL", "sentence-transformers/test-model")
+    monkeypatch.setenv("DOC_FORGE_EMBEDDING_BACKEND", "sentence-transformers")
+    monkeypatch.setenv("DOC_FORGE_EMBEDDING_MODEL", "sentence-transformers/test-model")
     monkeypatch.setattr(
-        "parity.app.deps.SentenceTransformerEmbeddingAdapter",
+        "doc_forge.app.deps.SentenceTransformerEmbeddingAdapter",
         _FakeSentenceEmbeddingAdapter,
     )
     reset_runtime_caches()
@@ -75,11 +75,11 @@ def test_query_service_uses_mlx_answer_generator_when_configured(
     db_url: str,
 ) -> None:
     monkeypatch.setenv("DATABASE_URL", db_url)
-    monkeypatch.setenv("PARITY_ANSWER_GENERATOR_BACKEND", "mlx")
-    monkeypatch.setenv("PARITY_ANSWER_GENERATOR_MODEL", "mlx-community/test-model")
-    monkeypatch.setenv("PARITY_ANSWER_GENERATOR_MAX_NEW_TOKENS", "64")
-    monkeypatch.setenv("PARITY_ANSWER_GENERATOR_TEMPERATURE", "0.2")
-    monkeypatch.setattr("parity.app.deps.MlxGroundedAnswerGenerator", _FakeMlxGenerator)
+    monkeypatch.setenv("DOC_FORGE_ANSWER_GENERATOR_BACKEND", "mlx")
+    monkeypatch.setenv("DOC_FORGE_ANSWER_GENERATOR_MODEL", "mlx-community/test-model")
+    monkeypatch.setenv("DOC_FORGE_ANSWER_GENERATOR_MAX_NEW_TOKENS", "64")
+    monkeypatch.setenv("DOC_FORGE_ANSWER_GENERATOR_TEMPERATURE", "0.2")
+    monkeypatch.setattr("doc_forge.app.deps.MlxGroundedAnswerGenerator", _FakeMlxGenerator)
     reset_runtime_caches()
 
     service = get_query_service(

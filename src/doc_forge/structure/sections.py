@@ -5,9 +5,9 @@ from __future__ import annotations
 from collections import defaultdict
 from dataclasses import dataclass
 
-from parity._contracts import Section, SourceType
-from parity.artifacts import NormalizedArtifact, NormalizedArtifactBlock
-from parity.persistence import PersistedDocument
+from doc_forge._contracts import Section, SourceType
+from doc_forge.artifacts import NormalizedArtifact, NormalizedArtifactBlock
+from doc_forge.persistence import PersistedDocument
 
 
 @dataclass(slots=True)

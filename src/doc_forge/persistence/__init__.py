@@ -1,6 +1,6 @@
 """Persistence package for compatibility SQLite helpers and lifecycle metadata storage."""
 
-from parity.indexing import ChunkEmbedding, IndexEntry
+from doc_forge.indexing import ChunkEmbedding, IndexEntry
 
 from .jobs import DocumentJob, DocumentJobStage, DocumentJobStatus
 from .migrations import apply_migrations, apply_migrations_with_lock

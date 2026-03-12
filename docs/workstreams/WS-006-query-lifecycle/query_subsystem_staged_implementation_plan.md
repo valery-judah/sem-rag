@@ -572,7 +572,7 @@ This stage is done when:
 
 This acceptance gate is now satisfied in the repo through:
 
-- executable Stage 5 context assembly in `src/parity/query/context_assembly.py` and `src/parity/query/stages/context.py`;
+- executable Stage 5 context assembly in `src/doc_forge/query/context_assembly.py` and `src/doc_forge/query/stages/context.py`;
 - `QueryService.execute_until_context_assembly()` orchestration;
 - internal `POST /queries` responses that include `context_manifest`;
 - Stage 5 trace persistence in `query_stage_traces`;

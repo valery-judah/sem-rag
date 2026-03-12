@@ -6,9 +6,9 @@ import pytest
 from fastapi import FastAPI, HTTPException
 from fastapi.routing import APIRoute
 
-from parity.app.deps import get_document_lifecycle_service
-from parity.artifacts import FilesystemArtifactStore
-from parity.stages import DocumentRegistrationError, RegisterDocumentStage
+from doc_forge.app.deps import get_document_lifecycle_service
+from doc_forge.artifacts import FilesystemArtifactStore
+from doc_forge.stages import DocumentRegistrationError, RegisterDocumentStage
 
 pytestmark = pytest.mark.anyio
 

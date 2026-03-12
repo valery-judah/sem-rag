@@ -7,14 +7,14 @@ import os
 
 import uvicorn
 
-from parity.lifecycle.worker import main as worker_main
-from parity.persistence import apply_migrations_with_lock
+from doc_forge.lifecycle.worker import main as worker_main
+from doc_forge.persistence import apply_migrations_with_lock
 
 
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="python -m parity.runtime",
-        description="Run a parity runtime command.",
+        prog="python -m doc_forge.runtime",
+        description="Run a doc_forge runtime command.",
     )
     parser.add_argument(
         "command",
@@ -25,7 +25,7 @@ def _build_parser() -> argparse.ArgumentParser:
 
 
 def _auto_migrate_enabled() -> bool:
-    return os.environ.get("PARITY_AUTO_MIGRATE", "").strip().lower() in {
+    return os.environ.get("DOC_FORGE_AUTO_MIGRATE", "").strip().lower() in {
         "1",
         "true",
         "yes",
@@ -44,7 +44,7 @@ def main() -> None:
     if args.command == "api":
         _maybe_apply_migrations()
         uvicorn.run(
-            "parity.app.api:app",
+            "doc_forge.app.api:app",
             host="0.0.0.0",
             port=int(os.environ.get("PORT", "8000")),
         )

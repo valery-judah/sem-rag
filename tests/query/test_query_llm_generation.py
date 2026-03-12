@@ -1,7 +1,10 @@
 from __future__ import annotations
 
-from parity.query.answer_generation import MlxGroundedAnswerGenerator, OllamaGroundedAnswerGenerator
-from parity.query.contracts import (
+from doc_forge.query.answer_generation import (
+    MlxGroundedAnswerGenerator,
+    OllamaGroundedAnswerGenerator,
+)
+from doc_forge.query.contracts import (
     AnswerMode,
     AnswerModeDecision,
     ContextItem,
@@ -15,7 +18,7 @@ from parity.query.contracts import (
     SupportState,
     SynthesisMode,
 )
-from parity.query.policies import QueryPolicyDefaults
+from doc_forge.query.policies import QueryPolicyDefaults
 
 
 class _FakeLlmBackend:
@@ -215,7 +218,8 @@ def test_ollama_grounded_answer_generator_discards_prompt_echo_and_falls_back() 
                     rendered_text=(
                         "Atlas Cache Design | cross_document_synthesis | Atlas > Caching\n"
                         "[p. 2] Atlas Cache Design: Atlas uses immediate invalidation.\n"
-                        "[p. 4] Beacon Dashboard Cache: Beacon uses a 15-minute TTL and allows stale reads."
+                        "[p. 4] Beacon Dashboard Cache: Beacon uses a 15-minute TTL "
+                        "and allows stale reads."
                     ),
                     contributing_doc_ids=["doc-1", "doc-2"],
                     heading_paths=[["Atlas", "Caching"], ["Beacon", "Caching"]],

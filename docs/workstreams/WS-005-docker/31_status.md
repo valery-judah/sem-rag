@@ -10,7 +10,7 @@ The repo has a working Docker path for the internal lifecycle runtime and a pass
 Current repo assets:
 
 * shared runtime entrypoint:
-  * `src/parity/runtime.py`
+  * `src/doc_forge/runtime.py`
 * Docker runtime assets:
   * `Dockerfile`
   * `.dockerignore`

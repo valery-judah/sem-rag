@@ -19,16 +19,16 @@ The repo now supports three answer-generation paths and two embedding paths:
 Default behavior remains lightweight and deterministic. Model-backed paths are opt-in through environment configuration.
 
 ## Runtime wiring
-[`src/parity/app/settings.py`](../../../src/parity/app/settings.py) exposes the relevant process configuration:
+[`src/doc_forge/app/settings.py`](../../../src/doc_forge/app/settings.py) exposes the relevant process configuration:
 
-- `PARITY_EMBEDDING_BACKEND`
-- `PARITY_EMBEDDING_MODEL`
-- `PARITY_ANSWER_GENERATOR_BACKEND`
-- `PARITY_ANSWER_GENERATOR_MODEL`
-- `PARITY_ANSWER_GENERATOR_MAX_NEW_TOKENS`
-- `PARITY_ANSWER_GENERATOR_TEMPERATURE`
+- `DOC_FORGE_EMBEDDING_BACKEND`
+- `DOC_FORGE_EMBEDDING_MODEL`
+- `DOC_FORGE_ANSWER_GENERATOR_BACKEND`
+- `DOC_FORGE_ANSWER_GENERATOR_MODEL`
+- `DOC_FORGE_ANSWER_GENERATOR_MAX_NEW_TOKENS`
+- `DOC_FORGE_ANSWER_GENERATOR_TEMPERATURE`
 
-[`src/parity/app/deps.py`](../../../src/parity/app/deps.py) resolves those settings into concrete runtime adapters:
+[`src/doc_forge/app/deps.py`](../../../src/doc_forge/app/deps.py) resolves those settings into concrete runtime adapters:
 
 - embedding backends
   - `DeterministicEmbeddingAdapter`
@@ -52,16 +52,16 @@ If an unsupported backend string is provided, dependency wiring fails fast with 
 This keeps the default contributor workflow small while still allowing real local retrieval and local generation experiments.
 
 ## Embedding path
-[`src/parity/indexing/embeddings.py`](../../../src/parity/indexing/embeddings.py) keeps deterministic embeddings as the default indexing path and adds an opt-in `SentenceTransformerEmbeddingAdapter`.
+[`src/doc_forge/indexing/embeddings.py`](../../../src/doc_forge/indexing/embeddings.py) keeps deterministic embeddings as the default indexing path and adds an opt-in `SentenceTransformerEmbeddingAdapter`.
 
 Important behavior:
 
 - `require_sentence_transformers()` gives an explicit setup error when the optional `llm` group is missing
 - the default embedding model is `sentence-transformers/all-MiniLM-L6-v2`
-- the real embedding path is used by both indexing and dense retrieval when `PARITY_EMBEDDING_BACKEND=sentence-transformers`
+- the real embedding path is used by both indexing and dense retrieval when `DOC_FORGE_EMBEDDING_BACKEND=sentence-transformers`
 
 ## Answer-generation path
-[`src/parity/query/answer_generation.py`](../../../src/parity/query/answer_generation.py) now contains:
+[`src/doc_forge/query/answer_generation.py`](../../../src/doc_forge/query/answer_generation.py) now contains:
 
 - the deterministic Stage 7 renderer
 - the MLX-backed local generator

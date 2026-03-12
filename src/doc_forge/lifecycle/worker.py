@@ -7,7 +7,7 @@ import time
 from datetime import UTC, datetime
 from uuid import uuid4
 
-from parity.lifecycle import (
+from doc_forge.lifecycle import (
     FailureCategory,
     LifecycleEvent,
     LifecycleInvariantError,
@@ -15,14 +15,14 @@ from parity.lifecycle import (
     ProcessingStatus,
     require_processing_status_transition,
 )
-from parity.persistence import (
+from doc_forge.persistence import (
     DocumentJob,
     DocumentJobRepository,
     DocumentJobStage,
     DocumentRepository,
     LifecycleEventRepository,
 )
-from parity.stages.base import StageExecutionError, StageRunner
+from doc_forge.stages.base import StageExecutionError, StageRunner
 
 from .orchestrator import DocumentLifecycleOrchestrator
 
@@ -142,19 +142,19 @@ class DocumentLifecycleWorker:
 def main() -> None:
     """Run the internal lifecycle worker loop."""
 
-    from parity.app.deps import (
+    from doc_forge.app.deps import (
         _build_artifact_store,
         _build_engine,
         get_document_lifecycle_worker,
     )
-    from parity.app.settings import load_settings
+    from doc_forge.app.settings import load_settings
 
     settings = load_settings()
     worker = get_document_lifecycle_worker(
         engine=_build_engine(settings.database_url),
         artifact_store=_build_artifact_store(str(settings.artifact_root)),
     )
-    poll_seconds = float(os.environ.get("PARITY_WORKER_POLL_SECONDS", "0.25"))
+    poll_seconds = float(os.environ.get("DOC_FORGE_WORKER_POLL_SECONDS", "0.25"))
     while True:
         job = worker.run_next()
         if job is None:

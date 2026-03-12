@@ -8,7 +8,7 @@ ENV PYTHONUNBUFFERED=1 \
     UV_LINK_MODE=copy \
     UV_PYTHON_DOWNLOADS=0 \
     UV_CACHE_DIR=/tmp/.uv-cache \
-    PARITY_ARTIFACT_ROOT=/artifacts
+    DOC_FORGE_ARTIFACT_ROOT=/artifacts
 
 WORKDIR /app
 
@@ -24,13 +24,13 @@ RUN --mount=type=cache,target=/tmp/.uv-cache \
 
 ENV PATH="/app/.venv/bin:${PATH}"
 
-RUN groupadd --system --gid 1000 parity \
-    && useradd --system --uid 1000 --gid 1000 --create-home --home-dir /home/parity parity \
-    && install -d --owner=parity --group=parity /artifacts
+RUN groupadd --system --gid 1000 doc-forge \
+    && useradd --system --uid 1000 --gid 1000 --create-home --home-dir /home/doc-forge doc-forge \
+    && install -d --owner=doc-forge --group=doc-forge /artifacts
 
-USER parity
+USER doc-forge
 
 EXPOSE 8000
 
-ENTRYPOINT ["python", "-m", "parity.runtime"]
+ENTRYPOINT ["python", "-m", "doc_forge.runtime"]
 CMD ["api"]

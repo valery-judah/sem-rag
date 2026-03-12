@@ -1,4 +1,5 @@
 import re
+import sys
 
 
 def fix_file(path):
@@ -14,7 +15,8 @@ def fix_file(path):
     def replacer(match):
         indent = match.group(1).split("def")[0]
         # if there's already `...` or `pass` or `return` below the docstring, we shouldn't insert
-        # wait, the regex specifically captures the end of the docstring followed by double newline `\n\n`
+        # wait, the regex specifically captures the end of the docstring followed by double
+        # newline `\n\n`
         # meaning there was no body
         return match.group(1) + match.group(2) + match.group(3) + f"\n{indent}    ...\n\n"
 
@@ -40,8 +42,6 @@ def fix_file(path):
             f.write(new_content2)
             print(f"Fixed {path}")
 
-
-import sys
 
 for arg in sys.argv[1:]:
     fix_file(arg)

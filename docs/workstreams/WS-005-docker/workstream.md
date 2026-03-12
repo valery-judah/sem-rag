@@ -51,7 +51,7 @@ Deliver a Markdown-first Docker workflow where:
 - `Dockerfile`
 - `docker-compose.yml`
 - `.dockerignore`
-- `src/parity/runtime.py`
+- `src/doc_forge/runtime.py`
 - `tests/e2e/`
 - `docs/evergreen/runbook.md`
 - `Makefile`

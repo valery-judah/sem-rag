@@ -18,15 +18,15 @@ from testcontainers.core.image import DockerImage
 from testcontainers.core.network import Network
 from testcontainers.postgres import PostgresContainer
 
-from parity.persistence.jobs import document_jobs_table
-from parity.persistence.models import (
+from doc_forge.persistence.jobs import document_jobs_table
+from doc_forge.persistence.models import (
     chunk_embeddings_table,
     chunks_table,
     documents_table,
     index_entries_table,
     lifecycle_events_table,
 )
-from parity.query.persistence import query_runs_table
+from doc_forge.query.persistence import query_runs_table
 
 
 @pytest.hookimpl(hookwrapper=True)
@@ -330,7 +330,7 @@ class RunningStack:
 def e2e_image_tag() -> Iterator[str]:
     if not _docker_daemon_available():
         pytest.skip("Docker daemon is not available")
-    tag = f"parity-e2e:{uuid4().hex}"
+    tag = f"doc_forge-e2e:{uuid4().hex}"
     _emit_e2e_log("building e2e image", tag=tag, dockerfile="Dockerfile.e2e")
     image = DockerImage(
         path=str(_repo_root()),
@@ -359,13 +359,13 @@ def _run_migrations(
         .with_command("migrate")
         .with_network(network)
         .with_env("DATABASE_URL", database_url)
-        .with_env("PARITY_ARTIFACT_ROOT", "/artifacts")
+        .with_env("DOC_FORGE_ARTIFACT_ROOT", "/artifacts")
         .with_volume_mapping(str(artifact_root), "/artifacts", mode="rw")
     )
     runtime_user = _runtime_user()
     if runtime_user is not None:
         container = container.with_kwargs(user=runtime_user)
-    verbose = _env_flag("PARITY_E2E_VERBOSE")
+    verbose = _env_flag("DOC_FORGE_E2E_VERBOSE")
     _emit_e2e_log(
         "running migrations",
         image_tag=image_tag,
@@ -394,7 +394,7 @@ def _normalize_host_database_url(database_url: str) -> str:
 def _wait_for_api(base_url: str, api_container: DockerContainer) -> None:
     deadline = time.monotonic() + 45.0
     last_error: str | None = None
-    verbose = _env_flag("PARITY_E2E_VERBOSE")
+    _env_flag("DOC_FORGE_E2E_VERBOSE")
     _emit_e2e_log("waiting for api readiness", base_url=base_url)
     while time.monotonic() < deadline:
         try:
@@ -468,7 +468,7 @@ def e2e_runtime(
     e2e_image_tag: str,
     tmp_path_factory: pytest.TempPathFactory,
 ) -> Iterator[RunningStack]:
-    verbose = _env_flag("PARITY_E2E_VERBOSE")
+    verbose = _env_flag("DOC_FORGE_E2E_VERBOSE")
     artifact_root = tmp_path_factory.mktemp("e2e-artifacts")
     artifact_root.mkdir(exist_ok=True)
     _emit_e2e_log("creating session runtime", artifact_root=str(artifact_root))
@@ -482,9 +482,9 @@ def e2e_runtime(
         postgres = (
             PostgresContainer(
                 "postgres:16-alpine",
-                username="parity",
-                password="parity",
-                dbname="parity",
+                username="doc_forge",
+                password="doc_forge",
+                dbname="doc_forge",
                 driver="psycopg",
             )
             .with_network(network)
@@ -492,7 +492,7 @@ def e2e_runtime(
         )
         postgres.start()
         _emit_e2e_log("postgres started")
-        database_url = "postgresql+psycopg://parity:parity@pg:5432/parity"
+        database_url = "postgresql+psycopg://doc_forge:doc_forge@pg:5432/doc_forge"
         host_database_url = _normalize_host_database_url(postgres.get_connection_url())
         _run_migrations(
             image_tag=e2e_image_tag,
@@ -506,7 +506,7 @@ def e2e_runtime(
             .with_command("api")
             .with_network(network)
             .with_env("DATABASE_URL", database_url)
-            .with_env("PARITY_ARTIFACT_ROOT", "/artifacts")
+            .with_env("DOC_FORGE_ARTIFACT_ROOT", "/artifacts")
             .with_env("PORT", "8000")
             .with_volume_mapping(str(artifact_root), "/artifacts", mode="rw")
             .with_exposed_ports(8000)
@@ -519,8 +519,8 @@ def e2e_runtime(
             .with_command("worker")
             .with_network(network)
             .with_env("DATABASE_URL", database_url)
-            .with_env("PARITY_ARTIFACT_ROOT", "/artifacts")
-            .with_env("PARITY_WORKER_POLL_SECONDS", "0.1")
+            .with_env("DOC_FORGE_ARTIFACT_ROOT", "/artifacts")
+            .with_env("DOC_FORGE_WORKER_POLL_SECONDS", "0.1")
             .with_volume_mapping(str(artifact_root), "/artifacts", mode="rw")
         )
         if runtime_user is not None:

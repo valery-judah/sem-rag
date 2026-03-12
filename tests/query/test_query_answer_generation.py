@@ -1,5 +1,5 @@
-from parity.query.answer_generation import _build_comparison_answer_text
-from parity.query.contracts import ContextItem, ContextManifest
+from doc_forge.query.answer_generation import _build_comparison_answer_text
+from doc_forge.query.contracts import ContextItem, ContextManifest
 
 
 def test_build_comparison_answer_text_groups_single_document_items_by_header_title() -> None:
@@ -19,7 +19,8 @@ def test_build_comparison_answer_text_groups_single_document_items_by_header_tit
                 rendered_text=(
                     "Atlas Cache Design | direct_support | Atlas > Caching\n"
                     "[p. 2] Atlas uses a write-through cache.\n"
-                    "[p. 3] Atlas performs immediate invalidation after each control-plane update.\n"
+                    "[p. 3] Atlas performs immediate invalidation after "
+                    "each control-plane update.\n"
                     "[p. 4] Operators treat stale reads as unacceptable."
                 ),
                 contributing_doc_ids=["doc-atlas"],

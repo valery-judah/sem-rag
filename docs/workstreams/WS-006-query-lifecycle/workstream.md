@@ -31,9 +31,9 @@ Ship the MVP query path as explicit executable stages:
 
 ## Relevant context
 - paths:
-- `src/parity/query/`
-- `src/parity/readmodels/`
-- `src/parity/app/api.py`
+- `src/doc_forge/query/`
+- `src/doc_forge/readmodels/`
+- `src/doc_forge/app/api.py`
 - components:
 - query service orchestration
 - snapshot-scoped retrieval and selection

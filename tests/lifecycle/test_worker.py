@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from parity._contracts import ProcessingStatus
-from parity.lifecycle import FailureCategory
-from parity.lifecycle.orchestrator import DocumentLifecycleOrchestrator
-from parity.lifecycle.worker import DocumentLifecycleWorker
-from parity.persistence import DocumentJobStage, DocumentJobStatus
+from doc_forge._contracts import ProcessingStatus
+from doc_forge.lifecycle import FailureCategory
+from doc_forge.lifecycle.orchestrator import DocumentLifecycleOrchestrator
+from doc_forge.lifecycle.worker import DocumentLifecycleWorker
+from doc_forge.persistence import DocumentJobStage, DocumentJobStatus
 from tests.lifecycle.support import (
     FailingStageRunner,
     InMemoryDocumentRepository,

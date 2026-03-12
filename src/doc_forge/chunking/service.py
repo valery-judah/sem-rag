@@ -4,10 +4,10 @@ from __future__ import annotations
 
 from collections import defaultdict
 
-from parity._contracts import Chunk, Section
-from parity.artifacts import NormalizedArtifact, NormalizedArtifactBlock
-from parity.chunking.policy import MAX_TOKENS_PER_CHUNK, count_tokens
-from parity.persistence import PersistedDocument
+from doc_forge._contracts import Chunk, Section
+from doc_forge.artifacts import NormalizedArtifact, NormalizedArtifactBlock
+from doc_forge.chunking.policy import MAX_TOKENS_PER_CHUNK, count_tokens
+from doc_forge.persistence import PersistedDocument
 
 
 class ChunkingService:

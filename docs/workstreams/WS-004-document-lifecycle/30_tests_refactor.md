@@ -137,7 +137,7 @@ If this area is weak, the system will produce the worst kind of bug: documents t
 
 ## 6. Keep seam-compatibility tests for PR1
 
-PR1 explicitly says `_contracts` remains the compatibility seam and asks for seam tests to prove import-site stability while lifecycle internals move into `parity.lifecycle`. I would keep a focused test module that imports through both old and new locations and verifies identity/behavior parity for the moved types and helpers. 
+PR1 explicitly says `_contracts` remains the compatibility seam and asks for seam tests to prove import-site stability while lifecycle internals move into `doc_forge.lifecycle`. I would keep a focused test module that imports through both old and new locations and verifies identity/behavior doc_forge for the moved types and helpers. 
 
 That module should cover:
 

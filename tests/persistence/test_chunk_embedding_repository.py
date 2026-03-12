@@ -4,8 +4,8 @@ from datetime import UTC, datetime
 
 import pytest
 
-from parity.indexing import ChunkEmbedding, DeterministicEmbeddingAdapter, SqlVectorStore
-from parity.persistence import (
+from doc_forge.indexing import ChunkEmbedding, DeterministicEmbeddingAdapter, SqlVectorStore
+from doc_forge.persistence import (
     SqlChunkEmbeddingRepository,
     SqlChunkRepository,
     SqlDocumentRepository,

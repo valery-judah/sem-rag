@@ -6,7 +6,7 @@
 
 ## Purpose
 
-This document records the repo-facing Stage 2 design as implemented in `parity`.
+This document records the repo-facing Stage 2 design as implemented in `doc_forge`.
 
 Stage 2 does not implement retrieval, support assessment, or answer generation.
 It implements the first semantic query stage after Stage 1 corpus-boundary capture:
@@ -36,13 +36,13 @@ It does not create a stable public API.
 
 Stage 2 is implemented with:
 
-- a stronger `InterpretedQuery` contract in [contracts.py](src/parity/query/contracts.py);
-- deterministic interpretation and normalization helpers in [interpretation.py](src/parity/query/interpretation.py);
-- an executable `interpret` stage in [interpret.py](src/parity/query/stages/interpret.py);
-- durable query stage traces through [persistence.py](src/parity/query/persistence.py);
-- a new migration [0005_query_stage_traces.py](src/parity/persistence/migrations/versions/0005_query_stage_traces.py);
-- Stage 2 service wiring in [service.py](src/parity/query/service.py);
-- internal route integration in [api.py](src/parity/app/api.py) and [deps.py](src/parity/app/deps.py).
+- a stronger `InterpretedQuery` contract in [contracts.py](src/doc_forge/query/contracts.py);
+- deterministic interpretation and normalization helpers in [interpretation.py](src/doc_forge/query/interpretation.py);
+- an executable `interpret` stage in [interpret.py](src/doc_forge/query/stages/interpret.py);
+- durable query stage traces through [persistence.py](src/doc_forge/query/persistence.py);
+- a new migration [0005_query_stage_traces.py](src/doc_forge/persistence/migrations/versions/0005_query_stage_traces.py);
+- Stage 2 service wiring in [service.py](src/doc_forge/query/service.py);
+- internal route integration in [api.py](src/doc_forge/app/api.py) and [deps.py](src/doc_forge/app/deps.py).
 
 ## Design constraints resolved in Stage 2
 
@@ -58,7 +58,7 @@ The relevant constraints were:
 
 The implemented consequence is pragmatic:
 
-- Stage 2 uses a narrow interpreter seam under `src/parity/query/` instead of a broad inference subsystem;
+- Stage 2 uses a narrow interpreter seam under `src/doc_forge/query/` instead of a broad inference subsystem;
 - the default runtime interpreter is deterministic and schema-driven;
 - interpretation traces persist through a generic stage-trace table rather than a one-off interpretation table;
 - the route now executes through interpretation and stops there explicitly.
@@ -67,7 +67,7 @@ The implemented consequence is pragmatic:
 
 ### Strengthened `InterpretedQuery` contract
 
-[contracts.py](src/parity/query/contracts.py) now defines:
+[contracts.py](src/doc_forge/query/contracts.py) now defines:
 
 - `QuerySpecificity`
 - `SynthesisMode`
@@ -90,7 +90,7 @@ This keeps Stage 2 aligned with QL-1 by preserving distinctions among factual lo
 
 ### Deterministic interpreter seam
 
-[interpretation.py](src/parity/query/interpretation.py) now exposes:
+[interpretation.py](src/doc_forge/query/interpretation.py) now exposes:
 
 - `QueryInterpreter`
 - `RawInterpretedQuery`
@@ -121,7 +121,7 @@ The interpreter receives the Stage 1 `CorpusSnapshot`, but the current determini
 
 ### Interpretation stage execution
 
-[interpret.py](src/parity/query/stages/interpret.py) now runs a real Stage 2 interpretation step.
+[interpret.py](src/doc_forge/query/stages/interpret.py) now runs a real Stage 2 interpretation step.
 
 The stage:
 
@@ -135,12 +135,12 @@ Stage 2 records request-shape and capability-boundary signals only.
 
 ### Durable query stage traces
 
-[persistence.py](src/parity/query/persistence.py) now includes:
+[persistence.py](src/doc_forge/query/persistence.py) now includes:
 
 - `query_stage_traces_table`
 - `SqlQueryTraceStore`
 
-[0005_query_stage_traces.py](src/parity/persistence/migrations/versions/0005_query_stage_traces.py) creates:
+[0005_query_stage_traces.py](src/doc_forge/persistence/migrations/versions/0005_query_stage_traces.py) creates:
 
 - `query_stage_traces`
 
@@ -160,7 +160,7 @@ The `interpret` trace payload currently includes:
 
 ### Query service behavior
 
-[service.py](src/parity/query/service.py) now supports Stage 2 execution through:
+[service.py](src/doc_forge/query/service.py) now supports Stage 2 execution through:
 
 - `prepare_query()`
 - `execute_until_interpretation()`
@@ -180,7 +180,7 @@ If no query corpus read model is configured, `execute()` still follows the Stage
 
 ### Internal API surface
 
-[api.py](src/parity/app/api.py) now exposes internal `POST /queries` with Stage 2 behavior.
+[api.py](src/doc_forge/app/api.py) now exposes internal `POST /queries` with Stage 2 behavior.
 
 It accepts:
 
@@ -208,7 +208,7 @@ It does not promote a stable public API contract.
 
 ### App wiring
 
-[deps.py](src/parity/app/deps.py) now wires:
+[deps.py](src/doc_forge/app/deps.py) now wires:
 
 - `SqlQueryTraceStore`
 - `DeterministicQueryInterpreter`
@@ -288,13 +288,13 @@ Start with the stable query context base in `docs/harness-maintain/context-build
 Then use the Stage 2-specific route below.
 
 1. [11_stage-1-queryable-corpus-boundary-design.md](docs/workstreams/WS-006-query-lifecycle/11_stage-1-queryable-corpus-boundary-design.md)
-2. [contracts.py](src/parity/query/contracts.py)
-3. [interpretation.py](src/parity/query/interpretation.py)
-4. [interpret.py](src/parity/query/stages/interpret.py)
-5. [service.py](src/parity/query/service.py)
-6. [persistence.py](src/parity/query/persistence.py)
-7. [api.py](src/parity/app/api.py)
-8. [deps.py](src/parity/app/deps.py)
+2. [contracts.py](src/doc_forge/query/contracts.py)
+3. [interpretation.py](src/doc_forge/query/interpretation.py)
+4. [interpret.py](src/doc_forge/query/stages/interpret.py)
+5. [service.py](src/doc_forge/query/service.py)
+6. [persistence.py](src/doc_forge/query/persistence.py)
+7. [api.py](src/doc_forge/app/api.py)
+8. [deps.py](src/doc_forge/app/deps.py)
 
 Then confirm in tests:
 
@@ -312,8 +312,8 @@ Use the following order:
 1. stable context-building base from `docs/harness-maintain/context-building-playbook.md`
 2. Stage 1 implemented note to inherit the already-earned query boundary
 3. Stage 2 workstream note for interpretation-specific intent
-4. `src/parity/query/interpretation.py` and `src/parity/query/stages/interpret.py`
-5. `src/parity/query/service.py` and `src/parity/query/persistence.py`
+4. `src/doc_forge/query/interpretation.py` and `src/doc_forge/query/stages/interpret.py`
+5. `src/doc_forge/query/service.py` and `src/doc_forge/query/persistence.py`
 6. proving tests for interpretation semantics and trace persistence
 
 Supported by repo truth in Stage 2:

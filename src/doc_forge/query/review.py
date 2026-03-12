@@ -166,7 +166,7 @@ class QueryReviewService:
     def get_query_citations(self, query_id: str) -> QueryCitationReview:
         """Load persisted citation artifacts for one completed query run."""
 
-        run = self._get_run(query_id)
+        self._get_run(query_id)
         answer = self._answer_store.get_answer_artifacts(query_id)
         if answer is None:
             raise LookupError(f"query answer for {query_id!r} was not found")

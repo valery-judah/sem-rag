@@ -551,7 +551,7 @@ This is especially useful for validating the lifecycle before query features are
 ## 9. Recommended package layout
 
 ```text
-src/parity/
+src/doc_forge/
   app/
     api.py
     deps.py
@@ -729,8 +729,8 @@ docker compose up
 Or, if you want an even thinner first cut for engineering-only use:
 
 ```text
-python -m parity.app.api
-python -m parity.lifecycle.worker
+python -m doc_forge.app.api
+python -m doc_forge.lifecycle.worker
 ```
 
 with:

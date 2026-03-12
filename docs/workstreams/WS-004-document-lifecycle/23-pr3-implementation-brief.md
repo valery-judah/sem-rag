@@ -15,12 +15,12 @@ updated: 2026-03-11
 - Persist the raw artifact, checksum, durable document metadata, and initial lifecycle event, while explicitly deferring job orchestration and downstream stage execution.
 
 ## Implementation Changes
-- Add `src/parity/app/api.py` with a FastAPI app exposing only `POST /documents` for PR 3.
-- Add `src/parity/app/deps.py` and `src/parity/app/settings.py` for internal runtime wiring:
+- Add `src/doc_forge/app/api.py` with a FastAPI app exposing only `POST /documents` for PR 3.
+- Add `src/doc_forge/app/deps.py` and `src/doc_forge/app/settings.py` for internal runtime wiring:
   - database URL from the existing `DATABASE_URL`
-  - artifact root from a new internal setting such as `PARITY_ARTIFACT_ROOT`
-- Add `src/parity/lifecycle/service.py` with `DocumentLifecycleService.upload_document(...)` as the transport-thin coordination seam for intake and registration.
-- Add `src/parity/stages/register.py` for the registration-stage logic that turns an accepted upload into a durable `REGISTERED` document.
+  - artifact root from a new internal setting such as `DOC_FORGE_ARTIFACT_ROOT`
+- Add `src/doc_forge/lifecycle/service.py` with `DocumentLifecycleService.upload_document(...)` as the transport-thin coordination seam for intake and registration.
+- Add `src/doc_forge/stages/register.py` for the registration-stage logic that turns an accepted upload into a durable `REGISTERED` document.
 - Use the existing `FilesystemArtifactStore` to persist the raw upload under the deterministic doc-scoped path already introduced in PR 2.
 - Reuse the existing `documents` table fields added in PR 2:
   - `checksum`

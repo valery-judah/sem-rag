@@ -25,10 +25,10 @@ Observed on this branch:
 The current suite shape is roughly:
 
 * strong lower-layer evidence in `tests/contract/`, `tests/persistence/`, `tests/artifacts/`, and `tests/stages/`
-* thin direct evidence for runtime coordination in `src/parity/lifecycle/service.py`
-* thin direct evidence for orchestration in `src/parity/lifecycle/orchestrator.py`
-* thin direct evidence for worker dispatch behavior in `src/parity/lifecycle/worker.py`
-* route coverage in `tests/app/` that is useful but still narrow relative to the routes exposed by `src/parity/app/api.py`
+* thin direct evidence for runtime coordination in `src/doc_forge/lifecycle/service.py`
+* thin direct evidence for orchestration in `src/doc_forge/lifecycle/orchestrator.py`
+* thin direct evidence for worker dispatch behavior in `src/doc_forge/lifecycle/worker.py`
+* route coverage in `tests/app/` that is useful but still narrow relative to the routes exposed by `src/doc_forge/app/api.py`
 * real systemic coverage in `tests/e2e/`, but outside the default run
 
 ## Main improvement goals
@@ -45,9 +45,9 @@ The current suite shape is roughly:
 
 The highest-value missing coverage is in the runtime coordination layer:
 
-* `src/parity/lifecycle/service.py`
-* `src/parity/lifecycle/orchestrator.py`
-* `src/parity/lifecycle/worker.py`
+* `src/doc_forge/lifecycle/service.py`
+* `src/doc_forge/lifecycle/orchestrator.py`
+* `src/doc_forge/lifecycle/worker.py`
 
 These modules contain behavior that is important, stateful, and only partially exercised directly today:
 
@@ -63,7 +63,7 @@ This area should be the first expansion because it closes the largest gap betwee
 
 ### 2. Next priority: operator and internal API routes
 
-`src/parity/app/api.py` exposes more than upload:
+`src/doc_forge/app/api.py` exposes more than upload:
 
 * `/documents/{doc_id}/status`
 * `/documents/{doc_id}/artifacts`
@@ -87,9 +87,9 @@ The repo already has `tests/e2e/`, but it currently sits outside the default fee
 
 Some modules are light on direct tests:
 
-* `src/parity/runtime.py`
-* `src/parity/app/settings.py`
-* parts of `src/parity/app/deps.py`
+* `src/doc_forge/runtime.py`
+* `src/doc_forge/app/settings.py`
+* parts of `src/doc_forge/app/deps.py`
 
 These are worth covering, but after the coordination and route gaps are closed.
 

@@ -6,9 +6,9 @@ import math
 
 from sqlalchemy.engine import Engine
 
-from parity._contracts import Chunk
-from parity.persistence.models import utc_now
-from parity.persistence.repositories import (
+from doc_forge._contracts import Chunk
+from doc_forge.persistence.models import utc_now
+from doc_forge.persistence.repositories import (
     ChunkEmbeddingRepository,
     IndexEntryRepository,
     SqlChunkEmbeddingRepository,

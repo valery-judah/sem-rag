@@ -75,10 +75,10 @@ Deliverables:
 
 Likely files:
 
-* `src/parity/lifecycle/state_machine.py`
-* `src/parity/lifecycle/errors.py`
-* `src/parity/lifecycle/models.py`
-* alignment points with `src/parity/_contracts/...`
+* `src/doc_forge/lifecycle/state_machine.py`
+* `src/doc_forge/lifecycle/errors.py`
+* `src/doc_forge/lifecycle/models.py`
+* alignment points with `src/doc_forge/_contracts/...`
 
 Tests:
 
@@ -113,11 +113,11 @@ Deliverables:
 
 Likely files:
 
-* `src/parity/persistence/models.py`
-* `src/parity/persistence/repositories.py`
-* `src/parity/persistence/migrations/...`
-* `src/parity/artifacts/store.py`
-* `src/parity/artifacts/schemas.py`
+* `src/doc_forge/persistence/models.py`
+* `src/doc_forge/persistence/repositories.py`
+* `src/doc_forge/persistence/migrations/...`
+* `src/doc_forge/artifacts/store.py`
+* `src/doc_forge/artifacts/schemas.py`
 
 Tests:
 
@@ -146,9 +146,9 @@ Deliverables:
 
 Likely files:
 
-* `src/parity/lifecycle/service.py`
-* `src/parity/stages/register.py`
-* `src/parity/app/api.py`
+* `src/doc_forge/lifecycle/service.py`
+* `src/doc_forge/stages/register.py`
+* `src/doc_forge/app/api.py`
 
 Tests:
 
@@ -177,10 +177,10 @@ Deliverables:
 
 Likely files:
 
-* `src/parity/lifecycle/orchestrator.py`
-* `src/parity/persistence/jobs.py`
-* `src/parity/stages/base.py`
-* `src/parity/lifecycle/worker.py`
+* `src/doc_forge/lifecycle/orchestrator.py`
+* `src/doc_forge/persistence/jobs.py`
+* `src/doc_forge/stages/base.py`
+* `src/doc_forge/lifecycle/worker.py`
 
 Tests:
 
@@ -207,10 +207,10 @@ Deliverables:
 
 Likely files:
 
-* `src/parity/extractors/base.py`
-* `src/parity/extractors/markdown.py`
-* `src/parity/extractors/pdf.py`
-* `src/parity/stages/extract.py`
+* `src/doc_forge/extractors/base.py`
+* `src/doc_forge/extractors/markdown.py`
+* `src/doc_forge/extractors/pdf.py`
+* `src/doc_forge/stages/extract.py`
 
 Tests:
 
@@ -239,11 +239,11 @@ Deliverables:
 
 Likely files:
 
-* `src/parity/normalizers/base.py`
-* `src/parity/normalizers/markdown.py`
-* `src/parity/normalizers/pdf.py`
-* `src/parity/stages/normalize.py`
-* `src/parity/artifacts/schemas.py`
+* `src/doc_forge/normalizers/base.py`
+* `src/doc_forge/normalizers/markdown.py`
+* `src/doc_forge/normalizers/pdf.py`
+* `src/doc_forge/stages/normalize.py`
+* `src/doc_forge/artifacts/schemas.py`
 
 Tests:
 
@@ -270,8 +270,8 @@ Deliverables:
 
 Likely files:
 
-* `src/parity/structure/sections.py`
-* `src/parity/stages/sectionize.py`
+* `src/doc_forge/structure/sections.py`
+* `src/doc_forge/stages/sectionize.py`
 * repository additions in the persistence layer
 
 Tests:
@@ -301,9 +301,9 @@ Deliverables:
 
 Likely files:
 
-* `src/parity/chunking/policy.py`
-* `src/parity/chunking/service.py`
-* `src/parity/stages/chunk.py`
+* `src/doc_forge/chunking/policy.py`
+* `src/doc_forge/chunking/service.py`
+* `src/doc_forge/stages/chunk.py`
 * chunk repository additions
 
 Tests:
@@ -333,10 +333,10 @@ Deliverables:
 
 Likely files:
 
-* `src/parity/indexing/base.py`
-* `src/parity/indexing/embeddings.py`
-* `src/parity/indexing/vector_store.py`
-* `src/parity/stages/index.py`
+* `src/doc_forge/indexing/base.py`
+* `src/doc_forge/indexing/embeddings.py`
+* `src/doc_forge/indexing/vector_store.py`
+* `src/doc_forge/stages/index.py`
 
 Tests:
 
@@ -363,9 +363,9 @@ Deliverables:
 
 Likely files:
 
-* `src/parity/lifecycle/readiness.py`
-* `src/parity/stages/ready.py`
-* internal inspection or retrieval endpoint support in `src/parity/app/api.py`
+* `src/doc_forge/lifecycle/readiness.py`
+* `src/doc_forge/stages/ready.py`
+* internal inspection or retrieval endpoint support in `src/doc_forge/app/api.py`
 
 Tests:
 
@@ -392,8 +392,8 @@ Deliverables:
 
 Likely files:
 
-* `src/parity/lifecycle/service.py`
-* `src/parity/lifecycle/errors.py`
+* `src/doc_forge/lifecycle/service.py`
+* `src/doc_forge/lifecycle/errors.py`
 * persistence repository methods for replacement behavior
 
 Tests:
@@ -423,7 +423,7 @@ Likely files:
 
 * `tests/pipeline/...`
 * `tests/fixtures/...`
-* `src/parity/app/api.py`
+* `src/doc_forge/app/api.py`
 * `Makefile`
 * `docker-compose.yml` if used
 

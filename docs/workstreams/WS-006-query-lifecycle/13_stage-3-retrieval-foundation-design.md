@@ -6,7 +6,7 @@
 
 ## Purpose
 
-This document records the repo-facing Stage 3 design as implemented in `parity`.
+This document records the repo-facing Stage 3 design as implemented in `doc_forge`.
 
 Stage 3 does not implement evidence selection, support assessment, or answer generation.
 It implements the first real evidence-discovery stage after Stage 2 interpretation:
@@ -38,11 +38,11 @@ It does not create a stable public API.
 
 Stage 3 is implemented with:
 
-- retrieval-ready embedded chunk projections in [documents.py](src/parity/readmodels/documents.py);
-- deterministic retrieval-query construction and dense retrieval helpers in [retrieval.py](src/parity/query/retrieval.py);
-- an executable `retrieve` stage in [retrieve.py](src/parity/query/stages/retrieve.py);
-- Stage 3 service wiring in [service.py](src/parity/query/service.py);
-- internal route integration in [api.py](src/parity/app/api.py) and [deps.py](src/parity/app/deps.py);
+- retrieval-ready embedded chunk projections in [documents.py](src/doc_forge/readmodels/documents.py);
+- deterministic retrieval-query construction and dense retrieval helpers in [retrieval.py](src/doc_forge/query/retrieval.py);
+- an executable `retrieve` stage in [retrieve.py](src/doc_forge/query/stages/retrieve.py);
+- Stage 3 service wiring in [service.py](src/doc_forge/query/service.py);
+- internal route integration in [api.py](src/doc_forge/app/api.py) and [deps.py](src/doc_forge/app/deps.py);
 - tests covering snapshot scoping, provenance-bearing candidate output, durable retrieval traces, and route behavior.
 
 ## Design constraints resolved in Stage 3
@@ -69,7 +69,7 @@ The implemented consequence is pragmatic:
 
 ### Retrieval-ready read model extension
 
-[documents.py](src/parity/readmodels/documents.py) now exposes:
+[documents.py](src/doc_forge/readmodels/documents.py) now exposes:
 
 - `QueryableEmbeddedChunkRecord`
 - `list_embedded_chunks_for_snapshot(snapshot)`
@@ -90,7 +90,7 @@ This keeps retrieval bounded to the captured corpus snapshot while preserving th
 
 ### Deterministic retrieval-query representation
 
-[retrieval.py](src/parity/query/retrieval.py) now exposes:
+[retrieval.py](src/doc_forge/query/retrieval.py) now exposes:
 
 - `RetrievalQueryRepresentation`
 - `QueryRetrievalResult`
@@ -141,7 +141,7 @@ The default runtime implementation is:
 
 ### `RetrievedCandidate` population
 
-Stage 3 keeps the existing `RetrievedCandidate` contract in [contracts.py](src/parity/query/contracts.py) as the retrieval-stage output shape.
+Stage 3 keeps the existing `RetrievedCandidate` contract in [contracts.py](src/doc_forge/query/contracts.py) as the retrieval-stage output shape.
 
 The runtime now populates it with:
 
@@ -164,7 +164,7 @@ It is the minimum retrieval-stage locator surface needed to keep later stages an
 
 ### Retrieval stage execution
 
-[retrieve.py](src/parity/query/stages/retrieve.py) now runs a real Stage 3 retrieval step.
+[retrieve.py](src/doc_forge/query/stages/retrieve.py) now runs a real Stage 3 retrieval step.
 
 The stage:
 
@@ -186,7 +186,7 @@ The current retrieval trace payload includes:
 
 ### Query service behavior
 
-[service.py](src/parity/query/service.py) now supports Stage 3 execution through:
+[service.py](src/doc_forge/query/service.py) now supports Stage 3 execution through:
 
 - `prepare_query()`
 - `execute_until_interpretation()`
@@ -204,7 +204,7 @@ The current retrieval trace payload includes:
 
 ### Internal API surface
 
-[api.py](src/parity/app/api.py) now exposes internal `POST /queries` with Stage 3 behavior.
+[api.py](src/doc_forge/app/api.py) now exposes internal `POST /queries` with Stage 3 behavior.
 
 It accepts:
 
@@ -233,7 +233,7 @@ It does not promote a stable public API contract.
 
 ### App wiring
 
-[deps.py](src/parity/app/deps.py) now wires:
+[deps.py](src/doc_forge/app/deps.py) now wires:
 
 - `SqlQueryableCorpusReadModel` with `SqlChunkEmbeddingRepository`
 - `SnapshotDenseQueryRetriever`
@@ -317,14 +317,14 @@ Start with the stable query context base in `docs/harness-maintain/context-build
 Then use the Stage 3-specific route below.
 
 1. [12_stage-2-interpretation-foundation-design.md](docs/workstreams/WS-006-query-lifecycle/12_stage-2-interpretation-foundation-design.md)
-2. [documents.py](src/parity/readmodels/documents.py)
-3. [contracts.py](src/parity/query/contracts.py)
-4. [retrieval.py](src/parity/query/retrieval.py)
-5. [retrieve.py](src/parity/query/stages/retrieve.py)
-6. [service.py](src/parity/query/service.py)
-7. [persistence.py](src/parity/query/persistence.py)
-8. [api.py](src/parity/app/api.py)
-9. [deps.py](src/parity/app/deps.py)
+2. [documents.py](src/doc_forge/readmodels/documents.py)
+3. [contracts.py](src/doc_forge/query/contracts.py)
+4. [retrieval.py](src/doc_forge/query/retrieval.py)
+5. [retrieve.py](src/doc_forge/query/stages/retrieve.py)
+6. [service.py](src/doc_forge/query/service.py)
+7. [persistence.py](src/doc_forge/query/persistence.py)
+8. [api.py](src/doc_forge/app/api.py)
+9. [deps.py](src/doc_forge/app/deps.py)
 
 Then confirm in tests:
 
@@ -342,9 +342,9 @@ Use the following order:
 1. stable context-building base from `docs/harness-maintain/context-building-playbook.md`
 2. Stage 1 implemented note for snapshot and queryable-corpus invariants
 3. Stage 2 implemented note for interpretation contracts and traces
-4. `src/parity/readmodels/documents.py`
-5. `src/parity/query/retrieval.py` and `src/parity/query/stages/retrieve.py`
-6. `src/parity/query/service.py` and `src/parity/app/api.py`
+4. `src/doc_forge/readmodels/documents.py`
+5. `src/doc_forge/query/retrieval.py` and `src/doc_forge/query/stages/retrieve.py`
+6. `src/doc_forge/query/service.py` and `src/doc_forge/app/api.py`
 7. proving tests for retrieval behavior and trace persistence
 
 Supported by repo truth in Stage 3:

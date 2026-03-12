@@ -2,12 +2,12 @@ from __future__ import annotations
 
 import pytest
 
-from parity._contracts import AnswerStatus
-from parity.evaluation.dataset import BASELINE_EVALUATION_CASES
-from parity.evaluation.fixtures import build_insufficient_evidence_corpus_question_seam
-from parity.evaluation.models import EvaluationCase, EvaluationOutput
-from parity.evaluation.runner import evaluate_case, evaluate_cases
-from parity.evaluation.systems import DeterministicSeamSystem
+from doc_forge._contracts import AnswerStatus
+from doc_forge.evaluation.dataset import BASELINE_EVALUATION_CASES
+from doc_forge.evaluation.fixtures import build_insufficient_evidence_corpus_question_seam
+from doc_forge.evaluation.models import EvaluationCase, EvaluationOutput
+from doc_forge.evaluation.runner import evaluate_case, evaluate_cases
+from doc_forge.evaluation.systems import DeterministicSeamSystem
 from tests.support.contract_seam import build_supported_corpus_question_seam
 
 

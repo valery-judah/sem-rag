@@ -39,7 +39,7 @@ commands:
 boundaries:
   - Treat `docs/harness/` as internal documentation infrastructure, not product runtime.
   - Do not redefine MVP scope or evergreen semantic authority from harness docs.
-  - Keep durable truth in `docs/evergreen/`, parity/runtime execution history in `docs/workstreams/`, and agentic-harness execution history in `docs/harness-maintain/`.
+  - Keep durable truth in `docs/evergreen/`, doc_forge/runtime execution history in `docs/workstreams/`, and agentic-harness execution history in `docs/harness-maintain/`.
   - Prefer agent-useful routing and scaffolding improvements over broad process theory.
 ---
 

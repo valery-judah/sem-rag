@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import pytest
 
-from parity.query import AnswerMode, DuplicateSuppressionMode, QueryPolicyDefaults, SupportState
-from parity.query.contracts import QueryPolicyOverride
-from parity.query.policies import apply_policy_overrides
+from doc_forge.query import AnswerMode, DuplicateSuppressionMode, QueryPolicyDefaults, SupportState
+from doc_forge.query.contracts import QueryPolicyOverride
+from doc_forge.query.policies import apply_policy_overrides
 
 pytestmark = pytest.mark.contract
 

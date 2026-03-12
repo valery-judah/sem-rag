@@ -15,9 +15,9 @@ updated: 2026-03-11
 - Promote documents to `INDEXED` only when active chunk publication is complete.
 
 ## Implementation Changes
-- Add `src/parity/indexing/base.py`, `src/parity/indexing/embeddings.py`, and `src/parity/indexing/vector_store.py`.
+- Add `src/doc_forge/indexing/base.py`, `src/doc_forge/indexing/embeddings.py`, and `src/doc_forge/indexing/vector_store.py`.
 - Add `index_entries` and `chunk_embeddings` persistence models, repositories, and Alembic migration `0003_indexing_tables.py`.
-- Add `src/parity/stages/index.py`.
+- Add `src/doc_forge/stages/index.py`.
 
 ## Invariants
 - Publication replaces prior embeddings and index entries for the document.

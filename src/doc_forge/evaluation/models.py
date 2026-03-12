@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Protocol
 
-from parity._contracts import Answer, AnswerStatus, RetrievalHit
+from doc_forge._contracts import Answer, AnswerStatus, RetrievalHit
 
 
 @dataclass(frozen=True)

@@ -5,10 +5,10 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from uuid import uuid4
 
-from parity.artifacts import FilesystemArtifactStore
-from parity.chunking import ChunkingService
-from parity.lifecycle import LifecycleEvent, LifecycleStage, ProcessingStatus
-from parity.persistence import (
+from doc_forge.artifacts import FilesystemArtifactStore
+from doc_forge.chunking import ChunkingService
+from doc_forge.lifecycle import LifecycleEvent, LifecycleStage, ProcessingStatus
+from doc_forge.persistence import (
     ChunkRepository,
     DocumentJob,
     DocumentJobStage,
@@ -16,7 +16,7 @@ from parity.persistence import (
     LifecycleEventRepository,
     SectionRepository,
 )
-from parity.stages.base import StageExecutionError, StageRunner
+from doc_forge.stages.base import StageExecutionError, StageRunner
 
 
 class ChunkDocumentStage(StageRunner):

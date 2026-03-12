@@ -9,13 +9,13 @@ The current branch contains a substantial implementation of the internal documen
 
 Primary finding:
 
-* the missing `parity.artifacts` blocker has been resolved by adding a tracked internal artifact package plus dedicated artifact tests and fixture snapshots
+* the missing `doc_forge.artifacts` blocker has been resolved by adding a tracked internal artifact package plus dedicated artifact tests and fixture snapshots
 * the default non-e2e repo test target now passes end to end
 
 What is still verifiable today:
 
 * the implemented pipeline shape can be derived from current code
-* artifact persistence has a real package and real tests under `src/parity/artifacts/` and `tests/artifacts/`
+* artifact persistence has a real package and real tests under `src/doc_forge/artifacts/` and `tests/artifacts/`
 * the default repo suite passed with `196 passed, 8 deselected in 2.89s`
 * the lifecycle-focused suites in `tests/app/`, `tests/lifecycle/`, `tests/stages/`, `tests/pipeline/`, and `tests/contract/test_readiness_contract.py` are now part of earned runnable coverage
 
@@ -30,46 +30,46 @@ This means the repo now has **broad runnable evidence** for WS-004 quality and c
 The base document-lifecycle pipeline already implemented in code is:
 
 1. **Internal transport and intake**
-   * `src/parity/app/api.py`
+   * `src/doc_forge/app/api.py`
    * upload, status, artifact inspection, retry, retrieval-smoke, health, and worker-debug routes
 
 2. **Lifecycle coordination**
-   * `src/parity/lifecycle/service.py`
+   * `src/doc_forge/lifecycle/service.py`
    * validates uploads, resolves source type, registers documents, exposes status/query/retry operations
 
 3. **Document-scoped job orchestration**
-   * `src/parity/lifecycle/orchestrator.py`
+   * `src/doc_forge/lifecycle/orchestrator.py`
    * queues the next lifecycle job when no active work exists
 
 4. **Worker execution**
-   * `src/parity/lifecycle/worker.py`
+   * `src/doc_forge/lifecycle/worker.py`
    * claims queued jobs, dispatches stage runners, records failure events, and queues downstream stages
 
 5. **Stage runner seam**
-   * `src/parity/stages/base.py`
+   * `src/doc_forge/stages/base.py`
    * common `StageRunner` protocol plus `StageExecutionError` failure mapping
 
 6. **Stage pipeline**
-   * `src/parity/stages/register.py`
-   * `src/parity/stages/extract.py`
-   * `src/parity/stages/normalize.py`
-   * `src/parity/stages/sectionize.py`
-   * `src/parity/stages/chunk.py`
-   * `src/parity/stages/index.py`
-   * `src/parity/stages/ready.py`
+   * `src/doc_forge/stages/register.py`
+   * `src/doc_forge/stages/extract.py`
+   * `src/doc_forge/stages/normalize.py`
+   * `src/doc_forge/stages/sectionize.py`
+   * `src/doc_forge/stages/chunk.py`
+   * `src/doc_forge/stages/index.py`
+   * `src/doc_forge/stages/ready.py`
 
 7. **Format-specific processing services**
    * extractors for Markdown and PDF
    * normalizers for Markdown and PDF
 
 8. **Structure and retrieval-preparation services**
-   * `src/parity/structure/sections.py`
-   * `src/parity/chunking/service.py`
-   * `src/parity/indexing/vector_store.py`
-   * `src/parity/lifecycle/readiness.py`
+   * `src/doc_forge/structure/sections.py`
+   * `src/doc_forge/chunking/service.py`
+   * `src/doc_forge/indexing/vector_store.py`
+   * `src/doc_forge/lifecycle/readiness.py`
 
 9. **Persistence and durable lifecycle truth**
-   * document, lifecycle-event, job, section, chunk, index-entry, and chunk-embedding repositories under `src/parity/persistence/`
+   * document, lifecycle-event, job, section, chunk, index-entry, and chunk-embedding repositories under `src/doc_forge/persistence/`
 
 The intended stage flow is:
 
@@ -81,7 +81,7 @@ with retry and failure handling layered on top of document-scoped jobs.
 
 The earlier mismatch between imports and tracked files has been resolved:
 
-* `src/parity/artifacts/` now exists and is the internal package for:
+* `src/doc_forge/artifacts/` now exists and is the internal package for:
   * `RawArtifactRef`
   * `ExtractedArtifact`
   * `ExtractedArtifactPage`

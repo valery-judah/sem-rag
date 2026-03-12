@@ -20,7 +20,7 @@ This baseline is derived from:
 - `docs/evergreen/eval-support-semantics.md`
 - `docs/workstreams/WS-006-query-lifecycle/00_requirements-v0.md`
 - `docs/workstreams/WS-006-query-lifecycle/01_requirements-critique.md`
-- `src/parity/_contracts/models.py`
+- `src/doc_forge/_contracts/models.py`
 
 When a future requirement draft conflicts with this document, treat that as an intentional design change that must be argued explicitly rather than as a silent wording difference.
 

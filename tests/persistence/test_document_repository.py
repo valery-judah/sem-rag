@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import pytest
 
-from parity._contracts import ProcessingStatus, SourceType
-from parity.persistence import (
+from doc_forge._contracts import ProcessingStatus, SourceType
+from doc_forge.persistence import (
     SqlDocumentRepository,
 )
 

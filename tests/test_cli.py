@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from parity.cli import main
+from doc_forge.cli import main
 
 
 def test_cli_prints_ranked_results(capsys: pytest.CaptureFixture[str]) -> None:

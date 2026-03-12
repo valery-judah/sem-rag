@@ -23,8 +23,8 @@ Simplify Docker DB startup while keeping Alembic as the single schema authority.
 ## Current status
 Implementation is complete for the main runtime and operator path.
 
-- Added a lock-protected migration helper in `src/parity/persistence/migrations/__init__.py`.
-- Added runtime bootstrap through `PARITY_AUTO_MIGRATE` in `src/parity/runtime.py`.
+- Added a lock-protected migration helper in `src/doc_forge/persistence/migrations/__init__.py`.
+- Added runtime bootstrap through `DOC_FORGE_AUTO_MIGRATE` in `src/doc_forge/runtime.py`.
 - Removed the dedicated Compose `migrate` service and simplified startup flow in `docker-compose.yml`.
 - Hardened `make docker-smoke` in `Makefile` so it waits for API health and probes `/readyz` from inside the container.
 - Added validation coverage in persistence and runtime-entrypoint tests.
@@ -36,8 +36,8 @@ The change was made to remove migration-container orchestration complexity, avoi
 
 ## Relevant context
 - paths:
-  - `src/parity/persistence/migrations/__init__.py`
-  - `src/parity/runtime.py`
+  - `src/doc_forge/persistence/migrations/__init__.py`
+  - `src/doc_forge/runtime.py`
   - `docker-compose.yml`
   - `Makefile`
 - components:
@@ -67,4 +67,4 @@ The change was made to remove migration-container orchestration complexity, avoi
 ## Linked artifacts
 - `docs/evergreen/runbook.md`
 - `docs/evergreen/architecture.md`
-- Implementation evidence: `src/parity/persistence/migrations/__init__.py`, `src/parity/runtime.py`, `docker-compose.yml`, `Makefile`
+- Implementation evidence: `src/doc_forge/persistence/migrations/__init__.py`, `src/doc_forge/runtime.py`, `docker-compose.yml`, `Makefile`

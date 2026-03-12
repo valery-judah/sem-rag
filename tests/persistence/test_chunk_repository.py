@@ -3,8 +3,8 @@ from __future__ import annotations
 import pytest
 from sqlalchemy.exc import IntegrityError
 
-from parity._contracts import Chunk
-from parity.persistence import (
+from doc_forge._contracts import Chunk
+from doc_forge.persistence import (
     SqlChunkRepository,
     SqlDocumentRepository,
     SqlSectionRepository,

@@ -3,14 +3,14 @@ services:
     image: postgres:16-alpine
     init: true
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-parity}
-      POSTGRES_USER: ${POSTGRES_USER:-parity}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-parity}
+      POSTGRES_DB: ${POSTGRES_DB:-doc-forge}
+      POSTGRES_USER: ${POSTGRES_USER:-doc-forge}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-doc-forge}
     healthcheck:
       test:
         [
           "CMD-SHELL",
-          "pg_isready -U ${POSTGRES_USER:-parity} -d ${POSTGRES_DB:-parity}",
+          "pg_isready -U ${POSTGRES_USER:-doc-forge} -d ${POSTGRES_DB:-doc-forge}",
         ]
       interval: 2s
       timeout: 2s
@@ -25,17 +25,17 @@ services:
     build: .
     command: ["api"]
     init: true
-    user: "${PARITY_UID:-1000}:${PARITY_GID:-1000}"
+    user: "${DOC_FORGE_UID:-1000}:${DOC_FORGE_GID:-1000}"
     depends_on:
       db:
         condition: service_healthy
     environment:
-      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-parity}:${POSTGRES_PASSWORD:-parity}@db:5432/${POSTGRES_DB:-parity}
-      PARITY_ARTIFACT_ROOT: /artifacts
-      PARITY_AUTO_MIGRATE: "1"
-      PARITY_EMBEDDING_BACKEND: ${PARITY_EMBEDDING_BACKEND:-sentence-transformers}
-      PARITY_ANSWER_GENERATOR_BACKEND: ${PARITY_ANSWER_GENERATOR_BACKEND:-ollama}
-      PARITY_ANSWER_GENERATOR_MODEL: ${PARITY_ANSWER_GENERATOR_MODEL:-llama3.2:1b}
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-doc-forge}:${POSTGRES_PASSWORD:-doc-forge}@db:5432/${POSTGRES_DB:-doc-forge}
+      DOC_FORGE_ARTIFACT_ROOT: /artifacts
+      DOC_FORGE_AUTO_MIGRATE: "1"
+      DOC_FORGE_EMBEDDING_BACKEND: ${DOC_FORGE_EMBEDDING_BACKEND:-sentence-transformers}
+      DOC_FORGE_ANSWER_GENERATOR_BACKEND: ${DOC_FORGE_ANSWER_GENERATOR_BACKEND:-ollama}
+      DOC_FORGE_ANSWER_GENERATOR_MODEL: ${DOC_FORGE_ANSWER_GENERATOR_MODEL:-llama3.2:1b}
       OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://ollama:11434}
       TORCH_COMPILE_DISABLE: 1
       TORCHINDUCTOR_CACHE_DIR: /tmp/torch_cache
@@ -63,22 +63,22 @@ services:
     build: .
     command: ["worker"]
     init: true
-    user: "${PARITY_UID:-1000}:${PARITY_GID:-1000}"
+    user: "${DOC_FORGE_UID:-1000}:${DOC_FORGE_GID:-1000}"
     depends_on:
       db:
         condition: service_healthy
     environment:
-      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-parity}:${POSTGRES_PASSWORD:-parity}@db:5432/${POSTGRES_DB:-parity}
-      PARITY_ARTIFACT_ROOT: /artifacts
-      PARITY_AUTO_MIGRATE: "1"
-      PARITY_EMBEDDING_BACKEND: ${PARITY_EMBEDDING_BACKEND:-sentence-transformers}
-      PARITY_ANSWER_GENERATOR_BACKEND: ${PARITY_ANSWER_GENERATOR_BACKEND:-ollama}
-      PARITY_ANSWER_GENERATOR_MODEL: ${PARITY_ANSWER_GENERATOR_MODEL:-llama3.2:1b}
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-doc-forge}:${POSTGRES_PASSWORD:-doc-forge}@db:5432/${POSTGRES_DB:-doc-forge}
+      DOC_FORGE_ARTIFACT_ROOT: /artifacts
+      DOC_FORGE_AUTO_MIGRATE: "1"
+      DOC_FORGE_EMBEDDING_BACKEND: ${DOC_FORGE_EMBEDDING_BACKEND:-sentence-transformers}
+      DOC_FORGE_ANSWER_GENERATOR_BACKEND: ${DOC_FORGE_ANSWER_GENERATOR_BACKEND:-ollama}
+      DOC_FORGE_ANSWER_GENERATOR_MODEL: ${DOC_FORGE_ANSWER_GENERATOR_MODEL:-llama3.2:1b}
       OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://ollama:11434}
       TORCH_COMPILE_DISABLE: 1
       TORCHINDUCTOR_CACHE_DIR: /tmp/torch_cache
       HF_HOME: /tmp/hf_cache
-      PARITY_WORKER_POLL_SECONDS: "${PARITY_WORKER_POLL_SECONDS:-0.1}"
+      DOC_FORGE_WORKER_POLL_SECONDS: "${DOC_FORGE_WORKER_POLL_SECONDS:-0.1}"
     volumes:
       - ./data:/artifacts
     restart: unless-stopped

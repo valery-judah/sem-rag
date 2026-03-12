@@ -24,7 +24,7 @@ Completed changes:
   * chunk repository tests
   * integrity constraint tests
   * replace-on-retry tests
-* `src/parity/persistence.py` was extended with:
+* `src/doc_forge/persistence.py` was extended with:
   * `replace_sections_for_document(...)`
   * `replace_chunks_for_document(...)`
   * stronger document-scoped relational integrity via composite foreign keys for section parent links and chunk-to-section links
@@ -119,7 +119,7 @@ The next agent should start **PR 2: Persistence foundation and artifact store**,
 
 Recommended implementation order:
 
-1. convert `src/parity/persistence.py` into a `src/parity/persistence/` package while preserving current import compatibility from `parity.persistence`
+1. convert `src/doc_forge/persistence.py` into a `src/doc_forge/persistence/` package while preserving current import compatibility from `doc_forge.persistence`
 2. move the current SQLite helpers into a compatibility module
 3. add the new Postgres schema/repository seams for documents, lifecycle events, and document jobs
 4. add filesystem-backed artifact store seams for raw, extracted, and normalized artifacts
@@ -129,4 +129,4 @@ Recommended implementation order:
 
 Do not remove the current SQLite-backed seam yet. It is still the only implemented persistence path exercised by the repo, and the new test layout now depends on it.
 
-Do not add stage or pipeline tests until the corresponding runtime seams exist in `src/parity/`.
+Do not add stage or pipeline tests until the corresponding runtime seams exist in `src/doc_forge/`.

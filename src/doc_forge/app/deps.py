@@ -10,21 +10,21 @@ from fastapi import Depends
 from sqlalchemy import event
 from sqlalchemy.engine import Engine
 
-from parity.artifacts import FilesystemArtifactStore
-from parity.chunking import ChunkingService
-from parity.extractors import ExtractorRegistry, MarkdownExtractor, PdfExtractor
-from parity.indexing import (
+from doc_forge.artifacts import FilesystemArtifactStore
+from doc_forge.chunking import ChunkingService
+from doc_forge.extractors import ExtractorRegistry, MarkdownExtractor, PdfExtractor
+from doc_forge.indexing import (
     DeterministicEmbeddingAdapter,
     EmbeddingAdapter,
     SentenceTransformerEmbeddingAdapter,
     SqlVectorStore,
 )
-from parity.lifecycle.orchestrator import DocumentLifecycleOrchestrator
-from parity.lifecycle.readiness import ReadinessService
-from parity.lifecycle.service import DocumentLifecycleService
-from parity.lifecycle.worker import DocumentLifecycleWorker
-from parity.normalizers import MarkdownNormalizer, NormalizerRegistry, PdfNormalizer
-from parity.persistence import (
+from doc_forge.lifecycle.orchestrator import DocumentLifecycleOrchestrator
+from doc_forge.lifecycle.readiness import ReadinessService
+from doc_forge.lifecycle.service import DocumentLifecycleService
+from doc_forge.lifecycle.worker import DocumentLifecycleWorker
+from doc_forge.normalizers import MarkdownNormalizer, NormalizerRegistry, PdfNormalizer
+from doc_forge.persistence import (
     SqlChunkEmbeddingRepository,
     SqlChunkRepository,
     SqlDocumentJobRepository,
@@ -33,29 +33,29 @@ from parity.persistence import (
     SqlLifecycleEventRepository,
     SqlSectionRepository,
 )
-from parity.query import QueryService
-from parity.query.answer_generation import (
+from doc_forge.query import QueryService
+from doc_forge.query.answer_generation import (
     DeterministicGroundedAnswerGenerator,
     GroundedAnswerGenerator,
     MlxGroundedAnswerGenerator,
     OllamaGroundedAnswerGenerator,
 )
-from parity.query.answer_mode_policy import DeterministicAnswerModePolicy
-from parity.query.context_assembly import DeterministicContextAssembler
-from parity.query.interpretation import DeterministicQueryInterpreter
-from parity.query.persistence import (
+from doc_forge.query.answer_mode_policy import DeterministicAnswerModePolicy
+from doc_forge.query.context_assembly import DeterministicContextAssembler
+from doc_forge.query.interpretation import DeterministicQueryInterpreter
+from doc_forge.query.persistence import (
     SqlQueryAnswerStore,
     SqlQueryRunStore,
     SqlQuerySnapshotStore,
     SqlQueryTraceStore,
 )
-from parity.query.replay import QueryReplayService
-from parity.query.retrieval import SnapshotDenseQueryRetriever
-from parity.query.review import QueryReviewService
-from parity.query.selection import DeterministicQuerySelector
-from parity.query.support_assessment import HybridSupportAssessor
-from parity.readmodels import SqlQueryableCorpusReadModel
-from parity.stages import (
+from doc_forge.query.replay import QueryReplayService
+from doc_forge.query.retrieval import SnapshotDenseQueryRetriever
+from doc_forge.query.review import QueryReviewService
+from doc_forge.query.selection import DeterministicQuerySelector
+from doc_forge.query.support_assessment import HybridSupportAssessor
+from doc_forge.readmodels import SqlQueryableCorpusReadModel
+from doc_forge.stages import (
     ChunkDocumentStage,
     ExtractDocumentJobStage,
     ExtractDocumentStage,
@@ -66,7 +66,7 @@ from parity.stages import (
     RegisterDocumentStage,
     SectionizeDocumentStage,
 )
-from parity.structure import SectionDerivationService
+from doc_forge.structure import SectionDerivationService
 
 from .logging import reset_logging
 from .settings import AppSettings, load_settings
@@ -121,7 +121,7 @@ def _build_embedding_adapter(backend: str, model_name: str) -> EmbeddingAdapter:
     if normalized in {"sentence-transformers", "sentence_transformers"}:
         return SentenceTransformerEmbeddingAdapter(model_name=model_name)
     raise RuntimeError(
-        "PARITY_EMBEDDING_BACKEND must be one of: deterministic, sentence-transformers"
+        "DOC_FORGE_EMBEDDING_BACKEND must be one of: deterministic, sentence-transformers"
     )
 
 
@@ -157,7 +157,9 @@ def _build_answer_generator(
             max_new_tokens=max_new_tokens,
             temperature=temperature,
         )
-    raise RuntimeError("PARITY_ANSWER_GENERATOR_BACKEND must be one of: deterministic, mlx, ollama")
+    raise RuntimeError(
+        "DOC_FORGE_ANSWER_GENERATOR_BACKEND must be one of: deterministic, mlx, ollama"
+    )
 
 
 def get_answer_generator() -> GroundedAnswerGenerator:

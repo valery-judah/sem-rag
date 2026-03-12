@@ -1,6 +1,6 @@
 """Compatibility re-export for deterministic seam fixtures used in tests."""
 
-from parity.evaluation.fixtures import (
+from doc_forge.evaluation.fixtures import (
     INSUFFICIENT_EVIDENCE_QUESTION,
     SUPPORTED_QUESTION,
     InsufficientEvidenceCorpusQuestionSeam,

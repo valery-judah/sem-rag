@@ -8,9 +8,9 @@ from typing import Protocol
 import sqlalchemy as sa
 from sqlalchemy.engine import Connection, Engine
 
-from parity._contracts import Chunk, ProcessingStatus, Section
-from parity.indexing import ChunkEmbedding, IndexEntry
-from parity.lifecycle.models import LifecycleEvent
+from doc_forge._contracts import Chunk, ProcessingStatus, Section
+from doc_forge.indexing import ChunkEmbedding, IndexEntry
+from doc_forge.lifecycle.models import LifecycleEvent
 
 from .jobs import (
     DocumentJob,

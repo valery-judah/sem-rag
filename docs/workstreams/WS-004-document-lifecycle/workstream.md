@@ -38,9 +38,9 @@ Deliver the document-processing pipeline behind the existing internal lifecycle 
 - `docs/evergreen/mvp.md`
 - `docs/evergreen/architecture.md`
 - `docs/delivery/workflow.md`
-- `src/parity/_contracts/models.py`
-- `src/parity/_contracts/lifecycle.py`
-- `src/parity/persistence.py`
+- `src/doc_forge/_contracts/models.py`
+- `src/doc_forge/_contracts/lifecycle.py`
+- `src/doc_forge/persistence.py`
 - components:
 - internal contract layer
 - persistence layer

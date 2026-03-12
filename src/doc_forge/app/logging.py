@@ -44,13 +44,13 @@ def configure_logging(*, service: str, environment: str, level: str) -> None:
         "uvicorn.error",
         "uvicorn.access",
         "fastapi",
-        "parity",
-        "parity.app",
-        "parity.app.api",
-        "parity.query",
-        "parity.query.service",
-        "parity.query.review",
-        "parity.query.replay",
+        "doc_forge",
+        "doc_forge.app",
+        "doc_forge.app.api",
+        "doc_forge.query",
+        "doc_forge.query.service",
+        "doc_forge.query.review",
+        "doc_forge.query.replay",
     ):
         foreign_logger = logging.getLogger(logger_name)
         foreign_logger.handlers.clear()

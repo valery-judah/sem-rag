@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from uuid import uuid4
 
-from parity.persistence import DocumentJob, DocumentJobRepository, DocumentJobStage
+from doc_forge.persistence import DocumentJob, DocumentJobRepository, DocumentJobStage
 
 _NEXT_STAGE: dict[DocumentJobStage, DocumentJobStage | None] = {
     DocumentJobStage.EXTRACT: DocumentJobStage.NORMALIZE,

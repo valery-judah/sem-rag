@@ -5,30 +5,30 @@ from itertools import pairwise
 
 import pytest
 
-from parity._contracts import (
+from doc_forge._contracts import (
     AnswerStatus,
     Document,
     SourceType,
 )
-from parity._contracts import (
+from doc_forge._contracts import (
     ProcessingStatus as contract_processing_status,
 )
-from parity._contracts import (
+from doc_forge._contracts import (
     can_transition_processing_status as contract_can_transition_processing_status,
 )
-from parity._contracts.lifecycle import (
+from doc_forge._contracts.lifecycle import (
     IN_FLIGHT_PROCESSING_STATUSES as contract_in_flight_statuses,
 )
-from parity._contracts.lifecycle import (
+from doc_forge._contracts.lifecycle import (
     TERMINAL_PROCESSING_STATUSES as contract_terminal_statuses,
 )
-from parity._contracts.lifecycle import (
+from doc_forge._contracts.lifecycle import (
     allowed_next_processing_statuses as contract_allowed_next_processing_statuses,
 )
-from parity._contracts.lifecycle import (
+from doc_forge._contracts.lifecycle import (
     require_processing_status_transition as contract_require_processing_status_transition,
 )
-from parity.lifecycle import (
+from doc_forge.lifecycle import (
     IN_FLIGHT_PROCESSING_STATUSES,
     TERMINAL_PROCESSING_STATUSES,
     InvalidLifecycleTransitionError,

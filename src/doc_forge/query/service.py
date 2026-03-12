@@ -9,7 +9,7 @@ from uuid import uuid4
 import structlog
 from structlog.contextvars import bind_contextvars, unbind_contextvars
 
-from parity.readmodels import QueryableCorpusReadModel
+from doc_forge.readmodels import QueryableCorpusReadModel
 
 from .answer_generation import DeterministicGroundedAnswerGenerator, GroundedAnswerGenerator
 from .answer_mode_policy import AnswerModePolicy

@@ -5,8 +5,8 @@ import sqlalchemy as sa
 from alembic import command
 from alembic.config import Config
 
-from parity.persistence import apply_migrations
-from parity.persistence.migrations import (
+from doc_forge.persistence import apply_migrations
+from doc_forge.persistence.migrations import (
     apply_migrations_with_lock,
     build_alembic_config,
     resolve_database_url,
@@ -85,7 +85,7 @@ def test_apply_migrations_with_lock_uses_postgres_advisory_lock(
             return None
 
     monkeypatch.setattr(
-        "parity.persistence.migrations.sa.create_engine",
+        "doc_forge.persistence.migrations.sa.create_engine",
         lambda url: _FakeEngine(),
     )
 
@@ -93,9 +93,9 @@ def test_apply_migrations_with_lock_uses_postgres_advisory_lock(
         assert revision == "head"
         upgrade_calls.append(config)
 
-    monkeypatch.setattr("parity.persistence.migrations.command.upgrade", _fake_upgrade)
+    monkeypatch.setattr("doc_forge.persistence.migrations.command.upgrade", _fake_upgrade)
 
-    apply_migrations_with_lock("postgresql+psycopg://user:pass@localhost:5432/parity")
+    apply_migrations_with_lock("postgresql+psycopg://user:pass@localhost:5432/doc_forge")
 
     assert upgrade_calls
     assert executed_sql == [
@@ -110,7 +110,7 @@ def test_build_alembic_config_uses_repo_alembic_ini(db_url: str) -> None:
     assert isinstance(config, Config)
     assert config.config_file_name is not None
     assert config.config_file_name.endswith("alembic.ini")
-    assert config.get_main_option("script_location") == "src/parity/persistence/migrations"
+    assert config.get_main_option("script_location") == "src/doc_forge/persistence/migrations"
 
 
 def test_initial_revision_supports_downgrade_and_reupgrade(db_url: str) -> None:

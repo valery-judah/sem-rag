@@ -4,7 +4,7 @@
 **Last verified:** 2026-03-11
 
 ## Purpose
-This file captures the current architectural truth for `parity` and the gap between today's code and the target product described in [`docs/evergreen/mvp.md`](./mvp.md).
+This file captures the current architectural truth for `doc_forge` and the gap between today's code and the target product described in [`docs/evergreen/mvp.md`](./mvp.md).
 
 It is the canonical architecture statement for:
 
@@ -80,13 +80,13 @@ These seams are implemented internal architecture, not stable public contracts.
 
 ## Boundary Between Public API, Internal Architecture, And Planned Work
 ### Stable Public API
-The stable public package interface remains intentionally empty and is defined in [`docs/evergreen/api-contracts.md`](./api-contracts.md). Internal routes such as upload/status/retry/retrieval smoke and `POST /queries`, along with `src/parity/query/` exports, are implemented runtime seams rather than public contracts.
+The stable public package interface remains intentionally empty and is defined in [`docs/evergreen/api-contracts.md`](./api-contracts.md). Internal routes such as upload/status/retry/retrieval smoke and `POST /queries`, along with `src/doc_forge/query/` exports, are implemented runtime seams rather than public contracts.
 
 ### Implemented Internal Architecture
 The `_contracts` layer, query read model, internal query runtime through Stage 5 context assembly, internal lifecycle app, queue worker, executable stages from registration through readiness, artifact store, persistence/indexing helpers, evaluation harness, and devtools exist in code and are exercised by tests. They are current implementation truth, but they are not yet promised as stable external interfaces for downstream callers.
 
 ### Planned MVP Capabilities Not Yet Implemented
-The target product in [`docs/evergreen/mvp.md`](./mvp.md) still exceeds the runtime that exists today. The following user-facing capabilities are not implemented in `src/parity/`:
+The target product in [`docs/evergreen/mvp.md`](./mvp.md) still exceeds the runtime that exists today. The following user-facing capabilities are not implemented in `src/doc_forge/`:
 
 - no support-assessment stage
 - no answer-mode decision stage
@@ -108,11 +108,11 @@ The main remaining gap to the MVP question-answering service is the rest of the 
 The runtime also has not earned a stable public service or package API.
 
 ## Agent Guardrails
-- Do not treat `src/parity/_contracts/` as public API. It is real implemented architecture, but it is internal until `docs/evergreen/api-contracts.md` says otherwise.
+- Do not treat `src/doc_forge/_contracts/` as public API. It is real implemented architecture, but it is internal until `docs/evergreen/api-contracts.md` says otherwise.
 - Do not redefine evaluation semantics here. Support-state, scenario, citation, and failure meanings are owned by the evergreen eval docs.
 - Do not treat `docs/delivery/workflow.md` as authority for current implementation truth. It is workflow rationale and promotion guidance, not the current-state source of truth.
 - Do not infer public API stability, answer generation, or user-facing source inspection from internal lifecycle routes or worker seams.
-- Do not infer support assessment, answer-mode selection, generation, or citation rendering from the existence of `InterpretedQuery`, support-state enums, trust-failure labels, `EvidenceSet` objects, or `ContextManifest` objects in `src/parity/query/contracts.py`.
+- Do not infer support assessment, answer-mode selection, generation, or citation rendering from the existence of `InterpretedQuery`, support-state enums, trust-failure labels, `EvidenceSet` objects, or `ContextManifest` objects in `src/doc_forge/query/contracts.py`.
 - When referencing support-state or trust-failure vocabulary, normalize against [`docs/evergreen/eval-support-semantics.md`](./eval-support-semantics.md) and related evergreen eval docs instead of restating workstream-specific framing as runtime fact.
 - Do not promote a new seam into evergreen architecture just because it appears in one prototype or one workstream. It should be implemented repo truth and exercised under tests or equivalent validation pressure.
 

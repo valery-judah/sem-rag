@@ -6,21 +6,21 @@ import pytest
 import sqlalchemy as sa
 from sqlalchemy import event
 
-from parity._contracts import ProcessingStatus, SourceType
-from parity.artifacts import (
+from doc_forge._contracts import ProcessingStatus, SourceType
+from doc_forge.artifacts import (
     ExtractedArtifact,
     ExtractedArtifactBlock,
     ExtractedArtifactPage,
     FilesystemArtifactStore,
 )
-from parity.normalizers import MarkdownNormalizer, NormalizerRegistry, PdfNormalizer
-from parity.persistence import (
+from doc_forge.normalizers import MarkdownNormalizer, NormalizerRegistry, PdfNormalizer
+from doc_forge.persistence import (
     PersistedDocument,
     SqlDocumentRepository,
     SqlLifecycleEventRepository,
     apply_migrations,
 )
-from parity.stages.normalize import NormalizeDocumentStage
+from doc_forge.stages.normalize import NormalizeDocumentStage
 
 
 @pytest.fixture

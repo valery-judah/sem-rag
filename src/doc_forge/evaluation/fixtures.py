@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import UTC, datetime
 
-from parity._contracts import (
+from doc_forge._contracts import (
     Answer,
     AnswerStatus,
     Chunk,

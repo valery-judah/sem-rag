@@ -6,7 +6,7 @@
 
 ## Purpose
 
-This document records the repo-facing Stage 6 design as implemented in `parity`.
+This document records the repo-facing Stage 6 design as implemented in `doc_forge`.
 
 Stage 6 is the trust-critical boundary between:
 
@@ -43,14 +43,14 @@ It does not create a stable public API.
 
 As of 2026-03-11, the repo now has the Stage 6 runtime implemented:
 
-- [contracts.py](../../../../../src/parity/query/contracts.py) now defines `SupportQualifierReason` and strengthened `SupportAssessment` and `AnswerModeDecision` contracts;
-- [policies.py](../../../../../src/parity/query/policies.py) now carries Stage 6 policy-version and support-ceiling flags in `QueryPolicy`;
-- [support_assessment.py](../../../../../src/parity/query/support_assessment.py) now owns hybrid support assessment and the default deterministic support judge;
-- [answer_mode_policy.py](../../../../../src/parity/query/answer_mode_policy.py) now owns deterministic answer-mode selection and downgrade-only enforcement;
-- [assess_support.py](../../../../../src/parity/query/stages/assess_support.py) and [decide_answer_mode.py](../../../../../src/parity/query/stages/decide_answer_mode.py) are now executable Stage 6 entrypoints rather than placeholders;
-- [service.py](../../../../../src/parity/query/service.py) now executes through Stage 6 with `execute_until_answer_mode()`;
-- [api.py](../../../../../src/parity/app/api.py) now returns `support_assessment` and `answer_mode_decision` on the internal `POST /queries` route;
-- [deps.py](../../../../../src/parity/app/deps.py) now wires Stage 6-ready query service dependencies.
+- [contracts.py](../../../../../src/doc_forge/query/contracts.py) now defines `SupportQualifierReason` and strengthened `SupportAssessment` and `AnswerModeDecision` contracts;
+- [policies.py](../../../../../src/doc_forge/query/policies.py) now carries Stage 6 policy-version and support-ceiling flags in `QueryPolicy`;
+- [support_assessment.py](../../../../../src/doc_forge/query/support_assessment.py) now owns hybrid support assessment and the default deterministic support judge;
+- [answer_mode_policy.py](../../../../../src/doc_forge/query/answer_mode_policy.py) now owns deterministic answer-mode selection and downgrade-only enforcement;
+- [assess_support.py](../../../../../src/doc_forge/query/stages/assess_support.py) and [decide_answer_mode.py](../../../../../src/doc_forge/query/stages/decide_answer_mode.py) are now executable Stage 6 entrypoints rather than placeholders;
+- [service.py](../../../../../src/doc_forge/query/service.py) now executes through Stage 6 with `execute_until_answer_mode()`;
+- [api.py](../../../../../src/doc_forge/app/api.py) now returns `support_assessment` and `answer_mode_decision` on the internal `POST /queries` route;
+- [deps.py](../../../../../src/doc_forge/app/deps.py) now wires Stage 6-ready query service dependencies.
 
 Stage 6 extends the existing Stage 5 runtime without implying that Stage 7 answer generation or citation rendering already exists.
 
@@ -58,12 +58,12 @@ Stage 6 extends the existing Stage 5 runtime without implying that Stage 7 answe
 
 Stage 6 is implemented with:
 
-- hybrid support-assessment helpers in [support_assessment.py](../../../../../src/parity/query/support_assessment.py);
-- deterministic answer-mode policy helpers in [answer_mode_policy.py](../../../../../src/parity/query/answer_mode_policy.py);
-- strengthened Stage 6 contracts in [contracts.py](../../../../../src/parity/query/contracts.py);
-- executable `assess_support` and `decide_answer_mode` stages in [assess_support.py](../../../../../src/parity/query/stages/assess_support.py) and [decide_answer_mode.py](../../../../../src/parity/query/stages/decide_answer_mode.py);
-- Stage 6 runtime wiring in [service.py](../../../../../src/parity/query/service.py);
-- internal route integration in [api.py](../../../../../src/parity/app/api.py) and [deps.py](../../../../../src/parity/app/deps.py);
+- hybrid support-assessment helpers in [support_assessment.py](../../../../../src/doc_forge/query/support_assessment.py);
+- deterministic answer-mode policy helpers in [answer_mode_policy.py](../../../../../src/doc_forge/query/answer_mode_policy.py);
+- strengthened Stage 6 contracts in [contracts.py](../../../../../src/doc_forge/query/contracts.py);
+- executable `assess_support` and `decide_answer_mode` stages in [assess_support.py](../../../../../src/doc_forge/query/stages/assess_support.py) and [decide_answer_mode.py](../../../../../src/doc_forge/query/stages/decide_answer_mode.py);
+- Stage 6 runtime wiring in [service.py](../../../../../src/doc_forge/query/service.py);
+- internal route integration in [api.py](../../../../../src/doc_forge/app/api.py) and [deps.py](../../../../../src/doc_forge/app/deps.py);
 - tests covering unsupported-question, empty-evidence, conflict, cross-document coverage, service traces, and route behavior.
 
 That outcome is enough to earn explicit support-state judgment and policy-selected answer posture before Stage 7 generation exists.
@@ -98,7 +98,7 @@ Stage 6 strengthens those contracts without turning them into a table-shaped per
 
 ### Stable reason-code layer
 
-[contracts.py](../../../../../src/parity/query/contracts.py) now defines `SupportQualifierReason` with these current reason codes:
+[contracts.py](../../../../../src/doc_forge/query/contracts.py) now defines `SupportQualifierReason` with these current reason codes:
 
 - `unsupported_question_type`
 - `no_evidence_available`
@@ -140,7 +140,7 @@ It tells Stage 7 what the answer layer is allowed to do, not how the prose shoul
 
 ## Implemented policy additions
 
-[QueryPolicy](../../../../../src/parity/query/policies.py) now includes the minimum additional Stage 6 policy levers:
+[QueryPolicy](../../../../../src/doc_forge/query/policies.py) now includes the minimum additional Stage 6 policy levers:
 
 - `support_assessment_policy_version`
 - `answer_mode_policy_version`
@@ -159,7 +159,7 @@ The default policy versions are:
 
 ### Support-assessment helper seam
 
-[support_assessment.py](../../../../../src/parity/query/support_assessment.py) now owns the Stage 6 support-assessment helper seam.
+[support_assessment.py](../../../../../src/doc_forge/query/support_assessment.py) now owns the Stage 6 support-assessment helper seam.
 
 It exposes:
 
@@ -182,7 +182,7 @@ It does not perform a provider-backed model call.
 
 ### Answer-mode policy helper seam
 
-[answer_mode_policy.py](../../../../../src/parity/query/answer_mode_policy.py) now owns the Stage 6 answer-policy helper seam.
+[answer_mode_policy.py](../../../../../src/doc_forge/query/answer_mode_policy.py) now owns the Stage 6 answer-policy helper seam.
 
 It exposes:
 
@@ -280,7 +280,7 @@ It does not call a model.
 
 ### Baseline mapping
 
-The baseline support-state mapping in [policies.py](../../../../../src/parity/query/policies.py) remains:
+The baseline support-state mapping in [policies.py](../../../../../src/doc_forge/query/policies.py) remains:
 
 - `SUFFICIENT` -> `DIRECT_ANSWER`
 - `PARTIAL` -> `QUALIFIED_ANSWER`
@@ -338,7 +338,7 @@ It must not:
 
 ## Implemented stage traces
 
-Stage 6 continues using [query_stage_traces](../../../../../src/parity/query/persistence.py) rather than introducing new normalized persistence tables.
+Stage 6 continues using [query_stage_traces](../../../../../src/doc_forge/query/persistence.py) rather than introducing new normalized persistence tables.
 
 ### `assess_support` trace payload
 
@@ -380,7 +380,7 @@ Stage 6 traces only record the policy slice needed to explain the decision.
 
 ### `assess_support` stage
 
-[assess_support.py](../../../../../src/parity/query/stages/assess_support.py) is now the executable Stage 6 support-assessment entrypoint.
+[assess_support.py](../../../../../src/doc_forge/query/stages/assess_support.py) is now the executable Stage 6 support-assessment entrypoint.
 
 It accepts:
 
@@ -400,7 +400,7 @@ It returns:
 
 ### `decide_answer_mode` stage
 
-[decide_answer_mode.py](../../../../../src/parity/query/stages/decide_answer_mode.py) is now the executable answer-policy entrypoint.
+[decide_answer_mode.py](../../../../../src/doc_forge/query/stages/decide_answer_mode.py) is now the executable answer-policy entrypoint.
 
 It accepts:
 
@@ -423,7 +423,7 @@ Neither Stage 6 entrypoint synthesizes answer text, citations, or visible limita
 
 ### Query service
 
-[service.py](../../../../../src/parity/query/service.py) now exposes:
+[service.py](../../../../../src/doc_forge/query/service.py) now exposes:
 
 - `execute_until_answer_mode()`
 
@@ -445,7 +445,7 @@ The repo still has no final answer artifact, so the run is not marked `SUCCEEDED
 
 ### Internal API surface
 
-[api.py](../../../../../src/parity/app/api.py) now extends the internal `POST /queries` response with:
+[api.py](../../../../../src/doc_forge/app/api.py) now extends the internal `POST /queries` response with:
 
 - `support_assessment`
 - `answer_mode_decision`
@@ -459,7 +459,7 @@ It does not create a stable external API.
 
 ### App wiring
 
-[deps.py](../../../../../src/parity/app/deps.py) now wires:
+[deps.py](../../../../../src/doc_forge/app/deps.py) now wires:
 
 - `HybridSupportAssessor`
 - `DeterministicAnswerModePolicy`

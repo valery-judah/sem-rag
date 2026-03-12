@@ -4,22 +4,22 @@ from typing import cast
 
 import pytest
 
-from parity._contracts import ProcessingStatus, SourceType
-from parity.artifacts import (
+from doc_forge._contracts import ProcessingStatus, SourceType
+from doc_forge.artifacts import (
     ExtractedArtifact,
     FilesystemArtifactStore,
     NormalizedArtifact,
 )
-from parity.indexing import VectorSearchHit
-from parity.lifecycle.orchestrator import DocumentLifecycleOrchestrator
-from parity.lifecycle.service import (
+from doc_forge.indexing import VectorSearchHit
+from doc_forge.lifecycle.orchestrator import DocumentLifecycleOrchestrator
+from doc_forge.lifecycle.service import (
     DocumentLifecycleService,
     DocumentNotFoundError,
     RetryNotAllowedError,
     UnsupportedDocumentError,
 )
-from parity.persistence import DocumentJobStage, DocumentJobStatus
-from parity.stages import RegisterDocumentStage
+from doc_forge.persistence import DocumentJobStage, DocumentJobStatus
+from doc_forge.stages import RegisterDocumentStage
 from tests.lifecycle.support import (
     InMemoryChunkEmbeddingRepository,
     InMemoryChunkRepository,

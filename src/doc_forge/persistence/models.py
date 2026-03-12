@@ -8,9 +8,9 @@ from datetime import UTC, datetime
 import sqlalchemy as sa
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from parity._contracts import Chunk, Document, ProcessingStatus, Section, SourceType
-from parity.indexing import ChunkEmbedding, IndexEntry
-from parity.lifecycle.models import FailureCategory, LifecycleEvent, LifecycleStage
+from doc_forge._contracts import Chunk, Document, ProcessingStatus, Section, SourceType
+from doc_forge.indexing import ChunkEmbedding, IndexEntry
+from doc_forge.lifecycle.models import FailureCategory, LifecycleEvent, LifecycleStage
 
 
 def utc_now() -> datetime:

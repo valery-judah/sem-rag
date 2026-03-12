@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from parity._contracts import SourceType
+from doc_forge._contracts import SourceType
 
 
 class RawArtifactRef(BaseModel):

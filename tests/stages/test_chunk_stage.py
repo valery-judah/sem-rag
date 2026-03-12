@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 
-from parity._contracts import ProcessingStatus, Section, SourceType
-from parity.artifacts import FilesystemArtifactStore, NormalizedArtifact, NormalizedArtifactBlock
-from parity.chunking import ChunkingService
-from parity.persistence import (
+from doc_forge._contracts import ProcessingStatus, Section, SourceType
+from doc_forge.artifacts import FilesystemArtifactStore, NormalizedArtifact, NormalizedArtifactBlock
+from doc_forge.chunking import ChunkingService
+from doc_forge.persistence import (
     DocumentJobStage,
     PersistedDocument,
     SqlChunkRepository,
@@ -13,7 +13,7 @@ from parity.persistence import (
     SqlLifecycleEventRepository,
     SqlSectionRepository,
 )
-from parity.stages.chunk import ChunkDocumentStage
+from doc_forge.stages.chunk import ChunkDocumentStage
 
 
 def test_chunk_stage_persists_chunks_and_marks_document_chunked(

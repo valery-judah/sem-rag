@@ -7,7 +7,7 @@ from enum import StrEnum
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from parity.lifecycle.status import ProcessingStatus
+from doc_forge.lifecycle.status import ProcessingStatus
 
 
 class LifecycleStage(StrEnum):

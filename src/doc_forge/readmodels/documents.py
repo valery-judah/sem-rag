@@ -7,16 +7,16 @@ from typing import Protocol
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from parity._contracts import Chunk, ProcessingStatus, SourceType
-from parity.indexing import ChunkEmbedding
-from parity.persistence import (
+from doc_forge._contracts import Chunk, ProcessingStatus, SourceType
+from doc_forge.indexing import ChunkEmbedding
+from doc_forge.persistence import (
     ChunkEmbeddingRepository,
     ChunkRepository,
     DocumentRepository,
     IndexEntryRepository,
     SectionRepository,
 )
-from parity.query.contracts import CorpusSnapshot
+from doc_forge.query.contracts import CorpusSnapshot
 
 
 def utc_now() -> datetime:

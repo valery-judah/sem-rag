@@ -15,7 +15,7 @@ updated: 2026-03-11
 - Mark documents `CHUNKED` only after chunk replacement succeeds.
 
 ## Implementation Changes
-- Add `src/parity/chunking/policy.py`, `src/parity/chunking/service.py`, and `src/parity/stages/chunk.py`.
+- Add `src/doc_forge/chunking/policy.py`, `src/doc_forge/chunking/service.py`, and `src/doc_forge/stages/chunk.py`.
 - Preserve code blocks as standalone chunks when practical.
 - Persist chunk lineage and token-count debug metadata.
 

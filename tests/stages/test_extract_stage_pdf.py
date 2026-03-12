@@ -6,16 +6,16 @@ import pytest
 import sqlalchemy as sa
 from sqlalchemy import event
 
-from parity._contracts import ProcessingStatus, SourceType
-from parity.artifacts import FilesystemArtifactStore
-from parity.extractors import ExtractorRegistry, MarkdownExtractor, PdfExtractor
-from parity.persistence import (
+from doc_forge._contracts import ProcessingStatus, SourceType
+from doc_forge.artifacts import FilesystemArtifactStore
+from doc_forge.extractors import ExtractorRegistry, MarkdownExtractor, PdfExtractor
+from doc_forge.persistence import (
     PersistedDocument,
     SqlDocumentRepository,
     SqlLifecycleEventRepository,
     apply_migrations,
 )
-from parity.stages.extract import DocumentExtractionError, ExtractDocumentStage
+from doc_forge.stages.extract import DocumentExtractionError, ExtractDocumentStage
 
 
 class _FakePdfPage:
@@ -121,7 +121,7 @@ def test_pdf_extract_preserves_page_boundaries(
     documents, _ = repositories
     doc_id = _persist_pdf_document(documents=documents, artifact_store=artifact_store)
     monkeypatch.setattr(
-        "parity.extractors.pdf.PdfReader",
+        "doc_forge.extractors.pdf.PdfReader",
         lambda _: _FakePdfReader(
             [
                 "INTRODUCTION\n\nConsensus keeps nodes aligned.",
@@ -146,7 +146,7 @@ def test_pdf_extract_records_warnings_for_sparse_text_layer(
     documents, _ = repositories
     doc_id = _persist_pdf_document(documents=documents, artifact_store=artifact_store)
     monkeypatch.setattr(
-        "parity.extractors.pdf.PdfReader",
+        "doc_forge.extractors.pdf.PdfReader",
         lambda _: _FakePdfReader(["SHORT"]),
     )
 
@@ -164,7 +164,7 @@ def test_pdf_extract_rejects_no_recoverable_text_layer(
     documents, _ = repositories
     doc_id = _persist_pdf_document(documents=documents, artifact_store=artifact_store)
     monkeypatch.setattr(
-        "parity.extractors.pdf.PdfReader",
+        "doc_forge.extractors.pdf.PdfReader",
         lambda _: _FakePdfReader(["", "   "]),
     )
 
@@ -197,7 +197,7 @@ def test_extract_stage_does_not_mark_extracted_without_artifact(
     documents, _ = repositories
     doc_id = _persist_pdf_document(documents=documents, artifact_store=artifact_store)
     monkeypatch.setattr(
-        "parity.extractors.pdf.PdfReader",
+        "doc_forge.extractors.pdf.PdfReader",
         lambda _: _FakePdfReader(["Meaningful PDF text for extraction."]),
     )
 

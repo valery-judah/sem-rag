@@ -8,9 +8,9 @@ import sqlalchemy as sa
 from sqlalchemy import event
 from sqlalchemy.engine import Engine
 
-from parity._contracts import Chunk, Document, ProcessingStatus, Section, SourceType
-from parity.lifecycle.models import LifecycleEvent, LifecycleStage
-from parity.persistence import (
+from doc_forge._contracts import Chunk, Document, ProcessingStatus, Section, SourceType
+from doc_forge.lifecycle.models import LifecycleEvent, LifecycleStage
+from doc_forge.persistence import (
     DocumentJob,
     DocumentJobStage,
     DocumentJobStatus,

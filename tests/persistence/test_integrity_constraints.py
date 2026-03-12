@@ -3,7 +3,7 @@ from __future__ import annotations
 import pytest
 from sqlalchemy.exc import IntegrityError
 
-from parity.persistence import SqlChunkRepository, SqlDocumentRepository, SqlSectionRepository
+from doc_forge.persistence import SqlChunkRepository, SqlDocumentRepository, SqlSectionRepository
 
 pytestmark = pytest.mark.persistence
 

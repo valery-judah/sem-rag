@@ -6,16 +6,16 @@ import pytest
 import sqlalchemy as sa
 from sqlalchemy import event
 
-from parity._contracts import ProcessingStatus, SourceType
-from parity.artifacts import FilesystemArtifactStore
-from parity.extractors import ExtractorRegistry, MarkdownExtractor, PdfExtractor
-from parity.persistence import (
+from doc_forge._contracts import ProcessingStatus, SourceType
+from doc_forge.artifacts import FilesystemArtifactStore
+from doc_forge.extractors import ExtractorRegistry, MarkdownExtractor, PdfExtractor
+from doc_forge.persistence import (
     PersistedDocument,
     SqlDocumentRepository,
     SqlLifecycleEventRepository,
     apply_migrations,
 )
-from parity.stages.extract import DocumentExtractionError, ExtractDocumentStage
+from doc_forge.stages.extract import DocumentExtractionError, ExtractDocumentStage
 
 
 @pytest.fixture

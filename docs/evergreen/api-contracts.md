@@ -6,7 +6,7 @@
 ## Purpose
 This document defines the stable external interfaces that are actually implemented and safe for downstream reliance.
 
-As of 2026-03-11, there are no earned public API contracts in `parity`.
+As of 2026-03-11, there are no earned public API contracts in `doc_forge`.
 
 ## Current State
 The repository does not currently expose a stable user-facing package API, service API, or CLI contract that downstream callers should rely on.
@@ -42,7 +42,7 @@ The repository now includes implemented and tested internal query-runtime seams,
 These internal-only seams include:
 
 - the internal `POST /queries` FastAPI route
-- internal `parity.query` request and runtime types such as `QueryRequest`, `CorpusSnapshot`, and `InterpretedQuery`
+- internal `doc_forge.query` request and runtime types such as `QueryRequest`, `CorpusSnapshot`, and `InterpretedQuery`
 - internal query persistence artifacts such as `query_runs`, `query_snapshots`, and `query_stage_traces`
 
 Stage 1 query-boundary behavior and Stage 2 interpretation behavior are implemented in code and exercised by tests, but they remain internal and changeable until this document explicitly promotes them.
@@ -50,9 +50,9 @@ Stage 1 query-boundary behavior and Stage 2 interpretation behavior are implemen
 ## Compatibility And Change Control
 Because no public API contract has been earned yet:
 
-- code in `src/parity/` should be treated as internal and changeable
+- code in `src/doc_forge/` should be treated as internal and changeable
 - renames, removals, and signature changes are not contract breaks unless this document is updated first
-- `src/parity/query/`, `src/parity/readmodels/`, and internal FastAPI route payloads are not downstream-supported interfaces
+- `src/doc_forge/query/`, `src/doc_forge/readmodels/`, and internal FastAPI route payloads are not downstream-supported interfaces
 - future interfaces should only be added here after they are implemented and intentionally supported for downstream use
 
 ## Promotion Rule
@@ -63,7 +63,7 @@ An interface should appear in this file only when all of the following are true:
 - the team intends downstream callers to rely on it
 - the team is willing to treat incompatible changes as breaking changes
 
-Until then, the correct evergreen position is that `parity` has no stable API contracts.
+Until then, the correct evergreen position is that `doc_forge` has no stable API contracts.
 
 ## Relationship To Other Docs
 - [`docs/evergreen/mvp.md`](./mvp.md) describes the target product, not current API reality.

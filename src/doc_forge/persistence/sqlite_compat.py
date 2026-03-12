@@ -6,7 +6,7 @@ import json
 import sqlite3
 from datetime import datetime
 
-from parity._contracts import Chunk, Document, ProcessingStatus, Section, SourceType
+from doc_forge._contracts import Chunk, Document, ProcessingStatus, Section, SourceType
 
 
 def create_schema(conn: sqlite3.Connection) -> None:

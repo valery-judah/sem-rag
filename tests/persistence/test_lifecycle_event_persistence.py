@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import pytest
 
-from parity._contracts import ProcessingStatus
-from parity.lifecycle.models import FailureCategory, LifecycleStage
-from parity.persistence import SqlDocumentRepository, SqlLifecycleEventRepository
+from doc_forge._contracts import ProcessingStatus
+from doc_forge.lifecycle.models import FailureCategory, LifecycleStage
+from doc_forge.persistence import SqlDocumentRepository, SqlLifecycleEventRepository
 
 pytestmark = pytest.mark.persistence
 

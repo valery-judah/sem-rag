@@ -179,6 +179,67 @@ wheels = [
 ]
 
 [[package]]
+name = "doc-forge"
+version = "0.1.0"
+source = { editable = "." }
+dependencies = [
+    { name = "alembic" },
+    { name = "fastapi" },
+    { name = "psycopg", extra = ["binary"] },
+    { name = "pydantic" },
+    { name = "pypdf" },
+    { name = "python-multipart" },
+    { name = "sqlalchemy" },
+    { name = "structlog" },
+    { name = "uvicorn" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "httpx" },
+    { name = "mypy" },
+    { name = "pyright" },
+    { name = "pytest" },
+    { name = "ruff" },
+    { name = "testcontainers" },
+]
+llm = [
+    { name = "sentence-transformers" },
+    { name = "torch" },
+]
+mac = [
+    { name = "mlx-lm" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "alembic", specifier = ">=1.14,<2" },
+    { name = "fastapi" },
+    { name = "psycopg", extras = ["binary"], specifier = ">=3.2,<4" },
+    { name = "pydantic", specifier = ">=2,<3" },
+    { name = "pypdf", specifier = ">=5.0.0" },
+    { name = "python-multipart" },
+    { name = "sqlalchemy", specifier = ">=2,<3" },
+    { name = "structlog", specifier = ">=25.5.0" },
+    { name = "uvicorn" },
+]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "httpx", specifier = ">=0.28.1" },
+    { name = "mypy", specifier = ">=1.17.0" },
+    { name = "pyright", specifier = ">=1.1.408" },
+    { name = "pytest", specifier = ">=8.4.0" },
+    { name = "ruff", specifier = ">=0.12.0" },
+    { name = "testcontainers", extras = ["postgres"], specifier = ">=4.14.1" },
+]
+llm = [
+    { name = "sentence-transformers", specifier = ">=5.2.3" },
+    { name = "torch", specifier = ">=2.10.0" },
+]
+mac = [{ name = "mlx-lm", specifier = ">=0.31.1" }]
+
+[[package]]
 name = "docker"
 version = "7.1.0"
 source = { registry = "https://pypi.org/simple" }
@@ -932,67 +993,6 @@ sdist = { url = "https://files.pythonhosted.org/packages/65/ee/299d360cdc32edc7d
 wheels = [
     { url = "https://files.pythonhosted.org/packages/b7/b9/c538f279a4e237a006a2c98387d081e9eb060d203d8ed34467cc0f0b9b53/packaging-26.0-py3-none-any.whl", hash = "sha256:b36f1fef9334a5588b4166f8bcd26a14e521f2b55e6b9de3aaa80d3ff7a37529", size = 74366, upload-time = "2026-01-21T20:50:37.788Z" },
 ]
-
-[[package]]
-name = "parity"
-version = "0.1.0"
-source = { editable = "." }
-dependencies = [
-    { name = "alembic" },
-    { name = "fastapi" },
-    { name = "psycopg", extra = ["binary"] },
-    { name = "pydantic" },
-    { name = "pypdf" },
-    { name = "python-multipart" },
-    { name = "sqlalchemy" },
-    { name = "structlog" },
-    { name = "uvicorn" },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "httpx" },
-    { name = "mypy" },
-    { name = "pyright" },
-    { name = "pytest" },
-    { name = "ruff" },
-    { name = "testcontainers" },
-]
-llm = [
-    { name = "sentence-transformers" },
-    { name = "torch" },
-]
-mac = [
-    { name = "mlx-lm" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "alembic", specifier = ">=1.14,<2" },
-    { name = "fastapi" },
-    { name = "psycopg", extras = ["binary"], specifier = ">=3.2,<4" },
-    { name = "pydantic", specifier = ">=2,<3" },
-    { name = "pypdf", specifier = ">=5.0.0" },
-    { name = "python-multipart" },
-    { name = "sqlalchemy", specifier = ">=2,<3" },
-    { name = "structlog", specifier = ">=25.5.0" },
-    { name = "uvicorn" },
-]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "httpx", specifier = ">=0.28.1" },
-    { name = "mypy", specifier = ">=1.17.0" },
-    { name = "pyright", specifier = ">=1.1.408" },
-    { name = "pytest", specifier = ">=8.4.0" },
-    { name = "ruff", specifier = ">=0.12.0" },
-    { name = "testcontainers", extras = ["postgres"], specifier = ">=4.14.1" },
-]
-llm = [
-    { name = "sentence-transformers", specifier = ">=5.2.3" },
-    { name = "torch", specifier = ">=2.10.0" },
-]
-mac = [{ name = "mlx-lm", specifier = ">=0.31.1" }]
 
 [[package]]
 name = "pathspec"
