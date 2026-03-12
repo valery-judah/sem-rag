@@ -129,4 +129,28 @@ docker-db-shell: ## Open a psql shell inside the Docker Postgres service
 .PHONY: docker-smoke
 docker-smoke: ## Build, start, and probe the Docker stack readiness path
 	$(DOCKER_COMPOSE) up -d --build
-	curl --fail --silent http://127.0.0.1:$${PORT:-8000}/readyz
+	@api_cid="$$( $(DOCKER_COMPOSE) ps -q api )"; \
+	if [ -z "$$api_cid" ]; then \
+		echo "api container not found"; \
+		exit 1; \
+	fi; \
+	for attempt in $$(seq 1 30); do \
+		status="$$(docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' "$$api_cid")"; \
+		if [ "$$status" = "healthy" ]; then \
+			break; \
+		fi; \
+		if [ "$$status" = "exited" ] || [ "$$status" = "dead" ]; then \
+			echo "api container entered $$status state"; \
+			$(DOCKER_COMPOSE) logs --tail=120 api; \
+			exit 1; \
+		fi; \
+		sleep 2; \
+	done; \
+	status="$$(docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' "$$api_cid")"; \
+	if [ "$$status" != "healthy" ]; then \
+		echo "api container did not become healthy"; \
+		$(DOCKER_COMPOSE) ps; \
+		$(DOCKER_COMPOSE) logs --tail=120 api; \
+		exit 1; \
+	fi
+	$(DOCKER_COMPOSE) exec -T api python -c "import os, urllib.request; print(urllib.request.urlopen(f\"http://127.0.0.1:{os.environ.get('PORT', '8000')}/readyz\", timeout=2).read().decode())"

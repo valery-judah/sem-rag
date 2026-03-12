@@ -72,7 +72,7 @@ The currently earned seams are:
 - Markdown and PDF normalization plus persisted normalized artifacts
 - section recovery, chunk production, vector publication, and strict readiness evaluation through `READY`
 - SQLite-backed compatibility persistence for corpus primitives with linkage enforcement
-- Alembic-backed migration workflow and lifecycle/indexing repositories for documents, lifecycle events, document jobs, sections, chunks, index entries, and chunk embeddings
+- Alembic-backed migration workflow, including lock-protected runtime startup migrations for containerized services, plus lifecycle/indexing repositories for documents, lifecycle events, document jobs, sections, chunks, index entries, and chunk embeddings
 - deterministic evaluation of retrieval ordering, supporting evidence, and provenance completeness
 - repo devtool support for staged and repository secret scanning
 

@@ -21,28 +21,6 @@ services:
     volumes:
       - db-data:/var/lib/postgresql/data
 
-  migrate:
-    build: .
-    command: ["migrate"]
-    init: true
-    user: "${PARITY_UID:-1000}:${PARITY_GID:-1000}"
-    depends_on:
-      db:
-        condition: service_healthy
-    environment:
-      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-parity}:${POSTGRES_PASSWORD:-parity}@db:5432/${POSTGRES_DB:-parity}
-      PARITY_ARTIFACT_ROOT: /artifacts
-      PARITY_EMBEDDING_BACKEND: ${PARITY_EMBEDDING_BACKEND:-sentence-transformers}
-      PARITY_ANSWER_GENERATOR_BACKEND: ${PARITY_ANSWER_GENERATOR_BACKEND:-ollama}
-      PARITY_ANSWER_GENERATOR_MODEL: ${PARITY_ANSWER_GENERATOR_MODEL:-llama3.2:1b}
-      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://ollama:11434}
-      TORCH_COMPILE_DISABLE: 1
-      TORCHINDUCTOR_CACHE_DIR: /tmp/torch_cache
-      HF_HOME: /tmp/hf_cache
-    volumes:
-      - ./data:/artifacts
-    restart: "no"
-
   api:
     build: .
     command: ["api"]
@@ -51,11 +29,10 @@ services:
     depends_on:
       db:
         condition: service_healthy
-      migrate:
-        condition: service_completed_successfully
     environment:
       DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-parity}:${POSTGRES_PASSWORD:-parity}@db:5432/${POSTGRES_DB:-parity}
       PARITY_ARTIFACT_ROOT: /artifacts
+      PARITY_AUTO_MIGRATE: "1"
       PARITY_EMBEDDING_BACKEND: ${PARITY_EMBEDDING_BACKEND:-sentence-transformers}
       PARITY_ANSWER_GENERATOR_BACKEND: ${PARITY_ANSWER_GENERATOR_BACKEND:-ollama}
       PARITY_ANSWER_GENERATOR_MODEL: ${PARITY_ANSWER_GENERATOR_MODEL:-llama3.2:1b}
@@ -90,11 +67,10 @@ services:
     depends_on:
       db:
         condition: service_healthy
-      migrate:
-        condition: service_completed_successfully
     environment:
       DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-parity}:${POSTGRES_PASSWORD:-parity}@db:5432/${POSTGRES_DB:-parity}
       PARITY_ARTIFACT_ROOT: /artifacts
+      PARITY_AUTO_MIGRATE: "1"
       PARITY_EMBEDDING_BACKEND: ${PARITY_EMBEDDING_BACKEND:-sentence-transformers}
       PARITY_ANSWER_GENERATOR_BACKEND: ${PARITY_ANSWER_GENERATOR_BACKEND:-ollama}
       PARITY_ANSWER_GENERATOR_MODEL: ${PARITY_ANSWER_GENERATOR_MODEL:-llama3.2:1b}

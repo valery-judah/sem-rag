@@ -82,12 +82,14 @@ make verify
 - `make test-e2e` runs the docker-backed end-to-end document lifecycle suite under `tests/e2e/`.
 - `PARITY_E2E_VERBOSE=1 make test-e2e` enables step-by-step e2e progress logs plus richer failure diagnostics.
 - `POST /internal/run-next-job` exists for tests and local debug; normal local operation should prefer the worker loop.
-- `make docker-up-build` starts the local Postgres, migration, API, and worker stack defined in `docker-compose.yml`.
-- `make docker-smoke` verifies that `/readyz` can reach the configured database and write under `PARITY_ARTIFACT_ROOT`.
+- `make docker-up-build` starts the local Postgres, API, and worker stack defined in `docker-compose.yml`.
+- In Docker Compose, the `api` and `worker` runtimes self-apply Alembic migrations at startup before serving traffic or draining jobs.
+- `make docker-smoke` waits for the Compose API container to become healthy, then verifies that `/readyz` can reach the configured database and write under `PARITY_ARTIFACT_ROOT`.
 
 ## Database Migrations
 - Alembic is the standard migration interface for lifecycle metadata tables.
 - `DATABASE_URL` is the canonical database URL input for migration commands.
+- `PARITY_AUTO_MIGRATE` is an internal runtime switch that enables lock-protected startup migrations for containerized `api` and `worker` processes.
 - `PARITY_ARTIFACT_ROOT` is the internal runtime root for raw and intermediate artifact files used by the upload app.
 - `PARITY_WORKER_POLL_SECONDS` controls idle sleep time for the internal worker loop.
 - `PARITY_EMBEDDING_BACKEND` selects the embedding adapter. Supported values are `deterministic` and `sentence-transformers`. The default is `deterministic`.
@@ -98,6 +100,7 @@ make verify
 - `PARITY_UID` and `PARITY_GID` let the compose services run as a non-root user that can still write to the bind-mounted `./data` artifact root.
 - `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_PORT`, and `PORT` are the compose-level defaults for the local Docker stack.
 - `parity.persistence.apply_migrations(...)` remains available as an internal helper for tests and bootstrapping, but normal repo operations should use Alembic commands.
+- Postgres `docker-entrypoint-initdb.d` SQL bootstrap scripts are not the canonical schema path for lifecycle metadata; Alembic remains the single schema authority.
 - The current Alembic scope covers lifecycle metadata plus ingestion/indexing persistence: `documents`, `lifecycle_events`, `document_jobs`, `sections`, `chunks`, `index_entries`, and `chunk_embeddings`.
 - The SQLite compatibility seam for `Document`, `Section`, and `Chunk` remains in place and is not yet migrated into Alembic-managed runtime tables.
 

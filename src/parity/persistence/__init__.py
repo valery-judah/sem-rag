@@ -3,7 +3,7 @@
 from parity.indexing import ChunkEmbedding, IndexEntry
 
 from .jobs import DocumentJob, DocumentJobStage, DocumentJobStatus
-from .migrations import apply_migrations
+from .migrations import apply_migrations, apply_migrations_with_lock
 from .models import PersistedDocument
 from .repositories import (
     ChunkEmbeddingRepository,
@@ -55,6 +55,7 @@ __all__ = [
     "SqlLifecycleEventRepository",
     "SqlSectionRepository",
     "apply_migrations",
+    "apply_migrations_with_lock",
     "create_schema",
     "list_chunks_by_document",
     "list_documents_by_workspace",

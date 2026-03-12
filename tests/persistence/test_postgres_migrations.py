@@ -6,7 +6,11 @@ from alembic import command
 from alembic.config import Config
 
 from parity.persistence import apply_migrations
-from parity.persistence.migrations import build_alembic_config, resolve_database_url
+from parity.persistence.migrations import (
+    apply_migrations_with_lock,
+    build_alembic_config,
+    resolve_database_url,
+)
 
 pytestmark = pytest.mark.persistence
 
@@ -42,6 +46,62 @@ def test_apply_migrations_still_works_as_helper(db_url: str) -> None:
         assert "documents" in inspector.get_table_names()
     finally:
         engine.dispose()
+
+
+def test_apply_migrations_with_lock_is_idempotent(db_url: str) -> None:
+    apply_migrations_with_lock(db_url)
+    apply_migrations_with_lock(db_url)
+    engine = sa.create_engine(db_url)
+    try:
+        inspector = sa.inspect(engine)
+        assert "documents" in inspector.get_table_names()
+    finally:
+        engine.dispose()
+
+
+def test_apply_migrations_with_lock_uses_postgres_advisory_lock(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    executed_sql: list[str] = []
+    upgrade_calls: list[Config] = []
+
+    class _FakeConnection:
+        def exec_driver_sql(self, statement: str) -> None:
+            executed_sql.append(statement)
+
+        def __enter__(self) -> _FakeConnection:
+            return self
+
+        def __exit__(self, exc_type, exc, tb) -> None:
+            del exc_type, exc, tb
+
+    class _FakeEngine:
+        dialect = type("Dialect", (), {"name": "postgresql"})()
+
+        def connect(self) -> _FakeConnection:
+            return _FakeConnection()
+
+        def dispose(self) -> None:
+            return None
+
+    monkeypatch.setattr(
+        "parity.persistence.migrations.sa.create_engine",
+        lambda url: _FakeEngine(),
+    )
+
+    def _fake_upgrade(config: Config, revision: str) -> None:
+        assert revision == "head"
+        upgrade_calls.append(config)
+
+    monkeypatch.setattr("parity.persistence.migrations.command.upgrade", _fake_upgrade)
+
+    apply_migrations_with_lock("postgresql+psycopg://user:pass@localhost:5432/parity")
+
+    assert upgrade_calls
+    assert executed_sql == [
+        "SELECT pg_advisory_lock(24032026, 1)",
+        "SELECT pg_advisory_unlock(24032026, 1)",
+    ]
 
 
 def test_build_alembic_config_uses_repo_alembic_ini(db_url: str) -> None:
