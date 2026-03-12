@@ -155,6 +155,7 @@ class RunningStack:
                     connection.execute(
                         sa.select(
                             chunks_table.c.chunk_id,
+                            chunks_table.c.text,
                             chunks_table.c.heading_path_json,
                             chunks_table.c.section_id,
                             chunks_table.c.page_start,
