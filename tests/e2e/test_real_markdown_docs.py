@@ -99,10 +99,7 @@ def _single_chunk_row(e2e_stack, *, doc_id: str) -> dict[str, object]:
 
 
 def _chunk_text_by_id(e2e_stack, *, doc_id: str) -> dict[str, str]:
-    return {
-        str(row["chunk_id"]): str(row["text"])
-        for row in e2e_stack.chunk_rows(doc_id=doc_id)
-    }
+    return {str(row["chunk_id"]): str(row["text"]) for row in e2e_stack.chunk_rows(doc_id=doc_id)}
 
 
 def _build_concurrent_cases(count: int = 5) -> tuple[ConcurrentDocCase, ...]:
@@ -118,7 +115,7 @@ def _build_concurrent_cases(count: int = 5) -> tuple[ConcurrentDocCase, ...]:
                     f"# Concurrent {index}\n\n"
                     f"{marker} belongs only to document {index}. "
                     f"{marker} should never leak into any other document.\n"
-                ).encode("utf-8"),
+                ).encode(),
             )
         )
     return tuple(cases)

@@ -303,10 +303,10 @@ class DocumentLifecycleService:
     def delete_document(self, *, doc_id: DocId) -> None:
         """Completely remove a document, its artifacts, vectors, and lifecycle history."""
         document = self._require_document(doc_id)
-        
+
         if self._vector_store is not None:
             self._vector_store.delete_document(doc_id=doc_id)
-            
+
         if self._artifact_store is not None:
             self._artifact_store.delete_raw_by_id(
                 workspace_id=document.workspace_id,
@@ -321,7 +321,7 @@ class DocumentLifecycleService:
                 workspace_id=document.workspace_id,
                 doc_id=doc_id,
             )
-            
+
         if self._documents is not None:
             self._documents.delete(doc_id=doc_id)
 
