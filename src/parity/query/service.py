@@ -2,19 +2,32 @@
 
 from __future__ import annotations
 
+import hashlib
 from datetime import datetime
 from uuid import uuid4
 
 from parity.readmodels import QueryableCorpusReadModel
+import structlog
+from structlog.contextvars import bind_contextvars, unbind_contextvars
 
 from .answer_generation import DeterministicGroundedAnswerGenerator, GroundedAnswerGenerator
 from .answer_mode_policy import AnswerModePolicy
 from .citation_rendering import CitationRenderer, DeterministicCitationRenderer
 from .context_assembly import ContextAssembler
-from .contracts import CorpusSnapshot, FinalQueryArtifacts, QueryRequest, QueryRun, QueryRunStatus
+from .contracts import (
+    CorpusSnapshot,
+    FinalQueryArtifacts,
+    QueryRequest,
+    QueryRun,
+    QueryRunStatus,
+    QueryStageName,
+    QueryTerminalFailure,
+    TrustFailureLabel,
+)
 from .domain import QueryRuntimeState
 from .errors import (
     CorpusBoundaryUnavailableError,
+    QueryExecutionFailedError,
     QueryStageContractViolationError,
     QueryStageNotImplementedError,
 )
@@ -32,6 +45,11 @@ from .stages.render_citations import run as run_render_citations_stage
 from .stages.retrieve import run as run_retrieve_stage
 from .stages.select import run as run_select_stage
 from .support_assessment import HybridSupportAssessor
+from .trace import QueryStageTrace, utc_now
+
+
+def _logger() -> structlog.stdlib.BoundLogger:
+    return structlog.get_logger(__name__)
 
 
 class QueryService:
@@ -317,33 +335,162 @@ class QueryService:
 
         if self._answer_store is None:
             raise QueryStageNotImplementedError("final answer persistence is not configured")
+        if self._retriever is None:
+            raise QueryStageNotImplementedError("retrieve stage is not configured")
+        if self._selector is None:
+            raise QueryStageNotImplementedError("select stage is not configured")
+        if self._context_assembler is None:
+            raise QueryStageNotImplementedError("assemble_context stage is not configured")
+        if self._support_assessor is None:
+            raise QueryStageNotImplementedError("assess_support stage is not configured")
+        if self._answer_mode_policy is None:
+            raise QueryStageNotImplementedError("decide_answer_mode stage is not configured")
         if self._answer_generator is None:
             raise QueryStageNotImplementedError("generate stage is not configured")
         if self._citation_renderer is None:
             raise QueryStageNotImplementedError("render_citations stage is not configured")
+        retriever = self._retriever
+        selector = self._selector
+        context_assembler = self._context_assembler
+        support_assessor = self._support_assessor
+        answer_mode_policy = self._answer_mode_policy
+        answer_generator = self._answer_generator
+        citation_renderer = self._citation_renderer
 
-        state = self.execute_until_answer_mode(request)
+        state = self.prepare_query(request)
+        state.run.status = QueryRunStatus.RUNNING
+        if self._run_store is not None:
+            state.run = self._run_store.update_query_run_status(
+                state.run.query_id,
+                QueryRunStatus.RUNNING,
+            )
         if state.snapshot is None:
             raise CorpusBoundaryUnavailableError("query corpus snapshot was not captured")
-        if state.interpreted_query is None:
-            raise QueryStageNotImplementedError(
-                "interpret stage did not produce an interpreted query"
+
+        policy = self.resolve_policy(request)
+        current_stage: QueryStageName | None = None
+        bind_contextvars(
+            query_id=state.run.query_id,
+            workspace_id=state.run.workspace_id,
+        )
+        _logger().info(
+            "query.run.started",
+            status=state.run.status.value,
+            question_chars=len(request.question),
+            question_sha256=hashlib.sha256(request.question.encode("utf-8")).hexdigest(),
+            snapshot_doc_count=len(state.snapshot.eligible_doc_ids),
+        )
+        try:
+            current_stage = QueryStageName.INTERPRET
+            _logger().info("query.stage.started", stage_name=current_stage.value)
+            interpret_result = run_interpret_stage(
+                query_id=state.run.query_id,
+                request=request,
+                snapshot=state.snapshot,
+                interpreter=self._interpreter,
             )
-        if state.context_manifest is None:
-            raise QueryStageNotImplementedError(
-                "assemble_context stage did not produce a context manifest"
+            state.interpreted_query = interpret_result.interpretation.interpreted_query
+            self._append_trace(interpret_result.trace)
+            self._log_stage_completed(interpret_result.trace)
+
+            current_stage = QueryStageName.RETRIEVE
+            _logger().info("query.stage.started", stage_name=current_stage.value)
+            retrieve_result = run_retrieve_stage(
+                query_id=state.run.query_id,
+                request=request,
+                snapshot=state.snapshot,
+                interpreted_query=state.interpreted_query,
+                policy=policy,
+                retriever=retriever,
             )
-        if state.support_assessment is None:
-            raise QueryStageNotImplementedError(
-                "assess_support stage did not produce a support assessment"
-            )
-        if state.answer_mode_decision is None:
-            raise QueryStageNotImplementedError(
-                "decide_answer_mode stage did not produce an answer mode decision"
+            state.retrieved_candidates = retrieve_result.retrieval.candidates
+            self._append_trace(retrieve_result.trace)
+            self._log_stage_completed(
+                retrieve_result.trace,
+                candidate_count=len(state.retrieved_candidates),
             )
 
-        try:
-            policy = self.resolve_policy(request)
+            current_stage = QueryStageName.SELECT
+            _logger().info("query.stage.started", stage_name=current_stage.value)
+            select_result = run_select_stage(
+                query_id=state.run.query_id,
+                request=request,
+                snapshot=state.snapshot,
+                interpreted_query=state.interpreted_query,
+                retrieved_candidates=state.retrieved_candidates,
+                policy=policy,
+                selector=selector,
+            )
+            state.selected_candidates = select_result.selection.selected_candidates
+            state.evidence_sets = select_result.selection.evidence_sets
+            self._append_trace(select_result.trace)
+            self._log_stage_completed(
+                select_result.trace,
+                selected_candidate_count=len(state.selected_candidates),
+                evidence_set_count=len(state.evidence_sets),
+            )
+
+            current_stage = QueryStageName.ASSEMBLE_CONTEXT
+            _logger().info("query.stage.started", stage_name=current_stage.value)
+            context_result = run_context_stage(
+                query_id=state.run.query_id,
+                request=request,
+                snapshot=state.snapshot,
+                interpreted_query=state.interpreted_query,
+                evidence_sets=state.evidence_sets,
+                policy=policy,
+                assembler=context_assembler,
+            )
+            state.context_manifest = context_result.context_assembly.manifest
+            self._append_trace(context_result.trace)
+            self._log_stage_completed(
+                context_result.trace,
+                included_evidence_set_count=len(state.context_manifest.included_evidence_set_ids),
+                context_item_count=len(state.context_manifest.context_items),
+            )
+
+            current_stage = QueryStageName.ASSESS_SUPPORT
+            _logger().info("query.stage.started", stage_name=current_stage.value)
+            support_result = run_assess_support_stage(
+                query_id=state.run.query_id,
+                request=request,
+                snapshot=state.snapshot,
+                interpreted_query=state.interpreted_query,
+                evidence_sets=state.evidence_sets,
+                context_manifest=state.context_manifest,
+                policy=policy,
+                assessor=support_assessor,
+            )
+            state.support_assessment = support_result.support_assessment.assessment
+            self._append_trace(support_result.trace)
+            self._log_stage_completed(
+                support_result.trace,
+                support_state=state.support_assessment.support_state.value,
+                qualifying_reason_codes=[
+                    reason.value for reason in state.support_assessment.qualifying_reason_codes
+                ],
+            )
+
+            current_stage = QueryStageName.DECIDE_ANSWER_MODE
+            _logger().info("query.stage.started", stage_name=current_stage.value)
+            answer_mode_result = run_decide_answer_mode_stage(
+                query_id=state.run.query_id,
+                request=request,
+                snapshot=state.snapshot,
+                interpreted_query=state.interpreted_query,
+                support_assessment=state.support_assessment,
+                policy=policy,
+                answer_mode_policy=answer_mode_policy,
+            )
+            state.answer_mode_decision = answer_mode_result.answer_mode_policy.decision
+            self._append_trace(answer_mode_result.trace)
+            self._log_stage_completed(
+                answer_mode_result.trace,
+                answer_mode=state.answer_mode_decision.answer_mode.value,
+            )
+
+            current_stage = QueryStageName.GENERATE
+            _logger().info("query.stage.started", stage_name=current_stage.value)
             generate_result = run_generate_stage(
                 query_id=state.run.query_id,
                 request=request,
@@ -353,12 +500,18 @@ class QueryService:
                 support_assessment=state.support_assessment,
                 answer_mode_decision=state.answer_mode_decision,
                 policy=policy,
-                generator=self._answer_generator,
+                generator=answer_generator,
             )
             state.answer_draft = generate_result.generation.answer_draft
-            if self._trace_store is not None:
-                self._trace_store.append_stage_trace(generate_result.trace)
+            self._append_trace(generate_result.trace)
+            self._log_stage_completed(
+                generate_result.trace,
+                answer_chars=len(state.answer_draft.answer_text),
+                grounded_evidence_set_count=len(state.answer_draft.grounded_evidence_set_ids),
+            )
 
+            current_stage = QueryStageName.RENDER_CITATIONS
+            _logger().info("query.stage.started", stage_name=current_stage.value)
             render_result = run_render_citations_stage(
                 query_id=state.run.query_id,
                 request=request,
@@ -370,11 +523,15 @@ class QueryService:
                 answer_mode_decision=state.answer_mode_decision,
                 answer_draft=state.answer_draft,
                 policy=policy,
-                renderer=self._citation_renderer,
+                renderer=citation_renderer,
             )
             state.citation_bundle = render_result.rendering.citation_bundle
-            if self._trace_store is not None:
-                self._trace_store.append_stage_trace(render_result.trace)
+            self._append_trace(render_result.trace)
+            self._log_stage_completed(
+                render_result.trace,
+                citation_count=len(state.citation_bundle.citations),
+                citation_doc_count=len(state.citation_bundle.material_doc_ids),
+            )
 
             if state.answer_draft.should_render_citations and not state.citation_bundle.citations:
                 raise QueryStageContractViolationError(
@@ -392,20 +549,98 @@ class QueryService:
                     trust_failure_labels=state.support_assessment.trust_failure_labels,
                 ),
             )
+            completed_at = utc_now()
             if self._run_store is not None:
                 state.run = self._run_store.update_query_run_status(
                     state.run.query_id,
                     QueryRunStatus.SUCCEEDED,
+                    completed_at=completed_at,
                 )
             else:
                 state.run.status = QueryRunStatus.SUCCEEDED
+                state.run.completed_at = completed_at
+            _logger().info(
+                "query.run.completed",
+                status=state.run.status.value,
+                support_state=state.support_assessment.support_state.value,
+                answer_mode=state.answer_mode_decision.answer_mode.value,
+                citation_count=len(state.citation_bundle.citations),
+            )
             return state
-        except Exception:
+        except Exception as exc:
+            terminal_failure = _build_terminal_failure(exc, current_stage)
+            completed_at = utc_now()
             if self._run_store is not None:
                 state.run = self._run_store.update_query_run_status(
                     state.run.query_id,
                     QueryRunStatus.FAILED,
+                    completed_at=completed_at,
+                    terminal_failure=terminal_failure,
                 )
             else:
                 state.run.status = QueryRunStatus.FAILED
-            raise
+                state.run.completed_at = completed_at
+                state.run.terminal_failure = terminal_failure
+            _logger().exception(
+                "query.run.failed",
+                stage_name=None if current_stage is None else current_stage.value,
+                error_code=terminal_failure.error_code,
+                error_class=terminal_failure.error_class,
+                message=terminal_failure.message,
+                trust_failure_labels=[label.value for label in terminal_failure.trust_failure_labels],
+            )
+            raise QueryExecutionFailedError(
+                query_id=state.run.query_id,
+                terminal_failure=terminal_failure,
+            ) from exc
+        finally:
+            unbind_contextvars("query_id", "workspace_id")
+
+    def _append_trace(self, trace: QueryStageTrace) -> None:
+        if self._trace_store is not None:
+            self._trace_store.append_stage_trace(trace)
+
+    def _log_stage_completed(self, trace: QueryStageTrace, **extra: object) -> None:
+        _logger().info(
+            "query.stage.completed",
+            stage_name=trace.stage_name.value,
+            status=trace.stage_status.value,
+            duration_ms=_duration_ms(trace),
+            **extra,
+        )
+
+
+def _duration_ms(trace: QueryStageTrace) -> int | None:
+    if trace.finished_at is None:
+        return None
+    return max(int((trace.finished_at - trace.started_at).total_seconds() * 1000), 0)
+
+
+def _build_terminal_failure(
+    exc: Exception,
+    stage_name: QueryStageName | None,
+) -> QueryTerminalFailure:
+    trust_failure_labels: list[TrustFailureLabel] = []
+    if isinstance(exc, QueryStageContractViolationError):
+        if stage_name is QueryStageName.RENDER_CITATIONS:
+            trust_failure_labels.append(TrustFailureLabel.P1)
+        error_code = "query_stage_contract_violation"
+    elif isinstance(exc, CorpusBoundaryUnavailableError):
+        error_code = "corpus_boundary_unavailable"
+    elif isinstance(exc, QueryStageNotImplementedError):
+        error_code = "query_stage_not_implemented"
+    else:
+        error_code = "query_execution_failed"
+    return QueryTerminalFailure(
+        error_code=error_code,
+        error_class=exc.__class__.__name__,
+        stage_name=stage_name,
+        message=_truncate_message(str(exc)),
+        trust_failure_labels=trust_failure_labels,
+    )
+
+
+def _truncate_message(message: str, *, limit: int = 240) -> str:
+    if len(message) <= limit:
+        return message
+    return f"{message[: limit - 3]}..."

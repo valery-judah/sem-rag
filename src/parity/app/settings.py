@@ -13,6 +13,9 @@ class AppSettings:
 
     database_url: str
     artifact_root: Path
+    service_name: str
+    environment: str
+    log_level: str
 
 
 def load_settings() -> AppSettings:
@@ -26,4 +29,7 @@ def load_settings() -> AppSettings:
     return AppSettings(
         database_url=database_url,
         artifact_root=artifact_root,
+        service_name=os.environ.get("PARITY_SERVICE_NAME", "parity-api"),
+        environment=os.environ.get("PARITY_ENVIRONMENT", "dev"),
+        log_level=os.environ.get("PARITY_LOG_LEVEL", "INFO"),
     )

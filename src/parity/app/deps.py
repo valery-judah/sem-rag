@@ -38,6 +38,8 @@ from parity.query.persistence import (
     SqlQuerySnapshotStore,
     SqlQueryTraceStore,
 )
+from parity.query.replay import QueryReplayService
+from parity.query.review import QueryReviewService
 from parity.query.retrieval import SnapshotDenseQueryRetriever
 from parity.query.selection import DeterministicQuerySelector
 from parity.query.support_assessment import HybridSupportAssessor
@@ -56,6 +58,7 @@ from parity.stages import (
 from parity.structure import SectionDerivationService
 
 from .settings import AppSettings, load_settings
+from .logging import reset_logging
 
 
 @lru_cache(maxsize=1)
@@ -270,9 +273,36 @@ def get_query_service(
     )
 
 
+def get_query_review_service(
+    engine: Annotated[Engine, Depends(get_engine)],
+) -> QueryReviewService:
+    """Build the read-only query review service."""
+
+    return QueryReviewService(
+        run_store=SqlQueryRunStore(engine),
+        snapshot_store=SqlQuerySnapshotStore(engine),
+        trace_store=SqlQueryTraceStore(engine),
+        answer_store=SqlQueryAnswerStore(engine),
+    )
+
+
+def get_query_replay_service(
+    engine: Annotated[Engine, Depends(get_engine)],
+) -> QueryReplayService:
+    """Build the internal query replay service."""
+
+    return QueryReplayService(
+        run_store=SqlQueryRunStore(engine),
+        snapshot_store=SqlQuerySnapshotStore(engine),
+        trace_store=SqlQueryTraceStore(engine),
+        answer_store=SqlQueryAnswerStore(engine),
+    )
+
+
 def reset_runtime_caches() -> None:
     """Clear cached runtime singletons for tests."""
 
     get_settings.cache_clear()
     _build_engine.cache_clear()
     _build_artifact_store.cache_clear()
+    reset_logging()

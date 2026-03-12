@@ -101,7 +101,7 @@ The coding sequence below introduces that architecture in a controlled order.
 
 ## Current delivery snapshot
 
-As of 2026-03-11, the repo has completed the staged path through Stage 5:
+As of 2026-03-11, the repo has completed the staged path through Stage 7:
 
 - Stage 0: contracts, enums, policy defaults, and scaffolding
 - Stage 1: queryable `READY`-corpus boundary and stable corpus snapshots
@@ -109,14 +109,15 @@ As of 2026-03-11, the repo has completed the staged path through Stage 5:
 - Stage 3: snapshot-scoped dense retrieval and durable `retrieve` traces
 - Stage 4: deterministic selection/evidence-set construction and durable `select` traces
 - Stage 5: deterministic context assembly with inspectable `ContextManifest` output and durable `assemble_context` traces
+- Stage 6: support assessment and answer-mode policy with durable `assess_support` and `decide_answer_mode` traces
+- Stage 7: grounded generation, citation rendering, and durable final answer persistence
 
-The current implementation gap begins at Stage 6:
+The current implementation gap begins at Stage 8:
 
-- support assessment
-- answer-mode policy
-- grounded generation
-- citation rendering
-- later trace/review hardening
+- review-oriented read surfaces
+- replay foundation
+- structured JSON operational logging
+- later evaluation hardening
 
 ---
 
@@ -760,24 +761,23 @@ This stage is done when:
 
 ## Goal
 
-Make query runs inspectable enough for debugging, regression analysis, and evaluation.
+Make query runs inspectable and observable enough for debugging, regression analysis, and evaluation.
 
 ## Why this stage exists
 
 A grounded answer is not trustworthy if the team cannot inspect why it happened.
 
+Detailed repo-facing design for this stage lives in `18_stage-8-trace-review-replay-logging-design.md`.
+
 ## Deliverables
 
-### 8.1 Persistence tables
+### 8.1 Persistence read-side completion
 
-Implement the initial persistence model with a bias toward structured JSON traces:
+Extend the existing persistence model with a bias toward structured JSON review artifacts:
 
-- `query_run`
-- `query_stage_trace`
-- `query_answer`
-- `query_citation`
-- optional `query_retrieval_candidate`
-- optional `query_failure`
+- keep `query_runs`, `query_snapshots`, `query_stage_traces`, and `query_answers` as the primary durable query records;
+- add only minimal terminal-state fields needed for summary/failure inspection;
+- do not split citation or retrieval-debug payloads into extra tables unless review pressure proves it necessary.
 
 ### 8.2 Review endpoints
 
@@ -801,12 +801,22 @@ Add review helpers for:
 - context manifest inspection;
 - support and answer-mode decision review.
 
+### 8.5 Structured JSON logging
+
+Add live operational logging that is distinct from persisted traces:
+
+- emit one JSON log event per line to stdout;
+- bind request and query correlation ids;
+- log stage lifecycle, completion, and failure events;
+- keep detailed evidence artifacts in trace persistence rather than duplicating them in logs.
+
 ## Tests
 
 - every successful query has a full trace chain;
 - every stage trace is linked to the owning query run;
 - citations endpoint is derived from persisted answer/citation state rather than recomputed ad hoc;
 - replay can reconstruct a prior run's stage inputs from persisted artifacts.
+- JSON log output is structured, correlated, and bounded.
 
 ## Acceptance gate
 
@@ -814,11 +824,13 @@ This stage is done when:
 
 - a reviewer can inspect how a query answered or abstained;
 - retrieval, support, and citation defects are localizable;
+- live query execution is observable through correlated structured logs;
 - the subsystem is evaluation-ready rather than demo-only.
 
 ## Coding-agent notes
 
 - Prefer structured JSON payloads over premature relational decomposition.
+- Treat logs and durable traces as separate observability surfaces.
 - Keep trace payloads stable enough for regression tooling.
 - Do not defer trace persistence until after "the core works." The trace is part of the core.
 

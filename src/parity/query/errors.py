@@ -2,6 +2,10 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .contracts import QueryTerminalFailure
 
 class QueryError(Exception):
     """Base exception for internal query subsystem failures."""
@@ -25,3 +29,17 @@ class UnsupportedPolicyOverrideError(QueryError):
 
 class QueryStageNotImplementedError(QueryError):
     """Raised for Stage 0 placeholder execution paths."""
+
+
+class QueryExecutionFailedError(QueryError):
+    """Raised after a query run has been durably marked failed."""
+
+    def __init__(
+        self,
+        *,
+        query_id: str,
+        terminal_failure: QueryTerminalFailure,
+    ) -> None:
+        super().__init__(terminal_failure.message)
+        self.query_id = query_id
+        self.terminal_failure = terminal_failure

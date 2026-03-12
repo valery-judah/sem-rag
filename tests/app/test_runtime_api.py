@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from datetime import UTC, datetime
+
+import httpx
 import pytest
 from fastapi import FastAPI, HTTPException
 from pydantic import ValidationError
@@ -9,6 +12,7 @@ from parity._contracts import ProcessingStatus
 from parity.app.api import QuerySubmissionResult, RetrievalQueryRequest
 from parity.app.deps import (
     get_document_lifecycle_service,
+    get_query_review_service,
     get_query_service,
     get_queryable_corpus_read_model,
 )
@@ -26,7 +30,14 @@ from parity.persistence import (
     SqlLifecycleEventRepository,
 )
 from parity.query import QueryRequest
-from parity.query.persistence import SqlQueryAnswerStore, SqlQuerySnapshotStore, SqlQueryTraceStore
+from parity.query.contracts import QueryRun, QueryRunStatus, QueryStageName, QueryTerminalFailure
+from parity.query.errors import QueryExecutionFailedError
+from parity.query.persistence import (
+    SqlQueryAnswerStore,
+    SqlQueryRunStore,
+    SqlQuerySnapshotStore,
+    SqlQueryTraceStore,
+)
 
 pytestmark = pytest.mark.anyio
 
@@ -50,6 +61,10 @@ def _query_service(sql_engine: Engine):
         engine=sql_engine,
         corpus_read_model=get_queryable_corpus_read_model(engine=sql_engine),
     )
+
+
+def _query_review_service(sql_engine: Engine):
+    return get_query_review_service(engine=sql_engine)
 
 
 class _WorkerStub:
@@ -362,3 +377,280 @@ async def test_run_next_job_returns_job_metadata_when_job_runs(app: FastAPI) -> 
     )
 
     assert result == {"job_id": "job-1", "status": "succeeded"}
+
+
+async def test_query_summary_route_returns_persisted_review_view(
+    app: FastAPI,
+    sql_engine: Engine,
+    persisted_document_factory,
+    chunk_factory,
+) -> None:
+    documents = SqlDocumentRepository(sql_engine)
+    chunks = SqlChunkRepository(sql_engine)
+    documents.create(
+        persisted_document_factory(
+            doc_id="doc-ready",
+            workspace_id="ws-1",
+            ingest_status=ProcessingStatus.READY,
+        )
+    )
+    ready_chunk = chunk_factory(
+        doc_id="doc-ready",
+        chunk_id="chunk-ready",
+        text="vector search uses embeddings to retrieve related passages",
+    )
+    chunks.save([ready_chunk])
+    SqlVectorStore(
+        engine=sql_engine,
+        embedding_adapter=DeterministicEmbeddingAdapter(),
+        index_entries=SqlIndexEntryRepository(sql_engine),
+    ).publish_document(doc_id="doc-ready", chunks=[ready_chunk])
+
+    submitted = await _route_endpoint(app, path="/queries", method="POST")(
+        request=QueryRequest(
+            question="What uses embeddings to retrieve related passages?",
+            workspace_id="ws-1",
+        ),
+        service=_query_service(sql_engine),
+    )
+
+    summary = await _route_endpoint(app, path="/queries/{query_id}", method="GET")(
+        query_id=submitted.query_id,
+        review_service=_query_review_service(sql_engine),
+    )
+
+    assert summary.query_id == submitted.query_id
+    assert summary.status.value == "succeeded"
+    assert summary.has_answer is True
+    assert summary.support_state.value == "sufficient"
+    assert summary.answer_mode.value == "direct_answer"
+    assert summary.snapshot_summary is not None
+    assert summary.snapshot_summary.eligible_doc_ids == ["doc-ready"]
+    assert summary.trace_summary.trace_count == 8
+    assert summary.completed_at is not None
+
+
+async def test_query_trace_route_returns_ordered_persisted_traces(
+    app: FastAPI,
+    sql_engine: Engine,
+    persisted_document_factory,
+    chunk_factory,
+) -> None:
+    documents = SqlDocumentRepository(sql_engine)
+    chunks = SqlChunkRepository(sql_engine)
+    documents.create(
+        persisted_document_factory(
+            doc_id="doc-ready",
+            workspace_id="ws-1",
+            ingest_status=ProcessingStatus.READY,
+        )
+    )
+    ready_chunk = chunk_factory(
+        doc_id="doc-ready",
+        chunk_id="chunk-ready",
+        text="semantic retrieval uses embeddings for passage search",
+    )
+    chunks.save([ready_chunk])
+    SqlVectorStore(
+        engine=sql_engine,
+        embedding_adapter=DeterministicEmbeddingAdapter(),
+        index_entries=SqlIndexEntryRepository(sql_engine),
+    ).publish_document(doc_id="doc-ready", chunks=[ready_chunk])
+
+    submitted = await _route_endpoint(app, path="/queries", method="POST")(
+        request=QueryRequest(
+            question="What uses embeddings for passage search?",
+            workspace_id="ws-1",
+        ),
+        service=_query_service(sql_engine),
+    )
+
+    review = await _route_endpoint(app, path="/queries/{query_id}/trace", method="GET")(
+        query_id=submitted.query_id,
+        review_service=_query_review_service(sql_engine),
+    )
+
+    assert review.summary.query_id == submitted.query_id
+    assert [trace.stage_name.value for trace in review.trace_bundle.stage_traces] == [
+        "interpret",
+        "retrieve",
+        "select",
+        "assemble_context",
+        "assess_support",
+        "decide_answer_mode",
+        "generate",
+        "render_citations",
+    ]
+    assert review.final_artifacts is not None
+    assert review.final_artifacts.answer.answer_text == submitted.answer.answer_text
+
+
+async def test_query_citations_route_reads_persisted_answer_state(
+    app: FastAPI,
+    sql_engine: Engine,
+    persisted_document_factory,
+    chunk_factory,
+) -> None:
+    documents = SqlDocumentRepository(sql_engine)
+    chunks = SqlChunkRepository(sql_engine)
+    documents.create(
+        persisted_document_factory(
+            doc_id="doc-ready",
+            workspace_id="ws-1",
+            ingest_status=ProcessingStatus.READY,
+        )
+    )
+    ready_chunk = chunk_factory(
+        doc_id="doc-ready",
+        chunk_id="chunk-ready",
+        text="vector search uses embeddings to retrieve related passages",
+    )
+    chunks.save([ready_chunk])
+    SqlVectorStore(
+        engine=sql_engine,
+        embedding_adapter=DeterministicEmbeddingAdapter(),
+        index_entries=SqlIndexEntryRepository(sql_engine),
+    ).publish_document(doc_id="doc-ready", chunks=[ready_chunk])
+
+    submitted = await _route_endpoint(app, path="/queries", method="POST")(
+        request=QueryRequest(
+            question="What uses embeddings to retrieve related passages?",
+            workspace_id="ws-1",
+        ),
+        service=_query_service(sql_engine),
+    )
+
+    citations = await _route_endpoint(app, path="/queries/{query_id}/citations", method="GET")(
+        query_id=submitted.query_id,
+        review_service=_query_review_service(sql_engine),
+    )
+
+    assert citations.query_id == submitted.query_id
+    assert citations.support_state.value == "sufficient"
+    assert citations.answer_mode.value == "direct_answer"
+    assert citations.citations.material_doc_ids == ["doc-ready"]
+    assert citations.model_dump().keys() == {
+        "query_id",
+        "support_state",
+        "answer_mode",
+        "trust_failure_labels",
+        "citations",
+    }
+
+
+async def test_query_summary_route_returns_failed_run_review_view(
+    app: FastAPI,
+    sql_engine: Engine,
+) -> None:
+    run_store = SqlQueryRunStore(sql_engine)
+    failed_run = run_store.create_query_run(
+        QueryRun(
+            query_id="qry-failed",
+            workspace_id="ws-1",
+            question="What failed?",
+            submitted_at=datetime(2026, 3, 11, 12, 0, tzinfo=UTC),
+            status=QueryRunStatus.FAILED,
+            policy_snapshot={"retrieval_candidate_cap": 24},
+            completed_at=datetime(2026, 3, 11, 12, 0, 1, tzinfo=UTC),
+            terminal_failure=QueryTerminalFailure(
+                error_code="query_stage_contract_violation",
+                error_class="QueryStageContractViolationError",
+                stage_name=QueryStageName.RENDER_CITATIONS,
+                message="non-abstaining answers must not complete without citations",
+            ),
+        )
+    )
+
+    summary = await _route_endpoint(app, path="/queries/{query_id}", method="GET")(
+        query_id=failed_run.query_id,
+        review_service=_query_review_service(sql_engine),
+    )
+
+    assert summary.query_id == "qry-failed"
+    assert summary.status.value == "failed"
+    assert summary.has_answer is False
+    assert summary.terminal_failure is not None
+    assert summary.terminal_failure.stage_name.value == "render_citations"
+
+
+async def test_queries_route_returns_failed_query_id_when_execution_fails(
+    app: FastAPI,
+) -> None:
+    class _FailingQueryService:
+        def execute_until_answer(self, request: QueryRequest):
+            del request
+            raise QueryExecutionFailedError(
+                query_id="qry-failed-route",
+                terminal_failure=QueryTerminalFailure(
+                    error_code="query_stage_contract_violation",
+                    error_class="QueryStageContractViolationError",
+                    stage_name=QueryStageName.RENDER_CITATIONS,
+                    message="non-abstaining answers must not complete without citations",
+                ),
+            )
+
+    with pytest.raises(HTTPException) as exc_info:
+        await _route_endpoint(app, path="/queries", method="POST")(
+            request=QueryRequest(
+                question="What failed?",
+                workspace_id="ws-1",
+            ),
+            service=_FailingQueryService(),
+        )
+
+    assert exc_info.value.status_code == 500
+    assert exc_info.value.detail["query_id"] == "qry-failed-route"
+    assert exc_info.value.detail["status"] == "failed"
+    assert exc_info.value.detail["terminal_failure"]["stage_name"] == "render_citations"
+
+
+async def test_http_and_query_logs_are_json_and_correlated(
+    app: FastAPI,
+    sql_engine: Engine,
+    persisted_document_factory,
+    chunk_factory,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    documents = SqlDocumentRepository(sql_engine)
+    chunks = SqlChunkRepository(sql_engine)
+    documents.create(
+        persisted_document_factory(
+            doc_id="doc-ready",
+            workspace_id="ws-1",
+            ingest_status=ProcessingStatus.READY,
+        )
+    )
+    ready_chunk = chunk_factory(
+        doc_id="doc-ready",
+        chunk_id="chunk-ready",
+        text="vector search uses embeddings to retrieve related passages",
+    )
+    chunks.save([ready_chunk])
+    SqlVectorStore(
+        engine=sql_engine,
+        embedding_adapter=DeterministicEmbeddingAdapter(),
+        index_entries=SqlIndexEntryRepository(sql_engine),
+    ).publish_document(doc_id="doc-ready", chunks=[ready_chunk])
+
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=app),
+        base_url="http://testserver",
+    ) as client:
+        response = await client.post(
+            "/queries",
+            json={
+                "question": "What uses embeddings to retrieve related passages?",
+                "workspace_id": "ws-1",
+            },
+        )
+
+    assert response.status_code == 200
+    structured_logs = [record.msg for record in caplog.records if isinstance(record.msg, dict)]
+
+    assert any(log["event"] == "http.request.started" for log in structured_logs)
+    assert any(log["event"] == "http.request.completed" for log in structured_logs)
+    assert any(log["event"] == "query.run.started" for log in structured_logs)
+    assert any(log["event"] == "query.stage.completed" for log in structured_logs)
+    assert any("request_id" in log for log in structured_logs if log["event"] == "http.request.started")
+    assert any("query_id" in log for log in structured_logs if log["event"] == "query.run.started")
+    assert "vector search uses embeddings to retrieve related passages" not in caplog.text

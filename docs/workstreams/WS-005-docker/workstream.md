@@ -6,7 +6,7 @@ work_type: feature
 status: active
 owner:
 created: 2026-03-11
-updated: 2026-03-11
+updated: 2026-03-12
 ---
 
 # Summary
@@ -40,9 +40,11 @@ Deliver a Markdown-first Docker workflow where:
   - explicit unsupported PNG rejection over the real HTTP stack
 - Docker Desktop socket auto-detection was added for local testcontainers runs on this machine layout.
 - Remaining work, if this workstream continues, is follow-on coverage such as PDF Docker e2e and retry/failure injection scenarios.
+- A follow-on hardening proposal now exists in `docs/workstreams/WS-005-docker/32_docker-hardening-plan.md` for improving the current split-runtime image, Compose defaults, and Docker operator workflow without changing the runtime topology.
 
 ## Next step
 - Add the next Docker-backed slice only if needed: either PDF e2e coverage or a controlled retry/fault-injection scenario for index failure recovery.
+- If the repo needs better container ergonomics before more e2e depth, implement the hardening proposal in `docs/workstreams/WS-005-docker/32_docker-hardening-plan.md`.
 
 ## Relevant context
 - paths:
@@ -90,6 +92,7 @@ Deliver a Markdown-first Docker workflow where:
 
 ## Linked artifacts
 - `docs/workstreams/WS-005-docker/31_status.md`
+- `docs/workstreams/WS-005-docker/32_docker-hardening-plan.md`
 - `docs/evergreen/runbook.md`
 - `docs/evergreen/architecture.md`
 - `docs/workstreams/WS-004-document-lifecycle/21-design-exploration.md`

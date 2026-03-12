@@ -17,6 +17,7 @@ from .contracts import (
     FinalQueryArtifacts,
     QueryRun,
     QueryRunStatus,
+    QueryTerminalFailure,
     SupportQualifierReason,
     SupportState,
     TrustFailureLabel,
@@ -34,6 +35,8 @@ query_runs_table = sa.Table(
     sa.Column("submitted_at", sa.DateTime(timezone=True), nullable=False),
     sa.Column("status", sa.Text(), nullable=False),
     sa.Column("policy_snapshot_json", sa.JSON(), nullable=False),
+    sa.Column("completed_at", sa.DateTime(timezone=True), nullable=True),
+    sa.Column("terminal_failure_json", sa.JSON(), nullable=True),
 )
 
 query_snapshots_table = sa.Table(
@@ -107,6 +110,9 @@ class QueryRunStore(Protocol):
         self,
         query_id: str,
         status: QueryRunStatus,
+        *,
+        completed_at: datetime | None = None,
+        terminal_failure: QueryTerminalFailure | None = None,
     ) -> QueryRun:
         """Update the lifecycle status for an existing query run."""
 
@@ -168,11 +174,21 @@ class SqlQueryRunStore:
         self,
         query_id: str,
         status: QueryRunStatus,
+        *,
+        completed_at: datetime | None = None,
+        terminal_failure: QueryTerminalFailure | None = None,
     ) -> QueryRun:
+        values: dict[str, object | None] = {
+            "status": status.value,
+            "completed_at": completed_at,
+            "terminal_failure_json": (
+                None if terminal_failure is None else terminal_failure.model_dump(mode="json")
+            ),
+        }
         stmt = (
             sa.update(query_runs_table)
             .where(query_runs_table.c.query_id == query_id)
-            .values(status=status.value)
+            .values(values)
         )
         with self._engine.begin() as conn:
             result = conn.execute(stmt)
@@ -262,6 +278,10 @@ def _query_run_to_row(run: QueryRun) -> dict[str, object]:
     payload = run.model_dump(mode="python")
     payload["status"] = run.status.value
     payload["policy_snapshot_json"] = payload.pop("policy_snapshot")
+    payload["terminal_failure_json"] = (
+        None if run.terminal_failure is None else run.terminal_failure.model_dump(mode="json")
+    )
+    del payload["terminal_failure"]
     return payload
 
 
@@ -269,6 +289,9 @@ def _row_to_query_run(row: Mapping[str, object]) -> QueryRun:
     payload = dict(row)
     payload["policy_snapshot"] = payload.pop("policy_snapshot_json")
     payload["submitted_at"] = _coerce_datetime(payload["submitted_at"])
+    if payload["completed_at"] is not None:
+        payload["completed_at"] = _coerce_datetime(payload["completed_at"])
+    payload["terminal_failure"] = payload.pop("terminal_failure_json")
     return QueryRun.model_validate(payload)
 
 

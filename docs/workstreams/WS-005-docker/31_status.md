@@ -113,3 +113,5 @@ The next useful slice is retry and recovery coverage:
 
 1. add a controlled fault-injection seam around index publication
 2. prove worker retry recovery in Docker without duplicate persisted vectors or index entries
+
+Follow-on planning for Docker image and Compose hardening now lives in `docs/workstreams/WS-005-docker/32_docker-hardening-plan.md`.

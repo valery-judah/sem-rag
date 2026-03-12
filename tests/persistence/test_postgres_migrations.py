@@ -28,6 +28,8 @@ def test_initial_migration_creates_lifecycle_metadata_tables(db_url: str) -> Non
             "query_answers",
             "sections",
         }
+        query_run_columns = {column["name"] for column in inspector.get_columns("query_runs")}
+        assert {"completed_at", "terminal_failure_json"}.issubset(query_run_columns)
     finally:
         engine.dispose()
 

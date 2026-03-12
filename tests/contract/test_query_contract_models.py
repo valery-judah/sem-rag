@@ -32,6 +32,7 @@ from parity.query import (
     SupportQualifierReason,
     SupportState,
     SynthesisMode,
+    QueryTerminalFailure,
     TrustFailureLabel,
     UnsupportedCapability,
 )
@@ -100,6 +101,23 @@ def test_query_run_requires_policy_snapshot() -> None:
             workspace_id="workspace-1",
             question="What is semantic retrieval?",
             policy_snapshot=None,
+        )
+
+
+def test_failed_query_run_requires_terminal_failure_and_completed_at() -> None:
+    with pytest.raises(ValidationError, match="completed_at"):
+        QueryRun(
+            query_id="qry-1",
+            workspace_id="workspace-1",
+            question="What is semantic retrieval?",
+            status=QueryRunStatus.FAILED,
+            submitted_at=datetime(2026, 3, 11, tzinfo=UTC),
+            policy_snapshot={"retrieval_candidate_cap": 24},
+            terminal_failure=QueryTerminalFailure(
+                error_code="query_execution_failed",
+                error_class="RuntimeError",
+                message="failed",
+            ),
         )
 
 

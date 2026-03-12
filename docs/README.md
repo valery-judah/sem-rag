@@ -84,7 +84,9 @@ WS-006 Execution Track:
 - `docs/workstreams/WS-006-query-lifecycle/13_stage-3-retrieval-foundation-design.md`: Stage 3 retrieval design and implementation note for the current repo shape.
 - `docs/workstreams/WS-006-query-lifecycle/14_stage-4-selection-evidence-set-construction-design.md`: Implemented Stage 4 selection and evidence-set construction note.
 - `docs/workstreams/WS-006-query-lifecycle/15_stage-5-deterministic-context-assembly-design.md`: Implemented Stage 5 deterministic context-assembly note for the current repo shape.
-- `docs/workstreams/WS-006-query-lifecycle/16_stage-6-support-assessment-answer-mode-design.md`: Proposed Stage 6 support-assessment and answer-mode-policy design for the next implementation step.
+- `docs/workstreams/WS-006-query-lifecycle/16_stage-6-support-assessment-answer-mode-design.md`: Implemented Stage 6 support-assessment and answer-mode-policy note.
+- `docs/workstreams/WS-006-query-lifecycle/17_stage-7-grounded-generation-citation-rendering-design.md`: Implemented Stage 7 grounded-generation and citation-rendering note.
+- `docs/workstreams/WS-006-query-lifecycle/18_stage-8-trace-review-replay-logging-design.md`: Proposed Stage 8 review, replay, and structured-logging design.
 
 Working Rule:
 - Start with the evergreen docs for stable context.

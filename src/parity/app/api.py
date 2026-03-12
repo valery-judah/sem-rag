@@ -2,10 +2,15 @@
 
 from __future__ import annotations
 
+import os
+from time import perf_counter
 from typing import Annotated
+from uuid import uuid4
 
-from fastapi import Body, Depends, FastAPI, File, Form, HTTPException, UploadFile, status
+from fastapi import Body, Depends, FastAPI, File, Form, HTTPException, Request, UploadFile, status
 from pydantic import BaseModel, ConfigDict, Field
+import structlog
+from structlog.contextvars import bind_contextvars, clear_contextvars
 
 from parity.lifecycle.service import (
     DocumentArtifactRefs,
@@ -35,14 +40,22 @@ from parity.query import (
     SupportAssessment,
     SupportState,
 )
-from parity.query.errors import CorpusBoundaryUnavailableError
+from parity.query.review import QueryCitationReview, QueryRunReviewSummary, QueryTraceReview
+from parity.query.errors import CorpusBoundaryUnavailableError, QueryExecutionFailedError
+from parity.query.review import QueryReviewService
 from parity.stages import DocumentRegistrationError
 
 from .deps import (
     get_document_lifecycle_service,
     get_document_lifecycle_worker,
+    get_query_review_service,
     get_query_service,
 )
+from .logging import configure_logging
+
+
+def _logger() -> structlog.stdlib.BoundLogger:
+    return structlog.get_logger(__name__)
 
 
 class RetrievalQueryRequest(BaseModel):
@@ -79,10 +92,60 @@ class QuerySubmissionResult(BaseModel):
     message: str = Field(min_length=1)
 
 
+class QuerySubmissionFailureResult(BaseModel):
+    """Internal error payload for failed query submissions."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    query_id: str = Field(min_length=1)
+    status: QueryRunStatus
+    terminal_failure: dict[str, object]
+
+
 def create_app() -> FastAPI:
     """Create the internal lifecycle app."""
 
+    configure_logging(
+        service=os.environ.get("PARITY_SERVICE_NAME", "parity-api"),
+        environment=os.environ.get("PARITY_ENVIRONMENT", "dev"),
+        level=os.environ.get("PARITY_LOG_LEVEL", "INFO"),
+    )
     app = FastAPI()
+
+    @app.middleware("http")
+    async def request_logging_middleware(request: Request, call_next):
+        request_id = f"req-{uuid4().hex}"
+        bind_contextvars(request_id=request_id)
+        started_at = perf_counter()
+        _logger().info(
+            "http.request.started",
+            method=request.method,
+            path=request.url.path,
+        )
+        try:
+            response = await call_next(request)
+        except Exception:
+            duration_ms = int((perf_counter() - started_at) * 1000)
+            _logger().exception(
+                "http.request.completed",
+                method=request.method,
+                path=request.url.path,
+                status=500,
+                duration_ms=duration_ms,
+            )
+            clear_contextvars()
+            raise
+        duration_ms = int((perf_counter() - started_at) * 1000)
+        response.headers["x-request-id"] = request_id
+        _logger().info(
+            "http.request.completed",
+            method=request.method,
+            path=request.url.path,
+            status=response.status_code,
+            duration_ms=duration_ms,
+        )
+        clear_contextvars()
+        return response
 
     @app.get("/healthz")
     async def healthz() -> dict[str, str]:
@@ -213,6 +276,15 @@ def create_app() -> FastAPI:
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                 detail=str(exc),
             ) from exc
+        except QueryExecutionFailedError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=QuerySubmissionFailureResult(
+                    query_id=exc.query_id,
+                    status=QueryRunStatus.FAILED,
+                    terminal_failure=exc.terminal_failure.model_dump(mode="json"),
+                ).model_dump(mode="json"),
+            ) from exc
         if (
             state.snapshot is None
             or state.interpreted_query is None
@@ -245,6 +317,48 @@ def create_app() -> FastAPI:
             citations=state.citation_bundle,
             message="query answer completed with grounded generation and rendered citations",
         )
+
+    @app.get(
+        "/queries/{query_id}",
+        response_model=QueryRunReviewSummary,
+        status_code=status.HTTP_200_OK,
+    )
+    async def get_query_summary(
+        query_id: str,
+        review_service: Annotated[QueryReviewService, Depends(get_query_review_service)],
+    ) -> QueryRunReviewSummary:
+        try:
+            return review_service.get_query_summary(query_id)
+        except LookupError as exc:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+
+    @app.get(
+        "/queries/{query_id}/trace",
+        response_model=QueryTraceReview,
+        status_code=status.HTTP_200_OK,
+    )
+    async def get_query_trace(
+        query_id: str,
+        review_service: Annotated[QueryReviewService, Depends(get_query_review_service)],
+    ) -> QueryTraceReview:
+        try:
+            return review_service.get_query_trace_review(query_id)
+        except LookupError as exc:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+
+    @app.get(
+        "/queries/{query_id}/citations",
+        response_model=QueryCitationReview,
+        status_code=status.HTTP_200_OK,
+    )
+    async def get_query_citations(
+        query_id: str,
+        review_service: Annotated[QueryReviewService, Depends(get_query_review_service)],
+    ) -> QueryCitationReview:
+        try:
+            return review_service.get_query_citations(query_id)
+        except LookupError as exc:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
 
     @app.post("/internal/run-next-job")
     async def run_next_job(

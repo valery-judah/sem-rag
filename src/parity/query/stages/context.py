@@ -41,6 +41,7 @@ class ContextAssemblyTracePayload(BaseModel):
     interpreted_query: InterpretedQuery
     snapshot_doc_ids: list[str] = Field(default_factory=list)
     evidence_set_ids: list[str] = Field(default_factory=list)
+    ordered_evidence_set_ids: list[str] = Field(default_factory=list)
     token_budget: int = Field(ge=1)
     token_budget_used: int = Field(ge=0)
     included_evidence_set_ids: list[str] = Field(default_factory=list)
@@ -78,6 +79,7 @@ def run(
         interpreted_query=interpreted_query,
         snapshot_doc_ids=snapshot.eligible_doc_ids,
         evidence_set_ids=[evidence_set.evidence_set_id for evidence_set in evidence_sets],
+        ordered_evidence_set_ids=manifest.ordered_evidence_set_ids,
         token_budget=manifest.token_budget,
         token_budget_used=manifest.token_budget_used,
         included_evidence_set_ids=manifest.included_evidence_set_ids,

@@ -25,6 +25,18 @@ class QueryRunStatus(StrEnum):
     FAILED = "failed"
 
 
+class QueryTerminalFailure(BaseModel):
+    """Compact persisted summary for a terminal failed query run."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    error_code: str = Field(min_length=1)
+    error_class: str = Field(min_length=1)
+    stage_name: QueryStageName | None = None
+    message: str = Field(min_length=1)
+    trust_failure_labels: list[TrustFailureLabel] = Field(default_factory=list)
+
+
 class QueryStageName(StrEnum):
     """Semantic query runtime stages."""
 
@@ -178,6 +190,22 @@ class QueryRun(BaseModel):
     submitted_at: datetime = Field(default_factory=utc_now)
     status: QueryRunStatus = QueryRunStatus.PENDING
     policy_snapshot: dict[str, object]
+    completed_at: datetime | None = None
+    terminal_failure: QueryTerminalFailure | None = None
+
+    @model_validator(mode="after")
+    def validate_terminal_fields(self) -> QueryRun:
+        if self.completed_at is not None and self.completed_at < self.submitted_at:
+            raise ValueError("completed_at must be greater than or equal to submitted_at")
+        if self.status is QueryRunStatus.FAILED and self.completed_at is None:
+            raise ValueError("failed query runs must include completed_at")
+        if self.status is QueryRunStatus.FAILED and self.terminal_failure is None:
+            raise ValueError("failed query runs must include terminal_failure")
+        if self.status is not QueryRunStatus.FAILED and self.terminal_failure is not None:
+            raise ValueError("terminal_failure is only valid for failed query runs")
+        if self.status is QueryRunStatus.SUCCEEDED and self.completed_at is None:
+            raise ValueError("succeeded query runs must include completed_at")
+        return self
 
 
 class CorpusSnapshot(BaseModel):
