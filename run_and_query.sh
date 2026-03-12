@@ -270,7 +270,7 @@ if [ "$USE_HOST_OLLAMA" = "1" ]; then
   echo "==> Using host Ollama for GPU-backed generation..."
   ensure_host_ollama
   echo "==> Starting application stack without the Docker Ollama service..."
-  docker compose up -d --build db migrate api worker
+  docker compose up -d --build db api worker
 else
   echo "==> Starting application stack via docker-compose..."
   make docker-up-build
@@ -279,7 +279,7 @@ fi
 echo "==> Waiting for API to become ready..."
 wait_for_http_ready "API" "$API_URL/readyz" 30 2 \
   || {
-    docker compose logs api db worker migrate
+    docker compose logs api db worker
     die "API did not become ready in time"
   }
 
@@ -385,7 +385,7 @@ docker compose up -d --force-recreate api
 
 wait_for_http_ready "API" "$API_URL/readyz" 30 2 \
   || {
-    docker compose logs api db worker migrate
+    docker compose logs api db worker
     die "API did not become ready after switching to Ollama"
   }
 

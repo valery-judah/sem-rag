@@ -273,10 +273,10 @@ async def test_queries_route_returns_final_answer_and_persists_artifacts(
     )
 
     assert isinstance(result, QueryAnswerResponse)
-    assert "vector search uses embeddings to retrieve related passages" in result.answer_text
+    assert "vector search uses embeddings to retrieve related passages" in result.answer.answer_text.lower()
     assert result.support_state.value == "sufficient"
     assert result.answer_mode.value == "direct_answer"
-    assert result.visible_limitations == []
+    assert result.answer.visible_limitations == []
     assert len(result.citations.citations) == 1
     assert result.citations.material_doc_ids == ["doc-ready"]
     assert (
@@ -288,7 +288,7 @@ async def test_queries_route_returns_final_answer_and_persists_artifacts(
     assert persisted_snapshot is not None
     assert persisted_snapshot.eligible_doc_ids == ["doc-ready"]
     assert persisted_answer is not None
-    assert persisted_answer.answer.answer_text == result.answer_text
+    assert persisted_answer.answer.answer_text == result.answer.answer_text
     assert len(persisted_traces) == 8
     assert persisted_traces[0].stage_name.value == "interpret"
     assert persisted_traces[1].stage_name.value == "retrieve"
@@ -314,7 +314,7 @@ async def test_queries_route_allows_empty_snapshot(
 
     assert result.support_state.value == "insufficient"
     assert result.answer_mode.value == "full_abstention"
-    assert "does not provide enough support" in result.answer_text
+    assert "does not provide enough support" in result.answer.answer_text
     assert result.citations.citations == []
 
 
@@ -501,7 +501,7 @@ async def test_query_trace_route_returns_ordered_persisted_traces(
         "render_citations",
     ]
     assert review.final_artifacts is not None
-    assert review.final_artifacts.answer.answer_text == submitted.answer_text
+    assert review.final_artifacts.answer.answer_text == submitted.answer.answer_text
 
 
 async def test_query_citations_route_reads_persisted_answer_state(

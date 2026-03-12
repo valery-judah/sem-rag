@@ -31,6 +31,7 @@ from doc_forge.lifecycle.service import (
 )
 from doc_forge.lifecycle.worker import DocumentLifecycleWorker
 from doc_forge.query import (
+    AnswerDraft,
     AnswerMode,
     CitationBundle,
     QueryRequest,
@@ -90,15 +91,12 @@ class QueryAnswerResponse(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     query_id: str = Field(min_length=1, description="The unique query identifier.")
-    answer_text: str = Field(min_length=1, description="The generated grounded answer text.")
+    answer: AnswerDraft = Field(description="The generated answer draft.")
     support_state: SupportState = Field(
         description="The assessed evidence support state (e.g., sufficient, partial, insufficient)."
     )
     answer_mode: AnswerMode = Field(
         description="The selected answer generation mode (e.g., direct_answer, full_abstention)."
-    )
-    visible_limitations: list[str] = Field(
-        default_factory=list, description="Disclaimers regarding answer quality."
     )
     citations: CitationBundle = Field(description="The assembled citations supporting the answer.")
     message: str = Field(min_length=1, description="Human-readable result message.")
@@ -519,10 +517,9 @@ def create_app() -> FastAPI:
             )
         return QueryAnswerResponse(
             query_id=state.run.query_id,
-            answer_text=state.answer_draft.answer_text,
+            answer=state.answer_draft,
             support_state=state.support_assessment.support_state,
             answer_mode=state.answer_mode_decision.answer_mode,
-            visible_limitations=state.answer_draft.visible_limitations,
             citations=state.citation_bundle,
             message="query answer completed with grounded generation and rendered citations",
         )
