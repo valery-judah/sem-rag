@@ -4,9 +4,9 @@ from __future__ import annotations
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from doc_forge._contracts import ProcessingStatus
 from doc_forge.artifacts import FilesystemArtifactStore
 from doc_forge.indexing import VectorStore
+from doc_forge.lifecycle import ProcessingStatus
 from doc_forge.persistence import (
     ChunkRepository,
     DocumentRepository,

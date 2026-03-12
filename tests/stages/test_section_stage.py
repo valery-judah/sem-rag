@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 
-from doc_forge._contracts import ProcessingStatus, SourceType
 from doc_forge.artifacts import FilesystemArtifactStore, NormalizedArtifact, NormalizedArtifactBlock
+from doc_forge.corpus import SourceType
+from doc_forge.lifecycle import ProcessingStatus
 from doc_forge.persistence import (
     DocumentJobStage,
     PersistedDocument,

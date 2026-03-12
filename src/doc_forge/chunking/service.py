@@ -4,9 +4,9 @@ from __future__ import annotations
 
 from collections import defaultdict
 
-from doc_forge._contracts import Chunk, Section
 from doc_forge.artifacts import NormalizedArtifact, NormalizedArtifactBlock
 from doc_forge.chunking.policy import MAX_TOKENS_PER_CHUNK, count_tokens
+from doc_forge.corpus import Chunk, Section
 from doc_forge.persistence import PersistedDocument
 
 

@@ -4,8 +4,8 @@ from datetime import UTC, datetime
 
 import pytest
 
-from doc_forge._contracts import ProcessingStatus
 from doc_forge.indexing import ChunkEmbedding, IndexEntry
+from doc_forge.lifecycle import ProcessingStatus
 from doc_forge.persistence import (
     SqlChunkEmbeddingRepository,
     SqlChunkRepository,

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from doc_forge._contracts import ProcessingStatus
+from doc_forge.lifecycle import ProcessingStatus
 from doc_forge.persistence import (
     SqlChunkEmbeddingRepository,
     SqlChunkRepository,

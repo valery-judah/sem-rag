@@ -8,8 +8,9 @@ from datetime import UTC, datetime
 import sqlalchemy as sa
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from doc_forge._contracts import Chunk, Document, ProcessingStatus, Section, SourceType
+from doc_forge.corpus import Chunk, Document, Section, SourceType
 from doc_forge.indexing import ChunkEmbedding, IndexEntry
+from doc_forge.lifecycle import ProcessingStatus
 from doc_forge.lifecycle.models import FailureCategory, LifecycleEvent, LifecycleStage
 
 

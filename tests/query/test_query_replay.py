@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import pytest
 
-from doc_forge._contracts import ProcessingStatus
 from doc_forge.indexing import DeterministicEmbeddingAdapter, SqlVectorStore
+from doc_forge.lifecycle import ProcessingStatus
 from doc_forge.persistence import (
     SqlChunkEmbeddingRepository,
     SqlChunkRepository,

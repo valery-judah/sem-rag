@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from doc_forge._contracts import SourceReference
+from doc_forge.corpus import SourceReference
 from doc_forge.query.answer_generation import DeterministicGroundedAnswerGenerator
 from doc_forge.query.citation_rendering import DeterministicCitationRenderer
 from doc_forge.query.contracts import (

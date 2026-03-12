@@ -7,7 +7,7 @@ from enum import StrEnum
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from doc_forge._contracts import SourceReference
+from doc_forge.corpus import SourceReference
 
 
 def utc_now() -> datetime:

@@ -7,8 +7,9 @@ from typing import Protocol
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from doc_forge._contracts import Chunk, ProcessingStatus, SourceType
+from doc_forge.corpus import Chunk, SourceType
 from doc_forge.indexing import ChunkEmbedding
+from doc_forge.lifecycle import ProcessingStatus
 from doc_forge.persistence import (
     ChunkEmbeddingRepository,
     ChunkRepository,

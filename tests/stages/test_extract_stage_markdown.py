@@ -6,9 +6,10 @@ import pytest
 import sqlalchemy as sa
 from sqlalchemy import event
 
-from doc_forge._contracts import ProcessingStatus, SourceType
 from doc_forge.artifacts import FilesystemArtifactStore
+from doc_forge.corpus import SourceType
 from doc_forge.extractors import ExtractorRegistry, MarkdownExtractor, PdfExtractor
+from doc_forge.lifecycle import ProcessingStatus
 from doc_forge.persistence import (
     PersistedDocument,
     SqlDocumentRepository,

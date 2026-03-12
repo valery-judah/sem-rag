@@ -8,12 +8,13 @@ from uuid import uuid4
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy.engine import Engine
 
-from doc_forge._contracts import Document, ProcessingStatus, SourceType
 from doc_forge.artifacts import FilesystemArtifactStore, RawArtifactRef
+from doc_forge.corpus import Document, SourceType
 from doc_forge.lifecycle import (
     LifecycleEvent,
     LifecycleInvariantError,
     LifecycleStage,
+    ProcessingStatus,
     require_processing_status_transition,
 )
 from doc_forge.persistence import (

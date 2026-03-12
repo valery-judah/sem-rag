@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from typing import Protocol
 
-from doc_forge._contracts import SourceType
 from doc_forge.artifacts import ExtractedArtifact
+from doc_forge.corpus import SourceType
 
 
 class ExtractionError(RuntimeError):

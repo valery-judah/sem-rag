@@ -82,7 +82,7 @@ These seams are implemented internal architecture, not stable public contracts.
 The stable public package interface remains intentionally empty and is defined in [`docs/evergreen/api-contracts.md`](./api-contracts.md). Internal routes such as upload/status/retry/retrieval smoke and `POST /queries`, along with `src/doc_forge/query/` exports, are implemented runtime seams rather than public contracts.
 
 ### Implemented Internal Architecture
-The `_contracts` layer, query read model, internal query runtime through Stage 5 context assembly, internal lifecycle app, queue worker, executable stages from registration through readiness, artifact store, persistence/indexing helpers, evaluation harness, and devtools exist in code and are exercised by tests. They are current implementation truth, but they are not yet promised as stable external interfaces for downstream callers.
+The `corpus` layer, query read model, internal query runtime through Stage 5 context assembly, internal lifecycle app, queue worker, executable stages from registration through readiness, artifact store, persistence/indexing helpers, evaluation harness, and devtools exist in code and are exercised by tests. These seams are current implementation truth, but they are not yet promised as stable external interfaces for downstream callers.
 
 ### Planned MVP Capabilities Not Yet Implemented
 The target product in [`docs/evergreen/mvp.md`](./mvp.md) still exceeds the runtime that exists today. The following user-facing capabilities are not implemented in `src/doc_forge/`:
@@ -107,7 +107,7 @@ The main remaining gap to the MVP question-answering service is the rest of the 
 The runtime also has not earned a stable public service or package API.
 
 ## Agent Guardrails
-- Do not treat `src/doc_forge/_contracts/` as public API. It is real implemented architecture, but it is internal until `docs/evergreen/api-contracts.md` says otherwise.
+- Do not treat `src/doc_forge/corpus/` or `src/doc_forge/lifecycle/` as public API. They are real implemented architecture, but they are internal until `docs/evergreen/api-contracts.md` says otherwise.
 - Do not redefine evaluation semantics here. Support-state, scenario, citation, and failure meanings are owned by the evergreen eval docs.
 - Do not treat `docs/delivery/workflow.md` as authority for current implementation truth. It is workflow rationale and promotion guidance, not the current-state source of truth.
 - Do not infer public API stability, answer generation, or user-facing source inspection from internal lifecycle routes or worker seams.

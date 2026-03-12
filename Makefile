@@ -77,6 +77,10 @@ secret-scan: ## Scan tracked repository files for leaked Gemini API keys
 secret-scan-staged: ## Scan staged added lines for leaked Gemini API keys
 	uv run python -m doc_forge.devtools.secret_scan --scope staged-added
 
+.PHONY: dead-code
+dead-code: ## Classify classes by API reachability versus repo entrypoints and tests
+	uv run python -m doc_forge.devtools.dead_code --roots api --report classified
+
 .PHONY: install-git-hooks
 install-git-hooks: ## Configure git to use repo-managed hooks
 	git config core.hooksPath .githooks

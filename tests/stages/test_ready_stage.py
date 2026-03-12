@@ -4,9 +4,10 @@ from datetime import UTC, datetime
 
 import pytest
 
-from doc_forge._contracts import Chunk, ProcessingStatus, Section, SourceType
 from doc_forge.artifacts import FilesystemArtifactStore, NormalizedArtifact, NormalizedArtifactBlock
+from doc_forge.corpus import Chunk, Section, SourceType
 from doc_forge.indexing import DeterministicEmbeddingAdapter, SqlVectorStore
+from doc_forge.lifecycle import ProcessingStatus
 from doc_forge.lifecycle.readiness import ReadinessService
 from doc_forge.persistence import (
     DocumentJobStage,

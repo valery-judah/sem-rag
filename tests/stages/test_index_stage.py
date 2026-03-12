@@ -4,7 +4,7 @@ from datetime import UTC, datetime
 
 import pytest
 
-from doc_forge._contracts import Chunk, ProcessingStatus, Section, SourceType
+from doc_forge.corpus import Chunk, Section, SourceType
 from doc_forge.indexing import (
     ChunkEmbedding,
     DeterministicEmbeddingAdapter,
@@ -12,6 +12,7 @@ from doc_forge.indexing import (
     SqlVectorStore,
     VectorSearchHit,
 )
+from doc_forge.lifecycle import ProcessingStatus
 from doc_forge.persistence import (
     DocumentJobStage,
     PersistedDocument,

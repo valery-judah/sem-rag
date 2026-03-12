@@ -1,6 +1,5 @@
-"""Internal shared contracts for the MVP workstreams."""
+"""Internal corpus and provenance models."""
 
-from .lifecycle import ProcessingStatus, can_transition_processing_status
 from .models import (
     Answer,
     AnswerStatus,
@@ -17,10 +16,8 @@ __all__ = [
     "AnswerStatus",
     "Chunk",
     "Document",
-    "ProcessingStatus",
     "RetrievalHit",
     "Section",
     "SourceReference",
     "SourceType",
-    "can_transition_processing_status",
 ]

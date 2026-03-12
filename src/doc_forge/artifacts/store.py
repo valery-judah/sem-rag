@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path, PurePosixPath
 from uuid import uuid4
 
-from doc_forge._contracts import SourceType
+from doc_forge.corpus import SourceType
 
 from .schemas import ExtractedArtifact, NormalizedArtifact, RawArtifactRef
 

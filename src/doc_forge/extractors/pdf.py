@@ -7,8 +7,8 @@ from io import BytesIO
 
 from pypdf import PdfReader
 
-from doc_forge._contracts import SourceType
 from doc_forge.artifacts import ExtractedArtifact, ExtractedArtifactBlock, ExtractedArtifactPage
+from doc_forge.corpus import SourceType
 
 from .base import ExtractionError, NoRecoverableTextError
 

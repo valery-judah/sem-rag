@@ -30,19 +30,11 @@ from doc_forge.lifecycle.service import (
 )
 from doc_forge.lifecycle.worker import DocumentLifecycleWorker
 from doc_forge.query import (
-    AnswerDraft,
     AnswerMode,
-    AnswerModeDecision,
     CitationBundle,
-    ContextManifest,
-    CorpusSnapshot,
-    EvidenceSet,
-    InterpretedQuery,
     QueryRequest,
     QueryRunStatus,
     QueryService,
-    RetrievedCandidate,
-    SupportAssessment,
     SupportState,
 )
 from doc_forge.query.errors import CorpusBoundaryUnavailableError, QueryExecutionFailedError
@@ -89,42 +81,6 @@ class RetrievalQueryRequest(BaseModel):
         min_length=1, description="The textual query to run against the document's chunks."
     )
     k: int = Field(default=3, ge=1, description="The maximum number of chunks to return.")
-
-
-class QuerySubmissionResult(BaseModel):
-    """Internal response payload for Stage 7 end-to-end query execution."""
-
-    model_config = ConfigDict(extra="forbid")
-
-    query_id: str = Field(min_length=1, description="The unique query identifier.")
-    workspace_id: str = Field(min_length=1, description="The workspace this query was executed in.")
-    status: QueryRunStatus = Field(description="The terminal status of the query.")
-    snapshot: CorpusSnapshot = Field(description="The corpus boundary snapshot.")
-    interpreted_query: InterpretedQuery = Field(description="The interpreted query constraints.")
-    retrieved_candidates: list[RetrievedCandidate] = Field(
-        default_factory=list, description="Raw candidates retrieved."
-    )
-    selected_candidates: list[RetrievedCandidate] = Field(
-        default_factory=list, description="Filtered and ranked candidates."
-    )
-    evidence_sets: list[EvidenceSet] = Field(
-        default_factory=list, description="Grouped evidence chunks."
-    )
-    context_manifest: ContextManifest = Field(description="The context provided to the generator.")
-    support_assessment: SupportAssessment = Field(
-        description="The formal support assessment over the evidence."
-    )
-    answer_mode_decision: AnswerModeDecision = Field(
-        description="The final answer posture decision."
-    )
-    answer: AnswerDraft = Field(description="The generated draft answer.")
-    support_state: SupportState = Field(description="The assessed evidence support state.")
-    answer_mode: AnswerMode = Field(description="The selected answer generation mode.")
-    visible_limitations: list[str] = Field(
-        default_factory=list, description="Disclaimers regarding answer quality."
-    )
-    citations: CitationBundle = Field(description="The assembled citations for the answer.")
-    message: str = Field(min_length=1, description="Human-readable result message.")
 
 
 class QueryAnswerResponse(BaseModel):

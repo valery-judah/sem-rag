@@ -8,8 +8,9 @@ from typing import Protocol
 import sqlalchemy as sa
 from sqlalchemy.engine import Connection, Engine
 
-from doc_forge._contracts import Chunk, ProcessingStatus, Section
+from doc_forge.corpus import Chunk, Section
 from doc_forge.indexing import ChunkEmbedding, IndexEntry
+from doc_forge.lifecycle import ProcessingStatus
 from doc_forge.lifecycle.models import LifecycleEvent
 
 from .jobs import (

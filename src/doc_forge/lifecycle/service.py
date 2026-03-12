@@ -9,9 +9,10 @@ from uuid import uuid4
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from doc_forge._contracts import Chunk, ProcessingStatus, Section, SourceType
 from doc_forge.artifacts import FilesystemArtifactStore
+from doc_forge.corpus import Chunk, Section, SourceType
 from doc_forge.indexing import ChunkEmbedding, IndexEntry, VectorSearchHit, VectorStore
+from doc_forge.lifecycle import ProcessingStatus
 from doc_forge.persistence import (
     ChunkEmbeddingRepository,
     ChunkRepository,

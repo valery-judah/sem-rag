@@ -4,13 +4,14 @@ from typing import cast
 
 import pytest
 
-from doc_forge._contracts import ProcessingStatus, SourceType
 from doc_forge.artifacts import (
     ExtractedArtifact,
     FilesystemArtifactStore,
     NormalizedArtifact,
 )
+from doc_forge.corpus import SourceType
 from doc_forge.indexing import VectorSearchHit
+from doc_forge.lifecycle import ProcessingStatus
 from doc_forge.lifecycle.orchestrator import DocumentLifecycleOrchestrator
 from doc_forge.lifecycle.service import (
     DocumentLifecycleService,

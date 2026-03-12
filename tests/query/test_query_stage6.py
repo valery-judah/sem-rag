@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from doc_forge._contracts import SourceReference
+from doc_forge.corpus import SourceReference
 from doc_forge.query import (
     AnswerMode,
     ContextItem,

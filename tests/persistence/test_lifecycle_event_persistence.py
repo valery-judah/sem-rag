@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from doc_forge._contracts import ProcessingStatus
+from doc_forge.lifecycle import ProcessingStatus
 from doc_forge.lifecycle.models import FailureCategory, LifecycleStage
 from doc_forge.persistence import SqlDocumentRepository, SqlLifecycleEventRepository
 

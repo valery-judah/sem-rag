@@ -7,9 +7,13 @@ from uuid import uuid4
 
 from sqlalchemy.engine import Engine
 
-from doc_forge._contracts import ProcessingStatus
 from doc_forge.artifacts import FilesystemArtifactStore, NormalizedArtifact
-from doc_forge.lifecycle import LifecycleEvent, LifecycleInvariantError, LifecycleStage
+from doc_forge.lifecycle import (
+    LifecycleEvent,
+    LifecycleInvariantError,
+    LifecycleStage,
+    ProcessingStatus,
+)
 from doc_forge.normalizers import NormalizerRegistry
 from doc_forge.persistence import (
     DocumentJob,

@@ -8,9 +8,9 @@ import sqlalchemy as sa
 from sqlalchemy import event
 from sqlalchemy.engine import Engine
 
-from doc_forge._contracts import ProcessingStatus, SourceType
 from doc_forge.artifacts import FilesystemArtifactStore, RawArtifactRef
-from doc_forge.lifecycle import LifecycleEvent
+from doc_forge.corpus import SourceType
+from doc_forge.lifecycle import LifecycleEvent, ProcessingStatus
 from doc_forge.persistence import (
     SqlDocumentJobRepository,
     SqlDocumentRepository,

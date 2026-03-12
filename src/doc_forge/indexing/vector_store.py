@@ -6,7 +6,7 @@ import math
 
 from sqlalchemy.engine import Engine
 
-from doc_forge._contracts import Chunk
+from doc_forge.corpus import Chunk
 from doc_forge.persistence.models import utc_now
 from doc_forge.persistence.repositories import (
     ChunkEmbeddingRepository,

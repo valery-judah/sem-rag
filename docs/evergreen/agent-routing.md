@@ -50,7 +50,7 @@ Execution History And Prior Framing:
 Current Implementation Seams:
 - `src/doc_forge/query/`: `Implemented internal`
 - `src/doc_forge/readmodels/`: `Implemented internal`
-- `src/doc_forge/_contracts/`: `Implemented internal`
+- `src/doc_forge/corpus/`: `Implemented internal`
 - `src/doc_forge/app/`: `Implemented internal`
 - `src/doc_forge/artifacts/`: `Implemented internal`
 - `src/doc_forge/stages/`: `Implemented internal`
@@ -66,7 +66,7 @@ Current Implementation Seams:
 ## Implementation Map
 - `src/doc_forge/query/contracts.py`, `src/doc_forge/query/interpretation.py`, `src/doc_forge/query/retrieval.py`, `src/doc_forge/query/context_assembly.py`, `src/doc_forge/query/service.py`, `src/doc_forge/query/stages/`, `src/doc_forge/query/persistence.py`, and `src/doc_forge/query/trace.py`: internal query runtime through Stage 5. Open when changing query run state, query-time snapshot semantics, interpreted-query shape, retrieval behavior, context assembly, stage execution, or persisted stage traces.
 - `src/doc_forge/readmodels/documents.py`: query-facing corpus read model over lifecycle persistence. Open when changing `READY`-only queryability, snapshot membership capture, fixed-snapshot section/chunk reads, or embedded-chunk retrieval reads.
-- `src/doc_forge/_contracts/models.py` and `src/doc_forge/_contracts/lifecycle.py`: internal corpus, provenance, answer, and lifecycle seams. Open when changing document, chunk, citation, answer, or processing-state semantics in code.
+- `src/doc_forge/corpus/models.py`, `src/doc_forge/lifecycle/status.py`, and `src/doc_forge/lifecycle/state_machine.py`: internal corpus, provenance, answer, and lifecycle seams. Open when changing document, chunk, citation, answer, or processing-state semantics in code.
 - `src/doc_forge/app/api.py`, `src/doc_forge/app/deps.py`, and `src/doc_forge/app/settings.py`: internal FastAPI runtime and dependency wiring. Open when changing intake/status/retry/query route shape, dependency assembly, or runtime settings.
 - `src/doc_forge/lifecycle/service.py`, `src/doc_forge/lifecycle/orchestrator.py`, and `src/doc_forge/lifecycle/worker.py`: transport-thin lifecycle coordination, queued orchestration, retry behavior, and worker execution. Open when changing document-level control flow or failure handling.
 - `src/doc_forge/stages/`, `src/doc_forge/extractors/`, `src/doc_forge/normalizers/`, `src/doc_forge/structure/`, `src/doc_forge/chunking/`, and `src/doc_forge/indexing/`: executable lifecycle stages from extraction through readiness. Open when changing stage invariants, format-specific transforms, vector publication, or readiness semantics.
@@ -88,8 +88,8 @@ For query runtime changes:
 - if the change would promote query request, snapshot, interpreted-query, or route payloads into a supported downstream interface, update `docs/evergreen/api-contracts.md` first
 
 For internal contract or lifecycle changes:
-- open `src/doc_forge/_contracts/models.py`
-- then inspect `src/doc_forge/_contracts/lifecycle.py`
+- open `src/doc_forge/corpus/models.py`
+- then inspect `src/doc_forge/lifecycle/status.py` and `src/doc_forge/lifecycle/state_machine.py`
 - then inspect `tests/contract/test_contract_models.py`
 - then inspect `tests/contract/test_lifecycle_state_machine.py`
 - then inspect `tests/contract/test_contract_seam_compat.py`
@@ -106,7 +106,7 @@ For lifecycle runtime changes:
 For persistence changes:
 - open `src/doc_forge/persistence/`
 - then inspect `tests/persistence/`
-- then inspect `src/doc_forge/_contracts/`
+- then inspect `src/doc_forge/corpus/` and `src/doc_forge/lifecycle/`
 
 For evaluation harness changes:
 - open `src/doc_forge/evaluation/runner.py`

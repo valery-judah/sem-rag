@@ -8,7 +8,7 @@ from typing import Protocol
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from doc_forge._contracts import Chunk
+from doc_forge.corpus import Chunk
 
 
 class IndexEntry(BaseModel):

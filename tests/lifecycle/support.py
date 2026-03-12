@@ -5,8 +5,9 @@ from datetime import UTC, datetime
 
 from sqlalchemy.engine import Connection
 
-from doc_forge._contracts import Chunk, ProcessingStatus, Section, SourceType
+from doc_forge.corpus import Chunk, Section, SourceType
 from doc_forge.indexing import ChunkEmbedding, IndexEntry, VectorSearchHit
+from doc_forge.lifecycle import ProcessingStatus
 from doc_forge.lifecycle.models import FailureCategory, LifecycleEvent, LifecycleStage
 from doc_forge.persistence import (
     DocumentJob,

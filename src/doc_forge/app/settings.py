@@ -18,8 +18,8 @@ class AppSettings(BaseSettings):
     )
 
     database_url: str = Field(
-        default="postgresql+psycopg://doc-forge:doc-forge@localhost:5432/doc-forge", 
-        alias="DATABASE_URL"
+        default="postgresql+psycopg://doc-forge:doc-forge@localhost:5432/doc-forge",
+        alias="DATABASE_URL",
     )
     artifact_root: Path = Field(default=Path("data"), alias="DOC_FORGE_ARTIFACT_ROOT")
     service_name: str = Field(default="doc_forge-api", alias="DOC_FORGE_SERVICE_NAME")
@@ -28,16 +28,20 @@ class AppSettings(BaseSettings):
     log_level: str = Field(default="INFO", alias="DOC_FORGE_LOG_LEVEL")
     embedding_backend: str = Field(default="deterministic", alias="DOC_FORGE_EMBEDDING_BACKEND")
     embedding_model_name: str = Field(
-        default="sentence-transformers/all-MiniLM-L6-v2", 
-        alias="DOC_FORGE_EMBEDDING_MODEL"
+        default="sentence-transformers/all-MiniLM-L6-v2", alias="DOC_FORGE_EMBEDDING_MODEL"
     )
-    answer_generator_backend: str = Field(default="deterministic", alias="DOC_FORGE_ANSWER_GENERATOR_BACKEND")
+    answer_generator_backend: str = Field(
+        default="deterministic", alias="DOC_FORGE_ANSWER_GENERATOR_BACKEND"
+    )
     answer_generator_model_name: str = Field(
-        default="mlx-community/TinyLlama-1.1B-Chat-v1.0", 
-        alias="DOC_FORGE_ANSWER_GENERATOR_MODEL"
+        default="mlx-community/TinyLlama-1.1B-Chat-v1.0", alias="DOC_FORGE_ANSWER_GENERATOR_MODEL"
     )
-    answer_generator_max_new_tokens: int = Field(default=256, alias="DOC_FORGE_ANSWER_GENERATOR_MAX_NEW_TOKENS")
-    answer_generator_temperature: float = Field(default=0.0, alias="DOC_FORGE_ANSWER_GENERATOR_TEMPERATURE")
+    answer_generator_max_new_tokens: int = Field(
+        default=256, alias="DOC_FORGE_ANSWER_GENERATOR_MAX_NEW_TOKENS"
+    )
+    answer_generator_temperature: float = Field(
+        default=0.0, alias="DOC_FORGE_ANSWER_GENERATOR_TEMPERATURE"
+    )
 
     @field_validator("artifact_root", mode="after")
     @classmethod

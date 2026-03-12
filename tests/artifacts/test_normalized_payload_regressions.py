@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from doc_forge._contracts import SourceType
 from doc_forge.artifacts import NormalizedArtifact
+from doc_forge.corpus import SourceType
 from doc_forge.extractors import MarkdownExtractor
 from doc_forge.normalizers import MarkdownNormalizer
 

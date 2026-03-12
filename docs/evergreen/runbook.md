@@ -18,6 +18,7 @@ make run-api
 make run-worker
 make docker-up-build
 make docker-smoke
+make dead-code
 make test-e2e
 ```
 
@@ -56,6 +57,7 @@ make fmt-check
 make lint
 make type
 make test
+make dead-code
 make test-e2e
 make smoke-llm
 make smoke-mac
@@ -69,6 +71,7 @@ make verify
 - `make run-api` runs the internal FastAPI lifecycle app with upload, status, retry, retrieval-smoke, health, and artifact-inspection routes.
 - `make run-worker` runs the queue-draining lifecycle worker that advances documents from `REGISTERED` to `READY`.
 - `make test-e2e` runs the docker-backed end-to-end document lifecycle suite under `tests/e2e/`.
+- `make dead-code` runs the internal API-rooted reachability analyzer and groups `src/` classes into `api_reachable`, `repo_entrypoint_only`, `test_only`, and `unreferenced`.
 - `DOC_FORGE_E2E_VERBOSE=1 make test-e2e` enables step-by-step e2e progress logs plus richer failure diagnostics.
 - `POST /internal/run-next-job` exists for tests and local debug; normal local operation should prefer the worker loop.
 - `make docker-up-build` starts the local Postgres, API, and worker stack defined in `docker-compose.yml`.

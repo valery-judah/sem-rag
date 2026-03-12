@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-from doc_forge._contracts import ProcessingStatus
-from doc_forge.lifecycle import FailureCategory
+from doc_forge.lifecycle import FailureCategory, ProcessingStatus
 from doc_forge.lifecycle.orchestrator import DocumentLifecycleOrchestrator
 from doc_forge.lifecycle.worker import DocumentLifecycleWorker
 from doc_forge.persistence import DocumentJobStage, DocumentJobStatus
