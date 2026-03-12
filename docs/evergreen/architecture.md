@@ -50,7 +50,6 @@ The currently relevant bounded contexts are:
 ## Current Architectural Seams
 The currently earned seams are:
 
-- implemented retrieval demo utilities around `SemanticIndex` and the CLI, without stable public API status
 - provenance-bearing corpus primitives for documents, sections, chunks, retrieval hits, and answers
 - explicit document-processing lifecycle progression with a failure state
 - internal FastAPI lifecycle runtime for upload, status, retry, retrieval smoke, health, and artifact inspection

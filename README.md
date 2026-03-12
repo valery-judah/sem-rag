@@ -2,11 +2,6 @@
 
 Minimal question-answering MVP scaffold for a user-provided document corpus.
 
-The current codebase is intentionally small. Today it exposes:
-
-- `src/doc_forge/retrieval.py`: an in-memory `SemanticIndex` demo
-- `src/doc_forge/cli.py`: a CLI that runs the retrieval demo
-
 The product target is broader than the current implementation. The product north star lives in `docs/evergreen/mvp.md`, which defines the MVP scope for question answering over a bounded PDF and Markdown corpus with inspectable evidence. Supporting delivery and workflow material may exist in `docs/delivery/`, but it is not the canonical scope definition.
 
 ## Read First
@@ -19,23 +14,20 @@ The product target is broader than the current implementation. The product north
 
 ## Current Repository Shape
 
-- `src/doc_forge/__init__.py`: package export surface
-- `src/doc_forge/retrieval.py`: retrieval demo logic
-- `src/doc_forge/cli.py`: demo CLI entry point
+- `src/doc_forge/`: internal runtime code for lifecycle, query, persistence, evaluation, and devtools
 - `docs/evergreen/`: durable canonical product and repo documentation
 - `docs/delivery/`: planning, architecture, and workflow drafts retained for reference; not the product north star
 - `docs/workstreams/`: optional time-scoped execution records
 - `docs/adrs/`: durable architectural decisions when needed
 - `docs/harness/`: documentation tooling and templates
 
-The repo does not currently implement document upload, PDF/Markdown ingestion, structure recovery, or grounded answer generation. Those capabilities are target MVP behavior, not present runtime behavior.
-
 ## Quickstart
 
 ```bash
 make sync
 make install
-make run
+make run-api
+make run-worker
 ```
 
 Common validation targets from `Makefile`:
@@ -64,6 +56,4 @@ docs/
   harness/
 src/doc_forge/
   __init__.py
-  cli.py
-  retrieval.py
 ```

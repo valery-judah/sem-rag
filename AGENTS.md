@@ -16,7 +16,8 @@
 - Do not use `pip`, `python -m pip`, `poetry`, or `pipenv` directly.
 - `make sync`
 - `make install`
-- `make run`
+- `make run-api`
+- `make run-worker`
 - `make fmt`
 - `make fmt-check`
 - `make lint`

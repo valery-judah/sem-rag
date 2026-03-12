@@ -1,5 +1,1 @@
-"""Semantic RAG baseline package."""
-
-from .retrieval import SemanticIndex
-
-__all__ = ["SemanticIndex"]
+"""doc_forge package."""

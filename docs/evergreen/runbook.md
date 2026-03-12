@@ -14,7 +14,6 @@ make sync
 make sync-llm
 make sync-mac
 make install
-make run
 make run-api
 make run-worker
 make docker-up-build
@@ -71,11 +70,6 @@ make verify
 
 `make db-revision` creates a new revision file under `src/doc_forge/persistence/migrations/versions/`. Schema changes to lifecycle metadata should update both the SQLAlchemy table definitions and a reviewed Alembic revision.
 
-## What `make run` Does
-- Installs the package in editable mode through the `install` dependency in `Makefile`
-- Runs `python -m doc_forge.cli`
-- Prints ranked matches from a small hard-coded document list
-
 ## Internal Lifecycle Runtime
 - `make run-api` runs the internal FastAPI lifecycle app with upload, status, retry, retrieval-smoke, health, and artifact-inspection routes.
 - `make run-worker` runs the queue-draining lifecycle worker that advances documents from `REGISTERED` to `READY`.
@@ -111,7 +105,6 @@ make verify
 - If Alembic commands fail immediately, verify that `DATABASE_URL` is set and points at a reachable database.
 - If the internal lifecycle app or worker fails at startup, verify `DATABASE_URL`, `DOC_FORGE_ARTIFACT_ROOT`, and migrations first.
 - If the Docker stack cannot write artifacts as a non-root user, export `DOC_FORGE_UID` and `DOC_FORGE_GID` before `make docker-up-build`, then clean up any stale root-owned files under `./data`.
-- If `make run` changes behavior, inspect `src/doc_forge/cli.py` and `src/doc_forge/retrieval.py` first because they define the current runtime surface.
 - If a doc describes ingestion, parsing, or grounded answering as already implemented, reconcile it with `docs/evergreen/architecture.md` and the actual code before treating it as current behavior.
 
 ## Escalation / Ownership

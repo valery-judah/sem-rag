@@ -76,10 +76,6 @@ secret-scan-staged: ## Scan staged added lines for leaked Gemini API keys
 install-git-hooks: ## Configure git to use repo-managed hooks
 	git config core.hooksPath .githooks
 
-.PHONY: run
-run: install ## Run doc-forge demo CLI
-	uv run python -m doc_forge.cli
-
 .PHONY: run-api
 run-api: install ## Run the internal lifecycle FastAPI app
 	uv run uvicorn doc_forge.app.api:app --reload

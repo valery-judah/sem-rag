@@ -33,7 +33,6 @@ Specifically, this means:
 
 - no stable Python package API is defined
 - no stable HTTP or service API is defined
-- no stable CLI behavior is defined
 - no request or response schema is defined as public contract
 
 ## Implemented But Not Public

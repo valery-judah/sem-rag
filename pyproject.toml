@@ -37,9 +37,6 @@ mac = [
     "mlx-lm>=0.31.1",
 ]
 
-[project.scripts]
-doc-forge = "doc_forge.cli:main"
-
 [tool.hatch.build.targets.wheel]
 packages = ["src/doc_forge"]
 

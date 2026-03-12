@@ -48,7 +48,6 @@ Execution History And Prior Framing:
 - `docs/workstreams/`: `Execution history`
 
 Current Implementation Seams:
-- `src/doc_forge/retrieval.py`: `Implemented internal`
 - `src/doc_forge/query/`: `Implemented internal`
 - `src/doc_forge/readmodels/`: `Implemented internal`
 - `src/doc_forge/_contracts/`: `Implemented internal`
@@ -65,7 +64,6 @@ Current Implementation Seams:
 - `src/doc_forge/devtools/secret_scan.py`: `Implemented internal`
 
 ## Implementation Map
-- `src/doc_forge/retrieval.py` and `src/doc_forge/cli.py`: implemented retrieval demo utilities. Open when changing `SemanticIndex`, ranking behavior, or CLI output. These modules are not a stable public API.
 - `src/doc_forge/query/contracts.py`, `src/doc_forge/query/interpretation.py`, `src/doc_forge/query/retrieval.py`, `src/doc_forge/query/context_assembly.py`, `src/doc_forge/query/service.py`, `src/doc_forge/query/stages/`, `src/doc_forge/query/persistence.py`, and `src/doc_forge/query/trace.py`: internal query runtime through Stage 5. Open when changing query run state, query-time snapshot semantics, interpreted-query shape, retrieval behavior, context assembly, stage execution, or persisted stage traces.
 - `src/doc_forge/readmodels/documents.py`: query-facing corpus read model over lifecycle persistence. Open when changing `READY`-only queryability, snapshot membership capture, fixed-snapshot section/chunk reads, or embedded-chunk retrieval reads.
 - `src/doc_forge/_contracts/models.py` and `src/doc_forge/_contracts/lifecycle.py`: internal corpus, provenance, answer, and lifecycle seams. Open when changing document, chunk, citation, answer, or processing-state semantics in code.
@@ -79,11 +77,7 @@ Current Implementation Seams:
 - `src/doc_forge/devtools/secret_scan.py`: repo safety tooling. Open when changing secret-pattern detection, reporting, or staged-vs-repo scanning behavior.
 
 ## Edit Starting Points
-For retrieval demo changes:
-- open `src/doc_forge/retrieval.py`
-- then inspect `src/doc_forge/cli.py`
-- then inspect `tests/test_retrieval.py` and `tests/test_cli.py`
-- check `docs/evergreen/api-contracts.md` before describing any retrieval demo behavior as public or stable
+
 
 For query runtime changes:
 - open `src/doc_forge/query/service.py`
@@ -127,7 +121,6 @@ For repo devtool changes:
 ## Validation Routes
 Use these proof points to distinguish implemented seams from doc-only intent:
 
-- Retrieval demo surface: `tests/test_retrieval.py`, `tests/test_cli.py`
 - Query boundary, interpretation, retrieval, selection, and context runtime: `tests/readmodels/test_queryable_corpus_read_model.py`, `tests/query/test_query_service_prepare.py`, `tests/query/test_interpretation.py`, `tests/query/test_query_retrieval.py`, `tests/query/test_query_context_assembly.py`, `tests/query/test_query_service_interpret.py`, `tests/query/test_query_service_retrieve.py`, `tests/app/test_runtime_api.py`
 - Contract models and lifecycle rules: `tests/contract/test_contract_models.py`, `tests/contract/test_lifecycle_state_machine.py`, `tests/contract/test_contract_seam_compat.py`
 - Lifecycle runtime and operator routes: `tests/app/test_documents_api.py`, `tests/lifecycle/test_worker.py`, `tests/pipeline/test_markdown_to_ready.py`, `tests/pipeline/test_pdf_to_ready.py`, `tests/pipeline/test_retry_recovery.py`
@@ -138,7 +131,6 @@ Use these proof points to distinguish implemented seams from doc-only intent:
 - Secret scanning behavior: `tests/test_secret_scan.py`
 
 ## Change Impact
-- Retrieval demo changes may affect `docs/evergreen/api-contracts.md`, `tests/test_retrieval.py`, and `tests/test_cli.py`.
 - Query runtime changes may affect `src/doc_forge/readmodels/`, `src/doc_forge/query/`, `src/doc_forge/app/api.py`, `src/doc_forge/app/deps.py`, `tests/query/`, `tests/readmodels/`, and `tests/app/test_runtime_api.py`.
 - Contract or lifecycle changes may affect `src/doc_forge/persistence/`, `src/doc_forge/evaluation/fixtures.py`, `tests/contract/`, `tests/persistence/`, and `tests/test_evaluation_harness.py`.
 - Persistence changes may require matching updates to contract fields, ordering assumptions, integrity checks, and migrations.
