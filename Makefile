@@ -13,6 +13,14 @@ help: ## Show this help message
 sync: ## Sync dependencies using uv
 	uv sync
 
+.PHONY: sync-llm
+sync-llm: ## Sync optional model-backed embedding dependencies
+	uv sync --group llm
+
+.PHONY: sync-mac
+sync-mac: ## Sync optional embedding and Apple Silicon generation dependencies
+	uv sync --group llm --group mac
+
 .PHONY: install
 install: sync ## Install the package in editable mode
 	uv pip install --editable .
@@ -41,6 +49,14 @@ test: install ## Run unit tests
 .PHONY: test-e2e
 test-e2e: install ## Run docker-backed end-to-end tests
 	uv run pytest tests/e2e -m e2e -o addopts=-q
+
+.PHONY: smoke-llm
+smoke-llm: ## Verify the optional embedding dependency group is installed
+	uv run python -c "from parity.indexing import require_sentence_transformers; require_sentence_transformers(); print('smoke-llm-ok')"
+
+.PHONY: smoke-mac
+smoke-mac: ## Verify the optional Apple Silicon generation dependency group is installed
+	uv run python -c "from parity.indexing import require_sentence_transformers; from parity.query.answer_generation import require_mlx_lm; require_sentence_transformers(); require_mlx_lm(); print('smoke-mac-ok')"
 
 .PHONY: verify
 verify: fmt-check lint type test ## Run the read-only verification suite

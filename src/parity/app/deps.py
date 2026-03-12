@@ -13,7 +13,12 @@ from sqlalchemy.engine import Engine
 from parity.artifacts import FilesystemArtifactStore
 from parity.chunking import ChunkingService
 from parity.extractors import ExtractorRegistry, MarkdownExtractor, PdfExtractor
-from parity.indexing import DeterministicEmbeddingAdapter, SqlVectorStore
+from parity.indexing import (
+    DeterministicEmbeddingAdapter,
+    EmbeddingAdapter,
+    SentenceTransformerEmbeddingAdapter,
+    SqlVectorStore,
+)
 from parity.lifecycle.orchestrator import DocumentLifecycleOrchestrator
 from parity.lifecycle.readiness import ReadinessService
 from parity.lifecycle.service import DocumentLifecycleService
@@ -29,6 +34,11 @@ from parity.persistence import (
     SqlSectionRepository,
 )
 from parity.query import QueryService
+from parity.query.answer_generation import (
+    DeterministicGroundedAnswerGenerator,
+    GroundedAnswerGenerator,
+    MlxGroundedAnswerGenerator,
+)
 from parity.query.answer_mode_policy import DeterministicAnswerModePolicy
 from parity.query.context_assembly import DeterministicContextAssembler
 from parity.query.interpretation import DeterministicQueryInterpreter
@@ -39,8 +49,8 @@ from parity.query.persistence import (
     SqlQueryTraceStore,
 )
 from parity.query.replay import QueryReplayService
-from parity.query.review import QueryReviewService
 from parity.query.retrieval import SnapshotDenseQueryRetriever
+from parity.query.review import QueryReviewService
 from parity.query.selection import DeterministicQuerySelector
 from parity.query.support_assessment import HybridSupportAssessor
 from parity.readmodels import SqlQueryableCorpusReadModel
@@ -57,8 +67,8 @@ from parity.stages import (
 )
 from parity.structure import SectionDerivationService
 
-from .settings import AppSettings, load_settings
 from .logging import reset_logging
+from .settings import AppSettings, load_settings
 
 
 @lru_cache(maxsize=1)
@@ -102,6 +112,59 @@ def get_artifact_store(
     return _build_artifact_store(str(settings.artifact_root))
 
 
+@cache
+def _build_embedding_adapter(backend: str, model_name: str) -> EmbeddingAdapter:
+    normalized = backend.strip().lower()
+    if normalized == "deterministic":
+        return DeterministicEmbeddingAdapter()
+    if normalized in {"sentence-transformers", "sentence_transformers"}:
+        return SentenceTransformerEmbeddingAdapter(model_name=model_name)
+    raise RuntimeError(
+        "PARITY_EMBEDDING_BACKEND must be one of: deterministic, sentence-transformers"
+    )
+
+
+def get_embedding_adapter() -> EmbeddingAdapter:
+    """Build the configured embedding adapter while keeping deterministic as the default."""
+
+    settings = get_settings()
+    return _build_embedding_adapter(
+        settings.embedding_backend,
+        settings.embedding_model_name,
+    )
+
+
+@cache
+def _build_answer_generator(
+    backend: str,
+    model_name: str,
+    max_new_tokens: int,
+    temperature: float,
+) -> GroundedAnswerGenerator:
+    normalized = backend.strip().lower()
+    if normalized == "deterministic":
+        return DeterministicGroundedAnswerGenerator()
+    if normalized == "mlx":
+        return MlxGroundedAnswerGenerator(
+            model_name=model_name,
+            max_new_tokens=max_new_tokens,
+            temperature=temperature,
+        )
+    raise RuntimeError("PARITY_ANSWER_GENERATOR_BACKEND must be one of: deterministic, mlx")
+
+
+def get_answer_generator() -> GroundedAnswerGenerator:
+    """Build the configured Stage-7 answer generator with deterministic defaults."""
+
+    settings = get_settings()
+    return _build_answer_generator(
+        settings.answer_generator_backend,
+        settings.answer_generator_model_name,
+        settings.answer_generator_max_new_tokens,
+        settings.answer_generator_temperature,
+    )
+
+
 def get_document_lifecycle_service(
     engine: Annotated[Engine, Depends(get_engine)],
     artifact_store: Annotated[FilesystemArtifactStore, Depends(get_artifact_store)],
@@ -116,9 +179,10 @@ def get_document_lifecycle_service(
     index_entries = SqlIndexEntryRepository(engine)
     chunk_embeddings = SqlChunkEmbeddingRepository(engine)
     orchestrator = DocumentLifecycleOrchestrator(jobs=jobs)
+    embedding_adapter = get_embedding_adapter()
     vector_store = SqlVectorStore(
         engine=engine,
-        embedding_adapter=DeterministicEmbeddingAdapter(),
+        embedding_adapter=embedding_adapter,
         index_entries=index_entries,
         chunk_embeddings=chunk_embeddings,
     )
@@ -157,6 +221,7 @@ def get_document_lifecycle_worker(
     index_entries = SqlIndexEntryRepository(engine)
     chunk_embeddings = SqlChunkEmbeddingRepository(engine)
     orchestrator = DocumentLifecycleOrchestrator(jobs=jobs)
+    embedding_adapter = get_embedding_adapter()
 
     extract_stage = ExtractDocumentStage(
         engine=engine,
@@ -180,7 +245,7 @@ def get_document_lifecycle_worker(
     )
     vector_store = SqlVectorStore(
         engine=engine,
-        embedding_adapter=DeterministicEmbeddingAdapter(),
+        embedding_adapter=embedding_adapter,
         index_entries=index_entries,
         chunk_embeddings=chunk_embeddings,
     )
@@ -255,6 +320,7 @@ def get_query_service(
 ) -> QueryService:
     """Build the internal query service for end-to-end internal query execution."""
 
+    embedding_adapter = get_embedding_adapter()
     return QueryService(
         corpus_read_model=corpus_read_model,
         run_store=SqlQueryRunStore(engine),
@@ -263,12 +329,13 @@ def get_query_service(
         interpreter=DeterministicQueryInterpreter(),
         retriever=SnapshotDenseQueryRetriever(
             corpus_read_model=corpus_read_model,
-            embedding_adapter=DeterministicEmbeddingAdapter(),
+            embedding_adapter=embedding_adapter,
         ),
         selector=DeterministicQuerySelector(corpus_read_model=corpus_read_model),
         context_assembler=DeterministicContextAssembler(),
         support_assessor=HybridSupportAssessor(),
         answer_mode_policy=DeterministicAnswerModePolicy(),
+        answer_generator=get_answer_generator(),
         answer_store=SqlQueryAnswerStore(engine),
     )
 
@@ -305,4 +372,6 @@ def reset_runtime_caches() -> None:
     get_settings.cache_clear()
     _build_engine.cache_clear()
     _build_artifact_store.cache_clear()
+    _build_embedding_adapter.cache_clear()
+    _build_answer_generator.cache_clear()
     reset_logging()

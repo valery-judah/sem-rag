@@ -1,45 +1,87 @@
-# WS-008: Local LLM Integration Proposal
+# WS-008: Local LLM Integration Implementation Note
 
 ## Overview
-This proposal outlines the strategy for introducing local LLM generation into the `parity` repository. Based on an analysis of the `simple-local-rag` project and the current architecture of `parity`, we will implement a new Local LLM generator that replaces or supplements the deterministic answer generation in Stage 7 of the query pipeline.
+This workstream now reflects the implemented repo state for optional real embeddings and optional Apple Silicon local answer generation.
 
-## Architectural Changes
+The implementation intentionally adopts only the runtime-relevant subset of the `simple-local-rag` Mac stack. `parity` does not carry over notebook or tutorial dependencies such as `jupyter`, `matplotlib`, `pandas`, `spacy`, `tqdm`, or parsing alternatives such as `PyMuPDF`. The repository continues to use `pypdf` for document parsing and [`uv.lock`](../../../uv.lock) as the only lock source.
 
-### 1. Stage 7 Generation Enhancements
-The current implementation relies on [`DeterministicGroundedAnswerGenerator`](src/parity/query/answer_generation.py:53) in [`src/parity/query/answer_generation.py`](src/parity/query/answer_generation.py). 
+## Implemented Changes
 
-We will introduce a new `LlmGroundedAnswerGenerator` that conforms to the [`GroundedAnswerGenerator`](src/parity/query/answer_generation.py:36) protocol. This new class will:
-- Consume the `ContextManifest`, `SupportAssessment`, and `AnswerModeDecision`.
-- Construct a prompt incorporating the grounded evidence sets and the requested `answer_mode`.
-- Use an integrated LLM to generate the final text instead of deterministically joining snippets.
+### 1. Dependency split in `uv`
+The dependency model is now split across optional groups in [`pyproject.toml`](../../../pyproject.toml):
 
-### 2. Dependency Management & Apple Silicon Support
-Following the `simple-local-rag` precedent, we need to handle multi-platform dependencies, specifically to support Apple Silicon via the `mlx-lm` library.
-Since our project relies strictly on `uv` and `pyproject.toml`, we propose the following changes:
-- Define a macOS-specific dependency group in [`pyproject.toml`](pyproject.toml) (e.g., `mac` group containing `mlx-lm`), or utilize a separate requirements file like `requirements-mac.txt` if native `uv` groups are insufficient.
-- Maintain `uv.lock` as the single source of truth, updating it after dependency changes.
+- `llm`
+  - `sentence-transformers`
+  - `torch`
+- `mac`
+  - `mlx-lm`
 
-### 3. Build & Makefile Updates
-We will enhance the existing [`Makefile`](Makefile) to mirror the caching and target isolation found in `simple-local-rag`:
-- **Model Caching:** Expose environment variables such as `HF_HOME` and `HUGGINGFACE_HUB_CACHE` to avoid redownloading models.
-- **Platform-specific Targets:**
-  - Add `sync-mac` / `install-mac` targets to handle the `mlx-lm` dependency installation.
-  - Add `smoke` and `smoke-mac` targets. The `smoke-mac` target will execute integration tests specifically exercising the `LlmGroundedAnswerGenerator` on Apple Silicon hardware.
+This replaces the earlier idea of maintaining a standalone `requirements-mac.txt` inside `parity`.
 
-## Implementation Steps
+### 2. Optional embedding backend
+[`src/parity/indexing/embeddings.py`](../../../src/parity/indexing/embeddings.py) now includes:
 
-1. **Update Dependencies:**
-   - Add `mlx-lm` to a `mac` dependency group in [`pyproject.toml`](pyproject.toml).
-   - Run `uv sync` (or `uv sync --group mac`) to update `uv.lock`.
+- `DeterministicEmbeddingAdapter` as the default lightweight path
+- `SentenceTransformerEmbeddingAdapter` as the optional real embedding path
+- `require_sentence_transformers()` for explicit smoke/failure messaging when the `llm` group is not installed
 
-2. **Update Makefile:**
-   - Add `HF_HOME` and `HUGGINGFACE_HUB_CACHE` export caching.
-   - Introduce `make sync-mac` and `make smoke-mac`.
+The runtime wiring in [`src/parity/app/deps.py`](../../../src/parity/app/deps.py) keeps deterministic embeddings as the default and only activates the model-backed path when configured.
 
-3. **Implement Generator:**
-   - Create `LlmGroundedAnswerGenerator` in [`src/parity/query/answer_generation.py`](src/parity/query/answer_generation.py) (or a dedicated module).
-   - Implement the prompt formatting and local model execution via `mlx-lm`.
+### 3. Optional Apple Silicon answer generation
+[`src/parity/query/answer_generation.py`](../../../src/parity/query/answer_generation.py) now includes:
 
-4. **Testing & Validation:**
-   - Create tests to validate the correct generation logic within the boundaries of the [`GroundedAnswerGenerator`](src/parity/query/answer_generation.py:36) contract.
-   - Add a lightweight smoke test for the `smoke-mac` target.
+- `DeterministicGroundedAnswerGenerator` as the default Stage 7 path
+- `MlxGroundedAnswerGenerator` as the optional Apple Silicon local generation path
+- `require_mlx_lm()` for explicit smoke/failure messaging when the `mac` group is not installed
+
+The MLX generator:
+
+- builds a grounded prompt from the current `ContextManifest`, `SupportAssessment`, and `AnswerModeDecision`
+- uses lazy imports so the base repo install does not depend on `mlx-lm`
+- falls back to the deterministic path for full abstention and as the default runtime behavior unless explicitly configured
+
+### 4. Runtime selection
+[`src/parity/app/settings.py`](../../../src/parity/app/settings.py) and [`src/parity/app/deps.py`](../../../src/parity/app/deps.py) now support explicit backend selection via environment variables:
+
+- `PARITY_EMBEDDING_BACKEND`
+  - supported values: `deterministic`, `sentence-transformers`
+- `PARITY_EMBEDDING_MODEL`
+- `PARITY_ANSWER_GENERATOR_BACKEND`
+  - supported values: `deterministic`, `mlx`
+- `PARITY_ANSWER_GENERATOR_MODEL`
+- `PARITY_ANSWER_GENERATOR_MAX_NEW_TOKENS`
+- `PARITY_ANSWER_GENERATOR_TEMPERATURE`
+
+Default behavior remains deterministic for both embeddings and answer generation, which preserves the existing lightweight local workflow and current tests.
+
+### 5. Makefile support
+[`Makefile`](../../../Makefile) now exposes optional install and smoke targets:
+
+- `make sync-llm`
+- `make sync-mac`
+- `make smoke-llm`
+- `make smoke-mac`
+
+These are additive. Existing `make sync`, `make install`, `make test`, and `make verify` behavior remains unchanged for contributors who do not need the optional ML stack.
+
+## Validation
+The implementation was validated with the following results:
+
+- `make test`
+  - passed
+- focused Ruff checks on changed files
+  - passed
+- focused tests for optional backends
+  - passed
+- `make smoke-llm` without the optional group installed
+  - failed with the intended guidance message telling the user to run `make sync-llm` or `uv sync --group llm`
+
+Focused tests added for this work include:
+
+- [`tests/indexing/test_model_embeddings.py`](../../../tests/indexing/test_model_embeddings.py)
+- [`tests/query/test_query_llm_generation.py`](../../../tests/query/test_query_llm_generation.py)
+- [`tests/app/test_optional_backends.py`](../../../tests/app/test_optional_backends.py)
+
+## Notes
+- This workstream does not promote any stable public API. The backend selection and Stage 7 generation seams remain internal implementation details.
+- The current repo still defaults to deterministic embeddings and deterministic generation. The optional ML paths are opt-in and intended for local experimentation and future expansion.

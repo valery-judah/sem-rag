@@ -16,6 +16,12 @@ class AppSettings:
     service_name: str
     environment: str
     log_level: str
+    embedding_backend: str
+    embedding_model_name: str
+    answer_generator_backend: str
+    answer_generator_model_name: str
+    answer_generator_max_new_tokens: int
+    answer_generator_temperature: float
 
 
 def load_settings() -> AppSettings:
@@ -32,4 +38,23 @@ def load_settings() -> AppSettings:
         service_name=os.environ.get("PARITY_SERVICE_NAME", "parity-api"),
         environment=os.environ.get("PARITY_ENVIRONMENT", "dev"),
         log_level=os.environ.get("PARITY_LOG_LEVEL", "INFO"),
+        embedding_backend=os.environ.get("PARITY_EMBEDDING_BACKEND", "deterministic"),
+        embedding_model_name=os.environ.get(
+            "PARITY_EMBEDDING_MODEL",
+            "sentence-transformers/all-MiniLM-L6-v2",
+        ),
+        answer_generator_backend=os.environ.get(
+            "PARITY_ANSWER_GENERATOR_BACKEND",
+            "deterministic",
+        ),
+        answer_generator_model_name=os.environ.get(
+            "PARITY_ANSWER_GENERATOR_MODEL",
+            "mlx-community/TinyLlama-1.1B-Chat-v1.0",
+        ),
+        answer_generator_max_new_tokens=int(
+            os.environ.get("PARITY_ANSWER_GENERATOR_MAX_NEW_TOKENS", "256")
+        ),
+        answer_generator_temperature=float(
+            os.environ.get("PARITY_ANSWER_GENERATOR_TEMPERATURE", "0.0")
+        ),
     )
