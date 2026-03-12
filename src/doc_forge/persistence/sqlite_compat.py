@@ -7,6 +7,7 @@ import sqlite3
 from datetime import datetime
 
 from doc_forge.corpus import Chunk, Document, Section, SourceType
+from doc_forge.identifiers import DocId, WorkspaceId
 from doc_forge.lifecycle import ProcessingStatus
 
 
@@ -183,7 +184,7 @@ def save_chunks(conn: sqlite3.Connection, chunks: list[Chunk]) -> None:
 
 def replace_sections_for_document(
     conn: sqlite3.Connection,
-    doc_id: str,
+    doc_id: DocId,
     sections: list[Section],
 ) -> None:
     """Replace the full persisted section set for one document."""
@@ -197,7 +198,7 @@ def replace_sections_for_document(
 
 def replace_chunks_for_document(
     conn: sqlite3.Connection,
-    doc_id: str,
+    doc_id: DocId,
     chunks: list[Chunk],
 ) -> None:
     """Replace the full persisted chunk set for one document."""
@@ -211,7 +212,7 @@ def replace_chunks_for_document(
 
 def list_documents_by_workspace(
     conn: sqlite3.Connection,
-    workspace_id: str,
+    workspace_id: WorkspaceId,
 ) -> list[Document]:
     """Load documents belonging to one workspace."""
 
@@ -237,7 +238,7 @@ def list_documents_by_workspace(
     return [_row_to_document(row) for row in rows]
 
 
-def list_sections_by_document(conn: sqlite3.Connection, doc_id: str) -> list[Section]:
+def list_sections_by_document(conn: sqlite3.Connection, doc_id: DocId) -> list[Section]:
     """Load sections belonging to one document."""
 
     conn.execute("PRAGMA foreign_keys = ON")
@@ -264,7 +265,7 @@ def list_sections_by_document(conn: sqlite3.Connection, doc_id: str) -> list[Sec
     return [_row_to_section(row) for row in rows]
 
 
-def list_chunks_by_document(conn: sqlite3.Connection, doc_id: str) -> list[Chunk]:
+def list_chunks_by_document(conn: sqlite3.Connection, doc_id: DocId) -> list[Chunk]:
     """Load chunks belonging to one document."""
 
     conn.execute("PRAGMA foreign_keys = ON")
@@ -438,7 +439,7 @@ def _cast_optional_float(value: object) -> float | None:
 
 
 def _require_matching_doc_id(
-    doc_id: str,
+    doc_id: DocId,
     records: list[Section] | list[Chunk],
 ) -> None:
     if any(record.doc_id != doc_id for record in records):

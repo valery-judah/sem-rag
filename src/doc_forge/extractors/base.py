@@ -6,6 +6,7 @@ from typing import Protocol
 
 from doc_forge.artifacts import ExtractedArtifact
 from doc_forge.corpus import SourceType
+from doc_forge.identifiers import DocId
 
 
 class ExtractionError(RuntimeError):
@@ -19,7 +20,7 @@ class NoRecoverableTextError(ExtractionError):
 class Extractor(Protocol):
     """Protocol for source-specific text extraction."""
 
-    def extract(self, *, doc_id: str, raw_content: bytes) -> ExtractedArtifact: ...
+    def extract(self, *, doc_id: DocId, raw_content: bytes) -> ExtractedArtifact: ...
 
 
 class ExtractorRegistry:
@@ -32,7 +33,7 @@ class ExtractorRegistry:
     def extract(
         self,
         *,
-        doc_id: str,
+        doc_id: DocId,
         source_type: SourceType,
         raw_content: bytes,
     ) -> ExtractedArtifact:

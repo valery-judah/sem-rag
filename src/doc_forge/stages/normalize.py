@@ -8,6 +8,7 @@ from uuid import uuid4
 from sqlalchemy.engine import Engine
 
 from doc_forge.artifacts import FilesystemArtifactStore, NormalizedArtifact
+from doc_forge.identifiers import DocId
 from doc_forge.lifecycle import (
     LifecycleEvent,
     LifecycleInvariantError,
@@ -47,7 +48,7 @@ class NormalizeDocumentStage:
         self._artifact_store = artifact_store
         self._normalizers = normalizers
 
-    def run(self, doc_id: str) -> NormalizedArtifact:
+    def run(self, doc_id: DocId) -> NormalizedArtifact:
         document = self._require_document(doc_id)
         if document.ingest_status is not ProcessingStatus.EXTRACTING:
             raise LifecycleInvariantError(
@@ -94,7 +95,7 @@ class NormalizeDocumentStage:
 
         return artifact
 
-    def _require_document(self, doc_id: str) -> PersistedDocument:
+    def _require_document(self, doc_id: DocId) -> PersistedDocument:
         document = self._documents.get(doc_id)
         if document is None:
             raise LookupError(f"document {doc_id!r} was not found")

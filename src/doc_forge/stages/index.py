@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from uuid import uuid4
 
+from doc_forge.identifiers import DocId
 from doc_forge.indexing import VectorStore
 from doc_forge.lifecycle import LifecycleEvent, LifecycleStage, ProcessingStatus
 from doc_forge.persistence import (
@@ -97,7 +98,7 @@ class IndexDocumentStage(StageRunner):
         )
         return DocumentJobStage.READY_CHECK
 
-    def _cleanup_partial_publication(self, doc_id: str) -> None:
+    def _cleanup_partial_publication(self, doc_id: DocId) -> None:
         if self._chunk_embeddings is not None:
             self._chunk_embeddings.replace_for_document(doc_id, [])
         if self._index_entries is not None:

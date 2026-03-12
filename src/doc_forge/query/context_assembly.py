@@ -7,6 +7,8 @@ from typing import Protocol
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from doc_forge.identifiers import DocId
+
 from .contracts import (
     ContextItem,
     ContextManifest,
@@ -179,7 +181,7 @@ def _render_context_item(
 
     duplicate_notes: list[str] = []
     rendered_lines: list[str] = []
-    contributing_doc_ids: list[str] = []
+    contributing_doc_ids: list[DocId] = []
     heading_paths: list[list[str]] = []
     locators: list[str] = []
     seen_unit_keys: set[tuple[str, str | None, str]] = set()

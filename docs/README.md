@@ -16,7 +16,7 @@ Agent Routing:
 - `docs/evergreen/agent-routing.md`: Canonical. Coding-agent routing, implementation map, and edit starting points.
 
 Stable Interfaces:
-- `docs/evergreen/api-contracts.md`: Canonical. Stable runtime interfaces that exist today.
+- `docs/evergreen/api-contracts.md`: Canonical. Stable localhost FastAPI and OpenAPI interfaces that exist today.
 
 Commands And Validation:
 - `docs/evergreen/runbook.md`: Canonical. Local operation guidance and standard commands.
@@ -73,7 +73,7 @@ Stable Context-Building Base:
 - `docs/evergreen/mvp.md`: Canonical. Product scope and trust boundary.
 - `docs/evergreen/architecture.md`: Canonical. Current architecture, earned seams, and implementation gap.
 - `docs/evergreen/agent-routing.md`: Canonical. Agent routes, owning files, and proving tests.
-- `docs/evergreen/api-contracts.md`: Canonical. Public-contract boundary. Internal query routes do not count as stable APIs.
+- `docs/evergreen/api-contracts.md`: Canonical. Public-contract boundary for the stable localhost HTTP API. Internal Python query modules still do not count as stable package APIs.
 - `docs/harness-maintain/context-building-playbook.md`: Reference only. Stable navigation and proof-building method.
 
 WS-006 Execution Track:

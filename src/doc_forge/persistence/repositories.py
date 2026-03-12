@@ -9,6 +9,7 @@ import sqlalchemy as sa
 from sqlalchemy.engine import Connection, Engine
 
 from doc_forge.corpus import Chunk, Section
+from doc_forge.identifiers import DocId, WorkspaceId
 from doc_forge.indexing import ChunkEmbedding, IndexEntry
 from doc_forge.lifecycle import ProcessingStatus
 from doc_forge.lifecycle.models import LifecycleEvent
@@ -58,17 +59,17 @@ class DocumentRepository(Protocol):
 
     def get(
         self,
-        doc_id: str,
+        doc_id: DocId,
         *,
         connection: Connection | None = None,
     ) -> PersistedDocument | None: ...
 
-    def list_by_workspace(self, workspace_id: str) -> list[PersistedDocument]: ...
+    def list_by_workspace(self, workspace_id: WorkspaceId) -> list[PersistedDocument]: ...
 
     def update_status(
         self,
         *,
-        doc_id: str,
+        doc_id: DocId,
         status: ProcessingStatus,
         failure_code: str | None = None,
         failure_detail: str | None = None,
@@ -86,7 +87,7 @@ class LifecycleEventRepository(Protocol):
         connection: Connection | None = None,
     ) -> None: ...
 
-    def list_for_document(self, doc_id: str) -> list[LifecycleEvent]: ...
+    def list_for_document(self, doc_id: DocId) -> list[LifecycleEvent]: ...
 
 
 class DocumentJobRepository(Protocol):
@@ -98,9 +99,9 @@ class DocumentJobRepository(Protocol):
 
     def get(self, job_id: str) -> DocumentJob | None: ...
 
-    def list_for_document(self, doc_id: str) -> list[DocumentJob]: ...
+    def list_for_document(self, doc_id: DocId) -> list[DocumentJob]: ...
 
-    def has_active_job(self, doc_id: str) -> bool: ...
+    def has_active_job(self, doc_id: DocId) -> bool: ...
 
     def mark_succeeded(self, job_id: str) -> DocumentJob: ...
 
@@ -120,9 +121,9 @@ class SectionRepository(Protocol):
 
     def save(self, sections: list[Section]) -> None: ...
 
-    def list_for_document(self, doc_id: str) -> list[Section]: ...
+    def list_for_document(self, doc_id: DocId) -> list[Section]: ...
 
-    def replace_for_document(self, doc_id: str, sections: list[Section]) -> None: ...
+    def replace_for_document(self, doc_id: DocId, sections: list[Section]) -> None: ...
 
 
 class ChunkRepository(Protocol):
@@ -130,9 +131,9 @@ class ChunkRepository(Protocol):
 
     def save(self, chunks: list[Chunk]) -> None: ...
 
-    def list_for_document(self, doc_id: str) -> list[Chunk]: ...
+    def list_for_document(self, doc_id: DocId) -> list[Chunk]: ...
 
-    def replace_for_document(self, doc_id: str, chunks: list[Chunk]) -> None: ...
+    def replace_for_document(self, doc_id: DocId, chunks: list[Chunk]) -> None: ...
 
 
 class IndexEntryRepository(Protocol):
@@ -140,11 +141,11 @@ class IndexEntryRepository(Protocol):
 
     def clock(self) -> datetime: ...
 
-    def list_for_document(self, doc_id: str) -> list[IndexEntry]: ...
+    def list_for_document(self, doc_id: DocId) -> list[IndexEntry]: ...
 
     def replace_for_document(
         self,
-        doc_id: str,
+        doc_id: DocId,
         entries: list[IndexEntry],
         *,
         connection: Connection | None = None,
@@ -154,11 +155,11 @@ class IndexEntryRepository(Protocol):
 class ChunkEmbeddingRepository(Protocol):
     """Storage operations for persisted chunk embeddings."""
 
-    def list_for_document(self, doc_id: str) -> list[ChunkEmbedding]: ...
+    def list_for_document(self, doc_id: DocId) -> list[ChunkEmbedding]: ...
 
     def replace_for_document(
         self,
-        doc_id: str,
+        doc_id: DocId,
         embeddings: list[ChunkEmbedding],
         *,
         connection: Connection | None = None,
@@ -185,7 +186,7 @@ class SqlDocumentRepository:
 
     def get(
         self,
-        doc_id: str,
+        doc_id: DocId,
         *,
         connection: Connection | None = None,
     ) -> PersistedDocument | None:
@@ -199,7 +200,7 @@ class SqlDocumentRepository:
             return None
         return row_to_persisted_document(dict(row))
 
-    def list_by_workspace(self, workspace_id: str) -> list[PersistedDocument]:
+    def list_by_workspace(self, workspace_id: WorkspaceId) -> list[PersistedDocument]:
         stmt = (
             sa.select(documents_table)
             .where(documents_table.c.workspace_id == workspace_id)
@@ -212,7 +213,7 @@ class SqlDocumentRepository:
     def update_status(
         self,
         *,
-        doc_id: str,
+        doc_id: DocId,
         status: ProcessingStatus,
         failure_code: str | None = None,
         failure_detail: str | None = None,
@@ -253,7 +254,7 @@ class SqlLifecycleEventRepository:
         with self._engine.begin() as conn:
             conn.execute(sa.insert(lifecycle_events_table), [lifecycle_event_to_row(event)])
 
-    def list_for_document(self, doc_id: str) -> list[LifecycleEvent]:
+    def list_for_document(self, doc_id: DocId) -> list[LifecycleEvent]:
         stmt = (
             sa.select(lifecycle_events_table)
             .where(lifecycle_events_table.c.doc_id == doc_id)
@@ -323,7 +324,7 @@ class SqlDocumentJobRepository:
             return None
         return row_to_document_job(dict(row))
 
-    def list_for_document(self, doc_id: str) -> list[DocumentJob]:
+    def list_for_document(self, doc_id: DocId) -> list[DocumentJob]:
         stmt = (
             sa.select(document_jobs_table)
             .where(document_jobs_table.c.doc_id == doc_id)
@@ -333,7 +334,7 @@ class SqlDocumentJobRepository:
             rows = conn.execute(stmt).mappings().all()
         return [row_to_document_job(dict(row)) for row in rows]
 
-    def has_active_job(self, doc_id: str) -> bool:
+    def has_active_job(self, doc_id: DocId) -> bool:
         stmt = (
             sa.select(sa.literal(True))
             .select_from(document_jobs_table)
@@ -415,7 +416,7 @@ class SqlSectionRepository:
         with self._engine.begin() as conn:
             conn.execute(sa.insert(sections_table), rows)
 
-    def list_for_document(self, doc_id: str) -> list[Section]:
+    def list_for_document(self, doc_id: DocId) -> list[Section]:
         stmt = (
             sa.select(sections_table)
             .where(sections_table.c.doc_id == doc_id)
@@ -425,7 +426,7 @@ class SqlSectionRepository:
             rows = conn.execute(stmt).mappings().all()
         return [row_to_persisted_section(dict(row)).to_contract() for row in rows]
 
-    def replace_for_document(self, doc_id: str, sections: list[Section]) -> None:
+    def replace_for_document(self, doc_id: DocId, sections: list[Section]) -> None:
         _require_matching_doc_id(doc_id, sections)
         with self._engine.begin() as conn:
             conn.execute(sa.delete(sections_table).where(sections_table.c.doc_id == doc_id))
@@ -453,7 +454,7 @@ class SqlChunkRepository:
         with self._engine.begin() as conn:
             conn.execute(sa.insert(chunks_table), rows)
 
-    def list_for_document(self, doc_id: str) -> list[Chunk]:
+    def list_for_document(self, doc_id: DocId) -> list[Chunk]:
         stmt = (
             sa.select(chunks_table)
             .where(chunks_table.c.doc_id == doc_id)
@@ -463,7 +464,7 @@ class SqlChunkRepository:
             rows = conn.execute(stmt).mappings().all()
         return [row_to_persisted_chunk(dict(row)).to_contract() for row in rows]
 
-    def replace_for_document(self, doc_id: str, chunks: list[Chunk]) -> None:
+    def replace_for_document(self, doc_id: DocId, chunks: list[Chunk]) -> None:
         _require_matching_doc_id(doc_id, chunks)
         with self._engine.begin() as conn:
             conn.execute(sa.delete(chunks_table).where(chunks_table.c.doc_id == doc_id))
@@ -484,7 +485,7 @@ class SqlIndexEntryRepository:
     def clock(self) -> datetime:
         return utc_now()
 
-    def list_for_document(self, doc_id: str) -> list[IndexEntry]:
+    def list_for_document(self, doc_id: DocId) -> list[IndexEntry]:
         stmt = (
             sa.select(index_entries_table)
             .where(index_entries_table.c.doc_id == doc_id)
@@ -496,7 +497,7 @@ class SqlIndexEntryRepository:
 
     def replace_for_document(
         self,
-        doc_id: str,
+        doc_id: DocId,
         entries: list[IndexEntry],
         *,
         connection: Connection | None = None,
@@ -508,7 +509,7 @@ class SqlIndexEntryRepository:
         with self._engine.begin() as conn:
             self._replace(conn, doc_id, entries)
 
-    def _replace(self, conn: Connection, doc_id: str, entries: list[IndexEntry]) -> None:
+    def _replace(self, conn: Connection, doc_id: DocId, entries: list[IndexEntry]) -> None:
         conn.execute(sa.delete(index_entries_table).where(index_entries_table.c.doc_id == doc_id))
         if entries:
             conn.execute(
@@ -522,7 +523,7 @@ class SqlChunkEmbeddingRepository:
     def __init__(self, engine: Engine) -> None:
         self._engine = engine
 
-    def list_for_document(self, doc_id: str) -> list[ChunkEmbedding]:
+    def list_for_document(self, doc_id: DocId) -> list[ChunkEmbedding]:
         stmt = (
             sa.select(chunk_embeddings_table)
             .where(chunk_embeddings_table.c.doc_id == doc_id)
@@ -534,7 +535,7 @@ class SqlChunkEmbeddingRepository:
 
     def replace_for_document(
         self,
-        doc_id: str,
+        doc_id: DocId,
         embeddings: list[ChunkEmbedding],
         *,
         connection: Connection | None = None,
@@ -549,7 +550,7 @@ class SqlChunkEmbeddingRepository:
     def _replace(
         self,
         conn: Connection,
-        doc_id: str,
+        doc_id: DocId,
         embeddings: list[ChunkEmbedding],
     ) -> None:
         conn.execute(
@@ -563,7 +564,7 @@ class SqlChunkEmbeddingRepository:
 
 
 def _require_matching_doc_id(
-    doc_id: str,
+    doc_id: DocId,
     records: list[Section] | list[Chunk] | list[IndexEntry] | list[ChunkEmbedding],
 ) -> None:
     if any(record.doc_id != doc_id for record in records):

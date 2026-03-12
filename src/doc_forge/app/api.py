@@ -1,4 +1,4 @@
-"""Internal FastAPI app for document lifecycle runtime and operator actions."""
+"""FastAPI app for the local document lifecycle and query service."""
 
 from __future__ import annotations
 
@@ -16,6 +16,7 @@ from sqlalchemy.engine import Engine
 from structlog.contextvars import bind_contextvars, clear_contextvars
 
 from doc_forge.artifacts import FilesystemArtifactStore
+from doc_forge.identifiers import DocId, WorkspaceId
 from doc_forge.indexing.base import VectorStore
 from doc_forge.lifecycle.service import (
     DocumentArtifactRefs,
@@ -76,7 +77,7 @@ class RetrievalQueryRequest(BaseModel):
         },
     )
 
-    doc_id: str = Field(..., description="The ID of the document to query.")
+    doc_id: DocId = Field(..., description="The ID of the document to query.")
     query: str = Field(
         min_length=1, description="The textual query to run against the document's chunks."
     )
@@ -140,7 +141,7 @@ class ErrorResponse(BaseModel):
 
 
 def create_app() -> FastAPI:
-    """Create the internal lifecycle app."""
+    """Create the local FastAPI service app."""
 
     environment = os.environ.get("DOC_FORGE_ENVIRONMENT", "prod")
     configure_logging(
@@ -158,10 +159,8 @@ def create_app() -> FastAPI:
         app_version = "0.0.0-dev"
 
     app = FastAPI(
-        title="Doc Forge Internal API",
-        description=(
-            "Internal document lifecycle and query evaluation API. No stable public contract."
-        ),
+        title="Doc Forge Local API",
+        description="Stable localhost document lifecycle and query API.",
         version=app_version,
         docs_url="/docs" if enable_swagger else None,
         openapi_url="/openapi.json" if enable_swagger else None,
@@ -243,7 +242,8 @@ def create_app() -> FastAPI:
     )
     async def upload_document(
         workspace_id: Annotated[
-            str, Form(min_length=1, description="The workspace this document belongs to.")
+            WorkspaceId,
+            Form(description="The workspace this document belongs to."),
         ],
         file: Annotated[UploadFile, File(description="The document file (PDF or Markdown).")],
         service: Annotated[
@@ -289,7 +289,7 @@ def create_app() -> FastAPI:
         },
     )
     async def get_document(
-        doc_id: Annotated[str, Field(..., description="The unique identifier of the document.")],
+        doc_id: Annotated[DocId, Field(..., description="The unique identifier of the document.")],
         service: Annotated[
             DocumentLifecycleService,
             Depends(get_document_lifecycle_service),
@@ -330,7 +330,7 @@ def create_app() -> FastAPI:
         },
     )
     async def get_document_status(
-        doc_id: Annotated[str, Field(..., description="The unique identifier of the document.")],
+        doc_id: Annotated[DocId, Field(..., description="The unique identifier of the document.")],
         service: Annotated[
             DocumentLifecycleService,
             Depends(get_document_lifecycle_service),
@@ -358,7 +358,7 @@ def create_app() -> FastAPI:
         },
     )
     async def get_document_artifacts(
-        doc_id: Annotated[str, Field(..., description="The unique identifier of the document.")],
+        doc_id: Annotated[DocId, Field(..., description="The unique identifier of the document.")],
         service: Annotated[
             DocumentLifecycleService,
             Depends(get_document_lifecycle_service),
@@ -391,7 +391,7 @@ def create_app() -> FastAPI:
         },
     )
     async def retry_document(
-        doc_id: Annotated[str, Field(..., description="The unique identifier of the document.")],
+        doc_id: Annotated[DocId, Field(..., description="The unique identifier of the document.")],
         service: Annotated[
             DocumentLifecycleService,
             Depends(get_document_lifecycle_service),

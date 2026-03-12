@@ -11,6 +11,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from doc_forge.artifacts import FilesystemArtifactStore
 from doc_forge.corpus import Chunk, Section, SourceType
+from doc_forge.identifiers import DocId, WorkspaceId
 from doc_forge.indexing import ChunkEmbedding, IndexEntry, VectorSearchHit, VectorStore
 from doc_forge.lifecycle import ProcessingStatus
 from doc_forge.persistence import (
@@ -46,7 +47,7 @@ class UploadDocumentResult(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    doc_id: str = Field(
+    doc_id: DocId = Field(
         ...,
         description="Unique identifier for the registered document.",
         json_schema_extra={"example": "doc_1234abcd"},
@@ -88,7 +89,7 @@ class DocumentStatusResult(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    doc_id: str = Field(
+    doc_id: DocId = Field(
         ...,
         description="The unique identifier of the document.",
         json_schema_extra={"example": "doc_1234abcd"},
@@ -133,7 +134,7 @@ class RetryDocumentResult(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    doc_id: str = Field(
+    doc_id: DocId = Field(
         ...,
         description="The unique identifier of the document.",
         json_schema_extra={"example": "doc_1234abcd"},
@@ -155,7 +156,7 @@ class RetrievalQueryResult(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    doc_id: str = Field(
+    doc_id: DocId = Field(
         ...,
         description="The unique identifier of the document searched against.",
         json_schema_extra={"example": "doc_1234abcd"},
@@ -171,7 +172,7 @@ class DocumentArtifactRefs(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    doc_id: str = Field(
+    doc_id: DocId = Field(
         ...,
         description="The unique identifier of the document.",
         json_schema_extra={"example": "doc_1234abcd"},
@@ -226,7 +227,7 @@ class DocumentLifecycleService:
     def upload_document(
         self,
         *,
-        workspace_id: str,
+        workspace_id: WorkspaceId,
         title: str | None,
         filename: str | None,
         content: bytes,
@@ -267,7 +268,7 @@ class DocumentLifecycleService:
             checksum=document.checksum or checksum,
         )
 
-    def get_document_status(self, *, doc_id: str) -> DocumentStatusResult:
+    def get_document_status(self, *, doc_id: DocId) -> DocumentStatusResult:
         """Load the current persisted status plus any active queued work."""
 
         document = self._require_document(doc_id)
@@ -288,7 +289,7 @@ class DocumentLifecycleService:
             active_job_stage=active_job_stage,
         )
 
-    def query_document(self, *, doc_id: str, text: str, k: int = 3) -> RetrievalQueryResult:
+    def query_document(self, *, doc_id: DocId, text: str, k: int = 3) -> RetrievalQueryResult:
         """Run a document-scoped smoke query against the internal vector store."""
 
         self._require_document(doc_id)
@@ -299,7 +300,7 @@ class DocumentLifecycleService:
             hits=self._vector_store.smoke_query(doc_id=doc_id, text=text, k=k),
         )
 
-    def retry_document(self, *, doc_id: str) -> RetryDocumentResult:
+    def retry_document(self, *, doc_id: DocId) -> RetryDocumentResult:
         """Queue a retry for the latest failed lifecycle stage."""
 
         document = self._require_document(doc_id)
@@ -343,7 +344,7 @@ class DocumentLifecycleService:
             queued_stage=target_stage,
         )
 
-    def get_artifact_refs(self, *, doc_id: str) -> DocumentArtifactRefs:
+    def get_artifact_refs(self, *, doc_id: DocId) -> DocumentArtifactRefs:
         """Return current managed artifact paths for debugging."""
 
         document = self._require_document(doc_id)
@@ -369,7 +370,7 @@ class DocumentLifecycleService:
             normalized_path=str(normalized_path) if normalized_path.exists() else None,
         )
 
-    def _require_document(self, doc_id: str) -> PersistedDocument:
+    def _require_document(self, doc_id: DocId) -> PersistedDocument:
         if self._documents is None:
             raise RuntimeError("document repository is not configured")
         document = self._documents.get(doc_id)
@@ -390,7 +391,7 @@ class DocumentLifecycleService:
             return ProcessingStatus.INDEXED
         raise RetryNotAllowedError(f"unsupported retry stage {stage.value}")
 
-    def _cleanup_downstream(self, doc_id: str, *, stage: DocumentJobStage) -> None:
+    def _cleanup_downstream(self, doc_id: DocId, *, stage: DocumentJobStage) -> None:
         if self._artifact_store is None or self._documents is None:
             return
         document = self._documents.get(doc_id)
@@ -442,19 +443,23 @@ class DocumentLifecycleService:
             doc_id=document.doc_id,
         )
 
-    def _replace_sections(self, doc_id: str, sections: list[Section]) -> None:
+    def _replace_sections(self, doc_id: DocId, sections: list[Section]) -> None:
         if self._sections is not None:
             self._sections.replace_for_document(doc_id, sections)
 
-    def _replace_chunks(self, doc_id: str, chunks: list[Chunk]) -> None:
+    def _replace_chunks(self, doc_id: DocId, chunks: list[Chunk]) -> None:
         if self._chunks is not None:
             self._chunks.replace_for_document(doc_id, chunks)
 
-    def _replace_index_entries(self, doc_id: str, entries: list[IndexEntry]) -> None:
+    def _replace_index_entries(self, doc_id: DocId, entries: list[IndexEntry]) -> None:
         if self._index_entries is not None:
             self._index_entries.replace_for_document(doc_id, entries)
 
-    def _replace_chunk_embeddings(self, doc_id: str, embeddings: list[ChunkEmbedding]) -> None:
+    def _replace_chunk_embeddings(
+        self,
+        doc_id: DocId,
+        embeddings: list[ChunkEmbedding],
+    ) -> None:
         if self._chunk_embeddings is not None:
             self._chunk_embeddings.replace_for_document(doc_id, embeddings)
 

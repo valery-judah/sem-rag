@@ -7,6 +7,7 @@ from typing import Protocol
 from pydantic import BaseModel, ConfigDict, Field
 
 from doc_forge.corpus import SourceReference
+from doc_forge.identifiers import DocId
 
 from .contracts import (
     AnswerDraft,
@@ -94,7 +95,7 @@ class DeterministicCitationRenderer:
             evidence_sets_by_id=evidence_sets_by_id,
         )
         citations: list[CitationRecord] = []
-        material_doc_ids: list[str] = []
+        material_doc_ids: list[DocId] = []
         provenance_warnings: list[str] = []
         seen_keys: set[tuple[object, ...]] = set()
 
@@ -162,7 +163,7 @@ def _expected_material_doc_ids(
     grounded_ids: list[str],
     evidence_sets_by_id: dict[str, EvidenceSet],
 ) -> list[str]:
-    doc_ids: list[str] = []
+    doc_ids: list[DocId] = []
     for evidence_set_id in grounded_ids:
         evidence_set = evidence_sets_by_id[evidence_set_id]
         for unit in evidence_set.evidence_units:

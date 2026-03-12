@@ -6,6 +6,7 @@ from datetime import UTC, datetime
 from sqlalchemy.engine import Connection
 
 from doc_forge.corpus import Chunk, Section, SourceType
+from doc_forge.identifiers import DocId, WorkspaceId
 from doc_forge.indexing import ChunkEmbedding, IndexEntry, VectorSearchHit
 from doc_forge.lifecycle import ProcessingStatus
 from doc_forge.lifecycle.models import FailureCategory, LifecycleEvent, LifecycleStage
@@ -23,8 +24,8 @@ FIXED_NOW = datetime(2026, 3, 11, 12, 0, tzinfo=UTC)
 
 def make_persisted_document(
     *,
-    doc_id: str = "doc-1",
-    workspace_id: str = "ws-1",
+    doc_id: DocId = "doc-1",
+    workspace_id: WorkspaceId = "ws-1",
     source_type: SourceType = SourceType.MARKDOWN,
     ingest_status: ProcessingStatus = ProcessingStatus.REGISTERED,
     failure_code: str | None = None,
@@ -57,7 +58,7 @@ def make_persisted_document(
 def make_job(
     *,
     job_id: str = "job-1",
-    doc_id: str = "doc-1",
+    doc_id: DocId = "doc-1",
     target_stage: DocumentJobStage = DocumentJobStage.EXTRACT,
     status: DocumentJobStatus = DocumentJobStatus.QUEUED,
     attempt_count: int = 0,
@@ -75,7 +76,7 @@ def make_job(
 
 def make_failure_event(
     *,
-    doc_id: str = "doc-1",
+    doc_id: DocId = "doc-1",
     job_stage: DocumentJobStage,
     from_status: ProcessingStatus = ProcessingStatus.EXTRACTING,
     event_id: str = "event-1",
@@ -121,11 +122,11 @@ class InMemoryDocumentRepository:
         del connection
         self.documents[document.doc_id] = document
 
-    def get(self, doc_id: str, *, connection=None) -> PersistedDocument | None:
+    def get(self, doc_id: DocId, *, connection=None) -> PersistedDocument | None:
         del connection
         return self.documents.get(doc_id)
 
-    def list_by_workspace(self, workspace_id: str) -> list[PersistedDocument]:
+    def list_by_workspace(self, workspace_id: WorkspaceId) -> list[PersistedDocument]:
         return [
             document
             for document in self.documents.values()
@@ -135,7 +136,7 @@ class InMemoryDocumentRepository:
     def update_status(
         self,
         *,
-        doc_id: str,
+        doc_id: DocId,
         status: ProcessingStatus,
         failure_code: str | None = None,
         failure_detail: str | None = None,
@@ -178,7 +179,7 @@ class InMemoryLifecycleEventRepository:
         self._events_by_doc[event.doc_id].append(event)
         self.appended.append(event)
 
-    def list_for_document(self, doc_id: str) -> list[LifecycleEvent]:
+    def list_for_document(self, doc_id: DocId) -> list[LifecycleEvent]:
         return list(self._events_by_doc.get(doc_id, []))
 
 
@@ -212,13 +213,13 @@ class InMemoryJobRepository:
     def get(self, job_id: str) -> DocumentJob | None:
         return self.jobs.get(job_id)
 
-    def list_for_document(self, doc_id: str) -> list[DocumentJob]:
+    def list_for_document(self, doc_id: DocId) -> list[DocumentJob]:
         return sorted(
             [job for job in self.jobs.values() if job.doc_id == doc_id],
             key=lambda job: (job.created_at, job.job_id),
         )
 
-    def has_active_job(self, doc_id: str) -> bool:
+    def has_active_job(self, doc_id: DocId) -> bool:
         return any(
             job.doc_id == doc_id
             and job.status in {DocumentJobStatus.QUEUED, DocumentJobStatus.RUNNING}
@@ -277,10 +278,10 @@ class InMemoryReplaceRepository:
         }
         self.replacements: list[tuple[str, list[object]]] = []
 
-    def list_for_document(self, doc_id: str) -> list[object]:
+    def list_for_document(self, doc_id: DocId) -> list[object]:
         return list(self.items_by_doc.get(doc_id, []))
 
-    def replace_for_document(self, doc_id: str, items: list[object], **kwargs) -> None:
+    def replace_for_document(self, doc_id: DocId, items: list[object], **kwargs) -> None:
         del kwargs
         self.items_by_doc[doc_id] = list(items)
         self.replacements.append((doc_id, list(items)))
@@ -291,11 +292,11 @@ class StubVectorStore:
         self.hits = hits or []
         self.calls: list[tuple[str, str, int]] = []
 
-    def publish_document(self, *, doc_id: str, chunks: list[Chunk]) -> list[IndexEntry]:
+    def publish_document(self, *, doc_id: DocId, chunks: list[Chunk]) -> list[IndexEntry]:
         del doc_id, chunks
         raise NotImplementedError
 
-    def smoke_query(self, *, doc_id: str, text: str, k: int = 1) -> list[VectorSearchHit]:
+    def smoke_query(self, *, doc_id: DocId, text: str, k: int = 1) -> list[VectorSearchHit]:
         self.calls.append((doc_id, text, k))
         return self.hits[:k]
 
@@ -312,10 +313,10 @@ class InMemorySectionRepository:
             current = self.items_by_doc.setdefault(section.doc_id, [])
             current.append(section)
 
-    def list_for_document(self, doc_id: str) -> list[Section]:
+    def list_for_document(self, doc_id: DocId) -> list[Section]:
         return list(self.items_by_doc.get(doc_id, []))
 
-    def replace_for_document(self, doc_id: str, sections: list[Section]) -> None:
+    def replace_for_document(self, doc_id: DocId, sections: list[Section]) -> None:
         self.items_by_doc[doc_id] = list(sections)
         self.replacements.append((doc_id, list(sections)))
 
@@ -332,10 +333,10 @@ class InMemoryChunkRepository:
             current = self.items_by_doc.setdefault(chunk.doc_id, [])
             current.append(chunk)
 
-    def list_for_document(self, doc_id: str) -> list[Chunk]:
+    def list_for_document(self, doc_id: DocId) -> list[Chunk]:
         return list(self.items_by_doc.get(doc_id, []))
 
-    def replace_for_document(self, doc_id: str, chunks: list[Chunk]) -> None:
+    def replace_for_document(self, doc_id: DocId, chunks: list[Chunk]) -> None:
         self.items_by_doc[doc_id] = list(chunks)
         self.replacements.append((doc_id, list(chunks)))
 
@@ -350,12 +351,12 @@ class InMemoryIndexEntryRepository:
     def clock(self) -> datetime:
         return FIXED_NOW
 
-    def list_for_document(self, doc_id: str) -> list[IndexEntry]:
+    def list_for_document(self, doc_id: DocId) -> list[IndexEntry]:
         return list(self.items_by_doc.get(doc_id, []))
 
     def replace_for_document(
         self,
-        doc_id: str,
+        doc_id: DocId,
         entries: list[IndexEntry],
         *,
         connection: Connection | None = None,
@@ -372,12 +373,12 @@ class InMemoryChunkEmbeddingRepository:
         }
         self.replacements: list[tuple[str, list[ChunkEmbedding]]] = []
 
-    def list_for_document(self, doc_id: str) -> list[ChunkEmbedding]:
+    def list_for_document(self, doc_id: DocId) -> list[ChunkEmbedding]:
         return list(self.items_by_doc.get(doc_id, []))
 
     def replace_for_document(
         self,
-        doc_id: str,
+        doc_id: DocId,
         embeddings: list[ChunkEmbedding],
         *,
         connection: Connection | None = None,

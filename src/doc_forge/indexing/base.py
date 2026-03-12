@@ -9,6 +9,7 @@ from typing import Protocol
 from pydantic import BaseModel, ConfigDict, Field
 
 from doc_forge.corpus import Chunk
+from doc_forge.identifiers import DocId
 
 
 class IndexEntry(BaseModel):
@@ -17,7 +18,7 @@ class IndexEntry(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     chunk_id: str
-    doc_id: str
+    doc_id: DocId
     index_backend: str
     index_key: str
     index_version: str
@@ -30,7 +31,7 @@ class ChunkEmbedding(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     chunk_id: str
-    doc_id: str
+    doc_id: DocId
     embedding_model: str
     embedding_vector: list[float] = Field(default_factory=list)
     created_at: datetime
@@ -42,7 +43,7 @@ class VectorSearchHit(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     chunk_id: str
-    doc_id: str
+    doc_id: DocId
     score: float
 
 
@@ -60,14 +61,14 @@ class VectorStore(Protocol):
     def publish_document(
         self,
         *,
-        doc_id: str,
+        doc_id: DocId,
         chunks: list[Chunk],
     ) -> list[IndexEntry]: ...
 
     def smoke_query(
         self,
         *,
-        doc_id: str,
+        doc_id: DocId,
         text: str,
         k: int = 1,
     ) -> list[VectorSearchHit]: ...

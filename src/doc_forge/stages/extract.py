@@ -9,6 +9,7 @@ from sqlalchemy.engine import Engine
 
 from doc_forge.artifacts import ExtractedArtifact, FilesystemArtifactStore, RawArtifactRef
 from doc_forge.extractors import ExtractorRegistry
+from doc_forge.identifiers import DocId
 from doc_forge.lifecycle import (
     LifecycleEvent,
     LifecycleInvariantError,
@@ -47,7 +48,7 @@ class ExtractDocumentStage:
         self._artifact_store = artifact_store
         self._extractors = extractors
 
-    def run(self, doc_id: str) -> ExtractedArtifact:
+    def run(self, doc_id: DocId) -> ExtractedArtifact:
         document = self._require_document(doc_id)
         if document.ingest_status is not ProcessingStatus.REGISTERED:
             raise LifecycleInvariantError(
@@ -97,7 +98,7 @@ class ExtractDocumentStage:
 
         return artifact
 
-    def _require_document(self, doc_id: str) -> PersistedDocument:
+    def _require_document(self, doc_id: DocId) -> PersistedDocument:
         document = self._documents.get(doc_id)
         if document is None:
             raise LookupError(f"document {doc_id!r} was not found")

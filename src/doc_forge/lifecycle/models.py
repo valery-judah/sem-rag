@@ -7,6 +7,7 @@ from enum import StrEnum
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from doc_forge.identifiers import DocId
 from doc_forge.lifecycle.status import ProcessingStatus
 
 
@@ -37,7 +38,7 @@ class LifecycleEvent(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     event_id: str
-    doc_id: str
+    doc_id: DocId
     stage: LifecycleStage
     from_status: ProcessingStatus | None = None
     to_status: ProcessingStatus

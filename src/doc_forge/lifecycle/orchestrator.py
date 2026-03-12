@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from uuid import uuid4
 
+from doc_forge.identifiers import DocId
 from doc_forge.persistence import DocumentJob, DocumentJobRepository, DocumentJobStage
 
 _NEXT_STAGE: dict[DocumentJobStage, DocumentJobStage | None] = {
@@ -23,7 +24,7 @@ class DocumentLifecycleOrchestrator:
     def __init__(self, *, jobs: DocumentJobRepository) -> None:
         self._jobs = jobs
 
-    def enqueue_stage(self, *, doc_id: str, target_stage: DocumentJobStage) -> DocumentJob | None:
+    def enqueue_stage(self, *, doc_id: DocId, target_stage: DocumentJobStage) -> DocumentJob | None:
         """Queue the next job when no active work already exists for the document."""
 
         if self._jobs.has_active_job(doc_id):

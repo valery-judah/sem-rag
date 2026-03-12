@@ -9,6 +9,7 @@ from sqlalchemy import event
 from sqlalchemy.engine import Engine
 
 from doc_forge.corpus import Chunk, Document, Section, SourceType
+from doc_forge.identifiers import DocId, WorkspaceId
 from doc_forge.lifecycle import ProcessingStatus
 from doc_forge.lifecycle.models import LifecycleEvent, LifecycleStage
 from doc_forge.persistence import (
@@ -48,8 +49,8 @@ def sql_engine(db_url: str) -> Iterator[Engine]:
 @pytest.fixture
 def document_factory():
     def make(
-        doc_id: str = "doc-1",
-        workspace_id: str = "workspace-1",
+        doc_id: DocId = "doc-1",
+        workspace_id: WorkspaceId = "workspace-1",
         source_type: SourceType = SourceType.PDF,
         **overrides: object,
     ) -> Document:
@@ -74,7 +75,7 @@ def document_factory():
 @pytest.fixture
 def section_factory():
     def make(
-        doc_id: str = "doc-1",
+        doc_id: DocId = "doc-1",
         section_id: str = "section-1",
         **overrides: object,
     ) -> Section:
@@ -96,7 +97,7 @@ def section_factory():
 @pytest.fixture
 def chunk_factory():
     def make(
-        doc_id: str = "doc-1",
+        doc_id: DocId = "doc-1",
         chunk_id: str = "chunk-1",
         **overrides: object,
     ) -> Chunk:
@@ -120,8 +121,8 @@ def chunk_factory():
 @pytest.fixture
 def persisted_document_factory():
     def make(
-        doc_id: str = "doc-1",
-        workspace_id: str = "workspace-1",
+        doc_id: DocId = "doc-1",
+        workspace_id: WorkspaceId = "workspace-1",
         source_type: SourceType = SourceType.PDF,
         **overrides: object,
     ) -> PersistedDocument:
@@ -150,7 +151,7 @@ def persisted_document_factory():
 @pytest.fixture
 def lifecycle_event_factory():
     def make(
-        doc_id: str = "doc-1",
+        doc_id: DocId = "doc-1",
         event_id: str = "event-1",
         **overrides: object,
     ) -> LifecycleEvent:
@@ -172,7 +173,7 @@ def lifecycle_event_factory():
 @pytest.fixture
 def document_job_factory():
     def make(
-        doc_id: str = "doc-1",
+        doc_id: DocId = "doc-1",
         job_id: str = "job-1",
         **overrides: object,
     ) -> DocumentJob:

@@ -55,6 +55,27 @@ def test_raw_artifact_store_rejects_unmanaged_relative_paths(tmp_path: Path) -> 
         store._resolve_relative_path("../escape.txt")
 
 
+@pytest.mark.parametrize("workspace_id", [".", "..", "ws/unsafe", r"ws\unsafe", " ws-1", "ws-1 "])
+def test_artifact_store_rejects_invalid_workspace_ids_before_path_construction(
+    tmp_path: Path,
+    workspace_id: str,
+) -> None:
+    store = FilesystemArtifactStore(tmp_path / "artifacts")
+
+    with pytest.raises(ValueError, match="workspace_id"):
+        store.raw_relative_path(
+            workspace_id=workspace_id,
+            doc_id="doc-md",
+            source_type=SourceType.MARKDOWN,
+        )
+
+    with pytest.raises(ValueError, match="workspace_id"):
+        store.extracted_relative_path(workspace_id=workspace_id, doc_id="doc-md")
+
+    with pytest.raises(ValueError, match="workspace_id"):
+        store.normalized_relative_path(workspace_id=workspace_id, doc_id="doc-md")
+
+
 def test_raw_artifact_delete_is_idempotent(tmp_path: Path) -> None:
     store = FilesystemArtifactStore(tmp_path / "artifacts")
     ref = store.write_raw(

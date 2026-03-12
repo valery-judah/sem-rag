@@ -6,6 +6,7 @@ import re
 
 from doc_forge.artifacts import ExtractedArtifact, ExtractedArtifactBlock, ExtractedArtifactPage
 from doc_forge.corpus import SourceType
+from doc_forge.identifiers import DocId
 
 from .base import ExtractionError
 
@@ -18,7 +19,7 @@ class MarkdownExtractor:
 
     VERSION = "markdown-v1"
 
-    def extract(self, *, doc_id: str, raw_content: bytes) -> ExtractedArtifact:
+    def extract(self, *, doc_id: DocId, raw_content: bytes) -> ExtractedArtifact:
         try:
             text = raw_content.decode("utf-8")
         except UnicodeDecodeError as exc:

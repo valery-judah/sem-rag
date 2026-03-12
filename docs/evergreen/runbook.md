@@ -67,12 +67,15 @@ make verify
 
 `make db-revision` creates a new revision file under `src/doc_forge/persistence/migrations/versions/`. Schema changes to lifecycle metadata should update both the SQLAlchemy table definitions and a reviewed Alembic revision.
 
-## Internal Lifecycle Runtime
-- `make run-api` runs the internal FastAPI lifecycle app with upload, status, retry, retrieval-smoke, health, and artifact-inspection routes.
+## Local HTTP Runtime
+- `make run-api` runs the stable localhost FastAPI service at `http://127.0.0.1:8000` with health, readiness, document lifecycle, query, and review routes.
+- `http://127.0.0.1:8000/docs` serves the Swagger UI for the local contract when the app runs in `dev`; `make run-api` enables that by default through `DOC_FORGE_ENVIRONMENT=dev`.
+- `http://127.0.0.1:8000/openapi.json` serves the live OpenAPI schema for the same contract.
 - `make run-worker` runs the queue-draining lifecycle worker that advances documents from `REGISTERED` to `READY`.
 - `make test-e2e` runs the docker-backed end-to-end document lifecycle suite under `tests/e2e/`.
 - `make dead-code` runs the internal API-rooted reachability analyzer and groups `src/` classes into `api_reachable`, `repo_entrypoint_only`, `test_only`, and `unreferenced`.
 - `DOC_FORGE_E2E_VERBOSE=1 make test-e2e` enables step-by-step e2e progress logs plus richer failure diagnostics.
+- `POST /retrieval/query` remains a local retrieval smoke/debug route rather than part of the stable public contract.
 - `POST /internal/run-next-job` exists for tests and local debug; normal local operation should prefer the worker loop.
 - `make docker-up-build` starts the local Postgres, API, and worker stack defined in `docker-compose.yml`.
 - In Docker Compose, the `api` and `worker` runtimes self-apply Alembic migrations at startup before serving traffic or draining jobs.

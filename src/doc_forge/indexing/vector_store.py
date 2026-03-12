@@ -7,6 +7,7 @@ import math
 from sqlalchemy.engine import Engine
 
 from doc_forge.corpus import Chunk
+from doc_forge.identifiers import DocId
 from doc_forge.persistence.models import utc_now
 from doc_forge.persistence.repositories import (
     ChunkEmbeddingRepository,
@@ -41,7 +42,7 @@ class SqlVectorStore(VectorStore):
     def publish_document(
         self,
         *,
-        doc_id: str,
+        doc_id: DocId,
         chunks: list[Chunk],
     ) -> list[IndexEntry]:
         vectors = self._embedding_adapter.embed_texts([chunk.text for chunk in chunks])
@@ -85,7 +86,7 @@ class SqlVectorStore(VectorStore):
     def smoke_query(
         self,
         *,
-        doc_id: str,
+        doc_id: DocId,
         text: str,
         k: int = 1,
     ) -> list[VectorSearchHit]:

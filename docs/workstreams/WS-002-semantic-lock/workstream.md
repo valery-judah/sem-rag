@@ -3,7 +3,7 @@ artifact_kind: workstream
 id: WS-002
 title: Semantic Lock
 work_type: feature
-status: done
+status: archived
 owner:
 created: 2026-03-09
 updated: 2026-03-10

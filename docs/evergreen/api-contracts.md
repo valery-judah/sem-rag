@@ -1,59 +1,83 @@
 # API Contracts
 
 **Status:** Verified
-**Last verified:** 2026-03-11
+**Last verified:** 2026-03-12
 
 ## Purpose
 This document defines the stable external interfaces that are actually implemented and safe for downstream reliance.
 
-As of 2026-03-11, there are no earned public API contracts in `doc_forge`.
-
 ## Current State
-The repository does not currently expose a stable user-facing package API, service API, or CLI contract that downstream callers should rely on.
+As of 2026-03-12, `doc_forge` has one stable public interface family:
 
-Implementation experiments, internal seams, prototypes, and workstream design material do not count as evergreen API contracts.
+- a localhost HTTP service API served by FastAPI
+- a live OpenAPI description for that service
+- a Swagger UI for local inspection of the OpenAPI surface
+
+The stable contract is the local service started by `make run-api`, not the internal Python package layout under `src/doc_forge/`.
 
 ## Scope
 ### In Scope
-- explicit statement of whether any stable public contract exists
-- the boundary between implemented experiments and promised interfaces
+- the stable localhost HTTP routes exposed by the FastAPI app
+- the OpenAPI schema served by that runtime
+- the boundary between stable local service routes and changeable internal modules
 
 ### Out Of Scope
-- planned MVP interfaces
-- draft ingestion, parsing, retrieval, answer, or citation payloads
 - internal module boundaries
-- prototype CLIs or dev-only commands
+- direct imports from `src/doc_forge/`
 - workstream proposals and delivery drafts
-- internal query runtime seams implemented for Stages 1 and 2
+- implementation details behind the service routes
 
 ## Stable Interfaces
-There are currently no stable public interfaces.
+### Stable Local HTTP Service API
+When started via `make run-api`, the stable local service base URL is:
 
-Specifically, this means:
+- `http://127.0.0.1:8000`
+- `http://localhost:8000`
 
-- no stable Python package API is defined
-- no stable HTTP or service API is defined
-- no request or response schema is defined as public contract
+The stable localhost route set is:
+
+- `GET /healthz`
+- `GET /readyz`
+- `POST /documents`
+- `GET /documents/{doc_id}`
+- `GET /documents/{doc_id}/status`
+- `GET /documents/{doc_id}/artifacts`
+- `POST /documents/{doc_id}/retry`
+- `POST /queries`
+- `GET /queries/{query_id}`
+- `GET /queries/{query_id}/trace`
+- `GET /queries/{query_id}/citations`
+
+Stable identifier validation at this boundary is:
+
+- `workspace_id` inputs must be non-empty, must not have leading or trailing whitespace, and must not contain `/`, `\\`, `.`, or `..` path-segment forms.
+- `doc_id` values remain string-backed and field names are unchanged; generated values such as `doc_<hex>` remain valid.
+
+These routes are stable at the HTTP boundary: path, method, request shape, response shape, and documented status codes should not change incompatibly without first updating this file.
+
+### Stable OpenAPI Description
+The FastAPI runtime is the source of truth for the live service schema:
+
+- `GET /openapi.json` exposes the stable OpenAPI description
+- `GET /docs` exposes the Swagger UI for the same contract
+
+`make run-api` exports `DOC_FORGE_ENVIRONMENT=dev`, so the local Swagger UI is available by default on localhost. In non-dev environments, `/docs` and `/openapi.json` remain controlled by the existing Swagger toggle rules.
 
 ## Implemented But Not Public
-The repository now includes implemented and tested internal query-runtime seams, but they are not stable public contracts.
+The following are implemented but are not part of the stable public contract:
 
-These internal-only seams include:
-
-- the internal FastAPI routes and their conditionally exposed Swagger UI endpoint (`/docs`)
-- the internal `POST /queries` FastAPI route
-- internal `doc_forge.query` request and runtime types such as `QueryRequest`, `CorpusSnapshot`, and `InterpretedQuery`
-- internal query persistence artifacts such as `query_runs`, `query_snapshots`, and `query_stage_traces`
-
-Stage 1 query-boundary behavior and Stage 2 interpretation behavior are implemented in code and exercised by tests, but they remain internal and changeable until this document explicitly promotes them.
+- `POST /retrieval/query`, which remains a retrieval smoke/debug endpoint
+- `POST /internal/run-next-job`, which remains an internal operator/test endpoint
+- direct imports from `src/doc_forge/query/`, `src/doc_forge/readmodels/`, `src/doc_forge/lifecycle/`, and other package internals
+- persistence artifacts such as `query_runs`, `query_snapshots`, and `query_stage_traces`
 
 ## Compatibility And Change Control
-Because no public API contract has been earned yet:
+Because the localhost FastAPI service API is stable:
 
-- code in `src/doc_forge/` should be treated as internal and changeable
-- renames, removals, and signature changes are not contract breaks unless this document is updated first
-- `src/doc_forge/query/`, `src/doc_forge/readmodels/`, and internal FastAPI route payloads are not downstream-supported interfaces
-- future interfaces should only be added here after they are implemented and intentionally supported for downstream use
+- incompatible changes to the stable route set require updating this file first
+- OpenAPI-visible request or response shape changes for stable routes are contract changes
+- internal Python modules remain changeable unless they are explicitly promoted here later
+- package-level imports are still not downstream-supported interfaces
 
 ## Promotion Rule
 An interface should appear in this file only when all of the following are true:
@@ -63,9 +87,8 @@ An interface should appear in this file only when all of the following are true:
 - the team intends downstream callers to rely on it
 - the team is willing to treat incompatible changes as breaking changes
 
-Until then, the correct evergreen position is that `doc_forge` has no stable API contracts.
-
 ## Relationship To Other Docs
-- [`docs/evergreen/mvp.md`](./mvp.md) describes the target product, not current API reality.
-- [`docs/evergreen/architecture.md`](./architecture.md) describes current repo shape and internal seams, not a promise of stable external interfaces.
-- `docs/delivery/` and `docs/workstreams/` may describe future contracts, but they are not current public API commitments.
+- [`docs/evergreen/architecture.md`](./architecture.md) describes current repo shape and internal seams behind the service.
+- [`docs/evergreen/runbook.md`](./runbook.md) describes how to start and operate the local runtime.
+- [`docs/evergreen/mvp.md`](./mvp.md) describes the target product, not the service contract by itself.
+- `docs/delivery/` and `docs/workstreams/` may describe future changes, but they do not override this contract.

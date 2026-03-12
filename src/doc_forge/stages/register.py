@@ -10,6 +10,7 @@ from sqlalchemy.engine import Engine
 
 from doc_forge.artifacts import FilesystemArtifactStore, RawArtifactRef
 from doc_forge.corpus import Document, SourceType
+from doc_forge.identifiers import DocId, WorkspaceId
 from doc_forge.lifecycle import (
     LifecycleEvent,
     LifecycleInvariantError,
@@ -33,8 +34,8 @@ class RegisterDocumentRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    doc_id: str
-    workspace_id: str
+    doc_id: DocId
+    workspace_id: WorkspaceId
     source_type: SourceType
     title: str
     filename: str
@@ -124,7 +125,7 @@ class RegisterDocumentStage:
             updated_at=request.uploaded_at,
         )
 
-    def _build_lifecycle_event(self, doc_id: str, occurred_at: datetime) -> LifecycleEvent:
+    def _build_lifecycle_event(self, doc_id: DocId, occurred_at: datetime) -> LifecycleEvent:
         return LifecycleEvent(
             event_id=f"event_{uuid4().hex}",
             doc_id=doc_id,

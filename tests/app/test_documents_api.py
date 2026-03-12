@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 
+import httpx
 import pytest
 from fastapi import FastAPI, HTTPException
 from fastapi.routing import APIRoute
@@ -168,3 +169,16 @@ async def test_upload_route_maps_registration_error_to_500(
 
     assert exc_info.value.status_code == 500
     assert exc_info.value.detail == "document registration failed"
+
+
+async def test_upload_route_rejects_invalid_workspace_id_via_http_boundary(app: FastAPI) -> None:
+    transport = httpx.ASGITransport(app=app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://testserver") as client:
+        response = await client.post(
+            "/documents",
+            data={"workspace_id": "ws/unsafe", "title": "Bad Workspace"},
+            files={"file": ("ops-notes.md", b"# Ops\n", "text/markdown")},
+        )
+
+    assert response.status_code == 422
+    assert "workspace_id" in response.text

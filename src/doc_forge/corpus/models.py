@@ -7,6 +7,7 @@ from enum import StrEnum
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from doc_forge.identifiers import DocId, WorkspaceId
 from doc_forge.lifecycle import ProcessingStatus
 
 
@@ -29,8 +30,8 @@ class Document(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    doc_id: str
-    workspace_id: str
+    doc_id: DocId
+    workspace_id: WorkspaceId
     source_type: SourceType
     title: str
     filename: str
@@ -46,7 +47,7 @@ class Section(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     section_id: str
-    doc_id: str
+    doc_id: DocId
     heading_path: list[str] = Field(min_length=1)
     depth: int = Field(ge=0)
     parent_section_id: str | None = None
@@ -82,7 +83,7 @@ class Chunk(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     chunk_id: str
-    doc_id: str
+    doc_id: DocId
     text: str
     ordinal: int = Field(ge=0)
     heading_path: list[str] = Field(min_length=1)
@@ -118,7 +119,7 @@ class SourceReference(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    doc_id: str
+    doc_id: DocId
     document_title: str
     snippet: str
     section_id: str | None = None
@@ -134,7 +135,7 @@ class RetrievalHit(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     chunk_id: str
-    doc_id: str
+    doc_id: DocId
     score: float
     source_reference: SourceReference
 

@@ -8,6 +8,7 @@ from typing import Protocol
 from pydantic import BaseModel, ConfigDict, Field
 
 from doc_forge.corpus import Chunk, SourceType
+from doc_forge.identifiers import DocId, WorkspaceId
 from doc_forge.indexing import ChunkEmbedding
 from doc_forge.lifecycle import ProcessingStatus
 from doc_forge.persistence import (
@@ -31,8 +32,8 @@ class QueryableDocumentRecord(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    doc_id: str = Field(min_length=1)
-    workspace_id: str = Field(min_length=1)
+    doc_id: DocId
+    workspace_id: WorkspaceId
     source_type: SourceType
     title: str = Field(min_length=1)
     filename: str = Field(min_length=1)
@@ -45,7 +46,7 @@ class QueryableSectionRecord(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     section_id: str = Field(min_length=1)
-    doc_id: str = Field(min_length=1)
+    doc_id: DocId
     heading_path: list[str] = Field(min_length=1)
     depth: int = Field(ge=0)
     parent_section_id: str | None = None
@@ -62,7 +63,7 @@ class QueryableChunkRecord(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     chunk_id: str = Field(min_length=1)
-    doc_id: str = Field(min_length=1)
+    doc_id: DocId
     section_id: str | None = None
     text: str = Field(min_length=1)
     ordinal: int = Field(ge=0)
@@ -85,14 +86,14 @@ class QueryableCorpusReadModel(Protocol):
 
     def capture_snapshot(
         self,
-        workspace_id: str,
+        workspace_id: WorkspaceId,
         *,
         query_started_at: datetime | None = None,
     ) -> CorpusSnapshot:
         """Return a stable query-time corpus snapshot for a workspace."""
         ...
 
-    def list_ready_documents(self, workspace_id: str) -> list[QueryableDocumentRecord]:
+    def list_ready_documents(self, workspace_id: WorkspaceId) -> list[QueryableDocumentRecord]:
         """Return queryable document projections for a workspace."""
         ...
 
@@ -138,7 +139,7 @@ class SqlQueryableCorpusReadModel:
 
     def capture_snapshot(
         self,
-        workspace_id: str,
+        workspace_id: WorkspaceId,
         *,
         query_started_at: datetime | None = None,
     ) -> CorpusSnapshot:
@@ -151,7 +152,7 @@ class SqlQueryableCorpusReadModel:
             retrieval_index_version=self._derive_retrieval_index_version(eligible_doc_ids),
         )
 
-    def list_ready_documents(self, workspace_id: str) -> list[QueryableDocumentRecord]:
+    def list_ready_documents(self, workspace_id: WorkspaceId) -> list[QueryableDocumentRecord]:
         return [
             QueryableDocumentRecord(
                 doc_id=document.doc_id,
@@ -237,7 +238,7 @@ class SqlQueryableCorpusReadModel:
                 )
         return records
 
-    def _derive_retrieval_index_version(self, doc_ids: list[str]) -> str | None:
+    def _derive_retrieval_index_version(self, doc_ids: list[DocId]) -> str | None:
         versions = {
             entry.index_version
             for doc_id in doc_ids

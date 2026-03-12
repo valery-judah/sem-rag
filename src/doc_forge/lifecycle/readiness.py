@@ -5,6 +5,7 @@ from __future__ import annotations
 from pydantic import BaseModel, ConfigDict, Field
 
 from doc_forge.artifacts import FilesystemArtifactStore
+from doc_forge.identifiers import DocId
 from doc_forge.indexing import VectorStore
 from doc_forge.lifecycle import ProcessingStatus
 from doc_forge.persistence import (
@@ -20,7 +21,7 @@ class ReadinessResult(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    doc_id: str
+    doc_id: DocId
     is_ready: bool
     reasons: list[str] = Field(default_factory=list)
     section_count: int = 0
@@ -48,7 +49,7 @@ class ReadinessService:
         self._artifact_store = artifact_store
         self._vector_store = vector_store
 
-    def evaluate(self, *, doc_id: str) -> ReadinessResult:
+    def evaluate(self, *, doc_id: DocId) -> ReadinessResult:
         reasons: list[str] = []
         document = self._documents.get(doc_id)
         if document is None:

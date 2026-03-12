@@ -8,6 +8,7 @@ from enum import StrEnum
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from doc_forge.corpus import SourceReference
+from doc_forge.identifiers import DocId, WorkspaceId
 
 
 def utc_now() -> datetime:
@@ -197,8 +198,7 @@ class QueryRequest(BaseModel):
         description="The user's question.",
         json_schema_extra={"example": "What uses embeddings to retrieve related passages?"},
     )
-    workspace_id: str = Field(
-        min_length=1,
+    workspace_id: WorkspaceId = Field(
         description="The workspace scope to search against.",
         json_schema_extra={"example": "workspace_alpha"},
     )
@@ -213,7 +213,7 @@ class QueryRun(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     query_id: str = Field(min_length=1)
-    workspace_id: str = Field(min_length=1)
+    workspace_id: WorkspaceId
     question: str = Field(min_length=1)
     submitted_at: datetime = Field(default_factory=utc_now)
     status: QueryRunStatus = QueryRunStatus.PENDING
@@ -241,9 +241,9 @@ class CorpusSnapshot(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    workspace_id: str = Field(min_length=1)
+    workspace_id: WorkspaceId
     query_started_at: datetime = Field(default_factory=utc_now)
-    eligible_doc_ids: list[str] = Field(default_factory=list)
+    eligible_doc_ids: list[DocId] = Field(default_factory=list)
     retrieval_index_version: str | None = None
     readiness_version: str | None = None
 
@@ -270,7 +270,7 @@ class RetrievedCandidate(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    doc_id: str = Field(min_length=1)
+    doc_id: DocId
     chunk_id: str = Field(min_length=1)
     section_id: str | None = None
     heading_path: list[str] = Field(min_length=1)
@@ -314,7 +314,7 @@ class ContextItem(BaseModel):
     evidence_set_id: str = Field(min_length=1)
     assembly_rank: int = Field(ge=1)
     rendered_text: str = Field(min_length=1)
-    contributing_doc_ids: list[str] = Field(min_length=1)
+    contributing_doc_ids: list[DocId] = Field(min_length=1)
     heading_paths: list[list[str]] = Field(default_factory=list)
     locators: list[str] = Field(default_factory=list)
     estimated_token_count: int = Field(ge=1)
@@ -415,7 +415,7 @@ class CitationBundle(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     citations: list[CitationRecord] = Field(default_factory=list)
-    material_doc_ids: list[str] = Field(default_factory=list)
+    material_doc_ids: list[DocId] = Field(default_factory=list)
     renderer_version: str | None = None
 
 

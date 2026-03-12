@@ -5,6 +5,7 @@ from __future__ import annotations
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from doc_forge.corpus import SourceType
+from doc_forge.identifiers import DocId, WorkspaceId
 
 
 class RawArtifactRef(BaseModel):
@@ -12,8 +13,8 @@ class RawArtifactRef(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    workspace_id: str
-    doc_id: str
+    workspace_id: WorkspaceId
+    doc_id: DocId
     source_type: SourceType
     relative_path: str
 
@@ -57,7 +58,7 @@ class ExtractedArtifact(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    doc_id: str
+    doc_id: DocId
     source_type: SourceType
     extractor_version: str
     pages: list[ExtractedArtifactPage] = Field(default_factory=list)
@@ -98,7 +99,7 @@ class NormalizedArtifact(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    doc_id: str
+    doc_id: DocId
     source_type: SourceType
     normalizer_version: str
     blocks: list[NormalizedArtifactBlock] = Field(default_factory=list)

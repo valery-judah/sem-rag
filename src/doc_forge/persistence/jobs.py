@@ -9,6 +9,8 @@ from enum import StrEnum
 import sqlalchemy as sa
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from doc_forge.identifiers import DocId
+
 from .models import metadata, utc_now
 
 
@@ -40,7 +42,7 @@ class DocumentJob(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     job_id: str
-    doc_id: str
+    doc_id: DocId
     target_stage: DocumentJobStage
     status: DocumentJobStatus = DocumentJobStatus.QUEUED
     attempt_count: int = Field(default=0, ge=0)

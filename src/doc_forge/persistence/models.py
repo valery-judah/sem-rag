@@ -9,6 +9,7 @@ import sqlalchemy as sa
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from doc_forge.corpus import Chunk, Document, Section, SourceType
+from doc_forge.identifiers import DocId, WorkspaceId
 from doc_forge.indexing import ChunkEmbedding, IndexEntry
 from doc_forge.lifecycle import ProcessingStatus
 from doc_forge.lifecycle.models import FailureCategory, LifecycleEvent, LifecycleStage
@@ -166,8 +167,8 @@ class PersistedDocument(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    doc_id: str
-    workspace_id: str
+    doc_id: DocId
+    workspace_id: WorkspaceId
     source_type: SourceType
     title: str
     filename: str
@@ -285,7 +286,7 @@ class PersistedLifecycleEvent(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     event_id: str
-    doc_id: str
+    doc_id: DocId
     stage: LifecycleStage
     from_status: ProcessingStatus | None = None
     to_status: ProcessingStatus
@@ -339,7 +340,7 @@ class PersistedSection(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     section_id: str
-    doc_id: str
+    doc_id: DocId
     heading_path_json: list[str]
     depth: int
     parent_section_id: str | None = None
@@ -397,7 +398,7 @@ class PersistedChunk(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     chunk_id: str
-    doc_id: str
+    doc_id: DocId
     text: str
     ordinal: int
     heading_path_json: list[str]
@@ -458,7 +459,7 @@ class PersistedIndexEntry(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     chunk_id: str
-    doc_id: str
+    doc_id: DocId
     index_backend: str
     index_key: str
     index_version: str
@@ -486,7 +487,7 @@ class PersistedChunkEmbedding(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     chunk_id: str
-    doc_id: str
+    doc_id: DocId
     embedding_model: str
     embedding_vector_json: list[float]
     created_at: datetime

@@ -7,6 +7,8 @@ from datetime import datetime
 import structlog
 from pydantic import BaseModel, ConfigDict, Field
 
+from doc_forge.identifiers import DocId, WorkspaceId
+
 from .contracts import (
     AnswerMode,
     CitationBundle,
@@ -31,9 +33,9 @@ class QuerySnapshotSummary(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    workspace_id: str = Field(min_length=1, description="The workspace scope.")
+    workspace_id: WorkspaceId = Field(min_length=1, description="The workspace scope.")
     query_started_at: datetime = Field(description="When the query snapshot was taken.")
-    eligible_doc_ids: list[str] = Field(
+    eligible_doc_ids: list[DocId] = Field(
         default_factory=list, description="Document IDs included in the corpus snapshot."
     )
     retrieval_index_version: str | None = Field(
@@ -80,7 +82,10 @@ class QueryRunReviewSummary(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     query_id: str = Field(min_length=1, description="The unique query identifier.")
-    workspace_id: str = Field(min_length=1, description="The workspace this query was executed in.")
+    workspace_id: WorkspaceId = Field(
+        min_length=1,
+        description="The workspace this query was executed in.",
+    )
     question: str = Field(min_length=1, description="The user's original question.")
     status: QueryRunStatus = Field(description="Terminal status of the overall query run.")
     submitted_at: datetime = Field(description="When the query was submitted.")

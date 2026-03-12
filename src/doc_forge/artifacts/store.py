@@ -6,6 +6,7 @@ from pathlib import Path, PurePosixPath
 from uuid import uuid4
 
 from doc_forge.corpus import SourceType
+from doc_forge.identifiers import DocId, WorkspaceId, parse_doc_id, parse_workspace_id
 
 from .schemas import ExtractedArtifact, NormalizedArtifact, RawArtifactRef
 
@@ -19,18 +20,20 @@ class FilesystemArtifactStore:
     def raw_relative_path(
         self,
         *,
-        workspace_id: str,
-        doc_id: str,
+        workspace_id: WorkspaceId,
+        doc_id: DocId,
         source_type: SourceType,
     ) -> str:
+        workspace_id = parse_workspace_id(workspace_id)
+        doc_id = parse_doc_id(doc_id)
         suffix = ".pdf" if source_type is SourceType.PDF else ".md"
         return str(PurePosixPath("raw") / workspace_id / doc_id / f"source{suffix}")
 
     def raw_path(
         self,
         *,
-        workspace_id: str,
-        doc_id: str,
+        workspace_id: WorkspaceId,
+        doc_id: DocId,
         source_type: SourceType,
     ) -> Path:
         return self._resolve_relative_path(
@@ -41,18 +44,22 @@ class FilesystemArtifactStore:
             )
         )
 
-    def extracted_relative_path(self, *, workspace_id: str, doc_id: str) -> str:
+    def extracted_relative_path(self, *, workspace_id: WorkspaceId, doc_id: DocId) -> str:
+        workspace_id = parse_workspace_id(workspace_id)
+        doc_id = parse_doc_id(doc_id)
         return str(PurePosixPath("extracted") / workspace_id / doc_id / "extracted.json")
 
-    def extracted_path(self, *, workspace_id: str, doc_id: str) -> Path:
+    def extracted_path(self, *, workspace_id: WorkspaceId, doc_id: DocId) -> Path:
         return self._resolve_relative_path(
             self.extracted_relative_path(workspace_id=workspace_id, doc_id=doc_id)
         )
 
-    def normalized_relative_path(self, *, workspace_id: str, doc_id: str) -> str:
+    def normalized_relative_path(self, *, workspace_id: WorkspaceId, doc_id: DocId) -> str:
+        workspace_id = parse_workspace_id(workspace_id)
+        doc_id = parse_doc_id(doc_id)
         return str(PurePosixPath("normalized") / workspace_id / doc_id / "normalized.json")
 
-    def normalized_path(self, *, workspace_id: str, doc_id: str) -> Path:
+    def normalized_path(self, *, workspace_id: WorkspaceId, doc_id: DocId) -> Path:
         return self._resolve_relative_path(
             self.normalized_relative_path(workspace_id=workspace_id, doc_id=doc_id)
         )
@@ -60,8 +67,8 @@ class FilesystemArtifactStore:
     def write_raw(
         self,
         *,
-        workspace_id: str,
-        doc_id: str,
+        workspace_id: WorkspaceId,
+        doc_id: DocId,
         source_type: SourceType,
         content: bytes,
     ) -> RawArtifactRef:
@@ -100,30 +107,35 @@ class FilesystemArtifactStore:
             raise ValueError("raw artifact reference does not match the managed path layout")
         self._unlink_if_exists(self._resolve_relative_path(ref.relative_path))
 
-    def write_extracted(self, *, workspace_id: str, artifact: ExtractedArtifact) -> Path:
+    def write_extracted(self, *, workspace_id: WorkspaceId, artifact: ExtractedArtifact) -> Path:
         path = self.extracted_path(workspace_id=workspace_id, doc_id=artifact.doc_id)
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(artifact.model_dump_json(indent=2), encoding="utf-8")
         return path
 
-    def read_extracted(self, *, workspace_id: str, doc_id: str) -> ExtractedArtifact:
+    def read_extracted(self, *, workspace_id: WorkspaceId, doc_id: DocId) -> ExtractedArtifact:
         path = self.extracted_path(workspace_id=workspace_id, doc_id=doc_id)
         return ExtractedArtifact.model_validate_json(path.read_text(encoding="utf-8"))
 
-    def delete_extracted(self, *, workspace_id: str, doc_id: str) -> None:
+    def delete_extracted(self, *, workspace_id: WorkspaceId, doc_id: DocId) -> None:
         self._unlink_if_exists(self.extracted_path(workspace_id=workspace_id, doc_id=doc_id))
 
-    def write_normalized(self, *, workspace_id: str, artifact: NormalizedArtifact) -> Path:
+    def write_normalized(
+        self,
+        *,
+        workspace_id: WorkspaceId,
+        artifact: NormalizedArtifact,
+    ) -> Path:
         path = self.normalized_path(workspace_id=workspace_id, doc_id=artifact.doc_id)
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(artifact.model_dump_json(indent=2), encoding="utf-8")
         return path
 
-    def read_normalized(self, *, workspace_id: str, doc_id: str) -> NormalizedArtifact:
+    def read_normalized(self, *, workspace_id: WorkspaceId, doc_id: DocId) -> NormalizedArtifact:
         path = self.normalized_path(workspace_id=workspace_id, doc_id=doc_id)
         return NormalizedArtifact.model_validate_json(path.read_text(encoding="utf-8"))
 
-    def delete_normalized(self, *, workspace_id: str, doc_id: str) -> None:
+    def delete_normalized(self, *, workspace_id: WorkspaceId, doc_id: DocId) -> None:
         self._unlink_if_exists(self.normalized_path(workspace_id=workspace_id, doc_id=doc_id))
 
     def ensure_root_writable(self) -> None:

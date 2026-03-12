@@ -52,10 +52,10 @@ The currently earned seams are:
 
 - provenance-bearing corpus primitives for documents, sections, chunks, retrieval hits, and answers
 - explicit document-processing lifecycle progression with a failure state
-- internal FastAPI lifecycle runtime for upload, status, retry, retrieval smoke, health, and artifact inspection, including an environment-toggled Swagger UI
+- localhost FastAPI service runtime for health, readiness, document lifecycle, query submission, query review, and environment-toggled Swagger UI
 - query-facing read model that admits only `READY` lifecycle documents into the queryable corpus
 - stable query-time corpus snapshots with persisted `eligible_doc_ids`
-- durable query runs and query snapshots for internal query execution
+- durable query runs, query snapshots, stage traces, and answer artifacts for local query execution
 - deterministic interpreted-query contract, normalization, and unsupported-capability detection
 - executable internal `interpret` stage with durable stage traces in `query_stage_traces`
 - snapshot-scoped dense retrieval over persisted chunk embeddings with provenance-preserving `RetrievedCandidate` output
@@ -63,7 +63,7 @@ The currently earned seams are:
 - deterministic selection with duplicate suppression, bounded neighbor expansion, and first-class `EvidenceSet` output
 - executable internal `select` stage with durable stage traces in `query_stage_traces`
 - deterministic context assembly with inspectable `ContextManifest` output and durable `assemble_context` traces
-- internal `POST /queries` execution through Stage 5 context assembly, with explicit stop before support assessment
+- local `POST /queries` execution through support assessment, answer-mode selection, grounded answer generation, and citation rendering
 - queued lifecycle orchestration with a document-scoped worker and stage dispatch
 - durable registration of supported PDF and Markdown uploads into `REGISTERED` documents with initial lifecycle events and queued extraction work
 - filesystem-backed raw, extracted, and normalized artifact storage with deterministic document-scoped paths
@@ -75,42 +75,35 @@ The currently earned seams are:
 - deterministic evaluation of retrieval ordering, supporting evidence, and provenance completeness
 - repo devtool support for staged and repository secret scanning
 
-These seams are implemented internal architecture, not stable public contracts.
+Most of these seams are implemented internal architecture. The localhost FastAPI service routes are additionally promoted as stable public contracts in [`docs/evergreen/api-contracts.md`](./api-contracts.md).
 
 ## Boundary Between Public API, Internal Architecture, And Planned Work
 ### Stable Public API
-The stable public package interface remains intentionally empty and is defined in [`docs/evergreen/api-contracts.md`](./api-contracts.md). Internal routes such as upload/status/retry/retrieval smoke and `POST /queries`, along with `src/doc_forge/query/` exports, are implemented runtime seams rather than public contracts.
+The stable public interface is the localhost FastAPI HTTP API defined in [`docs/evergreen/api-contracts.md`](./api-contracts.md). The stable boundary is the running service route set plus its OpenAPI description. The public Python package interface remains intentionally empty.
 
 ### Implemented Internal Architecture
-The `corpus` layer, query read model, internal query runtime through Stage 5 context assembly, internal lifecycle app, queue worker, executable stages from registration through readiness, artifact store, persistence/indexing helpers, evaluation harness, and devtools exist in code and are exercised by tests. These seams are current implementation truth, but they are not yet promised as stable external interfaces for downstream callers.
+The `corpus` layer, query read model, Python query runtime, queue worker, executable stages from registration through readiness, artifact store, persistence/indexing helpers, evaluation harness, and devtools exist in code and are exercised by tests. These package seams are current implementation truth, but they remain internal unless promoted into [`docs/evergreen/api-contracts.md`](./api-contracts.md).
 
 ### Planned MVP Capabilities Not Yet Implemented
 The target product in [`docs/evergreen/mvp.md`](./mvp.md) still exceeds the runtime that exists today. The following user-facing capabilities are not implemented in `src/doc_forge/`:
 
-- no support-assessment stage
-- no answer-mode decision stage
-- no answer-generation service
-- no citation-rendering stage
-- no stable public service or package API
-- no user-facing source-inspection UI beyond internal debug/operator routes
+- no stable public Python package API
+- no end-user source-inspection UI beyond the current HTTP review and artifact-inspection routes
 
 ## Gap To MVP
-The current runtime has earned lifecycle processing through `READY`, query-time corpus boundary capture, interpretation through Stage 2, snapshot-scoped dense retrieval through Stage 3, deterministic selection/evidence-set construction through Stage 4, and deterministic context assembly through Stage 5.
+The current runtime has earned lifecycle processing through `READY`, full query execution through grounded answer generation and citation rendering, and a stable localhost HTTP service API.
 
-The main remaining gap to the MVP question-answering service is the rest of the query path:
+The main remaining gap to the MVP is product surface and hardening rather than missing core query stages:
 
-- support assessment
-- answer-mode selection
-- grounded answer generation
-- citation rendering
-
-The runtime also has not earned a stable public service or package API.
+- no end-user source-inspection UI beyond the current service routes
+- no stable public Python package API
+- local-first runtime and operator ergonomics still dominate over broader productization
 
 ## Agent Guardrails
-- Do not treat `src/doc_forge/corpus/` or `src/doc_forge/lifecycle/` as public API. They are real implemented architecture, but they are internal until `docs/evergreen/api-contracts.md` says otherwise.
+- Do not treat `src/doc_forge/corpus/` or `src/doc_forge/lifecycle/` as public package API. They are real implemented architecture, but they remain internal unless `docs/evergreen/api-contracts.md` promotes them.
 - Do not redefine evaluation semantics here. Support-state, scenario, citation, and failure meanings are owned by the evergreen eval docs.
 - Do not treat `docs/delivery/workflow.md` as authority for current implementation truth. It is workflow rationale and promotion guidance, not the current-state source of truth.
-- Do not infer public API stability, answer generation, or user-facing source inspection from internal lifecycle routes or worker seams.
+- Do not infer additional public API stability beyond the routes documented in `docs/evergreen/api-contracts.md` from internal lifecycle routes, worker seams, or package exports.
 - Do not infer support assessment, answer-mode selection, generation, or citation rendering from the existence of `InterpretedQuery`, support-state enums, trust-failure labels, `EvidenceSet` objects, or `ContextManifest` objects in `src/doc_forge/query/contracts.py`.
 - When referencing support-state or trust-failure vocabulary, normalize against [`docs/evergreen/eval-support-semantics.md`](./eval-support-semantics.md) and related evergreen eval docs instead of restating workstream-specific framing as runtime fact.
 - Do not promote a new seam into evergreen architecture just because it appears in one prototype or one workstream. It should be implemented repo truth and exercised under tests or equivalent validation pressure.
