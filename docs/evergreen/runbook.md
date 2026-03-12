@@ -15,6 +15,8 @@ make install
 make run
 make run-api
 make run-worker
+make docker-up-build
+make docker-smoke
 make test-e2e
 ```
 
@@ -41,6 +43,16 @@ export PARITY_WORKER_POLL_SECONDS=0.25
 make run-worker
 ```
 
+Docker-backed local stack:
+```bash
+export PARITY_UID="$(id -u)"
+export PARITY_GID="$(id -g)"
+make docker-up-build
+make docker-ps
+make docker-smoke
+make docker-logs
+```
+
 Additional checks:
 ```bash
 make fmt
@@ -49,12 +61,8 @@ make lint
 make type
 make test
 make test-e2e
+PARITY_E2E_VERBOSE=1 make test-e2e
 make verify
-```
-
-Manual Docker stack:
-```bash
-docker compose up --build
 ```
 
 `make db-revision` creates a new revision file under `src/parity/persistence/migrations/versions/`. Schema changes to lifecycle metadata should update both the SQLAlchemy table definitions and a reviewed Alembic revision.
@@ -68,14 +76,18 @@ docker compose up --build
 - `make run-api` runs the internal FastAPI lifecycle app with upload, status, retry, retrieval-smoke, health, and artifact-inspection routes.
 - `make run-worker` runs the queue-draining lifecycle worker that advances documents from `REGISTERED` to `READY`.
 - `make test-e2e` runs the docker-backed end-to-end document lifecycle suite under `tests/e2e/`.
+- `PARITY_E2E_VERBOSE=1 make test-e2e` enables step-by-step e2e progress logs plus richer failure diagnostics.
 - `POST /internal/run-next-job` exists for tests and local debug; normal local operation should prefer the worker loop.
-- `docker compose up --build` starts the local Postgres, migration, API, and worker stack defined in `docker-compose.yml`.
+- `make docker-up-build` starts the local Postgres, migration, API, and worker stack defined in `docker-compose.yml`.
+- `make docker-smoke` verifies that `/readyz` can reach the configured database and write under `PARITY_ARTIFACT_ROOT`.
 
 ## Database Migrations
 - Alembic is the standard migration interface for lifecycle metadata tables.
 - `DATABASE_URL` is the canonical database URL input for migration commands.
 - `PARITY_ARTIFACT_ROOT` is the internal runtime root for raw and intermediate artifact files used by the upload app.
 - `PARITY_WORKER_POLL_SECONDS` controls idle sleep time for the internal worker loop.
+- `PARITY_UID` and `PARITY_GID` let the compose services run as a non-root user that can still write to the bind-mounted `./data` artifact root.
+- `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_PORT`, and `PORT` are the compose-level defaults for the local Docker stack.
 - `parity.persistence.apply_migrations(...)` remains available as an internal helper for tests and bootstrapping, but normal repo operations should use Alembic commands.
 - The current Alembic scope covers lifecycle metadata plus ingestion/indexing persistence: `documents`, `lifecycle_events`, `document_jobs`, `sections`, `chunks`, `index_entries`, and `chunk_embeddings`.
 - The SQLite compatibility seam for `Document`, `Section`, and `Chunk` remains in place and is not yet migrated into Alembic-managed runtime tables.
@@ -85,6 +97,7 @@ docker compose up --build
 - If validation disagrees across environments, re-run the standard `fmt-check`, `lint`, `type`, `test`, and `verify` targets. Use `fmt` only when you want to apply automatic fixes.
 - If Alembic commands fail immediately, verify that `DATABASE_URL` is set and points at a reachable database.
 - If the internal lifecycle app or worker fails at startup, verify `DATABASE_URL`, `PARITY_ARTIFACT_ROOT`, and migrations first.
+- If the Docker stack cannot write artifacts as a non-root user, export `PARITY_UID` and `PARITY_GID` before `make docker-up-build`, then clean up any stale root-owned files under `./data`.
 - If `make run` changes behavior, inspect `src/parity/cli.py` and `src/parity/retrieval.py` first because they define the current runtime surface.
 - If a doc describes ingestion, parsing, or grounded answering as already implemented, reconcile it with `docs/evergreen/architecture.md` and the actual code before treating it as current behavior.
 

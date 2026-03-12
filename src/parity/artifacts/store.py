@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path, PurePosixPath
+from uuid import uuid4
 
 from parity._contracts import SourceType
 
@@ -124,6 +125,14 @@ class FilesystemArtifactStore:
 
     def delete_normalized(self, *, workspace_id: str, doc_id: str) -> None:
         self._unlink_if_exists(self.normalized_path(workspace_id=workspace_id, doc_id=doc_id))
+
+    def ensure_root_writable(self) -> None:
+        """Create the managed root if needed and verify it is writable."""
+
+        self._root.mkdir(parents=True, exist_ok=True)
+        probe_path = self._root / f".parity-write-probe-{uuid4().hex}"
+        probe_path.write_text("", encoding="utf-8")
+        probe_path.unlink()
 
     def _resolve_relative_path(self, relative_path: str) -> Path:
         relative = PurePosixPath(relative_path)

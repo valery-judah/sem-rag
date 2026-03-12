@@ -350,10 +350,27 @@ async def test_readyz_returns_ok_when_dependencies_load(
     tmp_path,
 ) -> None:
     result = await _route_endpoint(app, path="/readyz", method="GET")(
-        service=_service(sql_engine, tmp_path)
+        engine=sql_engine,
+        artifact_store=FilesystemArtifactStore(tmp_path / "artifacts"),
     )
 
     assert result == {"status": "ok"}
+
+
+async def test_readyz_creates_artifact_root_when_missing(
+    app: FastAPI,
+    sql_engine: Engine,
+    tmp_path,
+) -> None:
+    artifact_root = tmp_path / "missing-artifacts"
+
+    result = await _route_endpoint(app, path="/readyz", method="GET")(
+        engine=sql_engine,
+        artifact_store=FilesystemArtifactStore(artifact_root),
+    )
+
+    assert result == {"status": "ok"}
+    assert artifact_root.exists()
 
 
 async def test_run_next_job_returns_null_payload_when_no_job_exists(app: FastAPI) -> None:
@@ -651,6 +668,8 @@ async def test_http_and_query_logs_are_json_and_correlated(
     assert any(log["event"] == "http.request.completed" for log in structured_logs)
     assert any(log["event"] == "query.run.started" for log in structured_logs)
     assert any(log["event"] == "query.stage.completed" for log in structured_logs)
-    assert any("request_id" in log for log in structured_logs if log["event"] == "http.request.started")
+    assert any(
+        "request_id" in log for log in structured_logs if log["event"] == "http.request.started"
+    )
     assert any("query_id" in log for log in structured_logs if log["event"] == "query.run.started")
     assert "vector search uses embeddings to retrieve related passages" not in caplog.text

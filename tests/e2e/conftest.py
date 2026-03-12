@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path, PurePosixPath
 from typing import Any
 from uuid import uuid4
@@ -60,6 +60,19 @@ def _format_logs(label: str, container: DockerContainer) -> str:
     return f"{label} logs:\n{text}" if text else f"{label} logs: <empty>"
 
 
+def _env_flag(name: str) -> bool:
+    value = os.environ.get(name, "")
+    return value.lower() in {"1", "true", "yes", "on"}
+
+
+def _runtime_user() -> str | None:
+    getuid = getattr(os, "getuid", None)
+    getgid = getattr(os, "getgid", None)
+    if getuid is None or getgid is None:
+        return None
+    return f"{getuid()}:{getgid()}"
+
+
 @dataclass
 class RunningStack:
     base_url: str
@@ -69,9 +82,22 @@ class RunningStack:
     worker_container: DockerContainer
     postgres_container: PostgresContainer
     network: Network
+    verbose: bool = False
+    tracked_doc_ids: list[str] = field(default_factory=list)
 
     def client(self) -> httpx.Client:
         return httpx.Client(base_url=self.base_url, timeout=30.0)
+
+    def log(self, message: str, **fields: object) -> None:
+        if not self.verbose:
+            return
+        details = ", ".join(f"{key}={value!r}" for key, value in sorted(fields.items()))
+        suffix = f" | {details}" if details else ""
+        print(f"[e2e] {message}{suffix}", flush=True)
+
+    def track_document(self, doc_id: str) -> None:
+        if doc_id not in self.tracked_doc_ids:
+            self.tracked_doc_ids.append(doc_id)
 
     def vector_snapshot(self, *, doc_id: str) -> dict[str, object]:
         engine = sa.create_engine(self.database_url)
@@ -178,6 +204,86 @@ class RunningStack:
         relative = PurePosixPath(container_path).relative_to("/artifacts")
         return self.artifact_root.joinpath(*relative.parts)
 
+    def artifact_paths_for_document(self, *, doc_id: str) -> list[str]:
+        if not self.artifact_root.exists():
+            return []
+        matches = [
+            path.relative_to(self.artifact_root).as_posix()
+            for path in self.artifact_root.rglob("*")
+            if path.is_file() and doc_id in path.parts
+        ]
+        return sorted(matches)
+
+    def artifact_tree(self, *, limit: int = 40) -> list[str]:
+        if not self.artifact_root.exists():
+            return ["<artifact root does not exist>"]
+        entries = [
+            path.relative_to(self.artifact_root).as_posix()
+            for path in sorted(self.artifact_root.rglob("*"))
+            if path.is_file()
+        ]
+        if not entries:
+            return ["<artifact root is empty>"]
+        if len(entries) <= limit:
+            return entries
+        remaining = len(entries) - limit
+        return [*entries[:limit], f"... ({remaining} more files)"]
+
+    def describe_document(self, *, doc_id: str) -> str:
+        document = self.document_row(doc_id=doc_id)
+        events = self.lifecycle_events(doc_id=doc_id)
+        snapshot = self.vector_snapshot(doc_id=doc_id)
+        artifact_paths = self.artifact_paths_for_document(doc_id=doc_id)
+        lines = [
+            f"doc_id={doc_id}",
+            f"document_row={document!r}",
+            f"vector_snapshot={snapshot!r}",
+            f"artifact_paths={artifact_paths!r}",
+            "lifecycle_events:",
+        ]
+        if events:
+            lines.extend(f"  - {event!r}" for event in events)
+        else:
+            lines.append("  - <none>")
+        return "\n".join(lines)
+
+    def _format_container_state(self, label: str, container: DockerContainer) -> str:
+        try:
+            wrapped = container.get_wrapped_container()
+            wrapped.reload()
+            state = wrapped.attrs.get("State", {})
+            status = state.get("Status", "<unknown>")
+            exit_code = state.get("ExitCode", "<unknown>")
+            return f"{label} state: status={status!r}, exit_code={exit_code!r}"
+        except Exception as exc:
+            return f"{label} state: unavailable ({exc})"
+
+    def failure_report(self, *, test_id: str) -> str:
+        sections = [
+            f"=== E2E failure report: {test_id} ===",
+            f"base_url={self.base_url}",
+            f"database_url={self.database_url}",
+            f"artifact_root={self.artifact_root}",
+            self._format_container_state("api", self.api_container),
+            self._format_container_state("worker", self.worker_container),
+            self._format_container_state("postgres", self.postgres_container),
+            "artifact tree:",
+        ]
+        sections.extend(f"  - {entry}" for entry in self.artifact_tree())
+        if self.tracked_doc_ids:
+            for doc_id in self.tracked_doc_ids:
+                sections.append(f"document diagnostics:\n{self.describe_document(doc_id=doc_id)}")
+        else:
+            sections.append("document diagnostics:\n<no tracked documents>")
+        sections.extend(
+            [
+                _format_logs("api", self.api_container),
+                _format_logs("worker", self.worker_container),
+                _format_logs("postgres", self.postgres_container),
+            ]
+        )
+        return "\n".join(sections)
+
     def wait_for_document(
         self,
         client: httpx.Client,
@@ -185,17 +291,31 @@ class RunningStack:
         doc_id: str,
         timeout_seconds: float = 45.0,
     ) -> dict[str, Any]:
+        self.track_document(doc_id)
         deadline = time.monotonic() + timeout_seconds
         last_payload: dict[str, Any] | None = None
+        last_status: str | None = None
         while time.monotonic() < deadline:
             response = client.get(f"/documents/{doc_id}/status")
             response.raise_for_status()
             payload = response.json()
             last_payload = payload
+            current_status = str(payload["ingest_status"]).upper()
+            if current_status != last_status:
+                self.log(
+                    "document status changed",
+                    doc_id=doc_id,
+                    status=current_status,
+                    failure_code=payload.get("failure_code"),
+                )
+                last_status = current_status
             if payload["ingest_status"] in {"ready", "failed"}:
                 return payload
             time.sleep(0.25)
-        raise AssertionError(f"document {doc_id} did not reach a terminal state: {last_payload}")
+        raise AssertionError(
+            f"document {doc_id} did not reach a terminal state: {last_payload}\n"
+            f"{self.describe_document(doc_id=doc_id)}"
+        )
 
 
 @pytest.fixture(scope="session")
@@ -203,6 +323,8 @@ def e2e_image_tag() -> str:
     if not _docker_daemon_available():
         pytest.skip("Docker daemon is not available")
     tag = f"parity-e2e:{uuid4().hex}"
+    if _env_flag("PARITY_E2E_VERBOSE"):
+        print(f"[e2e] building image {tag}", flush=True)
     image = DockerImage(
         path=str(_repo_root()),
         tag=tag,
@@ -231,6 +353,16 @@ def _run_migrations(
         .with_env("PARITY_ARTIFACT_ROOT", "/artifacts")
         .with_volume_mapping(str(artifact_root), "/artifacts", mode="rw")
     )
+    runtime_user = _runtime_user()
+    if runtime_user is not None:
+        container = container.with_kwargs(user=runtime_user)
+    verbose = _env_flag("PARITY_E2E_VERBOSE")
+    if verbose:
+        print(
+            "[e2e] running migrations"
+            f" | image_tag={image_tag!r}, artifact_root={str(artifact_root)!r}",
+            flush=True,
+        )
     container.start()
     try:
         result = container.get_wrapped_container().wait(timeout=60)
@@ -252,10 +384,15 @@ def _normalize_host_database_url(database_url: str) -> str:
 def _wait_for_api(base_url: str, api_container: DockerContainer) -> None:
     deadline = time.monotonic() + 45.0
     last_error: str | None = None
+    verbose = _env_flag("PARITY_E2E_VERBOSE")
+    if verbose:
+        print(f"[e2e] waiting for api readiness | base_url={base_url!r}", flush=True)
     while time.monotonic() < deadline:
         try:
             response = httpx.get(f"{base_url}/readyz", timeout=2.0)
             if response.status_code == 200 and response.json() == {"status": "ok"}:
+                if verbose:
+                    print("[e2e] api readiness probe succeeded", flush=True)
                 return
             last_error = f"unexpected response: {response.status_code} {response.text}"
         except Exception as exc:
@@ -272,8 +409,15 @@ def e2e_stack(
     tmp_path: Path,
     request: pytest.FixtureRequest,
 ) -> RunningStack:
+    verbose = _env_flag("PARITY_E2E_VERBOSE")
     artifact_root = tmp_path / "artifacts"
     artifact_root.mkdir()
+    if verbose:
+        print(
+            "[e2e] creating test stack"
+            f" | artifact_root={str(artifact_root)!r}, test_id={request.node.nodeid!r}",
+            flush=True,
+        )
 
     network = Network().create()
     postgres = (
@@ -307,6 +451,9 @@ def e2e_stack(
         .with_volume_mapping(str(artifact_root), "/artifacts", mode="rw")
         .with_exposed_ports(8000)
     )
+    runtime_user = _runtime_user()
+    if runtime_user is not None:
+        api_container = api_container.with_kwargs(user=runtime_user)
     worker_container = (
         DockerContainer(e2e_image_tag)
         .with_command("worker")
@@ -316,6 +463,8 @@ def e2e_stack(
         .with_env("PARITY_WORKER_POLL_SECONDS", "0.1")
         .with_volume_mapping(str(artifact_root), "/artifacts", mode="rw")
     )
+    if runtime_user is not None:
+        worker_container = worker_container.with_kwargs(user=runtime_user)
 
     api_container.start()
     worker_container.start()
@@ -333,14 +482,20 @@ def e2e_stack(
         worker_container=worker_container,
         postgres_container=postgres,
         network=network,
+        verbose=verbose,
+    )
+    stack.log(
+        "stack ready",
+        base_url=base_url,
+        database_url=host_database_url,
+        artifact_root=str(artifact_root),
     )
     try:
         yield stack
     finally:
         failed = bool(getattr(getattr(request.node, "rep_call", None), "failed", False))
         if failed:
-            print(_format_logs("api", api_container))
-            print(_format_logs("worker", worker_container))
+            print(stack.failure_report(test_id=request.node.nodeid), flush=True)
         worker_container.stop()
         api_container.stop()
         postgres.stop()

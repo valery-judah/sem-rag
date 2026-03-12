@@ -9,6 +9,7 @@ pytestmark = pytest.mark.e2e
 
 def test_pdf_fixture_reaches_ready_and_preserves_page_provenance(e2e_stack) -> None:
     pdf_path = Path(__file__).with_name("fixtures").joinpath("ready_text_pdf.pdf")
+    e2e_stack.log("uploading pdf fixture", path=str(pdf_path))
 
     with e2e_stack.client() as client, pdf_path.open("rb") as handle:
         upload = client.post(
@@ -18,6 +19,7 @@ def test_pdf_fixture_reaches_ready_and_preserves_page_provenance(e2e_stack) -> N
         )
         upload.raise_for_status()
         doc_id = upload.json()["doc_id"]
+        e2e_stack.log("uploaded pdf fixture", doc_id=doc_id)
 
         status = e2e_stack.wait_for_document(client, doc_id=doc_id)
         assert status["ingest_status"] == "ready"
@@ -34,6 +36,11 @@ def test_pdf_fixture_reaches_ready_and_preserves_page_provenance(e2e_stack) -> N
             json={"doc_id": doc_id, "query": "tokenization", "k": 1},
         )
         query.raise_for_status()
+        e2e_stack.log(
+            "pdf retrieval query completed",
+            doc_id=doc_id,
+            top_hit=query.json()["hits"][0]["doc_id"],
+        )
         assert query.json()["hits"][0]["doc_id"] == doc_id
 
         document = e2e_stack.document_row(doc_id=doc_id)
@@ -57,6 +64,7 @@ def test_pdf_fixture_reaches_ready_and_preserves_page_provenance(e2e_stack) -> N
 
 def test_malformed_pdf_reaches_failed_without_published_retrieval_artifacts(e2e_stack) -> None:
     malformed_path = Path(__file__).with_name("fixtures").joinpath("malformed.pdf")
+    e2e_stack.log("uploading malformed pdf fixture", path=str(malformed_path))
 
     with e2e_stack.client() as client, malformed_path.open("rb") as handle:
         upload = client.post(
@@ -66,6 +74,7 @@ def test_malformed_pdf_reaches_failed_without_published_retrieval_artifacts(e2e_
         )
         upload.raise_for_status()
         doc_id = upload.json()["doc_id"]
+        e2e_stack.log("uploaded malformed pdf fixture", doc_id=doc_id)
 
         status = e2e_stack.wait_for_document(client, doc_id=doc_id)
         assert status["ingest_status"] == "failed"

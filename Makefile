@@ -1,5 +1,7 @@
 .DEFAULT_GOAL := help
 
+DOCKER_COMPOSE ?= docker compose
+
 .PHONY: help
 help: ## Show this help message
 	@echo "Usage: make <target>"
@@ -79,3 +81,36 @@ migrate: install ## Apply Alembic migrations using DATABASE_URL
 db-revision: install ## Create a new Alembic revision with MESSAGE="..."
 	@if [ -z "$(MESSAGE)" ]; then echo "MESSAGE is required"; exit 1; fi
 	uv run alembic -c alembic.ini revision -m "$(MESSAGE)"
+
+.PHONY: docker-build
+docker-build: ## Build the local Docker image for the split runtime
+	$(DOCKER_COMPOSE) build
+
+.PHONY: docker-up
+docker-up: ## Start the local Docker stack in detached mode
+	$(DOCKER_COMPOSE) up -d
+
+.PHONY: docker-up-build
+docker-up-build: ## Build and start the local Docker stack in detached mode
+	$(DOCKER_COMPOSE) up -d --build
+
+.PHONY: docker-down
+docker-down: ## Stop the local Docker stack
+	$(DOCKER_COMPOSE) down
+
+.PHONY: docker-ps
+docker-ps: ## Show Docker stack service status
+	$(DOCKER_COMPOSE) ps
+
+.PHONY: docker-logs
+docker-logs: ## Show recent API logs from the Docker stack
+	$(DOCKER_COMPOSE) logs --tail=120 api
+
+.PHONY: docker-db-shell
+docker-db-shell: ## Open a psql shell inside the Docker Postgres service
+	$(DOCKER_COMPOSE) exec db psql -U "$${POSTGRES_USER:-parity}" -d "$${POSTGRES_DB:-parity}"
+
+.PHONY: docker-smoke
+docker-smoke: ## Build, start, and probe the Docker stack readiness path
+	$(DOCKER_COMPOSE) up -d --build
+	curl --fail --silent http://127.0.0.1:$${PORT:-8000}/readyz

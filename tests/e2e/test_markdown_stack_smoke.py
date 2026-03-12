@@ -27,6 +27,7 @@ def _assert_status_subsequence(actual: list[str], expected: tuple[str, ...]) -> 
 
 def test_markdown_fixture_reaches_ready_and_persists_artifacts(e2e_stack) -> None:
     smoke_path = Path(__file__).with_name("fixtures").joinpath("smoke.md")
+    e2e_stack.log("uploading markdown fixture", path=str(smoke_path))
 
     with e2e_stack.client() as client, smoke_path.open("rb") as handle:
         upload = client.post(
@@ -36,6 +37,7 @@ def test_markdown_fixture_reaches_ready_and_persists_artifacts(e2e_stack) -> Non
         )
         upload.raise_for_status()
         doc_id = upload.json()["doc_id"]
+        e2e_stack.log("uploaded markdown fixture", doc_id=doc_id)
 
         status = e2e_stack.wait_for_document(client, doc_id=doc_id)
         assert status["ingest_status"] == "ready"
@@ -70,4 +72,9 @@ def test_markdown_fixture_reaches_ready_and_persists_artifacts(e2e_stack) -> Non
             json={"doc_id": doc_id, "query": "retrievable and inspectable", "k": 1},
         )
         query.raise_for_status()
+        e2e_stack.log(
+            "retrieval query completed",
+            doc_id=doc_id,
+            top_hit=query.json()["hits"][0]["doc_id"],
+        )
         assert query.json()["hits"][0]["doc_id"] == doc_id

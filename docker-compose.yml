@@ -1,26 +1,36 @@
 services:
   db:
     image: postgres:16-alpine
+    init: true
     environment:
-      POSTGRES_DB: parity
-      POSTGRES_USER: parity
-      POSTGRES_PASSWORD: parity
+      POSTGRES_DB: ${POSTGRES_DB:-parity}
+      POSTGRES_USER: ${POSTGRES_USER:-parity}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-parity}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U parity -d parity"]
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-parity} -d ${POSTGRES_DB:-parity}",
+        ]
       interval: 2s
       timeout: 2s
       retries: 30
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5432}:5432"
+    restart: unless-stopped
+    volumes:
+      - db-data:/var/lib/postgresql/data
 
   migrate:
     build: .
     command: ["migrate"]
+    init: true
+    user: "${PARITY_UID:-1000}:${PARITY_GID:-1000}"
     depends_on:
       db:
         condition: service_healthy
     environment:
-      DATABASE_URL: postgresql+psycopg://parity:parity@db:5432/parity
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-parity}:${POSTGRES_PASSWORD:-parity}@db:5432/${POSTGRES_DB:-parity}
       PARITY_ARTIFACT_ROOT: /artifacts
     volumes:
       - ./data:/artifacts
@@ -29,31 +39,52 @@ services:
   api:
     build: .
     command: ["api"]
+    init: true
+    user: "${PARITY_UID:-1000}:${PARITY_GID:-1000}"
     depends_on:
       db:
         condition: service_healthy
       migrate:
         condition: service_completed_successfully
     environment:
-      DATABASE_URL: postgresql+psycopg://parity:parity@db:5432/parity
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-parity}:${POSTGRES_PASSWORD:-parity}@db:5432/${POSTGRES_DB:-parity}
       PARITY_ARTIFACT_ROOT: /artifacts
-      PORT: "8000"
+      PORT: "${PORT:-8000}"
     volumes:
       - ./data:/artifacts
     ports:
-      - "8000:8000"
+      - "${PORT:-8000}:${PORT:-8000}"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import sys, urllib.request; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:${PORT:-8000}/readyz', timeout=2).status == 200 else 1)",
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 5s
+    restart: unless-stopped
 
   worker:
     build: .
     command: ["worker"]
+    init: true
+    user: "${PARITY_UID:-1000}:${PARITY_GID:-1000}"
     depends_on:
       db:
         condition: service_healthy
       migrate:
         condition: service_completed_successfully
     environment:
-      DATABASE_URL: postgresql+psycopg://parity:parity@db:5432/parity
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-parity}:${POSTGRES_PASSWORD:-parity}@db:5432/${POSTGRES_DB:-parity}
       PARITY_ARTIFACT_ROOT: /artifacts
-      PARITY_WORKER_POLL_SECONDS: "0.1"
+      PARITY_WORKER_POLL_SECONDS: "${PARITY_WORKER_POLL_SECONDS:-0.1}"
     volumes:
       - ./data:/artifacts
+    restart: unless-stopped
+
+volumes:
+  db-data:

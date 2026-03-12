@@ -51,6 +51,7 @@ def _upload_document(
     title: str,
 ) -> tuple[str, dict[str, object]]:
     absolute_path = _repo_root() / path
+    stack.log("uploading repo markdown document", path=str(absolute_path), title=title)
     with stack.client() as client, absolute_path.open("rb") as handle:
         upload = client.post(
             "/documents",
@@ -59,6 +60,7 @@ def _upload_document(
         )
         upload.raise_for_status()
         doc_id = upload.json()["doc_id"]
+        stack.log("uploaded repo markdown document", doc_id=doc_id, title=title)
         status = stack.wait_for_document(client, doc_id=doc_id, timeout_seconds=90.0)
         assert status["ingest_status"] == "ready"
         artifacts = client.get(f"/documents/{doc_id}/artifacts")
@@ -73,6 +75,7 @@ def _upload_markdown_bytes(
     title: str,
     content: bytes,
 ) -> tuple[str, dict[str, object]]:
+    stack.log("uploading synthetic markdown document", filename=filename, title=title)
     with stack.client() as client:
         upload = client.post(
             "/documents",
@@ -81,6 +84,7 @@ def _upload_markdown_bytes(
         )
         upload.raise_for_status()
         doc_id = upload.json()["doc_id"]
+        stack.log("uploaded synthetic markdown document", doc_id=doc_id, title=title)
         status = stack.wait_for_document(client, doc_id=doc_id, timeout_seconds=90.0)
         assert status["ingest_status"] == "ready"
         artifacts = client.get(f"/documents/{doc_id}/artifacts")
@@ -107,6 +111,7 @@ def test_design_exploration_reaches_ready_and_is_queryable(e2e_stack) -> None:
             json={"doc_id": doc_id, "query": query_text, "k": 1},
         )
         query.raise_for_status()
+        e2e_stack.log("real markdown retrieval query completed", doc_id=doc_id, query=query_text)
         assert query.json()["hits"][0]["doc_id"] == doc_id
 
     _assert_vector_snapshot(snapshot)
@@ -136,6 +141,7 @@ def test_real_markdown_bundle_reaches_ready_with_artifacts_and_doc_scoped_retrie
                 json={"doc_id": doc_id, "query": query_text, "k": 1},
             )
             query.raise_for_status()
+            e2e_stack.log("bundle retrieval query completed", doc_id=doc_id, query=query_text)
             assert query.json()["hits"][0]["doc_id"] == doc_id
             _assert_vector_snapshot(snapshot)
             assert e2e_stack.host_artifact_path(artifacts["raw_path"]).exists()
@@ -162,6 +168,11 @@ def test_multi_document_queries_remain_doc_scoped(e2e_stack) -> None:
                 json={"doc_id": doc_id, "query": cross_query, "k": 1},
             )
             query.raise_for_status()
+            e2e_stack.log(
+                "cross-document retrieval query completed",
+                doc_id=doc_id,
+                query=cross_query,
+            )
             assert query.json()["hits"][0]["doc_id"] == doc_id
             _assert_vector_snapshot(snapshot)
             assert e2e_stack.host_artifact_path(artifacts["normalized_path"]).exists()

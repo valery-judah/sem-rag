@@ -7,11 +7,14 @@ from time import perf_counter
 from typing import Annotated
 from uuid import uuid4
 
+import sqlalchemy as sa
+import structlog
 from fastapi import Body, Depends, FastAPI, File, Form, HTTPException, Request, UploadFile, status
 from pydantic import BaseModel, ConfigDict, Field
-import structlog
+from sqlalchemy.engine import Engine
 from structlog.contextvars import bind_contextvars, clear_contextvars
 
+from parity.artifacts import FilesystemArtifactStore
 from parity.lifecycle.service import (
     DocumentArtifactRefs,
     DocumentLifecycleService,
@@ -40,14 +43,20 @@ from parity.query import (
     SupportAssessment,
     SupportState,
 )
-from parity.query.review import QueryCitationReview, QueryRunReviewSummary, QueryTraceReview
 from parity.query.errors import CorpusBoundaryUnavailableError, QueryExecutionFailedError
-from parity.query.review import QueryReviewService
+from parity.query.review import (
+    QueryCitationReview,
+    QueryReviewService,
+    QueryRunReviewSummary,
+    QueryTraceReview,
+)
 from parity.stages import DocumentRegistrationError
 
 from .deps import (
+    get_artifact_store,
     get_document_lifecycle_service,
     get_document_lifecycle_worker,
+    get_engine,
     get_query_review_service,
     get_query_service,
 )
@@ -153,12 +162,12 @@ def create_app() -> FastAPI:
 
     @app.get("/readyz")
     async def readyz(
-        service: Annotated[
-            DocumentLifecycleService,
-            Depends(get_document_lifecycle_service),
-        ],
+        engine: Annotated[Engine, Depends(get_engine)],
+        artifact_store: Annotated[FilesystemArtifactStore, Depends(get_artifact_store)],
     ) -> dict[str, str]:
-        del service
+        with engine.connect() as connection:
+            connection.execute(sa.text("SELECT 1"))
+        artifact_store.ensure_root_writable()
         return {"status": "ok"}
 
     @app.post(
