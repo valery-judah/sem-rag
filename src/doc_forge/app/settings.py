@@ -2,61 +2,49 @@
 
 from __future__ import annotations
 
-import os
-from dataclasses import dataclass
 from pathlib import Path
 
+from pydantic import Field, field_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
-@dataclass(frozen=True)
-class AppSettings:
+
+class AppSettings(BaseSettings):
     """Environment-backed runtime configuration."""
 
-    database_url: str
-    artifact_root: Path
-    service_name: str
-    environment: str
-    enable_swagger: bool
-    log_level: str
-    embedding_backend: str
-    embedding_model_name: str
-    answer_generator_backend: str
-    answer_generator_model_name: str
-    answer_generator_max_new_tokens: int
-    answer_generator_temperature: float
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
+
+    database_url: str = Field(
+        default="postgresql+psycopg://doc-forge:doc-forge@localhost:5432/doc-forge", 
+        alias="DATABASE_URL"
+    )
+    artifact_root: Path = Field(default=Path("data"), alias="DOC_FORGE_ARTIFACT_ROOT")
+    service_name: str = Field(default="doc_forge-api", alias="DOC_FORGE_SERVICE_NAME")
+    environment: str = Field(default="prod", alias="DOC_FORGE_ENVIRONMENT")
+    enable_swagger: bool = Field(default=False, alias="DOC_FORGE_ENABLE_SWAGGER")
+    log_level: str = Field(default="INFO", alias="DOC_FORGE_LOG_LEVEL")
+    embedding_backend: str = Field(default="deterministic", alias="DOC_FORGE_EMBEDDING_BACKEND")
+    embedding_model_name: str = Field(
+        default="sentence-transformers/all-MiniLM-L6-v2", 
+        alias="DOC_FORGE_EMBEDDING_MODEL"
+    )
+    answer_generator_backend: str = Field(default="deterministic", alias="DOC_FORGE_ANSWER_GENERATOR_BACKEND")
+    answer_generator_model_name: str = Field(
+        default="mlx-community/TinyLlama-1.1B-Chat-v1.0", 
+        alias="DOC_FORGE_ANSWER_GENERATOR_MODEL"
+    )
+    answer_generator_max_new_tokens: int = Field(default=256, alias="DOC_FORGE_ANSWER_GENERATOR_MAX_NEW_TOKENS")
+    answer_generator_temperature: float = Field(default=0.0, alias="DOC_FORGE_ANSWER_GENERATOR_TEMPERATURE")
+
+    @field_validator("artifact_root", mode="after")
+    @classmethod
+    def resolve_artifact_root(cls, v: Path) -> Path:
+        return v.resolve()
 
 
 def load_settings() -> AppSettings:
     """Load app settings from the process environment."""
-
-    database_url = os.environ.get("DATABASE_URL")
-    if not database_url:
-        raise RuntimeError("DATABASE_URL must be set")
-
-    artifact_root = Path(os.environ.get("DOC_FORGE_ARTIFACT_ROOT", "data")).resolve()
-    return AppSettings(
-        database_url=database_url,
-        artifact_root=artifact_root,
-        service_name=os.environ.get("DOC_FORGE_SERVICE_NAME", "doc_forge-api"),
-        environment=os.environ.get("DOC_FORGE_ENVIRONMENT", "prod"),
-        enable_swagger=os.environ.get("DOC_FORGE_ENABLE_SWAGGER", "false").lower() == "true",
-        log_level=os.environ.get("DOC_FORGE_LOG_LEVEL", "INFO"),
-        embedding_backend=os.environ.get("DOC_FORGE_EMBEDDING_BACKEND", "deterministic"),
-        embedding_model_name=os.environ.get(
-            "DOC_FORGE_EMBEDDING_MODEL",
-            "sentence-transformers/all-MiniLM-L6-v2",
-        ),
-        answer_generator_backend=os.environ.get(
-            "DOC_FORGE_ANSWER_GENERATOR_BACKEND",
-            "deterministic",
-        ),
-        answer_generator_model_name=os.environ.get(
-            "DOC_FORGE_ANSWER_GENERATOR_MODEL",
-            "mlx-community/TinyLlama-1.1B-Chat-v1.0",
-        ),
-        answer_generator_max_new_tokens=int(
-            os.environ.get("DOC_FORGE_ANSWER_GENERATOR_MAX_NEW_TOKENS", "256")
-        ),
-        answer_generator_temperature=float(
-            os.environ.get("DOC_FORGE_ANSWER_GENERATOR_TEMPERATURE", "0.0")
-        ),
-    )
+    return AppSettings()

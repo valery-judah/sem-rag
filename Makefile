@@ -1,5 +1,10 @@
 .DEFAULT_GOAL := help
 
+-include .env
+export DATABASE_URL ?= postgresql+psycopg://doc-forge:doc-forge@localhost:5432/doc-forge
+export DOC_FORGE_ARTIFACT_ROOT ?= ./data
+export DOC_FORGE_ENVIRONMENT ?= dev
+
 DOCKER_COMPOSE ?= docker compose
 
 .PHONY: help
@@ -78,15 +83,14 @@ install-git-hooks: ## Configure git to use repo-managed hooks
 
 .PHONY: run-api
 run-api: install ## Run the internal lifecycle FastAPI app
-	DOC_FORGE_ENVIRONMENT=$${DOC_FORGE_ENVIRONMENT:-dev} uv run uvicorn doc_forge.app.api:app --reload
+	uv run uvicorn doc_forge.app.api:app --reload
 
 .PHONY: run-worker
 run-worker: install ## Run the internal lifecycle worker loop
-	DOC_FORGE_ENVIRONMENT=$${DOC_FORGE_ENVIRONMENT:-dev} uv run python -m doc_forge.lifecycle.worker
+	uv run python -m doc_forge.lifecycle.worker
 
 .PHONY: migrate
 migrate: install ## Apply Alembic migrations using DATABASE_URL
-	@if [ -z "$(DATABASE_URL)" ]; then echo "DATABASE_URL is required"; exit 1; fi
 	uv run alembic -c alembic.ini upgrade head
 
 .PHONY: db-revision
@@ -110,9 +114,9 @@ docker-up-build: ## Build and start the local Docker stack in detached mode
 docker-down: ## Stop the local Docker stack
 	$(DOCKER_COMPOSE) down
 
-.PHONY: docker-ps
-docker-ps: ## Show Docker stack service status
-	$(DOCKER_COMPOSE) ps
+.PHONY: docker-clean
+docker-clean: ## Stop the local Docker stack and remove volumes
+	$(DOCKER_COMPOSE) down -v
 
 .PHONY: docker-logs
 docker-logs: ## Show recent API logs from the Docker stack
@@ -121,32 +125,3 @@ docker-logs: ## Show recent API logs from the Docker stack
 .PHONY: docker-db-shell
 docker-db-shell: ## Open a psql shell inside the Docker Postgres service
 	$(DOCKER_COMPOSE) exec db psql -U "$${POSTGRES_USER:-doc-forge}" -d "$${POSTGRES_DB:-doc-forge}"
-
-.PHONY: docker-smoke
-docker-smoke: ## Build, start, and probe the Docker stack readiness path
-	$(DOCKER_COMPOSE) up -d --build
-	@api_cid="$$( $(DOCKER_COMPOSE) ps -q api )"; \
-	if [ -z "$$api_cid" ]; then \
-		echo "api container not found"; \
-		exit 1; \
-	fi; \
-	for attempt in $$(seq 1 30); do \
-		status="$$(docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' "$$api_cid")"; \
-		if [ "$$status" = "healthy" ]; then \
-			break; \
-		fi; \
-		if [ "$$status" = "exited" ] || [ "$$status" = "dead" ]; then \
-			echo "api container entered $$status state"; \
-			$(DOCKER_COMPOSE) logs --tail=120 api; \
-			exit 1; \
-		fi; \
-		sleep 2; \
-	done; \
-	status="$$(docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' "$$api_cid")"; \
-	if [ "$$status" != "healthy" ]; then \
-		echo "api container did not become healthy"; \
-		$(DOCKER_COMPOSE) ps; \
-		$(DOCKER_COMPOSE) logs --tail=120 api; \
-		exit 1; \
-	fi
-	$(DOCKER_COMPOSE) exec -T api python -c "import os, urllib.request; print(urllib.request.urlopen(f\"http://127.0.0.1:{os.environ.get('PORT', '8000')}/readyz\", timeout=2).read().decode())"

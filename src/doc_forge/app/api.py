@@ -321,6 +321,43 @@ def create_app() -> FastAPI:
             ) from exc
 
     @app.get(
+        "/documents/{doc_id}",
+        summary="Get Document",
+        tags=["Documents"],
+        description="Retrieve the core details of a registered document.",
+        responses={
+            status.HTTP_404_NOT_FOUND: {
+                "model": ErrorResponse,
+                "description": "Document not found",
+            },
+        },
+    )
+    async def get_document(
+        doc_id: Annotated[str, Field(..., description="The unique identifier of the document.")],
+        service: Annotated[
+            DocumentLifecycleService,
+            Depends(get_document_lifecycle_service),
+        ],
+    ) -> dict[str, object]:
+        try:
+            document = service._require_document(doc_id)
+            return {
+                "doc_id": document.doc_id,
+                "workspace_id": document.workspace_id,
+                "source_type": document.source_type.value,
+                "title": document.title,
+                "filename": document.filename,
+                "uploaded_at": document.uploaded_at.isoformat(),
+                "checksum": document.checksum,
+                "ingest_status": document.ingest_status.value,
+                "failure_code": document.failure_code,
+                "failure_detail": document.failure_detail,
+                "raw_storage_path": document.raw_storage_path,
+            }
+        except DocumentNotFoundError as exc:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+
+    @app.get(
         "/documents/{doc_id}/status",
         response_model=DocumentStatusResult,
         summary="Get Document Status",

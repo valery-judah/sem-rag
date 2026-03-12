@@ -21,25 +21,20 @@ make docker-smoke
 make test-e2e
 ```
 
-Lifecycle metadata migrations use Alembic with `DATABASE_URL`:
+Lifecycle metadata migrations use Alembic and `.env`:
 
 ```bash
-export DATABASE_URL=postgresql+psycopg://user:pass@localhost:5432/doc_forge
 make migrate
 make db-revision MESSAGE="add lifecycle index"
 ```
 
 Internal upload app:
 ```bash
-export DATABASE_URL=postgresql+psycopg://user:pass@localhost:5432/doc_forge
-export DOC_FORGE_ARTIFACT_ROOT=./data
 make run-api
 ```
 
 Internal lifecycle worker:
 ```bash
-export DATABASE_URL=postgresql+psycopg://user:pass@localhost:5432/doc_forge
-export DOC_FORGE_ARTIFACT_ROOT=./data
 export DOC_FORGE_WORKER_POLL_SECONDS=0.25
 make run-worker
 ```
@@ -103,6 +98,7 @@ make verify
 - If optional model-backed embeddings or Apple Silicon generation fail to import, run `make sync-llm` or `make sync-mac` and verify the corresponding smoke target.
 - If validation disagrees across environments, re-run the standard `fmt-check`, `lint`, `type`, `test`, and `verify` targets. Use `fmt` only when you want to apply automatic fixes.
 - If Alembic commands fail immediately, verify that `DATABASE_URL` is set and points at a reachable database.
+- If you encounter database authentication errors when connecting local processes to the Docker stack, run `make docker-clean` to wipe stale volumes and reset the credentials, then `make docker-up-build`.
 - If the internal lifecycle app or worker fails at startup, verify `DATABASE_URL`, `DOC_FORGE_ARTIFACT_ROOT`, and migrations first.
 - If the Docker stack cannot write artifacts as a non-root user, export `DOC_FORGE_UID` and `DOC_FORGE_GID` before `make docker-up-build`, then clean up any stale root-owned files under `./data`.
 - If a doc describes ingestion, parsing, or grounded answering as already implemented, reconcile it with `docs/evergreen/architecture.md` and the actual code before treating it as current behavior.
