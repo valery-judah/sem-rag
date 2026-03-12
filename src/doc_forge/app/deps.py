@@ -135,6 +135,19 @@ def get_embedding_adapter() -> EmbeddingAdapter:
     )
 
 
+def get_vector_store(
+    engine: Annotated[Engine, Depends(get_engine)],
+) -> SqlVectorStore:
+    """Build the vector store instance for queries and health checks."""
+
+    return SqlVectorStore(
+        engine=engine,
+        embedding_adapter=get_embedding_adapter(),
+        index_entries=SqlIndexEntryRepository(engine),
+        chunk_embeddings=SqlChunkEmbeddingRepository(engine),
+    )
+
+
 @cache
 def _build_answer_generator(
     backend: str,

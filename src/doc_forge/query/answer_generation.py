@@ -26,7 +26,7 @@ from .policies import QueryPolicy
 
 
 def _logger() -> structlog.stdlib.BoundLogger:
-    return structlog.get_logger(__name__)
+    return structlog.get_logger(__name__)  # type: ignore
 
 
 GENERATOR_VERSION = "answer_generation.deterministic.v1"
@@ -594,7 +594,7 @@ class _OllamaBackend:
         try:
             with urllib.request.urlopen(req) as response:
                 result = json.loads(response.read().decode("utf-8"))
-                return result.get("response", "").strip()
+                return result.get("response", "").strip()  # type: ignore
         except Exception as e:
             raise RuntimeError(f"Ollama generation failed: {e}") from e
 

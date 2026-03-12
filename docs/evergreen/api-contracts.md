@@ -40,6 +40,7 @@ The repository now includes implemented and tested internal query-runtime seams,
 
 These internal-only seams include:
 
+- the internal FastAPI routes and their conditionally exposed Swagger UI endpoint (`/docs`)
 - the internal `POST /queries` FastAPI route
 - internal `doc_forge.query` request and runtime types such as `QueryRequest`, `CorpusSnapshot`, and `InterpretedQuery`
 - internal query persistence artifacts such as `query_runs`, `query_snapshots`, and `query_stage_traces`

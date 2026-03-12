@@ -52,7 +52,7 @@ The currently earned seams are:
 
 - provenance-bearing corpus primitives for documents, sections, chunks, retrieval hits, and answers
 - explicit document-processing lifecycle progression with a failure state
-- internal FastAPI lifecycle runtime for upload, status, retry, retrieval smoke, health, and artifact inspection
+- internal FastAPI lifecycle runtime for upload, status, retry, retrieval smoke, health, and artifact inspection, including an environment-toggled Swagger UI
 - query-facing read model that admits only `READY` lifecycle documents into the queryable corpus
 - stable query-time corpus snapshots with persisted `eligible_doc_ids`
 - durable query runs and query snapshots for internal query execution

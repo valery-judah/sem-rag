@@ -50,7 +50,7 @@ from .trace import QueryStageTrace, utc_now
 
 
 def _logger() -> structlog.stdlib.BoundLogger:
-    return structlog.get_logger(__name__)
+    return structlog.get_logger(__name__)  # type: ignore
 
 
 class QueryService:

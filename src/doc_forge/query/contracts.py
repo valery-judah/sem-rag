@@ -158,15 +158,33 @@ class QueryPolicyOverride(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    retrieval_candidate_cap: int | None = Field(default=None, ge=1)
-    evidence_set_cap: int | None = Field(default=None, ge=1)
-    neighbor_expansion_enabled: bool | None = None
-    neighbor_expansion_cap: int | None = Field(default=None, ge=0)
-    duplicate_suppression_mode: DuplicateSuppressionMode | None = None
-    context_token_budget: int | None = Field(default=None, ge=1)
-    deterministic_tie_break_order: tuple[str, ...] | None = None
-    citation_include_heading_path: bool | None = None
-    citation_include_locator: bool | None = None
+    retrieval_candidate_cap: int | None = Field(
+        default=None, ge=1, description="Max raw candidates to retrieve."
+    )
+    evidence_set_cap: int | None = Field(
+        default=None, ge=1, description="Max evidence sets to build."
+    )
+    neighbor_expansion_enabled: bool | None = Field(
+        default=None, description="Enable adjacent chunk expansion."
+    )
+    neighbor_expansion_cap: int | None = Field(
+        default=None, ge=0, description="Max adjacent chunks to expand."
+    )
+    duplicate_suppression_mode: DuplicateSuppressionMode | None = Field(
+        default=None, description="How to handle duplicates."
+    )
+    context_token_budget: int | None = Field(
+        default=None, ge=1, description="Token budget for context assembly."
+    )
+    deterministic_tie_break_order: tuple[str, ...] | None = Field(
+        default=None, description="Tie-break ordering rule."
+    )
+    citation_include_heading_path: bool | None = Field(
+        default=None, description="Include heading path in citations."
+    )
+    citation_include_locator: bool | None = Field(
+        default=None, description="Include locator (page/line) in citations."
+    )
 
 
 class QueryRequest(BaseModel):
@@ -174,9 +192,19 @@ class QueryRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    question: str = Field(min_length=1)
-    workspace_id: str = Field(min_length=1)
-    policy_overrides: QueryPolicyOverride | None = None
+    question: str = Field(
+        min_length=1,
+        description="The user's question.",
+        json_schema_extra={"example": "What uses embeddings to retrieve related passages?"},
+    )
+    workspace_id: str = Field(
+        min_length=1,
+        description="The workspace scope to search against.",
+        json_schema_extra={"example": "workspace_alpha"},
+    )
+    policy_overrides: QueryPolicyOverride | None = Field(
+        default=None, description="Optional overrides for query policies."
+    )
 
 
 class QueryRun(BaseModel):

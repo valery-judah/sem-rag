@@ -45,13 +45,41 @@ class UploadDocumentResult(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    doc_id: str
-    ingest_status: ProcessingStatus
-    source_type: SourceType
-    filename: str
-    title: str
-    uploaded_at: datetime
-    checksum: str
+    doc_id: str = Field(
+        ...,
+        description="Unique identifier for the registered document.",
+        json_schema_extra={"example": "doc_1234abcd"},
+    )
+    ingest_status: ProcessingStatus = Field(
+        ...,
+        description="The current processing status of the document.",
+        json_schema_extra={"example": "registered"},
+    )
+    source_type: SourceType = Field(
+        ...,
+        description="The detected source type of the document.",
+        json_schema_extra={"example": "pdf"},
+    )
+    filename: str = Field(
+        ...,
+        description="The original filename of the uploaded document.",
+        json_schema_extra={"example": "report.pdf"},
+    )
+    title: str = Field(
+        ...,
+        description="The resolved title of the document.",
+        json_schema_extra={"example": "Q3 Financial Report"},
+    )
+    uploaded_at: datetime = Field(
+        ..., description="The UTC timestamp when the document was uploaded."
+    )
+    checksum: str = Field(
+        ...,
+        description="The SHA-256 checksum of the uploaded file content.",
+        json_schema_extra={
+            "example": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+    )
 
 
 class DocumentStatusResult(BaseModel):
@@ -59,14 +87,44 @@ class DocumentStatusResult(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    doc_id: str
-    ingest_status: ProcessingStatus
-    source_type: SourceType
-    title: str
-    filename: str
-    failure_code: str | None = None
-    failure_detail: str | None = None
-    active_job_stage: DocumentJobStage | None = None
+    doc_id: str = Field(
+        ...,
+        description="The unique identifier of the document.",
+        json_schema_extra={"example": "doc_1234abcd"},
+    )
+    ingest_status: ProcessingStatus = Field(
+        ...,
+        description="The current ingestion status of the document.",
+        json_schema_extra={"example": "indexed"},
+    )
+    source_type: SourceType = Field(
+        ..., description="The source type of the document.", json_schema_extra={"example": "pdf"}
+    )
+    title: str = Field(
+        ...,
+        description="The title of the document.",
+        json_schema_extra={"example": "Q3 Financial Report"},
+    )
+    filename: str = Field(
+        ...,
+        description="The original filename of the document.",
+        json_schema_extra={"example": "report.pdf"},
+    )
+    failure_code: str | None = Field(
+        default=None,
+        description="A machine-readable code if the document processing failed.",
+        json_schema_extra={"example": "extraction_failed"},
+    )
+    failure_detail: str | None = Field(
+        default=None,
+        description="A human-readable explanation if the document processing failed.",
+        json_schema_extra={"example": "Failed to extract text from page 3"},
+    )
+    active_job_stage: DocumentJobStage | None = Field(
+        default=None,
+        description="The currently active processing job stage, if any.",
+        json_schema_extra={"example": "chunk"},
+    )
 
 
 class RetryDocumentResult(BaseModel):
@@ -74,9 +132,21 @@ class RetryDocumentResult(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    doc_id: str
-    ingest_status: ProcessingStatus
-    queued_stage: DocumentJobStage
+    doc_id: str = Field(
+        ...,
+        description="The unique identifier of the document.",
+        json_schema_extra={"example": "doc_1234abcd"},
+    )
+    ingest_status: ProcessingStatus = Field(
+        ...,
+        description="The new status of the document after queuing for retry.",
+        json_schema_extra={"example": "registered"},
+    )
+    queued_stage: DocumentJobStage = Field(
+        ...,
+        description="The specific processing stage that has been queued for execution.",
+        json_schema_extra={"example": "extract"},
+    )
 
 
 class RetrievalQueryResult(BaseModel):
@@ -84,8 +154,15 @@ class RetrievalQueryResult(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    doc_id: str
-    hits: list[VectorSearchHit] = Field(default_factory=list)
+    doc_id: str = Field(
+        ...,
+        description="The unique identifier of the document searched against.",
+        json_schema_extra={"example": "doc_1234abcd"},
+    )
+    hits: list[VectorSearchHit] = Field(
+        default_factory=list,
+        description="The list of vector search hits (chunks) returned from the vector store.",
+    )
 
 
 class DocumentArtifactRefs(BaseModel):
@@ -93,10 +170,26 @@ class DocumentArtifactRefs(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    doc_id: str
-    raw_path: str
-    extracted_path: str | None = None
-    normalized_path: str | None = None
+    doc_id: str = Field(
+        ...,
+        description="The unique identifier of the document.",
+        json_schema_extra={"example": "doc_1234abcd"},
+    )
+    raw_path: str = Field(
+        ...,
+        description="The filesystem path to the original raw uploaded file.",
+        json_schema_extra={"example": "/data/artifacts/doc_1234abcd/raw.pdf"},
+    )
+    extracted_path: str | None = Field(
+        default=None,
+        description="The filesystem path to the extracted text artifact.",
+        json_schema_extra={"example": "/data/artifacts/doc_1234abcd/extracted.json"},
+    )
+    normalized_path: str | None = Field(
+        default=None,
+        description="The filesystem path to the normalized text artifact.",
+        json_schema_extra={"example": "/data/artifacts/doc_1234abcd/normalized.json"},
+    )
 
 
 class DocumentLifecycleService:

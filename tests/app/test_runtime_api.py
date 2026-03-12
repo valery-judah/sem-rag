@@ -11,7 +11,7 @@ from pydantic import ValidationError
 from sqlalchemy.engine import Engine
 
 from doc_forge._contracts import ProcessingStatus
-from doc_forge.app.api import QuerySubmissionResult, RetrievalQueryRequest
+from doc_forge.app.api import QueryAnswerResponse, RetrievalQueryRequest, WorkerJobResult
 from doc_forge.app.deps import (
     get_document_lifecycle_service,
     get_query_review_service,
@@ -273,22 +273,8 @@ async def test_queries_route_returns_final_answer_and_persists_artifacts(
         service=_query_service(sql_engine),
     )
 
-    assert isinstance(result, QuerySubmissionResult)
-    assert result.workspace_id == "ws-1"
-    assert result.status.value == "succeeded"
-    assert result.snapshot.eligible_doc_ids == ["doc-ready"]
-    assert result.interpreted_query.request_type.value == "fact_lookup"
-    assert len(result.retrieved_candidates) == 1
-    assert result.retrieved_candidates[0].chunk_id == "chunk-ready"
-    assert len(result.selected_candidates) == 1
-    assert result.selected_candidates[0].chunk_id == "chunk-ready"
-    assert len(result.evidence_sets) == 1
-    assert result.evidence_sets[0].evidence_units[0].candidate.chunk_id == "chunk-ready"
-    assert result.context_manifest.included_evidence_set_ids == ["es-1"]
-    assert result.context_manifest.context_items[0].evidence_set_id == "es-1"
-    assert result.support_assessment.support_state.value == "sufficient"
-    assert result.answer_mode_decision.answer_mode.value == "direct_answer"
-    assert "vector search uses embeddings to retrieve related passages" in result.answer.answer_text
+    assert isinstance(result, QueryAnswerResponse)
+    assert "vector search uses embeddings to retrieve related passages" in result.answer_text
     assert result.support_state.value == "sufficient"
     assert result.answer_mode.value == "direct_answer"
     assert result.visible_limitations == []
@@ -301,9 +287,9 @@ async def test_queries_route_returns_final_answer_and_persists_artifacts(
     persisted_traces = trace_store.list_stage_traces(result.query_id)
     persisted_answer = answer_store.get_answer_artifacts(result.query_id)
     assert persisted_snapshot is not None
-    assert persisted_snapshot.model_dump() == result.snapshot.model_dump()
+    assert persisted_snapshot.eligible_doc_ids == ["doc-ready"]
     assert persisted_answer is not None
-    assert persisted_answer.answer.answer_text == result.answer.answer_text
+    assert persisted_answer.answer.answer_text == result.answer_text
     assert len(persisted_traces) == 8
     assert persisted_traces[0].stage_name.value == "interpret"
     assert persisted_traces[1].stage_name.value == "retrieve"
@@ -327,16 +313,9 @@ async def test_queries_route_allows_empty_snapshot(
         service=_query_service(sql_engine),
     )
 
-    assert result.snapshot.eligible_doc_ids == []
-    assert result.interpreted_query.request_type.value == "fact_lookup"
-    assert result.selected_candidates == []
-    assert result.evidence_sets == []
-    assert result.context_manifest.included_evidence_set_ids == []
-    assert result.context_manifest.context_items == []
-    assert result.support_assessment.support_state.value == "insufficient"
-    assert result.answer_mode_decision.answer_mode.value == "full_abstention"
-    assert result.status.value == "succeeded"
-    assert "does not provide enough support" in result.answer.answer_text
+    assert result.support_state.value == "insufficient"
+    assert result.answer_mode.value == "full_abstention"
+    assert "does not provide enough support" in result.answer_text
     assert result.citations.citations == []
 
 
@@ -351,9 +330,18 @@ async def test_readyz_returns_ok_when_dependencies_load(
     sql_engine: Engine,
     tmp_path,
 ) -> None:
+    from doc_forge.indexing.embeddings import DeterministicEmbeddingAdapter
+    from doc_forge.indexing.vector_store import SqlVectorStore
+
+    vector_store = SqlVectorStore(
+        engine=sql_engine,
+        embedding_adapter=DeterministicEmbeddingAdapter(),
+    )
+
     result = await _route_endpoint(app, path="/readyz", method="GET")(
         engine=sql_engine,
         artifact_store=FilesystemArtifactStore(tmp_path / "artifacts"),
+        vector_store=vector_store,
     )
 
     assert result == {"status": "ok"}
@@ -366,9 +354,18 @@ async def test_readyz_creates_artifact_root_when_missing(
 ) -> None:
     artifact_root = tmp_path / "missing-artifacts"
 
+    from doc_forge.indexing.embeddings import DeterministicEmbeddingAdapter
+    from doc_forge.indexing.vector_store import SqlVectorStore
+
+    vector_store = SqlVectorStore(
+        engine=sql_engine,
+        embedding_adapter=DeterministicEmbeddingAdapter(),
+    )
+
     result = await _route_endpoint(app, path="/readyz", method="GET")(
         engine=sql_engine,
         artifact_store=FilesystemArtifactStore(artifact_root),
+        vector_store=vector_store,
     )
 
     assert result == {"status": "ok"}
@@ -380,7 +377,9 @@ async def test_run_next_job_returns_null_payload_when_no_job_exists(app: FastAPI
         worker=_WorkerStub(None)
     )
 
-    assert result == {"job_id": None, "status": None}
+    assert isinstance(result, WorkerJobResult)
+    assert result.job_id is None
+    assert result.status is None
 
 
 async def test_run_next_job_returns_job_metadata_when_job_runs(app: FastAPI) -> None:
@@ -395,7 +394,9 @@ async def test_run_next_job_returns_job_metadata_when_job_runs(app: FastAPI) -> 
         )
     )
 
-    assert result == {"job_id": "job-1", "status": "succeeded"}
+    assert isinstance(result, WorkerJobResult)
+    assert result.job_id == "job-1"
+    assert result.status == "succeeded"
 
 
 async def test_query_summary_route_returns_persisted_review_view(
@@ -501,7 +502,7 @@ async def test_query_trace_route_returns_ordered_persisted_traces(
         "render_citations",
     ]
     assert review.final_artifacts is not None
-    assert review.final_artifacts.answer.answer_text == submitted.answer.answer_text
+    assert review.final_artifacts.answer.answer_text == submitted.answer_text
 
 
 async def test_query_citations_route_reads_persisted_answer_state(

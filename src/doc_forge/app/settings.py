@@ -15,6 +15,7 @@ class AppSettings:
     artifact_root: Path
     service_name: str
     environment: str
+    enable_swagger: bool
     log_level: str
     embedding_backend: str
     embedding_model_name: str
@@ -36,7 +37,8 @@ def load_settings() -> AppSettings:
         database_url=database_url,
         artifact_root=artifact_root,
         service_name=os.environ.get("DOC_FORGE_SERVICE_NAME", "doc_forge-api"),
-        environment=os.environ.get("DOC_FORGE_ENVIRONMENT", "dev"),
+        environment=os.environ.get("DOC_FORGE_ENVIRONMENT", "prod"),
+        enable_swagger=os.environ.get("DOC_FORGE_ENABLE_SWAGGER", "false").lower() == "true",
         log_level=os.environ.get("DOC_FORGE_LOG_LEVEL", "INFO"),
         embedding_backend=os.environ.get("DOC_FORGE_EMBEDDING_BACKEND", "deterministic"),
         embedding_model_name=os.environ.get(

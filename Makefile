@@ -78,11 +78,11 @@ install-git-hooks: ## Configure git to use repo-managed hooks
 
 .PHONY: run-api
 run-api: install ## Run the internal lifecycle FastAPI app
-	uv run uvicorn doc_forge.app.api:app --reload
+	DOC_FORGE_ENVIRONMENT=$${DOC_FORGE_ENVIRONMENT:-dev} uv run uvicorn doc_forge.app.api:app --reload
 
 .PHONY: run-worker
 run-worker: install ## Run the internal lifecycle worker loop
-	uv run python -m doc_forge.lifecycle.worker
+	DOC_FORGE_ENVIRONMENT=$${DOC_FORGE_ENVIRONMENT:-dev} uv run python -m doc_forge.lifecycle.worker
 
 .PHONY: migrate
 migrate: install ## Apply Alembic migrations using DATABASE_URL
