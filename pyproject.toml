@@ -60,7 +60,7 @@ pythonVersion = "3.11"
 venvPath = "."
 venv = ".venv"
 typeCheckingMode = "standard"
-include = ["src", "tests", "scripts"]
+include = ["src", "tests", "scripts", "e2e"]
 exclude = [
   ".venv/**",
   "**/.venv",

@@ -126,6 +126,10 @@ class InMemoryDocumentRepository:
         del connection
         return self.documents.get(doc_id)
 
+    def delete(self, doc_id: DocId, *, connection=None) -> None:
+        del connection
+        self.documents.pop(doc_id, None)
+
     def list_by_workspace(self, workspace_id: WorkspaceId) -> list[PersistedDocument]:
         return [
             document
@@ -291,6 +295,7 @@ class StubVectorStore:
     def __init__(self, hits: list[VectorSearchHit] | None = None) -> None:
         self.hits = hits or []
         self.calls: list[tuple[str, str, int]] = []
+        self.deleted_doc_ids: list[str] = []
 
     def publish_document(self, *, doc_id: DocId, chunks: list[Chunk]) -> list[IndexEntry]:
         del doc_id, chunks
@@ -299,6 +304,9 @@ class StubVectorStore:
     def smoke_query(self, *, doc_id: DocId, text: str, k: int = 1) -> list[VectorSearchHit]:
         self.calls.append((doc_id, text, k))
         return self.hits[:k]
+
+    def delete_document(self, *, doc_id: DocId) -> None:
+        self.deleted_doc_ids.append(doc_id)
 
 
 class InMemorySectionRepository:

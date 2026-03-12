@@ -147,6 +147,9 @@ class _FailingVectorStore:
         del doc_id, text, k
         raise NotImplementedError
 
+    def delete_document(self, *, doc_id: str) -> None:
+        pass
+
 
 def test_index_stage_cleans_up_partial_publication_on_failure(
     sql_engine,

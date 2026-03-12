@@ -21,7 +21,7 @@ from pathlib import Path
 import httpx
 import pytest
 
-from tests.e2e.support import E2EReadyDocument, SystemDriver
+from e2e.support import E2EReadyDocument, SystemDriver
 
 pytestmark = pytest.mark.e2e
 

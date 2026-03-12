@@ -1,7 +1,7 @@
 # Workstream 012: E2E Test Refactor and Invariant Tightening
 
 ## Motivation
-The original `tests/e2e/test_real_markdown_docs.py` covered the markdown ingestion happy path, but it mixed low-level HTTP details into scenario tests and blurred the line between what the suite actually proved and what it merely intended to prove.
+The original `e2e/test_real_markdown_docs.py` covered the markdown ingestion happy path, but it mixed low-level HTTP details into scenario tests and blurred the line between what the suite actually proved and what it merely intended to prove.
 
 This workstream refactors the markdown E2E suite so that:
 
@@ -21,7 +21,7 @@ The suite now prefers behavior-oriented tests such as `test_given_single_markdow
 - Result: the markdown test module focuses on scenario intent, while the support module owns upload, wait, query, and delete mechanics.
 
 ### 2. Single test-side DSL
-The support layer in `tests/e2e/support.py` is the canonical helper surface for this markdown E2E suite.
+The support layer in `e2e/support.py` is the canonical helper surface for this markdown E2E suite.
 
 - Principle: scenario tests should not duplicate `httpx` calls, raw response parsing, or artifact/status shaping.
 - Result: the DSL now exposes typed `UploadReceipt`, `DocumentStatus`, `ArtifactRefs`, `QueryResult`, and `E2EReadyDocument` models, plus separate submit-vs-ingest flows.
@@ -91,7 +91,7 @@ Real markdown document cases remain parameterized so failures stay local to each
 ## Implementation Summary
 
 1. **Support-layer consolidation**
-   - Added `tests/e2e/support.py` as the shared markdown E2E DSL.
+   - Added `e2e/support.py` as the shared markdown E2E DSL.
    - Moved upload, wait, artifact lookup, query, and delete operations behind `SystemDriver`.
    - Added typed test models for upload receipts, document status, artifact refs, and retrieval hits.
 
@@ -111,9 +111,9 @@ Real markdown document cases remain parameterized so failures stay local to each
 
 The following targeted E2E validation was run after the refactor:
 
-- `uv run pytest tests/e2e/test_real_markdown_docs.py -m e2e -q`
-- `uv run pytest tests/e2e/test_stack_failures.py -m e2e -q`
-- `uv run pytest tests/e2e/test_pdf_stack.py -m e2e -q`
+- `uv run pytest e2e/test_real_markdown_docs.py -m e2e -q`
+- `uv run pytest e2e/test_stack_failures.py -m e2e -q`
+- `uv run pytest e2e/test_pdf_stack.py -m e2e -q`
 
 These checks confirm that the refactored markdown E2E suite stays aligned with adjacent failure-path and PDF-path coverage.
 

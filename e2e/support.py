@@ -128,7 +128,7 @@ class SystemDriver:
         self.stack = e2e_stack
 
     def _repo_root(self) -> Path:
-        return Path(__file__).resolve().parents[2]
+        return Path(__file__).resolve().parents[1]
 
     def _submit(
         self,
