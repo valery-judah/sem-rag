@@ -10,91 +10,77 @@ updated: 2026-03-13
 ---
 
 # Summary
-Design a separate Docker Compose subsystem that centrally collects eval-running
-metadata, query-context bundle indexes, and JSON service logs from `api` and
-`worker` without changing the stable app API or replacing the existing
-filesystem-first debug flow.
+Supersede the earlier Loki-centric observability packet with a Postgres-centered
+design that keeps filesystem outputs as the collection edge, centralizes parsed
+service logs and structured query/eval metadata in Postgres, and keeps Loki as
+the operator log-exploration surface.
 
 ## Objective
-Define a v1 observability subsystem that gives operators and eval workflows one
-central place to find query runs, eval case executions, and correlated service
-logs by `query_id`, `case_id`, `run_id`, `test_id`, or `workspace_id`.
+Define a decision-complete local observability subsystem that:
+
+- ingests existing repo-local JSONL logs and query bundles without changing the
+  stable app API
+- writes central copies of parsed service log events into Postgres
+- indexes query/eval bundle metadata in Postgres
+- keeps Loki available for tailing, stream exploration, and Grafana Explore
+- stores full bundle JSON documents in Postgres JSONB in v2 unless operational
+  evidence later justifies a second store
 
 ## Non-goals
 - No stable HTTP API changes in the main app.
-- No app-side distributed tracing or OpenTelemetry backend.
-- No replacement of repo-local JSON log archives or query-context bundles.
-- No ClickHouse or second analytics-first event store in v1.
-- No ingestion of full trace, replay, or citation payload bodies into the
-  central relational store in v1.
+- No app-side synchronous SQL writes on the request path.
+- No replacement of repo-local JSON log archives or query bundles.
+- No Promtail-based collector path.
+- No high-cardinality Loki label set for correlation identifiers.
+- No second analytics or document database unless Postgres proves insufficient.
 
-## Current status
-- Implemented a separate Compose stack in `docker-compose.observability.yml`
-  with:
-  - `telemetry-postgres`
-  - `loki`
-  - `grafana`
-  - `vector`
-  - `evalops-loader`
-- Added an internal metadata schema and loader under
-  `src/doc_forge/observability/`.
-- Added an operator CLI under `src/doc_forge/devtools/evalops_loader.py`.
-- Added Grafana datasource and dashboard provisioning plus Loki and Vector
-  configs under `observability/`.
-- Added targeted loader and CLI tests.
-- Repo-local JSON logs and query bundles remain the canonical emitted artifacts;
-  the new subsystem ingests from them rather than replacing them.
-- Verified the stack end to end against live repo data after fixing two
-  orchestration defects:
-  - `evalops-loader` was starting with `--context-root` after the `scan`
-    subcommand, so `argparse` rejected the flag and the container restarted.
-  - `vector` was missing its writable `data_dir` mount and had invalid VRL in
-    `observability/vector/vector.yaml`, so the container restarted before any
-    logs were shipped.
-- After those fixes:
-  - `telemetry-postgres` indexed `19` live query bundles into
-    `query_context_runs`
-  - `query_context_assets` contained `190` rows
-  - `eval_case_results` contained `11` rows
-  - `log_sources` contained `38` rows
-  - `loki` served live streams from the archived JSON log files
-  - `grafana` provisioned both datasources and the
-    `Central Eval Observability` dashboard successfully
+## Current repo truth
+- The repo already contains a separate Compose-based observability subsystem and
+  a first-pass WS-016 packet.
+- That earlier packet reflects an older design:
+  - Postgres indexes bundle metadata.
+  - Loki is treated as the only central log persistence target.
+  - high-cardinality identifiers are described as Loki labels.
+  - full bundle JSON documents are intentionally kept out of Postgres in v1.
+- This workstream supersedes that earlier packet as the chosen target design.
+- Evergreen docs remain responsible for implemented repo truth and should only
+  be updated after the revised subsystem exists and is exercised.
 
 ## Chosen stack
 - `telemetry-postgres`
-  - source of truth for structured eval/query run metadata and bundle indexes
+  - primary central persistence layer for structured query/eval metadata,
+    parsed service log events, bundle asset indexes, and v2 bundle documents
 - `loki`
-  - source of truth for append-only JSON service logs
+  - stream-oriented operator log surface for tailing and exploration
 - `grafana`
-  - common UI surface over Postgres and Loki
+  - common operator surface across Postgres and Loki
 - `vector`
-  - log collector that tails repo-local JSONL archives and ships to Loki
+  - collector that tails repo-local JSONL archives, parses them, and writes
+    central copies into Loki and Postgres
 - `evalops-loader`
-  - metadata ingester that scans `data/context/queries/` and writes normalized
-    records into Postgres
+  - bundle ingester that scans `data/context/queries/`, upserts normalized
+    metadata into Postgres, and ingests full bundle JSON documents in v2
 
 ## Why this split
-- Logs and eval/query metadata have different access patterns.
-  - JSON service logs are append-only streams and fit Loki.
-  - Eval/query bundle metadata is relational, low volume, and filter-heavy, so
-    Postgres is a better fit.
-- The repo already emits stable filesystem artifacts.
-  - v1 should ingest from those existing outputs instead of forcing the app to
-    dual-write into a new central system.
-- The dominant debug path is correlation-first.
-  - operators usually start from `query_id`, `case_id`, `run_id`, `test_id`, or
-    `workspace_id`, then pivot into logs and bundle assets.
+- Filesystem outputs already exist and are structured enough to serve as the
+  collection edge.
+- Query/eval correlation and document retrieval are relational-plus-document
+  workloads and fit Postgres well enough for a local-first subsystem.
+- Loki remains useful for stream browsing, but low-cardinality label guidance
+  makes it the wrong primary store for correlation identifiers such as
+  `query_id`, `run_id`, `test_id`, and `case_id`.
+- The dominant operator flow should be:
+  - find the run in Postgres
+  - inspect metadata and linked assets or stored bundle documents
+  - pivot to Postgres-backed log rows or Loki stream exploration as needed
 
 ## Next step
-- Reduce noisy duplicate-fingerprint warnings in `vector`.
-  The current archive shape includes some duplicated or renamed e2e log files,
-  which does not block ingestion but does produce low-signal runtime noise.
-- Add a durable smoke validation for
-  `docker compose -f docker-compose.observability.yml up` so the live stack
-  bring-up is covered outside ad hoc operator checks.
-- Tighten dashboard and query ergonomics only where the current
-  Postgres-to-Loki pivot still feels thin in practice.
+- Use the revised packet as the source of truth for refactoring the current
+  observability subsystem.
+- Implement Postgres-backed parsed log persistence, low-cardinality Loki
+  labeling, and v2 Postgres JSONB bundle-document ingest.
+- Update evergreen docs only after the revised subsystem is implemented and
+  validated against real repo data.
 
 ## Relevant context
 - paths:
@@ -108,58 +94,38 @@ logs by `query_id`, `case_id`, `run_id`, `test_id`, or `workspace_id`.
   - `e2e/eval_support.py`
   - `docker-compose.yml`
 - components:
-  - repo-local JSONL log archives
-  - query-context collector and bundle manifest
-  - answer-layer eval outputs
-  - e2e eval execution artifacts
+  - repo-local JSONL log archives under `data/logs/`
+  - query-centric bundles under `data/context/queries/`
+  - existing observability Postgres schema and loader
+  - existing Loki, Vector, and Grafana configs
 - constraints:
-  - keep repo-local logs and bundles as the primary emitted artifacts
-  - central subsystem must run as a separate Compose stack
-  - do not scrape the Docker socket as the primary source in v1
-  - keep the main app contract unchanged
-- read first:
-  - `docs/workstreams/WS-016-central-eval-observability/design-brief.md`
-  - `docs/workstreams/WS-016-central-eval-observability/agent-context.md`
-  - `docs/workstreams/WS-016-central-eval-observability/schema-sketch.md`
+  - keep filesystem artifacts as the canonical emission layer
+  - central writes happen in the collector and loader subsystem, not in the app
+  - keep the central subsystem startable as a separate Compose stack
+  - do not promote high-cardinality ids into standard Loki labels
 
 ## Workflow steps
-1. Freeze the chosen storage split and ingest direction.
-2. Implement the metadata schema, log label set, and service boundaries.
-3. Validate the separate Compose stack against real existing bundles and log
-   archives.
-4. Stabilize runtime bring-up and reduce collector noise.
+1. Freeze the corrected storage split and ingest direction.
+2. Specify the Postgres schema groups for metadata, log events, and v2 bundle
+   documents.
+3. Specify the Loki label and structured-metadata policy.
+4. Hand off the implementation packet for refactoring the current subsystem.
 
 ## Validation
-- `uv run pytest tests/observability/test_loader.py tests/test_evalops_loader_cli.py -q`
-- `uv run ruff check src/doc_forge/observability src/doc_forge/devtools/evalops_loader.py tests/observability/test_loader.py tests/test_evalops_loader_cli.py`
-- `docker compose -f docker-compose.observability.yml up -d`
-- live operator verification:
-  - `telemetry-postgres`, `loki`, `grafana`, `vector`, and `evalops-loader`
-    all reached a running state after the compose and Vector fixes
-  - confirmed Postgres row counts:
-    - `query_context_runs=19`
-    - `query_context_assets=190`
-    - `eval_case_results=11`
-    - `log_sources=38`
-  - confirmed Loki readiness and log ingestion from repo-local archives
-  - confirmed Grafana health plus successful datasource connectivity for both
-    Loki and Postgres
-  - confirmed the provisioned dashboard is visible through the Grafana API
-  - confirmed one real correlation path by `query_id`:
-    `qry-b95ecf0a9e7a4f59a2aab81e75940505` existed in Postgres metadata and was
-    also queryable in Loki with matching `service`, `run_id`, and
-    `workspace_id`
-
-## Known issues
-- `vector` currently emits duplicate-fingerprint warnings for some archived e2e
-  log files because the archive contains duplicate or renamed files with the
-  same contents. This does not block ingestion, but it should be cleaned up or
-  filtered so operator logs stay high-signal.
+- Docs-only change:
+  - no mandatory command run
+- Required review checks:
+  - all WS-016 docs and the ADR agree on the chosen stack and ingest direction
+  - no file claims the revised subsystem is already implemented
+  - `query_id`, `run_id`, `test_id`, `case_id`, `workspace_id`, and `doc_id`
+    are described as Postgres correlation keys, not standard Loki labels
+  - v2 bundle document storage is described as Postgres JSONB unless evidence
+    later justifies a second store
 
 ## Linked artifacts
-- [`design-brief.md`](./design-brief.md)
-- [`agent-context.md`](./agent-context.md)
-- [`schema-sketch.md`](./schema-sketch.md)
-- [`/Users/val/projects/rag/sem-rag/docs/adrs/ADR-central-eval-observability-store.md`](/Users/val/projects/rag/sem-rag/docs/adrs/ADR-central-eval-observability-store.md)
-- [`/Users/val/projects/rag/sem-rag/docs/workstreams/WS-014-logs/workstream.md`](/Users/val/projects/rag/sem-rag/docs/workstreams/WS-014-logs/workstream.md)
-- [`/Users/val/projects/rag/sem-rag/docs/workstreams/WS-015-context-collecting/workstream.md`](/Users/val/projects/rag/sem-rag/docs/workstreams/WS-015-context-collecting/workstream.md)
+- [design-brief.md](./design-brief.md)
+- [agent-context.md](./agent-context.md)
+- [schema-sketch.md](./schema-sketch.md)
+- [ADR-central-eval-observability-store.md](/home/val/projects/sem-rag/docs/adrs/ADR-central-eval-observability-store.md)
+- [WS-014 logs](/home/val/projects/sem-rag/docs/workstreams/WS-014-logs/workstream.md)
+- [WS-015 context collecting](/home/val/projects/sem-rag/docs/workstreams/WS-015-context-collecting/workstream.md)

@@ -1,38 +1,33 @@
 # Agent Context: Central Eval Observability
 
 ## Goal
-Implement a separate local observability stack that centrally indexes existing
-query/eval bundle metadata and streams existing JSON service logs, without
-changing the main app contract.
+Refactor the current observability subsystem toward a Postgres-centered design
+that keeps filesystem outputs as the collection edge, writes central copies of
+parsed service logs into Postgres and Loki, and stores v2 bundle documents in
+Postgres JSONB without changing the main app contract.
 
 ## Read in this order
-1. [`/Users/val/projects/rag/sem-rag/docs/evergreen/architecture.md`](/Users/val/projects/rag/sem-rag/docs/evergreen/architecture.md)
-2. [`/Users/val/projects/rag/sem-rag/docs/evergreen/runbook.md`](/Users/val/projects/rag/sem-rag/docs/evergreen/runbook.md)
-3. [`/Users/val/projects/rag/sem-rag/docs/workstreams/WS-014-logs/workstream.md`](/Users/val/projects/rag/sem-rag/docs/workstreams/WS-014-logs/workstream.md)
-4. [`/Users/val/projects/rag/sem-rag/docs/workstreams/WS-015-context-collecting/workstream.md`](/Users/val/projects/rag/sem-rag/docs/workstreams/WS-015-context-collecting/workstream.md)
-5. [`/Users/val/projects/rag/sem-rag/src/doc_forge/app/logging.py`](/Users/val/projects/rag/sem-rag/src/doc_forge/app/logging.py)
-6. [`/Users/val/projects/rag/sem-rag/src/doc_forge/query/context_archive.py`](/Users/val/projects/rag/sem-rag/src/doc_forge/query/context_archive.py)
-7. [`/Users/val/projects/rag/sem-rag/src/doc_forge/evaluation/answer_layer.py`](/Users/val/projects/rag/sem-rag/src/doc_forge/evaluation/answer_layer.py)
-8. [`/Users/val/projects/rag/sem-rag/e2e/eval_support.py`](/Users/val/projects/rag/sem-rag/e2e/eval_support.py)
-9. [`/Users/val/projects/rag/sem-rag/docker-compose.yml`](/Users/val/projects/rag/sem-rag/docker-compose.yml)
+1. [architecture.md](/home/val/projects/sem-rag/docs/evergreen/architecture.md)
+2. [runbook.md](/home/val/projects/sem-rag/docs/evergreen/runbook.md)
+3. [WS-014 logs](/home/val/projects/sem-rag/docs/workstreams/WS-014-logs/workstream.md)
+4. [WS-015 context collecting](/home/val/projects/sem-rag/docs/workstreams/WS-015-context-collecting/workstream.md)
+5. [logging.py](/home/val/projects/sem-rag/src/doc_forge/app/logging.py)
+6. [context_archive.py](/home/val/projects/sem-rag/src/doc_forge/query/context_archive.py)
+7. [answer_layer.py](/home/val/projects/sem-rag/src/doc_forge/evaluation/answer_layer.py)
+8. [eval_support.py](/home/val/projects/sem-rag/e2e/eval_support.py)
+9. [docker-compose.yml](/home/val/projects/sem-rag/docker-compose.yml)
 
-## What already exists
-- JSON service logs are written to repo-local files under `data/logs/`.
-- Query-centric context bundles are written under `data/context/queries/<query_id>/`.
-- Query manifests already include the main correlation keys:
-  - `query_id`
-  - `workspace_id`
-  - `case_id`
-  - `test_id`
-  - `run_id`
-  - `source_kind`
-  - `support_state`
-  - `answer_mode`
-  - `evaluator_outcome`
-- Eval executions already write:
-  - `eval-result.json`
-  - `execution-metadata.json`
-- Non-eval bundles may still include `query-response.json`.
+## Current repo baseline
+- JSON service logs are already written to repo-local files under `data/logs/`.
+- Query-centric context bundles are already written under
+  `data/context/queries/<query_id>/`.
+- The repo already contains an earlier central observability implementation that
+  indexes bundle metadata into Postgres and ships logs to Loki.
+- That baseline is not the target design for this workstream:
+  - it does not treat Postgres as the central persistence layer for parsed log
+    events
+  - it overuses Loki labels for correlation identifiers
+  - it does not centralize full bundle JSON documents in Postgres JSONB in v2
 
 ## Data shapes to respect
 ### JSON logs
@@ -46,58 +41,88 @@ changing the main app contract.
   - `query_id`
   - `workspace_id`
   - `doc_id`
+  - `run_id`
+  - `test_id`
+  - `case_id`
 
 ### Query bundle manifest
-- The manifest is the required root document for central metadata indexing.
+- `manifest.json` is the required root document for central metadata indexing.
+- Manifests already expose:
+  - `query_id`
+  - `workspace_id`
+  - `case_id`
+  - `test_id`
+  - `run_id`
+  - `source_kind`
+  - `support_state`
+  - `answer_mode`
+  - `evaluator_outcome`
 - Optional companion files may enrich the metadata model:
   - `query-response.json`
   - `eval-result.json`
   - `execution-metadata.json`
 
+### Full bundle documents for v2
+- `summary.json`
+- `trace.json`
+- `citations.json`
+- `replay.json`
+
 ## Required implementation outcome
-- Add a separate Compose stack:
+- Keep a separate Compose stack:
   - `docker-compose.observability.yml`
-- Add a metadata store:
-  - Postgres
-- Add a log store:
-  - Loki
-- Add a common UI:
-  - Grafana
-- Add a log collector:
-  - Vector
-- Add a metadata ingester:
+- Keep the chosen services:
+  - `telemetry-postgres`
+  - `loki`
+  - `grafana`
+  - `vector`
   - `evalops-loader`
+- Refactor responsibilities so that:
+  - `vector` writes parsed log events to Loki and Postgres
+  - `evalops-loader` writes normalized metadata to Postgres
+  - `evalops-loader` writes full bundle JSON documents to Postgres in v2
 
 ## Hard constraints
 - No stable HTTP API changes.
 - No app-side distributed tracing backend.
 - No replacement of repo-local JSON logs or query bundles.
+- No request-path app-side dual write into Postgres.
 - The central subsystem must ingest from filesystem outputs in v1.
 - Do not use Docker socket scraping as the primary log ingest path.
-- Do not ingest full trace/replay/citation payload bodies into Postgres in v1.
+- Do not use Promtail.
+- Do not use `query_id`, `workspace_id`, `doc_id`, `run_id`, `test_id`, or
+  `case_id` as standard Loki labels.
 
 ## Required correlation model
-- First-class keys:
+- First-class Postgres keys:
   - `query_id`
   - `case_id`
   - `run_id`
   - `test_id`
   - `workspace_id`
   - `service`
-- Primary user flows:
-  - query-centric: find run metadata first, then logs
-  - eval-centric: find case/result first, then linked query run and logs
+- Primary operator flows:
+  - query-centric:
+    - find run metadata in Postgres
+    - pivot to Postgres-backed log rows or Loki
+  - eval-centric:
+    - find case or run result in Postgres
+    - pivot to linked bundle metadata, documents, and logs
+  - document-centric v2:
+    - fetch `trace`, `replay`, and `citations` from Postgres by correlation key
 
 ## Deliverables expected from the implementation agent
-- `docker-compose.observability.yml`
-- service configs for Loki, Vector, and Grafana provisioning
-- metadata schema/bootstrap for telemetry Postgres
-- a loader implementation that upserts existing query bundles
+- updated `docker-compose.observability.yml`
+- updated service configs for Loki, Vector, and Grafana provisioning
+- updated observability schema and migration/bootstrap path for Postgres-backed
+  log persistence
+- loader changes that keep metadata upserts and add v2 bundle document ingest
 - validation or smoke coverage proving one eval and one non-eval bundle ingest
-- runbook additions only after the subsystem is working
+- evergreen doc updates only after the subsystem is working
 
 ## Out of scope
-- Production deployment
-- retention tuning beyond local defaults
+- production deployment
+- a second analytics or document store in v1 or default v2
 - metrics or tracing backends
-- replacing the current filesystem-first debug path
+- replacing the filesystem-first debug path
+- inventing a new app API for the collector subsystem
