@@ -12,6 +12,7 @@ from typing import Any, Protocol, cast
 
 import structlog
 
+from doc_forge.app.log_events import LogEvent
 from doc_forge.app.logging import get_logger
 
 from .base import EmbeddingAdapter
@@ -19,6 +20,18 @@ from .base import EmbeddingAdapter
 _TOKEN_PATTERN = re.compile(r"[a-zA-Z0-9]+")
 
 logger = get_logger(__name__)
+
+
+class EmbeddingsLogger:
+    def __init__(self, logger: structlog.stdlib.BoundLogger) -> None:
+        self._logger = logger
+
+    def model_generated(self, model_name: str, count: int) -> None:
+        self._logger.info(
+            LogEvent.EMBEDDING_MODEL_GENERATED,
+            model_name=model_name,
+            count=count,
+        )
 
 
 class _SentenceTransformerModel(Protocol):
@@ -40,13 +53,13 @@ class DeterministicEmbeddingAdapter(EmbeddingAdapter):
         *,
         dimensions: int = 32,
         model_name: str = "deterministic-hash-v1",
-        logger: structlog.stdlib.BoundLogger | None = None,
+        logger: EmbeddingsLogger | None = None,
     ) -> None:
         if dimensions <= 0:
             raise ValueError("dimensions must be greater than 0")
         self._dimensions = dimensions
         self.model_name = model_name
-        self._logger = logger or get_logger(self.__class__.__name__)
+        self._logger = logger or EmbeddingsLogger(get_logger(self.__class__.__name__))
 
     def embed_texts(self, texts: Sequence[str]) -> list[list[float]]:
         return [self._embed_text(text) for text in texts]
@@ -97,14 +110,14 @@ class SentenceTransformerEmbeddingAdapter(EmbeddingAdapter):
         *,
         model_name: str = "sentence-transformers/all-MiniLM-L6-v2",
         loader: Callable[[str], _SentenceTransformerModel] | None = None,
-        logger: structlog.stdlib.BoundLogger | None = None,
+        logger: EmbeddingsLogger | None = None,
     ) -> None:
         self.model_name = model_name
         self._model = (loader or _default_sentence_transformer_loader)(model_name)
-        self._logger = logger or get_logger(self.__class__.__name__)
+        self._logger = logger or EmbeddingsLogger(get_logger(self.__class__.__name__))
 
     def embed_texts(self, texts: Sequence[str]) -> list[list[float]]:
-        self._logger.info("embedding.model.generated", model_name=self.model_name, count=len(texts))
+        self._logger.model_generated(model_name=self.model_name, count=len(texts))
         encoded = self._model.encode(
             list(texts),
             normalize_embeddings=True,

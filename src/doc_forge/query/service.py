@@ -3,12 +3,14 @@
 from __future__ import annotations
 
 import hashlib
+import typing
 from datetime import datetime
 from uuid import uuid4
 
 import structlog
 from structlog.contextvars import bind_contextvars, unbind_contextvars
 
+from doc_forge.app.log_events import LogEvent
 from doc_forge.app.logging import get_logger
 from doc_forge.readmodels import QueryableCorpusReadModel
 
@@ -52,6 +54,64 @@ from .trace import QueryStageTrace, utc_now
 logger = get_logger(__name__)
 
 
+class QueryServiceLogger:
+    def __init__(self, logger: structlog.stdlib.BoundLogger) -> None:
+        self._logger = logger
+
+    def run_started(
+        self, status: str, question_chars: int, question_sha256: str, snapshot_doc_count: int
+    ) -> None:
+        self._logger.info(
+            LogEvent.QUERY_RUN_STARTED,
+            status=status,
+            question_chars=question_chars,
+            question_sha256=question_sha256,
+            snapshot_doc_count=snapshot_doc_count,
+        )
+
+    def stage_started(self, stage_name: str) -> None:
+        self._logger.info(LogEvent.QUERY_STAGE_STARTED, stage_name=stage_name)
+
+    def run_completed(
+        self, status: str, support_state: str, answer_mode: str, citation_count: int
+    ) -> None:
+        self._logger.info(
+            LogEvent.QUERY_RUN_COMPLETED,
+            status=status,
+            support_state=support_state,
+            answer_mode=answer_mode,
+            citation_count=citation_count,
+        )
+
+    def run_failed(
+        self,
+        stage_name: str | None,
+        error_code: str,
+        error_class: str,
+        message: str,
+        trust_failure_labels: list[str] | None = None,
+    ) -> None:
+        self._logger.exception(
+            LogEvent.QUERY_RUN_FAILED,
+            stage_name=stage_name,
+            error_code=error_code,
+            error_class=error_class,
+            message=message,
+            trust_failure_labels=trust_failure_labels,
+        )
+
+    def stage_completed(
+        self, stage_name: str, status: str, duration_ms: int | None, **extra: typing.Any
+    ) -> None:
+        self._logger.info(
+            LogEvent.QUERY_STAGE_COMPLETED,
+            stage_name=stage_name,
+            status=status,
+            duration_ms=duration_ms,
+            **extra,
+        )
+
+
 class QueryService:
     """Prepare query runtime state without pretending execution exists yet."""
 
@@ -72,7 +132,7 @@ class QueryService:
         answer_generator: GroundedAnswerGenerator | None = None,
         citation_renderer: CitationRenderer | None = None,
         answer_store: QueryAnswerStore | None = None,
-        logger: structlog.stdlib.BoundLogger | None = None,
+        logger: QueryServiceLogger | None = None,
     ) -> None:
         self._base_policy = base_policy or QueryPolicyDefaults.build()
         self._corpus_read_model = corpus_read_model
@@ -88,7 +148,7 @@ class QueryService:
         self._answer_generator = answer_generator or DeterministicGroundedAnswerGenerator()
         self._citation_renderer = citation_renderer or DeterministicCitationRenderer()
         self._answer_store = answer_store
-        self._logger = logger or get_logger(self.__class__.__name__)
+        self._logger = logger or QueryServiceLogger(get_logger(self.__class__.__name__))
 
     @property
     def base_policy(self) -> QueryPolicy:
@@ -375,8 +435,7 @@ class QueryService:
             query_id=state.run.query_id,
             workspace_id=state.run.workspace_id,
         )
-        self._logger.info(
-            "query.run.started",
+        self._logger.run_started(
             status=state.run.status.value,
             question_chars=len(request.question),
             question_sha256=hashlib.sha256(request.question.encode("utf-8")).hexdigest(),
@@ -384,7 +443,7 @@ class QueryService:
         )
         try:
             current_stage = QueryStageName.INTERPRET
-            self._logger.info("query.stage.started", stage_name=current_stage.value)
+            self._logger.stage_started(stage_name=current_stage.value)
             interpret_result = run_interpret_stage(
                 query_id=state.run.query_id,
                 request=request,
@@ -396,7 +455,7 @@ class QueryService:
             self._log_stage_completed(interpret_result.trace)
 
             current_stage = QueryStageName.RETRIEVE
-            self._logger.info("query.stage.started", stage_name=current_stage.value)
+            self._logger.stage_started(stage_name=current_stage.value)
             retrieve_result = run_retrieve_stage(
                 query_id=state.run.query_id,
                 request=request,
@@ -413,7 +472,7 @@ class QueryService:
             )
 
             current_stage = QueryStageName.SELECT
-            self._logger.info("query.stage.started", stage_name=current_stage.value)
+            self._logger.stage_started(stage_name=current_stage.value)
             select_result = run_select_stage(
                 query_id=state.run.query_id,
                 request=request,
@@ -433,7 +492,7 @@ class QueryService:
             )
 
             current_stage = QueryStageName.ASSEMBLE_CONTEXT
-            self._logger.info("query.stage.started", stage_name=current_stage.value)
+            self._logger.stage_started(stage_name=current_stage.value)
             context_result = run_context_stage(
                 query_id=state.run.query_id,
                 request=request,
@@ -452,7 +511,7 @@ class QueryService:
             )
 
             current_stage = QueryStageName.ASSESS_SUPPORT
-            self._logger.info("query.stage.started", stage_name=current_stage.value)
+            self._logger.stage_started(stage_name=current_stage.value)
             support_result = run_assess_support_stage(
                 query_id=state.run.query_id,
                 request=request,
@@ -474,7 +533,7 @@ class QueryService:
             )
 
             current_stage = QueryStageName.DECIDE_ANSWER_MODE
-            self._logger.info("query.stage.started", stage_name=current_stage.value)
+            self._logger.stage_started(stage_name=current_stage.value)
             answer_mode_result = run_decide_answer_mode_stage(
                 query_id=state.run.query_id,
                 request=request,
@@ -492,7 +551,7 @@ class QueryService:
             )
 
             current_stage = QueryStageName.GENERATE
-            self._logger.info("query.stage.started", stage_name=current_stage.value)
+            self._logger.stage_started(stage_name=current_stage.value)
             generate_result = run_generate_stage(
                 query_id=state.run.query_id,
                 request=request,
@@ -513,7 +572,7 @@ class QueryService:
             )
 
             current_stage = QueryStageName.RENDER_CITATIONS
-            self._logger.info("query.stage.started", stage_name=current_stage.value)
+            self._logger.stage_started(stage_name=current_stage.value)
             render_result = run_render_citations_stage(
                 query_id=state.run.query_id,
                 request=request,
@@ -561,8 +620,7 @@ class QueryService:
             else:
                 state.run.status = QueryRunStatus.SUCCEEDED
                 state.run.completed_at = completed_at
-            self._logger.info(
-                "query.run.completed",
+            self._logger.run_completed(
                 status=state.run.status.value,
                 support_state=state.support_assessment.support_state.value,
                 answer_mode=state.answer_mode_decision.answer_mode.value,
@@ -583,8 +641,7 @@ class QueryService:
                 state.run.status = QueryRunStatus.FAILED
                 state.run.completed_at = completed_at
                 state.run.terminal_failure = terminal_failure
-            self._logger.exception(
-                "query.run.failed",
+            self._logger.run_failed(
                 stage_name=None if current_stage is None else current_stage.value,
                 error_code=terminal_failure.error_code,
                 error_class=terminal_failure.error_class,
@@ -605,8 +662,7 @@ class QueryService:
             self._trace_store.append_stage_trace(trace)
 
     def _log_stage_completed(self, trace: QueryStageTrace, **extra: object) -> None:
-        self._logger.info(
-            "query.stage.completed",
+        self._logger.stage_completed(
             stage_name=trace.stage_name.value,
             status=trace.stage_status.value,
             duration_ms=_duration_ms(trace),

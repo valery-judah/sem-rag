@@ -6,11 +6,15 @@ import os
 import time
 from datetime import UTC, datetime
 from time import perf_counter
+from typing import NotRequired
 from uuid import uuid4
 
 import structlog
+from typing_extensions import TypedDict
 
+from doc_forge.app.log_events import LogEvent
 from doc_forge.app.logging import get_logger
+from doc_forge.identifiers import DocId
 from doc_forge.lifecycle import (
     FailureCategory,
     LifecycleEvent,
@@ -44,6 +48,78 @@ _JOB_STAGE_TO_LIFECYCLE_STAGE: dict[DocumentJobStage, LifecycleStage] = {
 logger = get_logger(__name__)
 
 
+class WorkerLogContext(TypedDict):
+    worker_id: NotRequired[str]
+    queue_name: NotRequired[str]
+
+
+class WorkerLogger:
+    def __init__(self, logger: structlog.stdlib.BoundLogger) -> None:
+        self._logger = logger
+
+    def run_next_invoked(self) -> None:
+        self._logger.info(LogEvent.WORKER_RUN_NEXT_INVOKED)
+
+    def run_next_idle(self) -> None:
+        self._logger.info(LogEvent.WORKER_RUN_NEXT_IDLE)
+
+    def job_claimed(self, doc_id: DocId, job_id: str, target_stage: str, status: str) -> None:
+        self._logger.info(
+            LogEvent.WORKER_JOB_CLAIMED,
+            doc_id=doc_id,
+            job_id=job_id,
+            target_stage=target_stage,
+            status=status,
+        )
+
+    def job_started(self, doc_id: DocId, job_id: str, target_stage: str, status: str) -> None:
+        self._logger.info(
+            LogEvent.WORKER_JOB_STARTED,
+            doc_id=doc_id,
+            job_id=job_id,
+            target_stage=target_stage,
+            status=status,
+        )
+
+    def job_succeeded(
+        self,
+        doc_id: DocId,
+        job_id: str,
+        target_stage: str,
+        status: str,
+        duration_ms: int,
+        next_stage: str | None = None,
+    ) -> None:
+        self._logger.info(
+            LogEvent.WORKER_JOB_SUCCEEDED,
+            doc_id=doc_id,
+            job_id=job_id,
+            target_stage=target_stage,
+            next_stage=next_stage,
+            status=status,
+            duration_ms=duration_ms,
+        )
+
+    def job_failed(
+        self,
+        doc_id: DocId,
+        job_id: str,
+        target_stage: str,
+        status: str,
+        error_code: str,
+        failure_category: str,
+    ) -> None:
+        self._logger.warning(
+            LogEvent.WORKER_JOB_FAILED,
+            doc_id=doc_id,
+            job_id=job_id,
+            target_stage=target_stage,
+            status=status,
+            error_code=error_code,
+            failure_category=failure_category,
+        )
+
+
 class DocumentLifecycleWorker:
     """Claim queued jobs, dispatch stage runners, and record failures."""
 
@@ -55,26 +131,25 @@ class DocumentLifecycleWorker:
         lifecycle_events: LifecycleEventRepository,
         orchestrator: DocumentLifecycleOrchestrator,
         stage_runners: dict[DocumentJobStage, StageRunner],
-        logger: structlog.stdlib.BoundLogger | None = None,
+        logger: WorkerLogger | None = None,
     ) -> None:
         self._jobs = jobs
         self._documents = documents
         self._lifecycle_events = lifecycle_events
         self._orchestrator = orchestrator
         self._stage_runners = stage_runners
-        self._logger = logger or get_logger(self.__class__.__name__)
+        self._logger = logger or WorkerLogger(get_logger(self.__class__.__name__))
 
     def run_next(self) -> DocumentJob | None:
         """Run the next queued job and return its terminal job record."""
 
-        self._logger.info("worker.run_next.invoked")
+        self._logger.run_next_invoked()
         job = self._jobs.claim_next()
         if job is None:
-            self._logger.info("worker.run_next.idle")
+            self._logger.run_next_idle()
             return None
         started_at = perf_counter()
-        self._logger.info(
-            "worker.job.claimed",
+        self._logger.job_claimed(
             doc_id=job.doc_id,
             job_id=job.job_id,
             target_stage=job.target_stage.value,
@@ -93,8 +168,7 @@ class DocumentLifecycleWorker:
             )
 
         try:
-            self._logger.info(
-                "worker.job.started",
+            self._logger.job_started(
                 doc_id=job.doc_id,
                 job_id=job.job_id,
                 target_stage=job.target_stage.value,
@@ -116,8 +190,7 @@ class DocumentLifecycleWorker:
         completed = self._jobs.mark_succeeded(job.job_id)
         if next_stage is not None:
             self._orchestrator.enqueue_stage(doc_id=job.doc_id, target_stage=next_stage)
-        self._logger.info(
-            "worker.job.succeeded",
+        self._logger.job_succeeded(
             doc_id=job.doc_id,
             job_id=job.job_id,
             target_stage=job.target_stage.value,
@@ -171,8 +244,7 @@ class DocumentLifecycleWorker:
                 },
             )
         )
-        self._logger.warning(
-            "worker.job.failed",
+        self._logger.job_failed(
             doc_id=job.doc_id,
             job_id=job.job_id,
             target_stage=job.target_stage.value,
@@ -187,8 +259,8 @@ def main() -> None:
     """Run the internal lifecycle worker loop."""
 
     from doc_forge.app.deps import (
-        _build_artifact_store,
-        _build_engine,
+        _build_artifact_store,  # pyright: ignore[reportPrivateUsage]
+        _build_engine,  # pyright: ignore[reportPrivateUsage]
         get_document_lifecycle_worker,
     )
     from doc_forge.app.settings import load_settings

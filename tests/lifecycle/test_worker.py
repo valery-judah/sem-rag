@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import pytest
+from typing_extensions import TypedDict
 
+from doc_forge.app.log_events import LogEvent
 from doc_forge.lifecycle import FailureCategory, ProcessingStatus
 from doc_forge.lifecycle.orchestrator import DocumentLifecycleOrchestrator
 from doc_forge.lifecycle.worker import DocumentLifecycleWorker
@@ -19,8 +21,25 @@ from tests.lifecycle.support import (
 )
 
 
+class WorkerRunNextInvokedLog(TypedDict):
+    pass
+
+
+class WorkerRunNextIdleLog(TypedDict):
+    pass
+
+
+class WorkerJobFailedLog(TypedDict):
+    doc_id: str
+    job_id: str
+    target_stage: str
+    status: str
+    error_code: str
+    failure_category: str
+
+
 @pytest.fixture(autouse=True)
-def _use_configured_logging(configured_logging: None) -> None:
+def use_configured_logging(configured_logging: None) -> None:
     pass
 
 
@@ -35,8 +54,10 @@ def test_run_next_returns_none_when_queue_is_empty(structured_caplog: Structured
     )
 
     assert worker.run_next() is None
-    assert structured_caplog.has_event("worker.run_next.invoked")
-    assert structured_caplog.has_event("worker.run_next.idle")
+    structured_caplog.assert_event_matches(
+        LogEvent.WORKER_RUN_NEXT_INVOKED, WorkerRunNextInvokedLog
+    )
+    structured_caplog.assert_event_matches(LogEvent.WORKER_RUN_NEXT_IDLE, WorkerRunNextIdleLog)
 
 
 def test_worker_marks_job_failed_when_stage_runner_is_missing() -> None:
@@ -60,7 +81,7 @@ def test_worker_marks_job_failed_when_stage_runner_is_missing() -> None:
     assert result is not None
     assert result.status is DocumentJobStatus.FAILED
     assert result.error_code == "missing_stage_runner"
-    stored = documents.get(document.doc_id)
+    stored = documents.get(document.doc_id)  # pyright: ignore[reportUnknownMemberType]
     assert stored is not None
     assert stored.ingest_status is ProcessingStatus.FAILED
     assert lifecycle_events.appended[0].failure_category is FailureCategory.INTERNAL
@@ -96,7 +117,7 @@ def test_worker_marks_job_failed_on_stage_execution_error() -> None:
     assert result.status is DocumentJobStatus.FAILED
     assert result.error_code == "extract_failed"
     assert result.error_detail == "extract stage failed"
-    stored = documents.get(document.doc_id)
+    stored = documents.get(document.doc_id)  # pyright: ignore[reportUnknownMemberType]
     assert stored is not None
     assert stored.failure_code == "extract_failed"
     assert lifecycle_events.appended[0].failure_category is FailureCategory.PROCESSING
@@ -126,8 +147,9 @@ def test_worker_emits_failed_job_log(structured_caplog: StructuredLogCapture) ->
     result = worker.run_next()
 
     assert result is not None
+    structured_caplog.assert_event_matches(LogEvent.WORKER_JOB_FAILED, WorkerJobFailedLog)
     assert structured_caplog.has_event(
-        "worker.job.failed",
+        LogEvent.WORKER_JOB_FAILED,
         doc_id="doc-log-fail",
         error_code="extract_failed",
         failure_category="processing",

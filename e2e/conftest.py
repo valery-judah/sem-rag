@@ -34,7 +34,9 @@ from e2e.runtime_defaults import resolve_e2e_answer_generator
 
 
 @pytest.hookimpl(hookwrapper=True)
-def pytest_runtest_makereport(item: pytest.Item, call: pytest.CallInfo[Any]) -> Generator[None, Any, None]:
+def pytest_runtest_makereport(
+    item: pytest.Item, call: pytest.CallInfo[Any]
+) -> Generator[None, Any, None]:
     outcome = yield
     setattr(item, f"rep_{call.when}", outcome.get_result())
 
@@ -780,5 +782,5 @@ def e2e_stack(
             status="failed" if failed else "passed",
         )
         if failed:
-            print(stack.failure_report(test_id=test_id), flush=True)
+            print(stack.failure_report(test_id=request.node.nodeid), flush=True)
         _reset_runtime_state(e2e_runtime)

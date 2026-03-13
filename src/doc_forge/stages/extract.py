@@ -6,7 +6,6 @@ from datetime import UTC, datetime
 from time import perf_counter
 from uuid import uuid4
 
-import structlog
 from sqlalchemy.engine import Engine
 
 from doc_forge.app.logging import get_logger
@@ -26,7 +25,7 @@ from doc_forge.persistence import (
     LifecycleEventRepository,
     PersistedDocument,
 )
-from doc_forge.stages.base import StageExecutionError, StageRunner
+from doc_forge.stages.base import StageExecutionError, StageLogger, StageRunner
 
 logger = get_logger(__name__)
 
@@ -46,19 +45,18 @@ class ExtractDocumentStage:
         lifecycle_events: LifecycleEventRepository,
         artifact_store: FilesystemArtifactStore,
         extractors: ExtractorRegistry,
-        logger: structlog.stdlib.BoundLogger | None = None,
+        logger: StageLogger | None = None,
     ) -> None:
         self._engine = engine
         self._documents = documents
         self._lifecycle_events = lifecycle_events
         self._artifact_store = artifact_store
         self._extractors = extractors
-        self._logger = logger or get_logger(self.__class__.__name__)
+        self._logger = logger or StageLogger(get_logger(self.__class__.__name__))
 
     def run(self, doc_id: DocId, *, job_id: str | None = None) -> ExtractedArtifact:
         started_at = perf_counter()
-        self._logger.info(
-            "lifecycle.stage.started",
+        self._logger.stage_started(
             stage_name="extract",
             doc_id=doc_id,
             job_id=job_id,
@@ -106,8 +104,7 @@ class ExtractDocumentStage:
                 workspace_id=document.workspace_id,
                 doc_id=document.doc_id,
             )
-            self._logger.warning(
-                "lifecycle.stage.failed",
+            self._logger.stage_failed(
                 stage_name="extract",
                 doc_id=document.doc_id,
                 job_id=job_id,
@@ -118,8 +115,7 @@ class ExtractDocumentStage:
                 f"failed to extract document {document.doc_id!r}: {exc}",
             ) from exc
 
-        self._logger.info(
-            "lifecycle.stage.completed",
+        self._logger.stage_completed(
             stage_name="extract",
             doc_id=document.doc_id,
             job_id=job_id,

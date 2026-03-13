@@ -4,8 +4,6 @@ from __future__ import annotations
 
 from time import perf_counter
 
-import structlog
-
 from doc_forge.app.logging import get_logger
 from doc_forge.artifacts import FilesystemArtifactStore
 from doc_forge.lifecycle import ProcessingStatus
@@ -15,7 +13,7 @@ from doc_forge.persistence import (
     DocumentRepository,
     SectionRepository,
 )
-from doc_forge.stages.base import StageExecutionError, StageRunner
+from doc_forge.stages.base import StageExecutionError, StageLogger, StageRunner
 from doc_forge.structure import SectionDerivationService
 
 logger = get_logger(__name__)
@@ -33,26 +31,24 @@ class SectionizeDocumentStage(StageRunner):
         sections: SectionRepository,
         artifact_store: FilesystemArtifactStore,
         service: SectionDerivationService,
-        logger: structlog.stdlib.BoundLogger | None = None,
+        logger: StageLogger | None = None,
     ) -> None:
         self._documents = documents
         self._sections = sections
         self._artifact_store = artifact_store
         self._service = service
-        self._logger = logger or get_logger(self.__class__.__name__)
+        self._logger = logger or StageLogger(get_logger(self.__class__.__name__))
 
     def run(self, job: DocumentJob) -> DocumentJobStage | None:
         started_at = perf_counter()
-        self._logger.info(
-            "lifecycle.stage.started",
+        self._logger.stage_started(
             stage_name="sectionize",
             doc_id=job.doc_id,
             job_id=job.job_id,
         )
         document = self._documents.get(job.doc_id)
         if document is None:
-            self._logger.warning(
-                "lifecycle.stage.failed",
+            self._logger.stage_failed(
                 stage_name="sectionize",
                 doc_id=job.doc_id,
                 job_id=job.job_id,
@@ -64,8 +60,7 @@ class SectionizeDocumentStage(StageRunner):
                 error_detail=f"document {job.doc_id!r} was not found",
             )
         if document.ingest_status is not ProcessingStatus.NORMALIZED:
-            self._logger.warning(
-                "lifecycle.stage.failed",
+            self._logger.stage_failed(
                 stage_name="sectionize",
                 doc_id=job.doc_id,
                 job_id=job.job_id,
@@ -85,8 +80,7 @@ class SectionizeDocumentStage(StageRunner):
                 doc_id=document.doc_id,
             )
         except FileNotFoundError as exc:
-            self._logger.warning(
-                "lifecycle.stage.failed",
+            self._logger.stage_failed(
                 stage_name="sectionize",
                 doc_id=document.doc_id,
                 job_id=job.job_id,
@@ -99,8 +93,7 @@ class SectionizeDocumentStage(StageRunner):
             ) from exc
         sections = self._service.derive(document=document, artifact=artifact)
         self._sections.replace_for_document(document.doc_id, sections)
-        self._logger.info(
-            "lifecycle.stage.completed",
+        self._logger.stage_completed(
             stage_name="sectionize",
             doc_id=document.doc_id,
             job_id=job.job_id,

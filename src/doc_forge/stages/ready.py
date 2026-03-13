@@ -6,8 +6,6 @@ from datetime import UTC, datetime
 from time import perf_counter
 from uuid import uuid4
 
-import structlog
-
 from doc_forge.app.logging import get_logger
 from doc_forge.lifecycle import LifecycleEvent, LifecycleStage, ProcessingStatus
 from doc_forge.lifecycle.readiness import ReadinessService
@@ -17,7 +15,7 @@ from doc_forge.persistence import (
     DocumentRepository,
     LifecycleEventRepository,
 )
-from doc_forge.stages.base import StageExecutionError, StageRunner
+from doc_forge.stages.base import StageExecutionError, StageLogger, StageRunner
 
 logger = get_logger(__name__)
 
@@ -33,25 +31,23 @@ class ReadyDocumentStage(StageRunner):
         documents: DocumentRepository,
         lifecycle_events: LifecycleEventRepository,
         readiness: ReadinessService,
-        logger: structlog.stdlib.BoundLogger | None = None,
+        logger: StageLogger | None = None,
     ) -> None:
         self._documents = documents
         self._lifecycle_events = lifecycle_events
         self._readiness = readiness
-        self._logger = logger or get_logger(self.__class__.__name__)
+        self._logger = logger or StageLogger(get_logger(self.__class__.__name__))
 
     def run(self, job: DocumentJob) -> DocumentJobStage | None:
         started_at = perf_counter()
-        self._logger.info(
-            "lifecycle.stage.started",
+        self._logger.stage_started(
             stage_name="ready_check",
             doc_id=job.doc_id,
             job_id=job.job_id,
         )
         document = self._documents.get(job.doc_id)
         if document is None:
-            self._logger.warning(
-                "lifecycle.stage.failed",
+            self._logger.stage_failed(
                 stage_name="ready_check",
                 doc_id=job.doc_id,
                 job_id=job.job_id,
@@ -63,8 +59,7 @@ class ReadyDocumentStage(StageRunner):
                 error_detail=f"document {job.doc_id!r} was not found",
             )
         if document.ingest_status is not ProcessingStatus.INDEXED:
-            self._logger.warning(
-                "lifecycle.stage.failed",
+            self._logger.stage_failed(
                 stage_name="ready_check",
                 doc_id=job.doc_id,
                 job_id=job.job_id,
@@ -79,8 +74,7 @@ class ReadyDocumentStage(StageRunner):
             )
         result = self._readiness.evaluate(doc_id=document.doc_id)
         if not result.is_ready:
-            self._logger.warning(
-                "lifecycle.stage.failed",
+            self._logger.stage_failed(
                 stage_name="ready_check",
                 doc_id=document.doc_id,
                 job_id=job.job_id,
@@ -116,8 +110,7 @@ class ReadyDocumentStage(StageRunner):
                 },
             )
         )
-        self._logger.info(
-            "lifecycle.stage.completed",
+        self._logger.stage_completed(
             stage_name="ready_check",
             doc_id=document.doc_id,
             job_id=job.job_id,

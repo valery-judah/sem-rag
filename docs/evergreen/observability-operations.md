@@ -123,28 +123,35 @@ These bundles are the source for observability Postgres indexing.
 
 ## Central Observability Data Flow
 ### Postgres
-`evalops-loader` scans `data/context/queries/` and writes normalized metadata
-into `telemetry-postgres`.
+`telemetry-postgres` is the primary central persistence layer.
 
+`evalops-loader` scans `data/context/queries/` and writes normalized metadata.
 Key indexed entities:
 - query runs
 - bundle assets
 - eval case results
 - raw log source links
 
+`vector` ingests JSONL service logs and writes parsed log rows into `service_log_events`.
+Because the application uses strongly-typed structured logging, the `event` column corresponds to a stable taxonomy (e.g., `query.run.completed`), and the `payload` JSONB column contains predictable, strictly-typed domain properties (e.g., `error_code`, `duration_ms`, `stage_name`).
+
 ### Loki
 `vector` tails `data/logs/**/*.jsonl`, parses the JSON, attaches labels, and
-ships the events into Loki.
+ships the events into Loki for stream-oriented exploration.
 
-Important labels:
+Important standard labels:
 - `service`
 - `environment`
+- `source_family`
+- `source_kind`
+
+Important structured metadata (queryable but not indexed as high-cardinality labels):
+- `event` (maps to the internal `LogEvent` taxonomy)
 - `query_id`
 - `workspace_id`
 - `run_id`
 - `test_id`
 - `case_id`
-- `source_kind`
 
 ### Grafana
 Grafana is the operator UI over both stores:

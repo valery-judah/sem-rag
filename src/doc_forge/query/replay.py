@@ -5,6 +5,7 @@ from __future__ import annotations
 import structlog
 from pydantic import BaseModel, ConfigDict, Field
 
+from doc_forge.app.log_events import LogEvent
 from doc_forge.app.logging import get_logger
 
 from .contracts import (
@@ -65,6 +66,19 @@ class ReconstructedQueryInputs(BaseModel):
     answer_draft: AnswerDraft | None = None
 
 
+class QueryReplayLogger:
+    def __init__(self, logger: structlog.stdlib.BoundLogger) -> None:
+        self._logger = logger
+
+    def bundle_built(self, query_id: str, status: str, trace_count: int) -> None:
+        self._logger.info(
+            LogEvent.REPLAY_BUNDLE_BUILT,
+            query_id=query_id,
+            status=status,
+            trace_count=trace_count,
+        )
+
+
 class QueryReplayService:
     """Read-only replay helper over persisted query artifacts."""
 
@@ -75,13 +89,13 @@ class QueryReplayService:
         snapshot_store: QuerySnapshotStore,
         trace_store: QueryTraceStore,
         answer_store: QueryAnswerStore,
-        logger: structlog.stdlib.BoundLogger | None = None,
+        logger: QueryReplayLogger | None = None,
     ) -> None:
         self._run_store = run_store
         self._snapshot_store = snapshot_store
         self._trace_store = trace_store
         self._answer_store = answer_store
-        self._logger = logger or get_logger(self.__class__.__name__)
+        self._logger = logger or QueryReplayLogger(get_logger(self.__class__.__name__))
 
     def build_bundle(self, query_id: str) -> QueryReplayBundle:
         """Load the frozen persisted artifacts required for replay."""
@@ -101,8 +115,7 @@ class QueryReplayService:
             ),
             final_artifacts=self._answer_store.get_answer_artifacts(query_id),
         )
-        self._logger.info(
-            "replay.bundle.built",
+        self._logger.bundle_built(
             query_id=query_id,
             status=run.status.value,
             trace_count=len(bundle.trace_bundle.stage_traces),

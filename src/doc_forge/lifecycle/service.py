@@ -12,6 +12,7 @@ from uuid import uuid4
 import structlog
 from pydantic import BaseModel, ConfigDict, Field
 
+from doc_forge.app.log_events import LogEvent
 from doc_forge.app.logging import get_logger
 from doc_forge.artifacts import FilesystemArtifactStore
 from doc_forge.corpus import Chunk, Section, SourceType
@@ -208,6 +209,126 @@ class DocumentArtifactRefs(BaseModel):
     )
 
 
+class LifecycleServiceLogger:
+    def __init__(self, logger: structlog.stdlib.BoundLogger) -> None:
+        self._logger = logger
+
+    def upload_validated(
+        self,
+        workspace_id: str,
+        filename_extension: str | None,
+        source_type: str,
+        size_bytes: int,
+        checksum_sha256: str,
+    ) -> None:
+        self._logger.info(
+            LogEvent.DOCUMENT_UPLOAD_VALIDATED,
+            workspace_id=workspace_id,
+            filename_extension=filename_extension,
+            source_type=source_type,
+            size_bytes=size_bytes,
+            checksum_sha256=checksum_sha256,
+        )
+
+    def upload_registered(
+        self, workspace_id: str, doc_id: str, ingest_status: str, source_type: str, duration_ms: int
+    ) -> None:
+        self._logger.info(
+            LogEvent.DOCUMENT_UPLOAD_REGISTERED,
+            workspace_id=workspace_id,
+            doc_id=doc_id,
+            ingest_status=ingest_status,
+            source_type=source_type,
+            duration_ms=duration_ms,
+        )
+
+    def smoke_executed(
+        self,
+        doc_id: str,
+        k: int,
+        query_chars: int,
+        query_sha256: str,
+        hit_count: int,
+        top_hit_doc_id: str | None,
+        top_hit_chunk_id: str | None,
+    ) -> None:
+        self._logger.info(
+            LogEvent.RETRIEVAL_SMOKE_EXECUTED,
+            doc_id=doc_id,
+            k=k,
+            query_chars=query_chars,
+            query_sha256=query_sha256,
+            hit_count=hit_count,
+            top_hit_doc_id=top_hit_doc_id,
+            top_hit_chunk_id=top_hit_chunk_id,
+        )
+
+    def delete_performed(
+        self,
+        workspace_id: str,
+        doc_id: str,
+        vector_store_deleted: bool,
+        raw_deleted: bool,
+        extracted_deleted: bool,
+        normalized_deleted: bool,
+        document_row_deleted: bool,
+    ) -> None:
+        self._logger.info(
+            LogEvent.DOCUMENT_DELETE_PERFORMED,
+            workspace_id=workspace_id,
+            doc_id=doc_id,
+            vector_store_deleted=vector_store_deleted,
+            raw_deleted=raw_deleted,
+            extracted_deleted=extracted_deleted,
+            normalized_deleted=normalized_deleted,
+            document_row_deleted=document_row_deleted,
+        )
+
+    def retry_eligibility_checked(self, doc_id: str, workspace_id: str, ingest_status: str) -> None:
+        self._logger.info(
+            LogEvent.DOCUMENT_RETRY_ELIGIBILITY_CHECKED,
+            doc_id=doc_id,
+            workspace_id=workspace_id,
+            ingest_status=ingest_status,
+        )
+
+    def retry_queued_internal(
+        self,
+        doc_id: str,
+        workspace_id: str,
+        failed_stage: str,
+        queued_stage: str,
+        job_id: str,
+        ingest_status: str,
+    ) -> None:
+        self._logger.info(
+            LogEvent.DOCUMENT_RETRY_QUEUED_INTERNAL,
+            doc_id=doc_id,
+            workspace_id=workspace_id,
+            failed_stage=failed_stage,
+            queued_stage=queued_stage,
+            job_id=job_id,
+            ingest_status=ingest_status,
+        )
+
+    def retry_eligibility_rejected(
+        self,
+        doc_id: str,
+        workspace_id: str,
+        ingest_status: str,
+        failed_stage: str | None,
+        error_code: str,
+    ) -> None:
+        self._logger.warning(
+            LogEvent.DOCUMENT_RETRY_ELIGIBILITY_REJECTED,
+            doc_id=doc_id,
+            workspace_id=workspace_id,
+            ingest_status=ingest_status,
+            failed_stage=failed_stage,
+            error_code=error_code,
+        )
+
+
 class DocumentLifecycleService:
     """Coordinate upload intake and durable registration."""
 
@@ -225,7 +346,7 @@ class DocumentLifecycleService:
         index_entries: IndexEntryRepository | None = None,
         chunk_embeddings: ChunkEmbeddingRepository | None = None,
         vector_store: VectorStore | None = None,
-        logger: structlog.stdlib.BoundLogger | None = None,
+        logger: LifecycleServiceLogger | None = None,
     ) -> None:
         self._register_stage = register_stage
         self._orchestrator = orchestrator
@@ -238,7 +359,7 @@ class DocumentLifecycleService:
         self._index_entries = index_entries
         self._chunk_embeddings = chunk_embeddings
         self._vector_store = vector_store
-        self._logger = logger or get_logger(self.__class__.__name__)
+        self._logger = logger or LifecycleServiceLogger(get_logger(self.__class__.__name__))
 
     def upload_document(
         self,
@@ -259,8 +380,7 @@ class DocumentLifecycleService:
         uploaded_at = datetime.now(UTC)
         resolved_title = self._resolve_title(title=title, filename=normalized_filename)
         checksum = self._checksum(content)
-        self._logger.info(
-            "document.upload.validated",
+        self._logger.upload_validated(
             workspace_id=workspace_id,
             filename_extension=_filename_extension(normalized_filename),
             source_type=source_type.value,
@@ -283,8 +403,7 @@ class DocumentLifecycleService:
                 doc_id=document.doc_id,
                 target_stage=DocumentJobStage.EXTRACT,
             )
-        self._logger.info(
-            "document.upload.registered",
+        self._logger.upload_registered(
             workspace_id=workspace_id,
             doc_id=document.doc_id,
             ingest_status=document.ingest_status.value,
@@ -330,8 +449,7 @@ class DocumentLifecycleService:
             raise RuntimeError("vector store is not configured")
         hits = self._vector_store.smoke_query(doc_id=doc_id, text=text, k=k)
         top_hit = hits[0] if hits else None
-        self._logger.info(
-            "retrieval.smoke.executed",
+        self._logger.smoke_executed(
             doc_id=doc_id,
             k=k,
             query_chars=len(text),
@@ -377,8 +495,7 @@ class DocumentLifecycleService:
 
         if self._documents is not None:
             self._documents.delete(doc_id=doc_id)
-        self._logger.info(
-            "document.delete.performed",
+        self._logger.delete_performed(
             workspace_id=document.workspace_id,
             doc_id=doc_id,
             vector_store_deleted=vector_store_deleted,
@@ -392,8 +509,7 @@ class DocumentLifecycleService:
         """Queue a retry for the latest failed lifecycle stage."""
 
         document = self._require_document(doc_id)
-        self._logger.info(
-            "document.retry.eligibility_checked",
+        self._logger.retry_eligibility_checked(
             doc_id=doc_id,
             workspace_id=document.workspace_id,
             ingest_status=document.ingest_status.value,
@@ -457,8 +573,7 @@ class DocumentLifecycleService:
                 document=document,
                 failed_stage=target_stage,
             )
-        self._logger.info(
-            "document.retry.queued_internal",
+        self._logger.retry_queued_internal(
             doc_id=document.doc_id,
             workspace_id=document.workspace_id,
             failed_stage=target_stage.value,
@@ -647,8 +762,7 @@ class DocumentLifecycleService:
         document: PersistedDocument,
         failed_stage: DocumentJobStage | None = None,
     ) -> NoReturn:
-        self._logger.warning(
-            "document.retry.eligibility_rejected",
+        self._logger.retry_eligibility_rejected(
             doc_id=document.doc_id,
             workspace_id=document.workspace_id,
             ingest_status=document.ingest_status.value,
