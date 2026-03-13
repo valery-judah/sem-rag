@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import importlib
+import re
 from collections.abc import Callable
 from functools import lru_cache
 from typing import Protocol, cast
@@ -18,6 +19,7 @@ from .contracts import (
     CorpusSnapshot,
     InterpretedQuery,
     QueryRequest,
+    QueryRequestType,
     SupportAssessment,
     SupportQualifierReason,
     SupportState,
@@ -31,6 +33,7 @@ def _logger() -> structlog.stdlib.BoundLogger:
 
 GENERATOR_VERSION = "answer_generation.deterministic.v1"
 MLX_GENERATOR_VERSION = "answer_generation.mlx.v1"
+_SUPPORT_TOKEN_RE = re.compile(r"[a-z0-9][a-z0-9_-]*")
 
 
 class GroundedGenerationResult(BaseModel):
@@ -250,7 +253,11 @@ def _build_answer_text(
     visible_limitations: list[str],
 ) -> str:
     snippets = _extract_support_snippets(context_manifest)
-    supported_text = " ".join(snippets[:2]).strip()
+    supported_text = _select_supported_text(
+        snippets=snippets,
+        interpreted_query=interpreted_query,
+        answer_mode=answer_mode_decision.answer_mode,
+    )
     if not supported_text and support_assessment.summary:
         supported_text = support_assessment.summary
 
@@ -361,6 +368,76 @@ def _extract_support_snippets(context_manifest: ContextManifest) -> list[str]:
             if stripped not in snippets:
                 snippets.append(stripped)
     return snippets
+
+
+def _select_supported_text(
+    *,
+    snippets: list[str],
+    interpreted_query: InterpretedQuery,
+    answer_mode: AnswerMode,
+) -> str:
+    if not snippets:
+        return ""
+    scored_snippets = [
+        (
+            _score_support_snippet(
+                snippet=snippet,
+                interpreted_query=interpreted_query,
+            ),
+            index,
+            snippet,
+        )
+        for index, snippet in enumerate(snippets)
+    ]
+    positively_scored = [
+        item
+        for item in sorted(scored_snippets, key=lambda item: (-item[0], item[1]))
+        if item[0] > 0
+    ]
+    if not positively_scored:
+        return " ".join(snippets[:2]).strip()
+
+    max_snippets = 1
+    if (
+        answer_mode is AnswerMode.QUALIFIED_ANSWER
+        or answer_mode is AnswerMode.QUALIFIED_UNCERTAINTY
+        or interpreted_query.request_type is QueryRequestType.EXPLANATION
+        or interpreted_query.requires_synthesis
+    ):
+        max_snippets = 2
+
+    selected: list[str] = []
+    for _, _, snippet in positively_scored:
+        if snippet in selected:
+            continue
+        selected.append(snippet)
+        if len(selected) >= max_snippets:
+            break
+    return " ".join(selected).strip()
+
+
+def _score_support_snippet(
+    *,
+    snippet: str,
+    interpreted_query: InterpretedQuery,
+) -> int:
+    normalized_snippet = snippet.lower()
+    snippet_tokens = set(_SUPPORT_TOKEN_RE.findall(normalized_snippet))
+    hint_matches = sum(
+        1
+        for hint in interpreted_query.scope_hints
+        if hint.lower() in normalized_snippet or hint.lower() in snippet_tokens
+    )
+    exactness_bonus = 0
+    for token in ("preferred", "best", "exact", "default", "recommended"):
+        if token in interpreted_query.normalized_question and token in normalized_snippet:
+            exactness_bonus += 1
+    if (
+        interpreted_query.request_type is QueryRequestType.EXPLANATION
+        and any(token in normalized_snippet for token in ("because", "however", "instead"))
+    ):
+        exactness_bonus += 1
+    return hint_matches * 3 + exactness_bonus
 
 
 def _grounded_evidence_set_ids(

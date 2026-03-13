@@ -3,7 +3,10 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
+from time import perf_counter
 from uuid import uuid4
+
+import structlog
 
 from doc_forge.identifiers import DocId
 from doc_forge.indexing import VectorStore
@@ -18,6 +21,10 @@ from doc_forge.persistence import (
     LifecycleEventRepository,
 )
 from doc_forge.stages.base import StageExecutionError, StageRunner
+
+
+def _logger() -> structlog.stdlib.BoundLogger:
+    return structlog.get_logger(__name__)  # type: ignore
 
 
 class IndexDocumentStage(StageRunner):
@@ -43,13 +50,36 @@ class IndexDocumentStage(StageRunner):
         self._chunk_embeddings = chunk_embeddings
 
     def run(self, job: DocumentJob) -> DocumentJobStage | None:
+        started_at = perf_counter()
+        _logger().info(
+            "lifecycle.stage.started",
+            stage_name="index",
+            doc_id=job.doc_id,
+            job_id=job.job_id,
+        )
         document = self._documents.get(job.doc_id)
         if document is None:
+            _logger().warning(
+                "lifecycle.stage.failed",
+                stage_name="index",
+                doc_id=job.doc_id,
+                job_id=job.job_id,
+                duration_ms=max(int((perf_counter() - started_at) * 1000), 0),
+                error_code="missing_document",
+            )
             raise StageExecutionError(
                 error_code="missing_document",
                 error_detail=f"document {job.doc_id!r} was not found",
             )
         if document.ingest_status is not ProcessingStatus.CHUNKED:
+            _logger().warning(
+                "lifecycle.stage.failed",
+                stage_name="index",
+                doc_id=job.doc_id,
+                job_id=job.job_id,
+                duration_ms=max(int((perf_counter() - started_at) * 1000), 0),
+                error_code="invalid_document_status",
+            )
             raise StageExecutionError(
                 error_code="invalid_document_status",
                 error_detail=(
@@ -58,6 +88,14 @@ class IndexDocumentStage(StageRunner):
             )
         chunks = self._chunks.list_for_document(document.doc_id)
         if not chunks:
+            _logger().warning(
+                "lifecycle.stage.failed",
+                stage_name="index",
+                doc_id=document.doc_id,
+                job_id=job.job_id,
+                duration_ms=max(int((perf_counter() - started_at) * 1000), 0),
+                error_code="missing_chunks",
+            )
             raise StageExecutionError(
                 error_code="missing_chunks",
                 error_detail=f"document {document.doc_id!r} has no persisted chunks",
@@ -66,12 +104,31 @@ class IndexDocumentStage(StageRunner):
             entries = self._vector_store.publish_document(doc_id=document.doc_id, chunks=chunks)
         except Exception as exc:
             self._cleanup_partial_publication(document.doc_id)
+            _logger().warning(
+                "lifecycle.stage.failed",
+                stage_name="index",
+                doc_id=document.doc_id,
+                job_id=job.job_id,
+                duration_ms=max(int((perf_counter() - started_at) * 1000), 0),
+                error_code="index_failed",
+                chunk_count=len(chunks),
+            )
             raise StageExecutionError(
                 error_code="index_failed",
                 error_detail=f"failed to index document {document.doc_id!r}: {exc}",
             ) from exc
         if len(entries) != len(chunks):
             self._cleanup_partial_publication(document.doc_id)
+            _logger().warning(
+                "lifecycle.stage.failed",
+                stage_name="index",
+                doc_id=document.doc_id,
+                job_id=job.job_id,
+                duration_ms=max(int((perf_counter() - started_at) * 1000), 0),
+                error_code="partial_index_publication",
+                chunk_count=len(chunks),
+                index_entry_count=len(entries),
+            )
             raise StageExecutionError(
                 error_code="partial_index_publication",
                 error_detail=(
@@ -95,6 +152,15 @@ class IndexDocumentStage(StageRunner):
                 occurred_at=completed_at,
                 detail={"index_entry_count": str(len(entries))},
             )
+        )
+        _logger().info(
+            "lifecycle.stage.completed",
+            stage_name="index",
+            doc_id=document.doc_id,
+            job_id=job.job_id,
+            duration_ms=max(int((perf_counter() - started_at) * 1000), 0),
+            chunk_count=len(chunks),
+            index_entry_count=len(entries),
         )
         return DocumentJobStage.READY_CHECK
 

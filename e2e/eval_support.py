@@ -13,11 +13,14 @@ from doc_forge.evaluation import (
     AnswerLayerRunInput,
     AnswerLayerRunResult,
 )
+from doc_forge.query import (
+    QueryContextCollectionExtras,
+    QueryContextCollector,
+    QueryContextSourceKind,
+)
 from doc_forge.query.review import QueryCitationReview, QueryRunReviewSummary, QueryTraceReview
-
 from e2e.query_support import ExecutedQueryRun, execute_query_run
 from e2e.support import SystemDriver
-
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 EVAL_CORPUS_DIR = REPO_ROOT / "evals" / "corpus"
@@ -50,6 +53,7 @@ class ExecutedEvalCase:
     query_response: ExecutedQueryRun
     evaluation_result: AnswerLayerRunResult
     uploaded_documents: list[UploadedCorpusDocument]
+    context_bundle_root: Path | None = None
 
 
 class EvalCaseExecutor:
@@ -87,6 +91,13 @@ class EvalCaseExecutor:
             runtime_doc_id_map=runtime_doc_map,
         )
         evaluation_result = self._evaluator.evaluate(run_input)
+        context_bundle_root = _collect_query_context_bundle(
+            driver=driver,
+            case_id=case_id,
+            executed_query=executed_query,
+            evaluation_result=evaluation_result,
+            uploaded_documents=uploaded_documents,
+        )
         executed_case = ExecutedEvalCase(
             case_id=case_id,
             workspace_id=workspace_id,
@@ -99,6 +110,7 @@ class EvalCaseExecutor:
             query_response=executed_query,
             evaluation_result=evaluation_result,
             uploaded_documents=uploaded_documents,
+            context_bundle_root=context_bundle_root,
         )
         _write_case_debug_artifacts(driver=driver, executed_case=executed_case)
         return executed_case
@@ -211,4 +223,47 @@ def _write_case_debug_artifacts(*, driver: SystemDriver, executed_case: Executed
     for filename, payload in payloads.items():
         path = artifact_dir / filename
         path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")
-        driver.stack.record_query_debug_artifact(path.relative_to(driver.stack.artifact_root).as_posix())
+        driver.stack.record_query_debug_artifact(
+            path.relative_to(driver.stack.artifact_root).as_posix()
+        )
+    if executed_case.context_bundle_root is not None:
+        driver.stack.record_query_context_artifact(
+            executed_case.context_bundle_root.relative_to(REPO_ROOT).as_posix()
+        )
+
+
+def _collect_query_context_bundle(
+    *,
+    driver: SystemDriver,
+    case_id: str,
+    executed_query: ExecutedQueryRun,
+    evaluation_result: AnswerLayerRunResult,
+    uploaded_documents: list[UploadedCorpusDocument],
+) -> Path | None:
+    if driver.stack.current_test_id is not None:
+        driver.stack.archive_scenario_logs(test_id=driver.stack.current_test_id)
+    extras = QueryContextCollectionExtras(
+        source_kind=QueryContextSourceKind.EVAL,
+        case_id=case_id,
+        test_id=driver.stack.current_test_id,
+        query_response_payload=executed_query.response.model_dump(mode="json"),
+        eval_result_payload=evaluation_result.model_dump(mode="json"),
+        execution_metadata_payload={
+            "case_id": case_id,
+            "workspace_id": executed_query.workspace_id,
+            "query_id": executed_query.query_id,
+            "uploaded_documents": [
+                {
+                    "corpus_id": item.corpus_id,
+                    "runtime_doc_id": item.runtime_doc_id,
+                }
+                for item in uploaded_documents
+            ],
+        },
+    )
+    collector = QueryContextCollector.from_database_url(
+        database_url=driver.stack.database_url,
+        repo_root=REPO_ROOT,
+    )
+    result = collector.collect(executed_query.query_id, extras=extras)
+    return result.bundle_root

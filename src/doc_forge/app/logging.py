@@ -38,8 +38,17 @@ def configure_logging(*, service: str, environment: str, level: str) -> None:
     root_logger.handlers.clear()
     root_logger.addHandler(handler)
     root_logger.setLevel(level.upper())
+    logging.captureWarnings(True)
 
     for logger_name in (
+        "alembic",
+        "alembic.runtime.migration",
+        "httpx",
+        "huggingface_hub",
+        "huggingface_hub.utils._http",
+        "py.warnings",
+        "sentence_transformers",
+        "transformers",
         "uvicorn",
         "uvicorn.error",
         "uvicorn.access",
@@ -76,6 +85,7 @@ def reset_logging() -> None:
 
     global _CONFIGURED
     logging.getLogger().handlers.clear()
+    logging.captureWarnings(False)
     structlog.reset_defaults()
     structlog.contextvars.clear_contextvars()
     _CONFIGURED = False

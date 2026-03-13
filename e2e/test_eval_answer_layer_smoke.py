@@ -4,10 +4,8 @@ import pytest
 
 from doc_forge.evaluation import CriterionVerdict, TrustOutcome
 from doc_forge.query import AnswerMode, SupportState
-
-from e2e.eval_support import EvalCaseExecutor, SMOKE_CASE_IDS
+from e2e.eval_support import SMOKE_CASE_IDS, EvalCaseExecutor
 from e2e.support import SystemDriver
-
 
 pytestmark = pytest.mark.e2e
 
@@ -54,6 +52,8 @@ def test_authored_answer_layer_smoke_cases_execute_over_real_stack(e2e_stack, ca
         TrustOutcome.BORDERLINE,
         TrustOutcome.NOT_TRUSTWORTHY,
     }
+    assert executed.context_bundle_root is not None
+    assert executed.context_bundle_root.exists()
 
 
 @pytest.mark.parametrize("case_id", KNOWN_RUNTIME_GAP_CASES)

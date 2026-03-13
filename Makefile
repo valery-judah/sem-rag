@@ -108,11 +108,15 @@ docker-build: ## Build the local Docker image for the split runtime
 
 .PHONY: docker-up
 docker-up: ## Start the local Docker stack in detached mode
-	$(DOCKER_COMPOSE) up -d
+	@run_id="$$(./scripts/prepare_compose_logs.sh)"; \
+	echo "compose log run id: $$run_id"; \
+	DOC_FORGE_LOG_RUN_ID="$$run_id" $(DOCKER_COMPOSE) up -d
 
 .PHONY: docker-up-build
 docker-up-build: ## Build and start the local Docker stack in detached mode
-	$(DOCKER_COMPOSE) up -d --build
+	@run_id="$$(./scripts/prepare_compose_logs.sh)"; \
+	echo "compose log run id: $$run_id"; \
+	DOC_FORGE_LOG_RUN_ID="$$run_id" $(DOCKER_COMPOSE) up -d --build
 
 .PHONY: docker-down
 docker-down: ## Stop the local Docker stack
@@ -125,6 +129,26 @@ docker-clean: ## Stop the local Docker stack and remove volumes
 .PHONY: docker-logs
 docker-logs: ## Show recent API logs from the Docker stack
 	$(DOCKER_COMPOSE) logs --tail=120 api
+
+.PHONY: docker-log-index
+docker-log-index: ## Show repo-local archived container log locations
+	@echo "compose latest:"
+	@printf "  %s\n" "$(CURDIR)/data/logs/compose/latest/api.jsonl"
+	@printf "  %s\n" "$(CURDIR)/data/logs/compose/latest/worker.jsonl"
+	@echo "e2e latest root:"
+	@printf "  %s\n" "$(CURDIR)/data/logs/e2e/latest"
+	@echo "query context root:"
+	@printf "  %s\n" "$(CURDIR)/data/context/queries"
+
+.PHONY: collect-query-context
+collect-query-context: ## Collect a query context bundle under data/context/queries/ (set QUERY_ID=...)
+	@test -n "$(QUERY_ID)" || (echo "QUERY_ID is required" >&2; exit 1)
+	uv run python -m doc_forge.devtools.query_context collect-query-context --query-id "$(QUERY_ID)"
+
+.PHONY: show-query-context
+show-query-context: ## Show bundle paths and metadata for a collected query context (set QUERY_ID=...)
+	@test -n "$(QUERY_ID)" || (echo "QUERY_ID is required" >&2; exit 1)
+	uv run python -m doc_forge.devtools.query_context show-query-context --query-id "$(QUERY_ID)"
 
 .PHONY: docker-db-shell
 docker-db-shell: ## Open a psql shell inside the Docker Postgres service

@@ -5,8 +5,11 @@ from __future__ import annotations
 import hashlib
 from datetime import UTC, datetime
 from pathlib import Path
+from time import perf_counter
+from typing import NoReturn
 from uuid import uuid4
 
+import structlog
 from pydantic import BaseModel, ConfigDict, Field
 
 from doc_forge.artifacts import FilesystemArtifactStore
@@ -30,8 +33,16 @@ from doc_forge.stages import RegisterDocumentRequest, RegisterDocumentStage
 from .orchestrator import DocumentLifecycleOrchestrator
 
 
+def _logger() -> structlog.stdlib.BoundLogger:
+    return structlog.get_logger(__name__)  # type: ignore
+
+
 class UnsupportedDocumentError(ValueError):
     """Raised when an upload falls outside the MVP-supported source types."""
+
+    def __init__(self, message: str, *, error_code: str) -> None:
+        self.error_code = error_code
+        super().__init__(message)
 
 
 class DocumentNotFoundError(LookupError):
@@ -40,6 +51,10 @@ class DocumentNotFoundError(LookupError):
 
 class RetryNotAllowedError(ValueError):
     """Raised when retry cannot be safely queued for the current document state."""
+
+    def __init__(self, message: str, *, error_code: str) -> None:
+        self.error_code = error_code
+        super().__init__(message)
 
 
 class UploadDocumentResult(BaseModel):
@@ -234,6 +249,7 @@ class DocumentLifecycleService:
     ) -> UploadDocumentResult:
         """Validate an upload and durably register it."""
 
+        started_at = perf_counter()
         normalized_filename = self._require_filename(filename)
         source_type = self._detect_source_type(
             filename=normalized_filename,
@@ -242,6 +258,14 @@ class DocumentLifecycleService:
         uploaded_at = datetime.now(UTC)
         resolved_title = self._resolve_title(title=title, filename=normalized_filename)
         checksum = self._checksum(content)
+        _logger().info(
+            "document.upload.validated",
+            workspace_id=workspace_id,
+            filename_extension=_filename_extension(normalized_filename),
+            source_type=source_type.value,
+            size_bytes=len(content),
+            checksum_sha256=checksum,
+        )
         request = RegisterDocumentRequest(
             doc_id=f"doc_{uuid4().hex}",
             workspace_id=workspace_id,
@@ -258,6 +282,14 @@ class DocumentLifecycleService:
                 doc_id=document.doc_id,
                 target_stage=DocumentJobStage.EXTRACT,
             )
+        _logger().info(
+            "document.upload.registered",
+            workspace_id=workspace_id,
+            doc_id=document.doc_id,
+            ingest_status=document.ingest_status.value,
+            source_type=document.source_type.value,
+            duration_ms=max(int((perf_counter() - started_at) * 1000), 0),
+        )
         return UploadDocumentResult(
             doc_id=document.doc_id,
             ingest_status=document.ingest_status,
@@ -295,17 +327,34 @@ class DocumentLifecycleService:
         self._require_document(doc_id)
         if self._vector_store is None:
             raise RuntimeError("vector store is not configured")
+        hits = self._vector_store.smoke_query(doc_id=doc_id, text=text, k=k)
+        top_hit = hits[0] if hits else None
+        _logger().info(
+            "retrieval.smoke.executed",
+            doc_id=doc_id,
+            k=k,
+            query_chars=len(text),
+            query_sha256=hashlib.sha256(text.encode("utf-8")).hexdigest(),
+            hit_count=len(hits),
+            top_hit_doc_id=None if top_hit is None else top_hit.doc_id,
+            top_hit_chunk_id=None if top_hit is None else top_hit.chunk_id,
+        )
         return RetrievalQueryResult(
             doc_id=doc_id,
-            hits=self._vector_store.smoke_query(doc_id=doc_id, text=text, k=k),
+            hits=hits,
         )
 
     def delete_document(self, *, doc_id: DocId) -> None:
         """Completely remove a document, its artifacts, vectors, and lifecycle history."""
         document = self._require_document(doc_id)
+        vector_store_deleted = False
+        raw_deleted = False
+        extracted_deleted = False
+        normalized_deleted = False
 
         if self._vector_store is not None:
             self._vector_store.delete_document(doc_id=doc_id)
+            vector_store_deleted = True
 
         if self._artifact_store is not None:
             self._artifact_store.delete_raw_by_id(
@@ -313,30 +362,61 @@ class DocumentLifecycleService:
                 doc_id=doc_id,
                 source_type=document.source_type,
             )
+            raw_deleted = True
             self._artifact_store.delete_extracted(
                 workspace_id=document.workspace_id,
                 doc_id=doc_id,
             )
+            extracted_deleted = True
             self._artifact_store.delete_normalized(
                 workspace_id=document.workspace_id,
                 doc_id=doc_id,
             )
+            normalized_deleted = True
 
         if self._documents is not None:
             self._documents.delete(doc_id=doc_id)
+        _logger().info(
+            "document.delete.performed",
+            workspace_id=document.workspace_id,
+            doc_id=doc_id,
+            vector_store_deleted=vector_store_deleted,
+            raw_deleted=raw_deleted,
+            extracted_deleted=extracted_deleted,
+            normalized_deleted=normalized_deleted,
+            document_row_deleted=self._documents is not None,
+        )
 
     def retry_document(self, *, doc_id: DocId) -> RetryDocumentResult:
         """Queue a retry for the latest failed lifecycle stage."""
 
         document = self._require_document(doc_id)
+        _logger().info(
+            "document.retry.eligibility_checked",
+            doc_id=doc_id,
+            workspace_id=document.workspace_id,
+            ingest_status=document.ingest_status.value,
+        )
         if document.ingest_status is ProcessingStatus.READY:
-            raise RetryNotAllowedError("ready documents cannot be retried")
+            self._raise_retry_not_allowed(
+                message="ready documents cannot be retried",
+                error_code="ready_document",
+                document=document,
+            )
         if self._jobs is None or self._orchestrator is None or self._lifecycle_events is None:
             raise RuntimeError("retry dependencies are not configured")
         if self._jobs.has_active_job(doc_id):
-            raise RetryNotAllowedError("document already has queued or running work")
+            self._raise_retry_not_allowed(
+                message="document already has queued or running work",
+                error_code="active_job_exists",
+                document=document,
+            )
         if document.ingest_status is not ProcessingStatus.FAILED:
-            raise RetryNotAllowedError("retry is only supported for failed documents")
+            self._raise_retry_not_allowed(
+                message="retry is only supported for failed documents",
+                error_code="document_not_failed",
+                document=document,
+            )
 
         failed_event = next(
             (
@@ -347,11 +427,19 @@ class DocumentLifecycleService:
             None,
         )
         if failed_event is None:
-            raise RetryNotAllowedError("document has no failed lifecycle event to retry")
+            self._raise_retry_not_allowed(
+                message="document has no failed lifecycle event to retry",
+                error_code="missing_failed_event",
+                document=document,
+            )
 
         job_stage_name = failed_event.detail.get("job_stage")
         if not job_stage_name:
-            raise RetryNotAllowedError("failed lifecycle event does not identify a retry stage")
+            self._raise_retry_not_allowed(
+                message="failed lifecycle event does not identify a retry stage",
+                error_code="missing_retry_stage",
+                document=document,
+            )
         target_stage = DocumentJobStage(job_stage_name)
         reset_status = self._reset_status_for_stage(target_stage)
 
@@ -362,7 +450,21 @@ class DocumentLifecycleService:
         documents.update_status(doc_id=document.doc_id, status=reset_status)
         queued = self._orchestrator.enqueue_stage(doc_id=document.doc_id, target_stage=target_stage)
         if queued is None:
-            raise RetryNotAllowedError("document already has queued or running work")
+            self._raise_retry_not_allowed(
+                message="document already has queued or running work",
+                error_code="active_job_exists",
+                document=document,
+                failed_stage=target_stage,
+            )
+        _logger().info(
+            "document.retry.queued_internal",
+            doc_id=document.doc_id,
+            workspace_id=document.workspace_id,
+            failed_stage=target_stage.value,
+            queued_stage=queued.target_stage.value,
+            job_id=queued.job_id,
+            ingest_status=reset_status.value,
+        )
         return RetryDocumentResult(
             doc_id=document.doc_id,
             ingest_status=reset_status,
@@ -414,7 +516,10 @@ class DocumentLifecycleService:
             return ProcessingStatus.CHUNKED
         if stage is DocumentJobStage.READY_CHECK:
             return ProcessingStatus.INDEXED
-        raise RetryNotAllowedError(f"unsupported retry stage {stage.value}")
+        raise RetryNotAllowedError(
+            f"unsupported retry stage {stage.value}",
+            error_code="unsupported_retry_stage",
+        )
 
     def _cleanup_downstream(self, doc_id: DocId, *, stage: DocumentJobStage) -> None:
         if self._artifact_store is None or self._documents is None:
@@ -491,7 +596,10 @@ class DocumentLifecycleService:
     def _require_filename(self, filename: str | None) -> str:
         normalized = (filename or "").strip()
         if not normalized:
-            raise UnsupportedDocumentError("uploaded file must include a filename")
+            raise UnsupportedDocumentError(
+                "uploaded file must include a filename",
+                error_code="missing_filename",
+            )
         return normalized
 
     def _detect_source_type(self, *, filename: str, content: bytes) -> SourceType:
@@ -501,6 +609,7 @@ class DocumentLifecycleService:
             if not content.startswith(b"%PDF-"):
                 raise UnsupportedDocumentError(
                     "uploaded .pdf files must include recognizable PDF header bytes",
+                    error_code="invalid_pdf_header",
                 )
             return SourceType.PDF
 
@@ -510,11 +619,13 @@ class DocumentLifecycleService:
             except UnicodeDecodeError as exc:
                 raise UnsupportedDocumentError(
                     "uploaded markdown files must be valid UTF-8 text",
+                    error_code="markdown_not_utf8",
                 ) from exc
             return SourceType.MARKDOWN
 
         raise UnsupportedDocumentError(
             "supported uploads are limited to text-based PDF and Markdown files",
+            error_code="unsupported_source_type",
         )
 
     def _resolve_title(self, *, title: str | None, filename: str) -> str:
@@ -526,3 +637,28 @@ class DocumentLifecycleService:
     def _checksum(self, content: bytes) -> str:
         digest = hashlib.sha256(content).hexdigest()
         return f"sha256:{digest}"
+
+    def _raise_retry_not_allowed(
+        self,
+        *,
+        message: str,
+        error_code: str,
+        document: PersistedDocument,
+        failed_stage: DocumentJobStage | None = None,
+    ) -> NoReturn:
+        _logger().warning(
+            "document.retry.eligibility_rejected",
+            doc_id=document.doc_id,
+            workspace_id=document.workspace_id,
+            ingest_status=document.ingest_status.value,
+            failed_stage=None if failed_stage is None else failed_stage.value,
+            error_code=error_code,
+        )
+        raise RetryNotAllowedError(message, error_code=error_code)
+
+
+def _filename_extension(filename: str | None) -> str | None:
+    if not filename:
+        return None
+    suffix = Path(filename).suffix.lower()
+    return suffix or None

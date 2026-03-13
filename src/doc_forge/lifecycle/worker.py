@@ -5,7 +5,10 @@ from __future__ import annotations
 import os
 import time
 from datetime import UTC, datetime
+from time import perf_counter
 from uuid import uuid4
+
+import structlog
 
 from doc_forge.lifecycle import (
     FailureCategory,
@@ -37,6 +40,10 @@ _JOB_STAGE_TO_LIFECYCLE_STAGE: dict[DocumentJobStage, LifecycleStage] = {
 }
 
 
+def _logger() -> structlog.stdlib.BoundLogger:
+    return structlog.get_logger(__name__)  # type: ignore
+
+
 class DocumentLifecycleWorker:
     """Claim queued jobs, dispatch stage runners, and record failures."""
 
@@ -58,9 +65,19 @@ class DocumentLifecycleWorker:
     def run_next(self) -> DocumentJob | None:
         """Run the next queued job and return its terminal job record."""
 
+        _logger().info("worker.run_next.invoked")
         job = self._jobs.claim_next()
         if job is None:
+            _logger().info("worker.run_next.idle")
             return None
+        started_at = perf_counter()
+        _logger().info(
+            "worker.job.claimed",
+            doc_id=job.doc_id,
+            job_id=job.job_id,
+            target_stage=job.target_stage.value,
+            status=job.status.value,
+        )
 
         runner = self._stage_runners.get(job.target_stage)
         if runner is None:
@@ -74,6 +91,13 @@ class DocumentLifecycleWorker:
             )
 
         try:
+            _logger().info(
+                "worker.job.started",
+                doc_id=job.doc_id,
+                job_id=job.job_id,
+                target_stage=job.target_stage.value,
+                status=job.status.value,
+            )
             next_stage = runner.run(job)
         except StageExecutionError as exc:
             return self._fail_job(job, exc)
@@ -90,6 +114,15 @@ class DocumentLifecycleWorker:
         completed = self._jobs.mark_succeeded(job.job_id)
         if next_stage is not None:
             self._orchestrator.enqueue_stage(doc_id=job.doc_id, target_stage=next_stage)
+        _logger().info(
+            "worker.job.succeeded",
+            doc_id=job.doc_id,
+            job_id=job.job_id,
+            target_stage=job.target_stage.value,
+            next_stage=None if next_stage is None else next_stage.value,
+            status=completed.status.value,
+            duration_ms=max(int((perf_counter() - started_at) * 1000), 0),
+        )
         return completed
 
     def _fail_job(self, job: DocumentJob, exc: StageExecutionError) -> DocumentJob:
@@ -135,6 +168,15 @@ class DocumentLifecycleWorker:
                     "error_detail": exc.error_detail,
                 },
             )
+        )
+        _logger().warning(
+            "worker.job.failed",
+            doc_id=job.doc_id,
+            job_id=job.job_id,
+            target_stage=job.target_stage.value,
+            status=failed_job.status.value,
+            error_code=exc.error_code,
+            failure_category=exc.failure_category.value,
         )
         return failed_job
 

@@ -13,6 +13,7 @@ ENV PYTHONUNBUFFERED=1 \
 WORKDIR /app
 
 COPY pyproject.toml uv.lock README.md alembic.ini ./
+COPY scripts/container-log-wrapper.sh /usr/local/bin/container-log-wrapper.sh
 
 RUN --mount=type=cache,target=/tmp/.uv-cache \
     uv sync --frozen --no-dev --no-install-project --group llm
@@ -26,11 +27,12 @@ ENV PATH="/app/.venv/bin:${PATH}"
 
 RUN groupadd --system --gid 1000 doc-forge \
     && useradd --system --uid 1000 --gid 1000 --create-home --home-dir /home/doc-forge doc-forge \
-    && install -d --owner=doc-forge --group=doc-forge /artifacts
+    && install -d --owner=doc-forge --group=doc-forge /artifacts \
+    && chmod +x /usr/local/bin/container-log-wrapper.sh
 
 USER doc-forge
 
 EXPOSE 8000
 
-ENTRYPOINT ["python", "-m", "doc_forge.runtime"]
+ENTRYPOINT ["container-log-wrapper.sh", "python", "-m", "doc_forge.runtime"]
 CMD ["api"]

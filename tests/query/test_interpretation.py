@@ -6,6 +6,7 @@ from doc_forge.query import (
     QueryRequestType,
     QuerySpecificity,
     SynthesisMode,
+    UnsupportedCapability,
 )
 from doc_forge.query.interpretation import DeterministicQueryInterpreter
 
@@ -56,6 +57,18 @@ def test_deterministic_interpreter_surfaces_unsupported_capabilities() -> None:
     assert interpreted.answer_shape == "capability_boundary_response"
     assert [flag.value for flag in interpreted.unsupported_capability_flags] == [
         "image_or_figure_reasoning"
+    ]
+
+
+def test_deterministic_interpreter_marks_heatmap_value_questions_as_unsupported() -> None:
+    interpreted = _interpret(
+        "What exact cell value does the latency heatmap show for the top-4 setting?"
+    )
+
+    assert interpreted.request_type is QueryRequestType.UNSUPPORTED
+    assert interpreted.answer_shape == "capability_boundary_response"
+    assert interpreted.unsupported_capability_flags == [
+        UnsupportedCapability.IMAGE_OR_FIGURE_REASONING
     ]
 
 

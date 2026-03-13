@@ -4,11 +4,17 @@ from datetime import UTC, datetime
 
 from doc_forge.corpus import SourceReference
 from doc_forge.evaluation import AnswerLayerCitation
-from doc_forge.query import AnswerDraft, AnswerMode, CitationBundle, CitationRecord, CitationSupportRole
-from doc_forge.query import QueryRunStatus, SupportState
+from doc_forge.query import (
+    AnswerDraft,
+    AnswerMode,
+    CitationBundle,
+    CitationRecord,
+    CitationSupportRole,
+    QueryRunStatus,
+    SupportState,
+)
 from doc_forge.query.review import QueryCitationReview, QueryRunReviewSummary, QueryTraceReview
 from doc_forge.query.trace import QueryTraceBundle
-
 from e2e.eval_support import _parse_page_label, runtime_query_to_answer_layer_input
 from e2e.query_support import ExecutedQueryRun
 from e2e.support import QueryAnswerResponse

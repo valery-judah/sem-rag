@@ -96,6 +96,30 @@ _CROSS_DOCUMENT_PHRASES = (
     "book b and",
     "my notes and",
 )
+_VISUAL_ARTIFACT_TOKENS = (
+    "figure",
+    "diagram",
+    "image",
+    "screenshot",
+    "chart",
+    "heatmap",
+    "scatter plot",
+    "scatterplot",
+    "plot",
+    "graph",
+)
+_VISUAL_DETAIL_TOKENS = (
+    "cell value",
+    "cell values",
+    "x-axis",
+    "y-axis",
+    "axis label",
+    "axis labels",
+    "outlier point",
+    "outlier points",
+    "darkest",
+    "hottest",
+)
 
 
 class RawInterpretedQuery(BaseModel):
@@ -285,9 +309,8 @@ def _detect_unsupported_capabilities(normalized_question: str) -> list[Unsupport
         token in normalized_question for token in ("outside the corpus", "latest", "current events")
     ):
         flags.append(UnsupportedCapability.EXTERNAL_KNOWLEDGE)
-    if any(
-        token in normalized_question
-        for token in ("figure", "diagram", "image", "screenshot", "chart")
+    if any(token in normalized_question for token in _VISUAL_ARTIFACT_TOKENS) or any(
+        token in normalized_question for token in _VISUAL_DETAIL_TOKENS
     ):
         flags.append(UnsupportedCapability.IMAGE_OR_FIGURE_REASONING)
     if "table" in normalized_question:

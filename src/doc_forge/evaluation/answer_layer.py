@@ -5,10 +5,11 @@ from __future__ import annotations
 import json
 import re
 import unicodedata
+from collections.abc import Callable
 from dataclasses import dataclass
 from enum import StrEnum
 from pathlib import Path
-from typing import Callable, TypeVar
+from typing import TypeVar
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -33,9 +34,7 @@ class ExpectedBehavior(StrEnum):
     QUALIFIED_ANSWER_WITH_CITATION = "qualified_answer_with_citation"
     ABSTAIN_OR_STATE_INSUFFICIENT_SUPPORT = "abstain_or_state_insufficient_support"
     STATE_SCOPE_LIMITATION = "state_scope_limitation"
-    SURFACE_AMBIGUITY_WITH_SOURCE_QUALIFICATION = (
-        "surface_ambiguity_with_source_qualification"
-    )
+    SURFACE_AMBIGUITY_WITH_SOURCE_QUALIFICATION = "surface_ambiguity_with_source_qualification"
     HONEST_FAILURE_WITH_BEST_AVAILABLE_LOCATOR = "honest_failure_with_best_available_locator"
 
 
@@ -251,9 +250,7 @@ class AnswerLayerCaseRepository:
             answer_keys_path = set_dir / "answer_keys.jsonl"
             if not cases_path.exists() or not answer_keys_path.exists():
                 continue
-            authored_cases = {
-                case.case_id: case for case in _load_jsonl(cases_path, AuthoredCase)
-            }
+            authored_cases = {case.case_id: case for case in _load_jsonl(cases_path, AuthoredCase)}
             authored_keys = {
                 key.case_id: key for key in _load_jsonl(answer_keys_path, AnswerKeyRecord)
             }
@@ -610,8 +607,12 @@ def _evaluate_provenance_quality(
             rationale=rationale,
         )
 
-    per_gold_matches = [_best_match_for_gold(gold_source, citations) for gold_source in gold_sources]
-    if any(match in {"wrong_document", "wrong_region", "false_precision"} for match in per_gold_matches):
+    per_gold_matches = [
+        _best_match_for_gold(gold_source, citations) for gold_source in gold_sources
+    ]
+    if any(
+        match in {"wrong_document", "wrong_region", "false_precision"} for match in per_gold_matches
+    ):
         return AnswerLayerCriterionResult(
             criterion=CriterionName.PROVENANCE_QUALITY,
             verdict=CriterionVerdict.FAIL,
@@ -723,8 +724,12 @@ def _derive_overall_trust(
     )
 
 
-def _best_match_for_gold(gold_source: GoldEvidenceSource, citations: list[AnswerLayerCitation]) -> str:
-    same_doc_citations = [citation for citation in citations if citation.doc_id == gold_source.doc_id]
+def _best_match_for_gold(
+    gold_source: GoldEvidenceSource, citations: list[AnswerLayerCitation]
+) -> str:
+    same_doc_citations = [
+        citation for citation in citations if citation.doc_id == gold_source.doc_id
+    ]
     if not same_doc_citations:
         return "missing"
 

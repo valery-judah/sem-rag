@@ -174,6 +174,60 @@ def test_grounded_generator_returns_direct_answer_with_grounded_ids() -> None:
     assert result.answer_draft.should_render_citations is True
 
 
+def test_grounded_generator_prefers_scope_matching_snippet_for_fact_lookup() -> None:
+    generator = DeterministicGroundedAnswerGenerator()
+
+    result = generator.generate(
+        request=QueryRequest(
+            question="What citation format is preferred for Markdown sources?",
+            workspace_id="ws-1",
+        ),
+        snapshot=CorpusSnapshot(workspace_id="ws-1", eligible_doc_ids=["doc-1"]),
+        interpreted_query=_interpreted_query(
+            normalized_question="what citation format is preferred for markdown sources",
+            scope_hints=["citation", "format", "preferred", "markdown", "sources"],
+            specificity=QuerySpecificity.BROAD,
+        ),
+        context_manifest=ContextManifest(
+            ordered_evidence_set_ids=["es-1"],
+            included_evidence_set_ids=["es-1"],
+            inclusion_reasons={"es-1": "included_within_budget"},
+            token_budget=4000,
+            token_budget_used=64,
+            context_items=[
+                ContextItem(
+                    evidence_set_id="es-1",
+                    assembly_rank=1,
+                    rendered_text=(
+                        "Research Notes 1 | direct_support | Research Notes 1\n"
+                        "[p. 1] Use fixed windows when the source fails the structure test.\n"
+                        "[p. 1] The fallback window size should remain 280 tokens with "
+                        "40-token overlap.\n"
+                        "[p. 1] For Markdown documents, the preferred provenance format "
+                        "is document title plus section path."
+                    ),
+                    contributing_doc_ids=["doc-1"],
+                    heading_paths=[["Research Notes 1"]],
+                    locators=["p. 1"],
+                    estimated_token_count=32,
+                )
+            ],
+        ),
+        support_assessment=SupportAssessment(support_state=SupportState.SUFFICIENT),
+        answer_mode_decision=AnswerModeDecision(
+            answer_mode=AnswerMode.DIRECT_ANSWER,
+            rationale="Sufficient support allows a direct answer.",
+            based_on_support_state=SupportState.SUFFICIENT,
+        ),
+        policy=QueryPolicyDefaults.build(),
+    )
+
+    assert "preferred provenance format is document title plus section path" in (
+        result.answer_draft.answer_text
+    )
+    assert "fallback window size" not in result.answer_draft.answer_text
+
+
 def test_grounded_generator_returns_honest_full_abstention_without_citations() -> None:
     generator = DeterministicGroundedAnswerGenerator()
 

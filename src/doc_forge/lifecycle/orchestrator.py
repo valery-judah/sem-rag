@@ -5,6 +5,8 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from uuid import uuid4
 
+import structlog
+
 from doc_forge.identifiers import DocId
 from doc_forge.persistence import DocumentJob, DocumentJobRepository, DocumentJobStage
 
@@ -18,6 +20,10 @@ _NEXT_STAGE: dict[DocumentJobStage, DocumentJobStage | None] = {
 }
 
 
+def _logger() -> structlog.stdlib.BoundLogger:
+    return structlog.get_logger(__name__)  # type: ignore
+
+
 class DocumentLifecycleOrchestrator:
     """Own queued stage creation and next-stage sequencing."""
 
@@ -28,6 +34,12 @@ class DocumentLifecycleOrchestrator:
         """Queue the next job when no active work already exists for the document."""
 
         if self._jobs.has_active_job(doc_id):
+            _logger().warning(
+                "worker.job.enqueue_skipped",
+                doc_id=doc_id,
+                target_stage=target_stage.value,
+                error_code="active_job_exists",
+            )
             return None
         queued_at = datetime.now(UTC)
         job = DocumentJob(
@@ -38,6 +50,13 @@ class DocumentLifecycleOrchestrator:
             updated_at=queued_at,
         )
         self._jobs.create(job)
+        _logger().info(
+            "worker.job.enqueued",
+            doc_id=doc_id,
+            job_id=job.job_id,
+            target_stage=target_stage.value,
+            status=job.status.value,
+        )
         return job
 
     def next_stage(self, target_stage: DocumentJobStage) -> DocumentJobStage | None:

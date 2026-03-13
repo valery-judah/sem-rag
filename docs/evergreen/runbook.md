@@ -18,6 +18,9 @@ make run-api
 make run-worker
 make docker-up-build
 make docker-smoke
+make docker-log-index
+make collect-query-context QUERY_ID=<query_id>
+make show-query-context QUERY_ID=<query_id>
 make dead-code
 make test-e2e
 ```
@@ -48,6 +51,9 @@ make docker-up-build
 make docker-ps
 make docker-smoke
 make docker-logs
+make docker-log-index
+make collect-query-context QUERY_ID=qry-123
+make show-query-context QUERY_ID=qry-123
 ```
 
 Additional checks:
@@ -80,6 +86,17 @@ make verify
 - `make docker-up-build` starts the local Postgres, API, and worker stack defined in `docker-compose.yml`.
 - In Docker Compose, the `api` and `worker` runtimes self-apply Alembic migrations at startup before serving traffic or draining jobs.
 - `make docker-smoke` waits for the Compose API container to become healthy, then verifies that `/readyz` can reach the configured database and write under `DOC_FORGE_ARTIFACT_ROOT`.
+- Container JSON logs are archived under `data/logs/compose/runs/<run_id>/` with stable links at `data/logs/compose/latest/`.
+- Docker-backed e2e runs archive per-scenario JSON logs under `data/logs/e2e/runs/<session_id>/<test_id>/` with stable links under `data/logs/e2e/latest/`.
+- `make docker-log-index` prints the main repo-local archive locations for Compose and e2e logs.
+- `make collect-query-context QUERY_ID=<query_id>` collects a reusable query bundle under `data/context/queries/<query_id>/`.
+- `make show-query-context QUERY_ID=<query_id>` prints the bundle root plus the resolved summary, citations, trace, replay, log, and eval paths for that query when available.
+
+## Tracing And Context
+- `logs` are stream-oriented container events archived under `data/logs/`; use them to inspect request, worker, and review activity around a query.
+- `trace` is the durable per-query stage record persisted in `query_stage_traces` and exposed through `/queries/{query_id}/trace`.
+- `replay` is the frozen query input bundle reconstructed from persisted state; query context collection writes it to `data/context/queries/<query_id>/replay.json`.
+- Query-centric bundles under `data/context/queries/<query_id>/` index those assets together with `manifest.json`, filtered `logs/query-events.jsonl`, and any available eval metadata.
 
 ## Database Migrations
 - Alembic is the standard migration interface for lifecycle metadata tables.
@@ -93,6 +110,8 @@ make verify
 - `DOC_FORGE_ANSWER_GENERATOR_MODEL` sets the optional Apple Silicon generation model identifier. It is only used when `DOC_FORGE_ANSWER_GENERATOR_BACKEND=mlx`.
 - `DOC_FORGE_ANSWER_GENERATOR_MAX_NEW_TOKENS` and `DOC_FORGE_ANSWER_GENERATOR_TEMPERATURE` control the optional MLX generation path.
 - `DOC_FORGE_UID` and `DOC_FORGE_GID` let the compose services run as a non-root user that can still write to the bind-mounted `./data` artifact root.
+- `DOC_FORGE_JSON_LOG_PATH` is an internal container-only path used to duplicate stdout JSON logs into repo-local JSONL archives.
+- `DOC_FORGE_LOG_RUN_ID` is the optional compose run identifier used for `data/logs/compose/runs/<run_id>/`.
 - `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_PORT`, and `PORT` are the compose-level defaults for the local Docker stack.
 - `doc_forge.persistence.apply_migrations(...)` remains available as an internal helper for tests and bootstrapping, but normal repo operations should use Alembic commands.
 - Postgres `docker-entrypoint-initdb.d` SQL bootstrap scripts are not the canonical schema path for lifecycle metadata; Alembic remains the single schema authority.
@@ -107,6 +126,8 @@ make verify
 - If you encounter database authentication errors when connecting local processes to the Docker stack, run `make docker-clean` to wipe stale volumes and reset the credentials, then `make docker-up-build`.
 - If the internal lifecycle app or worker fails at startup, verify `DATABASE_URL`, `DOC_FORGE_ARTIFACT_ROOT`, and migrations first.
 - If the Docker stack cannot write artifacts as a non-root user, export `DOC_FORGE_UID` and `DOC_FORGE_GID` before `make docker-up-build`, then clean up any stale root-owned files under `./data`.
+- If archived container logs are missing, verify that `data/logs/` is writable and that the container run mounted `/logs` successfully.
+- If a query bundle is incomplete, inspect `data/context/queries/<query_id>/manifest.json`; missing components are listed explicitly under `missing_assets`.
 - If a doc describes ingestion, parsing, or grounded answering as already implemented, reconcile it with `docs/evergreen/architecture.md` and the actual code before treating it as current behavior.
 
 ## Escalation / Ownership

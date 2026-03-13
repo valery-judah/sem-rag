@@ -5,7 +5,6 @@ import re
 from pathlib import Path
 from typing import Any
 
-
 REPO_ROOT = Path(__file__).resolve().parent.parent
 EVAL_CASES_DIR = REPO_ROOT / "evals" / "cases"
 SETS_DIR = EVAL_CASES_DIR / "sets"
@@ -257,10 +256,7 @@ def _canonical_text(value: Any) -> str:
 
 
 def _has_localizer(source: dict[str, Any]) -> bool:
-    return any(
-        source.get(field)
-        for field in ("section_path", "page_start", "section_anchor")
-    )
+    return any(source.get(field) for field in ("section_path", "page_start", "section_anchor"))
 
 
 def _normalize_locator(source: dict[str, Any]) -> tuple[Any, ...]:

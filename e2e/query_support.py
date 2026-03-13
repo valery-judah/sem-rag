@@ -3,7 +3,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from doc_forge.query.review import QueryCitationReview, QueryRunReviewSummary, QueryTraceReview
-
 from e2e.support import QueryAnswerResponse, SystemDriver
 
 

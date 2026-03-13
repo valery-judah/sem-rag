@@ -1,5 +1,10 @@
 from __future__ import annotations
 
+from typing import Any, cast
+
+import pytest
+
+from doc_forge.app.logging import configure_logging, reset_logging
 from doc_forge.lifecycle import FailureCategory, ProcessingStatus
 from doc_forge.lifecycle.orchestrator import DocumentLifecycleOrchestrator
 from doc_forge.lifecycle.worker import DocumentLifecycleWorker
@@ -16,7 +21,23 @@ from tests.lifecycle.support import (
 )
 
 
-def test_run_next_returns_none_when_queue_is_empty() -> None:
+@pytest.fixture(autouse=True)
+def _configured_logging() -> None:
+    reset_logging()
+    configure_logging(service="test-service", environment="test", level="INFO")
+    yield
+    reset_logging()
+
+
+def _structured_logs(caplog: pytest.LogCaptureFixture) -> list[dict[str, Any]]:
+    return [
+        cast(dict[str, Any], record.msg)
+        for record in caplog.records
+        if isinstance(record.msg, dict)
+    ]
+
+
+def test_run_next_returns_none_when_queue_is_empty(caplog: pytest.LogCaptureFixture) -> None:
     jobs = InMemoryJobRepository()
     worker = DocumentLifecycleWorker(
         jobs=jobs,
@@ -27,6 +48,9 @@ def test_run_next_returns_none_when_queue_is_empty() -> None:
     )
 
     assert worker.run_next() is None
+    structured_logs = _structured_logs(caplog)
+    assert any(log["event"] == "worker.run_next.invoked" for log in structured_logs)
+    assert any(log["event"] == "worker.run_next.idle" for log in structured_logs)
 
 
 def test_worker_marks_job_failed_when_stage_runner_is_missing() -> None:
@@ -90,6 +114,40 @@ def test_worker_marks_job_failed_on_stage_execution_error() -> None:
     assert stored is not None
     assert stored.failure_code == "extract_failed"
     assert lifecycle_events.appended[0].failure_category is FailureCategory.PROCESSING
+
+
+def test_worker_emits_failed_job_log(caplog: pytest.LogCaptureFixture) -> None:
+    document = make_persisted_document(
+        doc_id="doc-log-fail",
+        ingest_status=ProcessingStatus.REGISTERED,
+    )
+    jobs = InMemoryJobRepository([make_job(doc_id=document.doc_id)])
+    worker = DocumentLifecycleWorker(
+        jobs=jobs,
+        documents=InMemoryDocumentRepository([document]),
+        lifecycle_events=InMemoryLifecycleEventRepository(),
+        orchestrator=DocumentLifecycleOrchestrator(jobs=jobs),
+        stage_runners={
+            DocumentJobStage.EXTRACT: FailingStageRunner(
+                make_stage_error(
+                    error_code="extract_failed",
+                    error_detail="extract stage failed",
+                )
+            )
+        },
+    )
+
+    result = worker.run_next()
+
+    assert result is not None
+    structured_logs = _structured_logs(caplog)
+    assert any(
+        log["event"] == "worker.job.failed"
+        and log["doc_id"] == "doc-log-fail"
+        and log["error_code"] == "extract_failed"
+        and log["failure_category"] == "processing"
+        for log in structured_logs
+    )
 
 
 def test_worker_wraps_unexpected_exception_as_internal_stage_error() -> None:

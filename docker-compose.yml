@@ -32,17 +32,20 @@ services:
     environment:
       DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-doc-forge}:${POSTGRES_PASSWORD:-doc-forge}@db:5432/${POSTGRES_DB:-doc-forge}
       DOC_FORGE_ARTIFACT_ROOT: /artifacts
+      DOC_FORGE_SERVICE_NAME: doc_forge-api
       DOC_FORGE_AUTO_MIGRATE: "1"
       DOC_FORGE_EMBEDDING_BACKEND: ${DOC_FORGE_EMBEDDING_BACKEND:-sentence-transformers}
-      DOC_FORGE_ANSWER_GENERATOR_BACKEND: ${DOC_FORGE_ANSWER_GENERATOR_BACKEND:-ollama}
+      DOC_FORGE_ANSWER_GENERATOR_BACKEND: ${DOC_FORGE_ANSWER_GENERATOR_BACKEND:-deterministic}
       DOC_FORGE_ANSWER_GENERATOR_MODEL: ${DOC_FORGE_ANSWER_GENERATOR_MODEL:-llama3.2:1b}
       OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://ollama:11434}
+      DOC_FORGE_JSON_LOG_PATH: /logs/compose/runs/${DOC_FORGE_LOG_RUN_ID:-manual}/api.jsonl
       TORCH_COMPILE_DISABLE: 1
       TORCHINDUCTOR_CACHE_DIR: /tmp/torch_cache
       HF_HOME: /tmp/hf_cache
       PORT: "${PORT:-8000}"
     volumes:
       - ./data:/artifacts
+      - ./data/logs:/logs
     ports:
       - "${PORT:-8000}:${PORT:-8000}"
     healthcheck:
@@ -70,17 +73,20 @@ services:
     environment:
       DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-doc-forge}:${POSTGRES_PASSWORD:-doc-forge}@db:5432/${POSTGRES_DB:-doc-forge}
       DOC_FORGE_ARTIFACT_ROOT: /artifacts
+      DOC_FORGE_SERVICE_NAME: doc_forge-worker
       DOC_FORGE_AUTO_MIGRATE: "1"
       DOC_FORGE_EMBEDDING_BACKEND: ${DOC_FORGE_EMBEDDING_BACKEND:-sentence-transformers}
-      DOC_FORGE_ANSWER_GENERATOR_BACKEND: ${DOC_FORGE_ANSWER_GENERATOR_BACKEND:-ollama}
+      DOC_FORGE_ANSWER_GENERATOR_BACKEND: ${DOC_FORGE_ANSWER_GENERATOR_BACKEND:-deterministic}
       DOC_FORGE_ANSWER_GENERATOR_MODEL: ${DOC_FORGE_ANSWER_GENERATOR_MODEL:-llama3.2:1b}
       OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://ollama:11434}
+      DOC_FORGE_JSON_LOG_PATH: /logs/compose/runs/${DOC_FORGE_LOG_RUN_ID:-manual}/worker.jsonl
       TORCH_COMPILE_DISABLE: 1
       TORCHINDUCTOR_CACHE_DIR: /tmp/torch_cache
       HF_HOME: /tmp/hf_cache
       DOC_FORGE_WORKER_POLL_SECONDS: "${DOC_FORGE_WORKER_POLL_SECONDS:-0.1}"
     volumes:
       - ./data:/artifacts
+      - ./data/logs:/logs
     restart: unless-stopped
 
   ollama:

@@ -1,6 +1,5 @@
 from pathlib import Path
 
-
 SETS_ROOT = Path("evals/cases/sets")
 CANONICAL_NAMES = {
     "cases": "cases.jsonl",
@@ -23,9 +22,7 @@ def main() -> None:
                 continue
 
             matches = [
-                path
-                for path in jsonl_files
-                if key in path.stem and path.name != target_name
+                path for path in jsonl_files if key in path.stem and path.name != target_name
             ]
 
             if not matches:

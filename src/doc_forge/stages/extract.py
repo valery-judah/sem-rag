@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
+from time import perf_counter
 from uuid import uuid4
 
+import structlog
 from sqlalchemy.engine import Engine
 
 from doc_forge.artifacts import ExtractedArtifact, FilesystemArtifactStore, RawArtifactRef
@@ -24,6 +26,10 @@ from doc_forge.persistence import (
     PersistedDocument,
 )
 from doc_forge.stages.base import StageExecutionError, StageRunner
+
+
+def _logger() -> structlog.stdlib.BoundLogger:
+    return structlog.get_logger(__name__)  # type: ignore
 
 
 class DocumentExtractionError(RuntimeError):
@@ -48,7 +54,14 @@ class ExtractDocumentStage:
         self._artifact_store = artifact_store
         self._extractors = extractors
 
-    def run(self, doc_id: DocId) -> ExtractedArtifact:
+    def run(self, doc_id: DocId, *, job_id: str | None = None) -> ExtractedArtifact:
+        started_at = perf_counter()
+        _logger().info(
+            "lifecycle.stage.started",
+            stage_name="extract",
+            doc_id=doc_id,
+            job_id=job_id,
+        )
         document = self._require_document(doc_id)
         if document.ingest_status is not ProcessingStatus.REGISTERED:
             raise LifecycleInvariantError(
@@ -92,10 +105,26 @@ class ExtractDocumentStage:
                 workspace_id=document.workspace_id,
                 doc_id=document.doc_id,
             )
+            _logger().warning(
+                "lifecycle.stage.failed",
+                stage_name="extract",
+                doc_id=document.doc_id,
+                job_id=job_id,
+                duration_ms=max(int((perf_counter() - started_at) * 1000), 0),
+                error_code="extract_failed",
+            )
             raise DocumentExtractionError(
                 f"failed to extract document {document.doc_id!r}: {exc}",
             ) from exc
 
+        _logger().info(
+            "lifecycle.stage.completed",
+            stage_name="extract",
+            doc_id=document.doc_id,
+            job_id=job_id,
+            duration_ms=max(int((perf_counter() - started_at) * 1000), 0),
+            extractor_version=artifact.extractor_version,
+        )
         return artifact
 
     def _require_document(self, doc_id: DocId) -> PersistedDocument:
@@ -115,7 +144,7 @@ class ExtractDocumentJobStage(StageRunner):
 
     def run(self, job: DocumentJob) -> DocumentJobStage | None:
         try:
-            self._stage.run(job.doc_id)
+            self._stage.run(job.doc_id, job_id=job.job_id)
         except DocumentExtractionError as exc:
             raise StageExecutionError(
                 error_code="extract_failed",

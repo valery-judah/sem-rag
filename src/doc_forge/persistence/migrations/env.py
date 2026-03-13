@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import logging
 from logging.config import fileConfig
 
 from alembic import context
@@ -17,7 +18,8 @@ load_dotenv()
 config = context.config
 
 if config.config_file_name is not None:
-    fileConfig(config.config_file_name)
+    if not logging.getLogger().handlers:
+        fileConfig(config.config_file_name)
 
 target_metadata = metadata
 _ = document_jobs_table

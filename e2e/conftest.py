@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import json
 import os
+import re
 import shutil
 import time
 from collections.abc import Iterator
@@ -88,14 +90,21 @@ class RunningStack:
     base_url: str
     database_url: str
     artifact_root: Path
+    log_root: Path
+    e2e_log_session_id: str | None
     api_container: DockerContainer
     worker_container: DockerContainer
     postgres_container: PostgresContainer
     network: Network
     verbose: bool = False
+    current_test_id: str | None = None
     tracked_doc_ids: list[str] = field(default_factory=list)
     tracked_query_ids: list[str] = field(default_factory=list)
     query_debug_artifacts: list[str] = field(default_factory=list)
+    query_context_artifacts: list[str] = field(default_factory=list)
+    container_log_paths: dict[str, Path] = field(default_factory=dict)
+    scenario_log_offsets: dict[str, int] = field(default_factory=dict)
+    scenario_log_artifacts: list[str] = field(default_factory=list)
 
     def client(self) -> httpx.Client:
         return httpx.Client(base_url=self.base_url, timeout=30.0)
@@ -116,6 +125,57 @@ class RunningStack:
     def record_query_debug_artifact(self, relative_path: str) -> None:
         if relative_path not in self.query_debug_artifacts:
             self.query_debug_artifacts.append(relative_path)
+
+    def record_query_context_artifact(self, relative_path: str) -> None:
+        if relative_path not in self.query_context_artifacts:
+            self.query_context_artifacts.append(relative_path)
+
+    def begin_scenario_log_capture(self, *, test_id: str) -> None:
+        del test_id
+        self.scenario_log_offsets = {
+            service: _count_log_lines(path) for service, path in self.container_log_paths.items()
+        }
+        self.scenario_log_artifacts.clear()
+
+    def archive_scenario_logs(self, *, test_id: str) -> dict[str, Path]:
+        if self.e2e_log_session_id is None:
+            return {}
+        scenario_slug = _slugify(test_id)
+        run_dir = self.log_root / "e2e" / "runs" / self.e2e_log_session_id / scenario_slug
+        latest_dir = self.log_root / "e2e" / "latest" / scenario_slug
+        run_dir.mkdir(parents=True, exist_ok=True)
+        latest_dir.mkdir(parents=True, exist_ok=True)
+        metadata_path = run_dir / "metadata.json"
+        metadata_path.write_text(
+            json.dumps(
+                {
+                    "test_id": test_id,
+                    "scenario_slug": scenario_slug,
+                    "session_id": self.e2e_log_session_id,
+                },
+                indent=2,
+                sort_keys=True,
+            )
+            + "\n"
+        )
+
+        archived_paths: dict[str, Path] = {}
+        recorded_artifacts = [
+            metadata_path.relative_to(_repo_root()).as_posix(),
+        ]
+        for service, source_path in self.container_log_paths.items():
+            offset = self.scenario_log_offsets.get(service, 0)
+            lines = _read_log_lines(source_path)
+            archived_path = run_dir / f"{service}.jsonl"
+            _write_log_lines(archived_path, lines[offset:])
+            latest_path = latest_dir / f"{service}.jsonl"
+            _refresh_symlink(latest_path=latest_path, target_path=archived_path)
+            archived_paths[service] = archived_path
+            recorded_artifacts.append(archived_path.relative_to(_repo_root()).as_posix())
+            recorded_artifacts.append(latest_path.relative_to(_repo_root()).as_posix())
+
+        self.scenario_log_artifacts = sorted(recorded_artifacts)
+        return archived_paths
 
     def vector_snapshot(self, *, doc_id: str) -> dict[str, object]:
         engine = sa.create_engine(self.database_url)
@@ -283,6 +343,7 @@ class RunningStack:
             f"base_url={self.base_url}",
             f"database_url={self.database_url}",
             f"artifact_root={self.artifact_root}",
+            f"log_root={self.log_root}",
             self._format_container_state("api", self.api_container),
             self._format_container_state("worker", self.worker_container),
             self._format_container_state("postgres", self.postgres_container),
@@ -306,12 +367,24 @@ class RunningStack:
         if self.query_debug_artifacts:
             sections.append(
                 "query debug artifacts:\n"
-                + "\n".join(
-                    f"  - {artifact}" for artifact in sorted(self.query_debug_artifacts)
-                )
+                + "\n".join(f"  - {artifact}" for artifact in sorted(self.query_debug_artifacts))
             )
         else:
             sections.append("query debug artifacts:\n<none>")
+        if self.query_context_artifacts:
+            sections.append(
+                "query context bundles:\n"
+                + "\n".join(f"  - {artifact}" for artifact in sorted(self.query_context_artifacts))
+            )
+        else:
+            sections.append("query context bundles:\n<none>")
+        if self.scenario_log_artifacts:
+            sections.append(
+                "scenario log artifacts:\n"
+                + "\n".join(f"  - {artifact}" for artifact in sorted(self.scenario_log_artifacts))
+            )
+        else:
+            sections.append("scenario log artifacts:\n<none>")
         sections.extend(
             [
                 _format_logs("api", self.api_container),
@@ -470,6 +543,37 @@ def _wait_for_idle_jobs(database_url: str, *, timeout_seconds: float = 45.0) -> 
     raise AssertionError(f"document jobs did not become idle within {timeout_seconds} seconds")
 
 
+def _count_log_lines(path: Path) -> int:
+    return len(_read_log_lines(path))
+
+
+def _read_log_lines(path: Path) -> list[str]:
+    if not path.exists():
+        return []
+    return path.read_text(encoding="utf-8").splitlines()
+
+
+def _write_log_lines(path: Path, lines: list[str]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    text = "\n".join(lines)
+    if lines:
+        text += "\n"
+    path.write_text(text, encoding="utf-8")
+
+
+def _refresh_symlink(*, latest_path: Path, target_path: Path) -> None:
+    latest_path.parent.mkdir(parents=True, exist_ok=True)
+    if latest_path.exists() or latest_path.is_symlink():
+        latest_path.unlink()
+    relative_target = os.path.relpath(target_path, start=latest_path.parent)
+    latest_path.symlink_to(relative_target)
+
+
+def _slugify(value: str) -> str:
+    slug = re.sub(r"[^A-Za-z0-9._-]+", "_", value).strip("._-")
+    return slug or "scenario"
+
+
 def _clear_artifact_root(artifact_root: Path) -> None:
     artifact_root.mkdir(parents=True, exist_ok=True)
     for child in artifact_root.iterdir():
@@ -492,6 +596,9 @@ def _reset_runtime_state(stack: RunningStack) -> None:
     stack.tracked_doc_ids.clear()
     stack.tracked_query_ids.clear()
     stack.query_debug_artifacts.clear()
+    stack.query_context_artifacts.clear()
+    stack.scenario_log_offsets.clear()
+    stack.scenario_log_artifacts.clear()
 
 
 @pytest.fixture(scope="session")
@@ -500,9 +607,19 @@ def e2e_runtime(
     tmp_path_factory: pytest.TempPathFactory,
 ) -> Iterator[RunningStack]:
     verbose = _env_flag("DOC_FORGE_E2E_VERBOSE")
+    log_root = _repo_root() / "data" / "logs"
+    log_root.mkdir(parents=True, exist_ok=True)
+    e2e_log_session_id = uuid4().hex
+    session_log_dir = log_root / "e2e" / "runs" / e2e_log_session_id / "session"
+    session_log_dir.mkdir(parents=True, exist_ok=True)
     artifact_root = tmp_path_factory.mktemp("e2e-artifacts")
     artifact_root.mkdir(exist_ok=True)
-    _emit_e2e_log("creating session runtime", artifact_root=str(artifact_root))
+    _emit_e2e_log(
+        "creating session runtime",
+        artifact_root=str(artifact_root),
+        log_root=str(log_root),
+        e2e_log_session_id=e2e_log_session_id,
+    )
 
     network = Network().create()
     _emit_e2e_log("network created")
@@ -538,8 +655,14 @@ def e2e_runtime(
             .with_network(network)
             .with_env("DATABASE_URL", database_url)
             .with_env("DOC_FORGE_ARTIFACT_ROOT", "/artifacts")
+            .with_env("DOC_FORGE_SERVICE_NAME", "doc_forge-api")
+            .with_env(
+                "DOC_FORGE_JSON_LOG_PATH",
+                f"/logs/e2e/runs/{e2e_log_session_id}/session/api.jsonl",
+            )
             .with_env("PORT", "8000")
             .with_volume_mapping(str(artifact_root), "/artifacts", mode="rw")
+            .with_volume_mapping(str(log_root), "/logs", mode="rw")
             .with_exposed_ports(8000)
         )
         runtime_user = _runtime_user()
@@ -551,8 +674,14 @@ def e2e_runtime(
             .with_network(network)
             .with_env("DATABASE_URL", database_url)
             .with_env("DOC_FORGE_ARTIFACT_ROOT", "/artifacts")
+            .with_env("DOC_FORGE_SERVICE_NAME", "doc_forge-worker")
+            .with_env(
+                "DOC_FORGE_JSON_LOG_PATH",
+                f"/logs/e2e/runs/{e2e_log_session_id}/session/worker.jsonl",
+            )
             .with_env("DOC_FORGE_WORKER_POLL_SECONDS", "0.1")
             .with_volume_mapping(str(artifact_root), "/artifacts", mode="rw")
+            .with_volume_mapping(str(log_root), "/logs", mode="rw")
         )
         if runtime_user is not None:
             worker_container = worker_container.with_kwargs(user=runtime_user)
@@ -570,11 +699,17 @@ def e2e_runtime(
             base_url=base_url,
             database_url=host_database_url,
             artifact_root=artifact_root,
+            log_root=log_root,
+            e2e_log_session_id=e2e_log_session_id,
             api_container=api_container,
             worker_container=worker_container,
             postgres_container=postgres,
             network=network,
             verbose=verbose,
+            container_log_paths={
+                "api": session_log_dir / "api.jsonl",
+                "worker": session_log_dir / "worker.jsonl",
+            },
         )
         stack.log(
             "session runtime ready",
@@ -612,16 +747,22 @@ def e2e_stack(
         base_url=e2e_runtime.base_url,
         database_url=e2e_runtime.database_url,
         artifact_root=e2e_runtime.artifact_root,
+        log_root=e2e_runtime.log_root,
+        e2e_log_session_id=e2e_runtime.e2e_log_session_id,
         api_container=e2e_runtime.api_container,
         worker_container=e2e_runtime.worker_container,
         postgres_container=e2e_runtime.postgres_container,
         network=e2e_runtime.network,
         verbose=e2e_runtime.verbose,
+        current_test_id=request.node.nodeid,
+        container_log_paths=e2e_runtime.container_log_paths,
     )
+    stack.begin_scenario_log_capture(test_id=request.node.nodeid)
     stack.log("scenario ready", test_id=request.node.nodeid)
     try:
         yield stack
     finally:
+        stack.archive_scenario_logs(test_id=request.node.nodeid)
         failed = bool(getattr(getattr(request.node, "rep_call", None), "failed", False))
         _emit_e2e_log(
             "scenario complete",

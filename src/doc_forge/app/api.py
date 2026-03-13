@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import hashlib
 import importlib.metadata
 import os
+from pathlib import Path
 from time import perf_counter
 from typing import Annotated
 from uuid import uuid4
@@ -183,6 +185,7 @@ def create_app() -> FastAPI:
                 "http.request.completed",
                 method=request.method,
                 path=request.url.path,
+                http_status=500,
                 status=500,
                 duration_ms=duration_ms,
             )
@@ -194,6 +197,7 @@ def create_app() -> FastAPI:
             "http.request.completed",
             method=request.method,
             path=request.url.path,
+            http_status=response.status_code,
             status=response.status_code,
             duration_ms=duration_ms,
         )
@@ -210,10 +214,20 @@ def create_app() -> FastAPI:
         artifact_store: Annotated[FilesystemArtifactStore, Depends(get_artifact_store)],
         vector_store: Annotated[VectorStore, Depends(get_vector_store)],
     ) -> dict[str, str]:
-        with engine.connect() as connection:
-            connection.execute(sa.text("SELECT 1"))
-        artifact_store.ensure_root_writable()
-        vector_store.smoke_query(doc_id="healthcheck", text="healthcheck", k=1)
+        _logger().info("system.readyz.started")
+        try:
+            with engine.connect() as connection:
+                connection.execute(sa.text("SELECT 1"))
+            artifact_store.ensure_root_writable()
+            vector_store.smoke_query(doc_id="healthcheck", text="healthcheck", k=1)
+        except Exception:
+            _logger().exception(
+                "system.readyz.failed",
+                http_status=500,
+                error_code="ready_check_failed",
+            )
+            raise
+        _logger().info("system.readyz.completed", http_status=200, status="ok")
         return {"status": "ok"}
 
     @app.post(
@@ -257,18 +271,48 @@ def create_app() -> FastAPI:
     ) -> UploadDocumentResult:
         content = await file.read()
         try:
-            return service.upload_document(
+            result = service.upload_document(
                 workspace_id=workspace_id,
                 title=title,
                 filename=file.filename,
                 content=content,
             )
+            _logger().info(
+                "document.upload.accepted",
+                workspace_id=workspace_id,
+                doc_id=result.doc_id,
+                source_type=result.source_type.value,
+                filename_extension=_filename_extension(file.filename),
+                size_bytes=len(content),
+                checksum_sha256=result.checksum,
+                http_status=status.HTTP_201_CREATED,
+                status="accepted",
+            )
+            return result
         except UnsupportedDocumentError as exc:
+            _logger().warning(
+                "document.upload.rejected",
+                workspace_id=workspace_id,
+                filename_extension=_filename_extension(file.filename),
+                size_bytes=len(content),
+                error_code=exc.error_code,
+                http_status=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+                status="rejected",
+            )
             raise HTTPException(
                 status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
                 detail=str(exc),
             ) from exc
         except DocumentRegistrationError as exc:
+            _logger().exception(
+                "document.upload.rejected",
+                workspace_id=workspace_id,
+                filename_extension=_filename_extension(file.filename),
+                size_bytes=len(content),
+                error_code="document_registration_failed",
+                http_status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                status="rejected",
+            )
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="document registration failed",
@@ -294,10 +338,24 @@ def create_app() -> FastAPI:
             Depends(get_document_lifecycle_service),
         ],
     ) -> None:
+        _logger().info("document.delete.started", doc_id=doc_id)
         try:
             service.delete_document(doc_id=doc_id)
         except DocumentNotFoundError as exc:
+            _logger().warning(
+                "document.delete.rejected",
+                doc_id=doc_id,
+                error_code="document_not_found",
+                http_status=status.HTTP_404_NOT_FOUND,
+                status="rejected",
+            )
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+        _logger().info(
+            "document.delete.completed",
+            doc_id=doc_id,
+            http_status=status.HTTP_204_NO_CONTENT,
+            status="completed",
+        )
 
     @app.get(
         "/documents/{doc_id}",
@@ -360,7 +418,18 @@ def create_app() -> FastAPI:
         ],
     ) -> DocumentStatusResult:
         try:
-            return service.get_document_status(doc_id=doc_id)
+            result = service.get_document_status(doc_id=doc_id)
+            _logger().info(
+                "document.status.loaded",
+                doc_id=doc_id,
+                ingest_status=result.ingest_status.value,
+                active_job_stage=(
+                    None if result.active_job_stage is None else result.active_job_stage.value
+                ),
+                http_status=status.HTTP_200_OK,
+                status="loaded",
+            )
+            return result
         except DocumentNotFoundError as exc:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
 
@@ -388,7 +457,16 @@ def create_app() -> FastAPI:
         ],
     ) -> DocumentArtifactRefs:
         try:
-            return service.get_artifact_refs(doc_id=doc_id)
+            result = service.get_artifact_refs(doc_id=doc_id)
+            _logger().info(
+                "document.artifacts.loaded",
+                doc_id=doc_id,
+                has_extracted=result.extracted_path is not None,
+                has_normalized=result.normalized_path is not None,
+                http_status=status.HTTP_200_OK,
+                status="loaded",
+            )
+            return result
         except DocumentNotFoundError as exc:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
 
@@ -420,11 +498,35 @@ def create_app() -> FastAPI:
             Depends(get_document_lifecycle_service),
         ],
     ) -> RetryDocumentResult:
+        _logger().info("document.retry.requested", doc_id=doc_id)
         try:
-            return service.retry_document(doc_id=doc_id)
+            result = service.retry_document(doc_id=doc_id)
+            _logger().info(
+                "document.retry.queued",
+                doc_id=doc_id,
+                queued_stage=result.queued_stage.value,
+                ingest_status=result.ingest_status.value,
+                http_status=status.HTTP_202_ACCEPTED,
+                status="queued",
+            )
+            return result
         except DocumentNotFoundError as exc:
+            _logger().warning(
+                "document.retry.rejected",
+                doc_id=doc_id,
+                error_code="document_not_found",
+                http_status=status.HTTP_404_NOT_FOUND,
+                status="rejected",
+            )
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
         except RetryNotAllowedError as exc:
+            _logger().warning(
+                "document.retry.rejected",
+                doc_id=doc_id,
+                error_code=exc.error_code,
+                http_status=status.HTTP_409_CONFLICT,
+                status="rejected",
+            )
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from exc
 
     @app.post(
@@ -452,13 +554,40 @@ def create_app() -> FastAPI:
             Depends(get_document_lifecycle_service),
         ],
     ) -> RetrievalQueryResult:
+        _logger().info(
+            "retrieval.smoke.started",
+            doc_id=request.doc_id,
+            k=request.k,
+            query_chars=len(request.query),
+            query_sha256=_sha256_text(request.query),
+        )
         try:
-            return service.query_document(
+            result = service.query_document(
                 doc_id=request.doc_id,
                 text=request.query,
                 k=request.k,
             )
+            top_hit = result.hits[0] if result.hits else None
+            _logger().info(
+                "retrieval.smoke.completed",
+                doc_id=request.doc_id,
+                k=request.k,
+                hit_count=len(result.hits),
+                top_hit_doc_id=None if top_hit is None else top_hit.doc_id,
+                top_hit_chunk_id=None if top_hit is None else top_hit.chunk_id,
+                http_status=status.HTTP_200_OK,
+                status="completed",
+            )
+            return result
         except DocumentNotFoundError as exc:
+            _logger().warning(
+                "retrieval.smoke.rejected",
+                doc_id=request.doc_id,
+                k=request.k,
+                error_code="document_not_found",
+                http_status=status.HTTP_404_NOT_FOUND,
+                status="rejected",
+            )
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
 
     @app.post(
@@ -486,14 +615,43 @@ def create_app() -> FastAPI:
         request: Annotated[QueryRequest, Body(description="The query request payload.")],
         service: Annotated[QueryService, Depends(get_query_service)],
     ) -> QueryAnswerResponse:
+        question_sha256 = _sha256_text(request.question)
+        _logger().info(
+            "query.api.started",
+            workspace_id=request.workspace_id,
+            question_chars=len(request.question),
+            question_sha256=question_sha256,
+        )
         try:
             state = service.execute_until_answer(request)
         except CorpusBoundaryUnavailableError as exc:
+            _logger().warning(
+                "query.api.rejected",
+                workspace_id=request.workspace_id,
+                question_sha256=question_sha256,
+                error_code="corpus_boundary_unavailable",
+                http_status=status.HTTP_503_SERVICE_UNAVAILABLE,
+                status="rejected",
+            )
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                 detail=str(exc),
             ) from exc
         except QueryExecutionFailedError as exc:
+            _logger().exception(
+                "query.api.rejected",
+                workspace_id=request.workspace_id,
+                query_id=exc.query_id,
+                question_sha256=question_sha256,
+                error_code=exc.terminal_failure.error_code,
+                stage_name=(
+                    None
+                    if exc.terminal_failure.stage_name is None
+                    else exc.terminal_failure.stage_name.value
+                ),
+                http_status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                status="rejected",
+            )
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=QuerySubmissionFailureResult(
@@ -511,11 +669,20 @@ def create_app() -> FastAPI:
             or state.answer_draft is None
             or state.citation_bundle is None
         ):
+            _logger().error(
+                "query.api.rejected",
+                workspace_id=request.workspace_id,
+                query_id=state.run.query_id,
+                question_sha256=question_sha256,
+                error_code="incomplete_query_state",
+                http_status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                status="rejected",
+            )
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="query execution returned incomplete stage state",
             )
-        return QueryAnswerResponse(
+        response = QueryAnswerResponse(
             query_id=state.run.query_id,
             answer=state.answer_draft,
             support_state=state.support_assessment.support_state,
@@ -523,6 +690,17 @@ def create_app() -> FastAPI:
             citations=state.citation_bundle,
             message="query answer completed with grounded generation and rendered citations",
         )
+        _logger().info(
+            "query.api.completed",
+            workspace_id=request.workspace_id,
+            query_id=response.query_id,
+            support_state=response.support_state.value,
+            answer_mode=response.answer_mode.value,
+            citation_count=len(response.citations.citations),
+            http_status=status.HTTP_200_OK,
+            status="completed",
+        )
+        return response
 
     @app.get(
         "/queries/{query_id}",
@@ -543,8 +721,25 @@ def create_app() -> FastAPI:
         review_service: Annotated[QueryReviewService, Depends(get_query_review_service)],
     ) -> QueryRunReviewSummary:
         try:
-            return review_service.get_query_summary(query_id)
+            result = review_service.get_query_summary(query_id)
+            _logger().info(
+                "review.summary.loaded",
+                query_id=query_id,
+                trace_count=result.trace_summary.trace_count,
+                has_answer=result.has_answer,
+                http_status=status.HTTP_200_OK,
+                status="loaded",
+            )
+            return result
         except LookupError as exc:
+            _logger().warning(
+                "review.lookup_failed",
+                query_id=query_id,
+                review_type="summary",
+                error_code="query_run_not_found",
+                http_status=status.HTTP_404_NOT_FOUND,
+                status="rejected",
+            )
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
 
     @app.get(
@@ -566,8 +761,25 @@ def create_app() -> FastAPI:
         review_service: Annotated[QueryReviewService, Depends(get_query_review_service)],
     ) -> QueryTraceReview:
         try:
-            return review_service.get_query_trace_review(query_id)
+            result = review_service.get_query_trace_review(query_id)
+            _logger().info(
+                "review.trace.loaded",
+                query_id=query_id,
+                trace_count=len(result.trace_bundle.stage_traces),
+                has_answer=result.final_artifacts is not None,
+                http_status=status.HTTP_200_OK,
+                status="loaded",
+            )
+            return result
         except LookupError as exc:
+            _logger().warning(
+                "review.lookup_failed",
+                query_id=query_id,
+                review_type="trace",
+                error_code="query_run_not_found",
+                http_status=status.HTTP_404_NOT_FOUND,
+                status="rejected",
+            )
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
 
     @app.get(
@@ -589,8 +801,26 @@ def create_app() -> FastAPI:
         review_service: Annotated[QueryReviewService, Depends(get_query_review_service)],
     ) -> QueryCitationReview:
         try:
-            return review_service.get_query_citations(query_id)
+            result = review_service.get_query_citations(query_id)
+            _logger().info(
+                "review.citations.loaded",
+                query_id=query_id,
+                citation_count=len(result.citations.citations),
+                support_state=result.support_state.value,
+                answer_mode=result.answer_mode.value,
+                http_status=status.HTTP_200_OK,
+                status="loaded",
+            )
+            return result
         except LookupError as exc:
+            _logger().warning(
+                "review.lookup_failed",
+                query_id=query_id,
+                review_type="citations",
+                error_code="query_answer_not_found",
+                http_status=status.HTTP_404_NOT_FOUND,
+                status="rejected",
+            )
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
 
     @app.post(
@@ -607,7 +837,23 @@ def create_app() -> FastAPI:
     async def run_next_job(
         worker: Annotated[DocumentLifecycleWorker, Depends(get_document_lifecycle_worker)],
     ) -> WorkerJobResult:
+        _logger().info("worker.run_next.invoked")
         job = worker.run_next()
+        if job is None:
+            _logger().info(
+                "worker.run_next.idle",
+                http_status=status.HTTP_200_OK,
+                status="idle",
+            )
+        else:
+            _logger().info(
+                "worker.run_next.completed",
+                doc_id=job.doc_id,
+                job_id=job.job_id,
+                stage_name=job.target_stage.value,
+                http_status=status.HTTP_200_OK,
+                status=job.status.value,
+            )
         return WorkerJobResult(
             job_id=None if job is None else job.job_id,
             status=None if job is None else job.status.value,
@@ -617,3 +863,14 @@ def create_app() -> FastAPI:
 
 
 app = create_app()
+
+
+def _filename_extension(filename: str | None) -> str | None:
+    if not filename:
+        return None
+    suffix = Path(filename).suffix.lower()
+    return suffix or None
+
+
+def _sha256_text(value: str) -> str:
+    return hashlib.sha256(value.encode("utf-8")).hexdigest()

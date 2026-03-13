@@ -3,7 +3,10 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
+from time import perf_counter
 from uuid import uuid4
+
+import structlog
 
 from doc_forge.lifecycle import LifecycleEvent, LifecycleStage, ProcessingStatus
 from doc_forge.lifecycle.readiness import ReadinessService
@@ -14,6 +17,10 @@ from doc_forge.persistence import (
     LifecycleEventRepository,
 )
 from doc_forge.stages.base import StageExecutionError, StageRunner
+
+
+def _logger() -> structlog.stdlib.BoundLogger:
+    return structlog.get_logger(__name__)  # type: ignore
 
 
 class ReadyDocumentStage(StageRunner):
@@ -33,13 +40,36 @@ class ReadyDocumentStage(StageRunner):
         self._readiness = readiness
 
     def run(self, job: DocumentJob) -> DocumentJobStage | None:
+        started_at = perf_counter()
+        _logger().info(
+            "lifecycle.stage.started",
+            stage_name="ready_check",
+            doc_id=job.doc_id,
+            job_id=job.job_id,
+        )
         document = self._documents.get(job.doc_id)
         if document is None:
+            _logger().warning(
+                "lifecycle.stage.failed",
+                stage_name="ready_check",
+                doc_id=job.doc_id,
+                job_id=job.job_id,
+                duration_ms=max(int((perf_counter() - started_at) * 1000), 0),
+                error_code="missing_document",
+            )
             raise StageExecutionError(
                 error_code="missing_document",
                 error_detail=f"document {job.doc_id!r} was not found",
             )
         if document.ingest_status is not ProcessingStatus.INDEXED:
+            _logger().warning(
+                "lifecycle.stage.failed",
+                stage_name="ready_check",
+                doc_id=job.doc_id,
+                job_id=job.job_id,
+                duration_ms=max(int((perf_counter() - started_at) * 1000), 0),
+                error_code="invalid_document_status",
+            )
             raise StageExecutionError(
                 error_code="invalid_document_status",
                 error_detail=(
@@ -48,6 +78,18 @@ class ReadyDocumentStage(StageRunner):
             )
         result = self._readiness.evaluate(doc_id=document.doc_id)
         if not result.is_ready:
+            _logger().warning(
+                "lifecycle.stage.failed",
+                stage_name="ready_check",
+                doc_id=document.doc_id,
+                job_id=job.job_id,
+                duration_ms=max(int((perf_counter() - started_at) * 1000), 0),
+                error_code="readiness_check_failed",
+                reasons=result.reasons,
+                section_count=result.section_count,
+                chunk_count=result.chunk_count,
+                index_entry_count=result.index_entry_count,
+            )
             raise StageExecutionError(
                 error_code="readiness_check_failed",
                 error_detail=", ".join(result.reasons),
@@ -72,5 +114,15 @@ class ReadyDocumentStage(StageRunner):
                     "index_entry_count": str(result.index_entry_count),
                 },
             )
+        )
+        _logger().info(
+            "lifecycle.stage.completed",
+            stage_name="ready_check",
+            doc_id=document.doc_id,
+            job_id=job.job_id,
+            duration_ms=max(int((perf_counter() - started_at) * 1000), 0),
+            section_count=result.section_count,
+            chunk_count=result.chunk_count,
+            index_entry_count=result.index_entry_count,
         )
         return None

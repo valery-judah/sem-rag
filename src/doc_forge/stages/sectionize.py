@@ -2,6 +2,10 @@
 
 from __future__ import annotations
 
+from time import perf_counter
+
+import structlog
+
 from doc_forge.artifacts import FilesystemArtifactStore
 from doc_forge.lifecycle import ProcessingStatus
 from doc_forge.persistence import (
@@ -12,6 +16,10 @@ from doc_forge.persistence import (
 )
 from doc_forge.stages.base import StageExecutionError, StageRunner
 from doc_forge.structure import SectionDerivationService
+
+
+def _logger() -> structlog.stdlib.BoundLogger:
+    return structlog.get_logger(__name__)  # type: ignore
 
 
 class SectionizeDocumentStage(StageRunner):
@@ -33,13 +41,36 @@ class SectionizeDocumentStage(StageRunner):
         self._service = service
 
     def run(self, job: DocumentJob) -> DocumentJobStage | None:
+        started_at = perf_counter()
+        _logger().info(
+            "lifecycle.stage.started",
+            stage_name="sectionize",
+            doc_id=job.doc_id,
+            job_id=job.job_id,
+        )
         document = self._documents.get(job.doc_id)
         if document is None:
+            _logger().warning(
+                "lifecycle.stage.failed",
+                stage_name="sectionize",
+                doc_id=job.doc_id,
+                job_id=job.job_id,
+                duration_ms=max(int((perf_counter() - started_at) * 1000), 0),
+                error_code="missing_document",
+            )
             raise StageExecutionError(
                 error_code="missing_document",
                 error_detail=f"document {job.doc_id!r} was not found",
             )
         if document.ingest_status is not ProcessingStatus.NORMALIZED:
+            _logger().warning(
+                "lifecycle.stage.failed",
+                stage_name="sectionize",
+                doc_id=job.doc_id,
+                job_id=job.job_id,
+                duration_ms=max(int((perf_counter() - started_at) * 1000), 0),
+                error_code="invalid_document_status",
+            )
             raise StageExecutionError(
                 error_code="invalid_document_status",
                 error_detail=(
@@ -53,10 +84,26 @@ class SectionizeDocumentStage(StageRunner):
                 doc_id=document.doc_id,
             )
         except FileNotFoundError as exc:
+            _logger().warning(
+                "lifecycle.stage.failed",
+                stage_name="sectionize",
+                doc_id=document.doc_id,
+                job_id=job.job_id,
+                duration_ms=max(int((perf_counter() - started_at) * 1000), 0),
+                error_code="missing_normalized_artifact",
+            )
             raise StageExecutionError(
                 error_code="missing_normalized_artifact",
                 error_detail=str(exc),
             ) from exc
         sections = self._service.derive(document=document, artifact=artifact)
         self._sections.replace_for_document(document.doc_id, sections)
+        _logger().info(
+            "lifecycle.stage.completed",
+            stage_name="sectionize",
+            doc_id=document.doc_id,
+            job_id=job.job_id,
+            duration_ms=max(int((perf_counter() - started_at) * 1000), 0),
+            section_count=len(sections),
+        )
         return DocumentJobStage.CHUNK

@@ -32,6 +32,15 @@ from .contracts import (
     TrustFailureLabel,
     UnsupportedCapability,
 )
+from .context_archive import (
+    CollectedQueryContext,
+    QueryContextAssetPaths,
+    QueryContextCollectionExtras,
+    QueryContextCollector,
+    QueryContextLogAsset,
+    QueryContextManifest,
+    QueryContextSourceKind,
+)
 from .domain import QueryRuntimeState
 from .errors import (
     CorpusBoundaryUnavailableError,
@@ -71,8 +80,15 @@ __all__ = [
     "CitationBundle",
     "CitationRecord",
     "CitationSupportRole",
+    "CollectedQueryContext",
     "ContextItem",
     "ContextManifest",
+    "QueryContextAssetPaths",
+    "QueryContextCollectionExtras",
+    "QueryContextCollector",
+    "QueryContextLogAsset",
+    "QueryContextManifest",
+    "QueryContextSourceKind",
     "CorpusBoundaryUnavailableError",
     "CorpusSnapshot",
     "DuplicateSuppressionMode",
