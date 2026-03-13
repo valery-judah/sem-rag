@@ -51,7 +51,9 @@ def test_runtime_query_to_answer_layer_input_remaps_runtime_doc_ids() -> None:
                         source_reference=SourceReference(
                             doc_id="doc-runtime-1",
                             document_title="Research Notes 1",
-                            snippet="The interactive target used in this study was under 2.5 seconds.",
+                            snippet=(
+                                "The interactive target used in this study was under 2.5 seconds."
+                            ),
                             heading_path=["2. Study Context", "2.2 What counts as success"],
                             page_label="p. 2",
                         ),

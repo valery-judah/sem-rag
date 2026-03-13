@@ -346,16 +346,21 @@ class AnswerLayerFeasibilityAssessor:
                 ),
             ],
             known_gaps=[
-                "The dataset is Markdown-only, so it does not validate the mixed-format MVP contract yet.",
-                "Overall trust outcome and primary failure labels are rubric-derived, not dataset-native.",
-                "Citation grading lacks explicit acceptable alternates, breadth tolerance, and partial-credit rules.",
-                "The current assets cannot judge retrieval quality, context assembly quality, or secondary-cause attribution.",
+                "The dataset is Markdown-only, so it does not validate the mixed-format "
+                "MVP contract yet.",
+                "Overall trust outcome and primary failure labels are rubric-derived, "
+                "not dataset-native.",
+                "Citation grading lacks explicit acceptable alternates, breadth tolerance, "
+                "and partial-credit rules.",
+                "The current assets cannot judge retrieval quality, context assembly quality, "
+                "or secondary-cause attribution.",
             ],
             minimum_additions_if_scope_expands=[
                 "Add gold_overall_trust_outcome and gold_primary_failure fields to answer keys.",
                 "Add acceptable_citation_variants with coarse-vs-precise provenance rules.",
                 "Add at least one PDF-backed set and one mixed-format synthesis set.",
-                "Add citation grading rules for document mismatch, wrong localizer, overly broad citation, missing contributing source, and coarse-but-honest provenance.",
+                "Add citation grading rules for document mismatch, wrong localizer, overly "
+                "broad citation, missing contributing source, and coarse-but-honest provenance.",
             ],
             case_matrix=matrix,
         )
@@ -557,7 +562,9 @@ def _evaluate_scope_control(
         return AnswerLayerCriterionResult(
             criterion=CriterionName.SCOPE_CONTROL,
             verdict=CriterionVerdict.FAIL,
-            rationale="Partial-support case needs visible qualification, but the answer reads flat.",
+            rationale=(
+                "Partial-support case needs visible qualification, but the answer reads flat."
+            ),
         )
 
     if expected_behavior is ExpectedBehavior.SURFACE_AMBIGUITY_WITH_SOURCE_QUALIFICATION:
@@ -565,7 +572,9 @@ def _evaluate_scope_control(
             return AnswerLayerCriterionResult(
                 criterion=CriterionName.SCOPE_CONTROL,
                 verdict=CriterionVerdict.PASS,
-                rationale="Answer surfaces the conflict or unresolved state instead of collapsing it.",
+                rationale=(
+                    "Answer surfaces the conflict or unresolved state instead of collapsing it."
+                ),
             )
         return AnswerLayerCriterionResult(
             criterion=CriterionName.SCOPE_CONTROL,
@@ -584,7 +593,9 @@ def _evaluate_scope_control(
         return AnswerLayerCriterionResult(
             criterion=CriterionName.SCOPE_CONTROL,
             verdict=CriterionVerdict.PASS,
-            rationale="Unsupported or out-of-scope case stays within the authored refusal boundary.",
+            rationale=(
+                "Unsupported or out-of-scope case stays within the authored refusal boundary."
+            ),
         )
 
     return AnswerLayerCriterionResult(
@@ -619,8 +630,8 @@ def _evaluate_provenance_quality(
             criterion=CriterionName.PROVENANCE_QUALITY,
             verdict=CriterionVerdict.FAIL,
             rationale=(
-                "At least one citation points to the wrong document/region or implies unsupported "
-                "precision."
+                "At least one citation points to the wrong document/region or implies "
+                "unsupported precision."
             ),
         )
 
@@ -633,9 +644,11 @@ def _evaluate_provenance_quality(
             CriterionVerdict.FAIL if requires_multi_source_coverage else CriterionVerdict.PARTIAL
         )
         rationale = (
-            "Case requires all materially contributing sources, but one or more gold sources are missing."
+            "Case requires all materially contributing sources, but one or more gold sources "
+            "are missing."
             if verdict is CriterionVerdict.FAIL
-            else "Some relevant gold support is uncited, so provenance remains only partially inspectable."
+            else "Some relevant gold support is uncited, so provenance remains only "
+            "partially inspectable."
         )
         return AnswerLayerCriterionResult(
             criterion=CriterionName.PROVENANCE_QUALITY,
@@ -648,8 +661,8 @@ def _evaluate_provenance_quality(
             criterion=CriterionName.PROVENANCE_QUALITY,
             verdict=CriterionVerdict.PARTIAL,
             rationale=(
-                "Citations point to the right source material, but the localizer is broader than the "
-                "current answer keys can score as a full provenance pass."
+                "Citations point to the right source material, but the localizer is broader "
+                "than the current answer keys can score as a full provenance pass."
             ),
         )
 
@@ -694,8 +707,8 @@ def _derive_overall_trust(
                 criterion=CriterionName.OVERALL_TRUST_OUTCOME,
                 verdict=CriterionVerdict.FAIL,
                 rationale=(
-                    "Derived trust outcome is not trustworthy because provenance is materially false "
-                    "or points to the wrong region."
+                    "Derived trust outcome is not trustworthy because provenance is "
+                    "materially false or points to the wrong region."
                 ),
             ),
         )
