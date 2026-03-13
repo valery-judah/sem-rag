@@ -13,6 +13,8 @@ from doc_forge.evaluation import (
     AnswerLayerRunInput,
     AnswerLayerRunResult,
 )
+from doc_forge.evaluation.identifiers import CorpusId, parse_corpus_id
+from doc_forge.identifiers import DocId
 from doc_forge.query import (
     QueryContextCollectionExtras,
     QueryContextCollector,
@@ -36,8 +38,8 @@ SMOKE_CASE_IDS = (
 
 @dataclass(frozen=True)
 class UploadedCorpusDocument:
-    corpus_id: str
-    runtime_doc_id: str
+    corpus_id: CorpusId
+    runtime_doc_id: DocId
 
 
 @dataclass(frozen=True)
@@ -120,7 +122,7 @@ class EvalCaseExecutor:
         *,
         driver: SystemDriver,
         case_id: str,
-        corpus_id: str,
+        corpus_id: CorpusId,
         workspace_id: str,
     ) -> list[UploadedCorpusDocument]:
         corpus_path = corpus_path_for_id(corpus_id)
@@ -139,7 +141,7 @@ class EvalCaseExecutor:
         return [UploadedCorpusDocument(corpus_id=corpus_id, runtime_doc_id=uploaded.doc_id)]
 
 
-def corpus_path_for_id(corpus_id: str) -> Path:
+def corpus_path_for_id(corpus_id: CorpusId) -> Path:
     markdown_path = EVAL_CORPUS_DIR / f"{corpus_id}.md"
     pdf_path = EVAL_CORPUS_DIR / f"{corpus_id}.pdf"
     if markdown_path.exists():
@@ -153,7 +155,7 @@ def runtime_query_to_answer_layer_input(
     *,
     case_id: str,
     query_run: ExecutedQueryRun,
-    runtime_doc_id_map: dict[str, str],
+    runtime_doc_id_map: dict[DocId, CorpusId],
 ) -> AnswerLayerRunInput:
     citations = [
         _source_reference_to_answer_layer_citation(citation.source_reference, runtime_doc_id_map)
@@ -168,9 +170,11 @@ def runtime_query_to_answer_layer_input(
 
 def _source_reference_to_answer_layer_citation(
     source_reference: Any,
-    runtime_doc_id_map: dict[str, str],
+    runtime_doc_id_map: dict[DocId, CorpusId],
 ) -> AnswerLayerCitation:
-    authored_doc_id = runtime_doc_id_map.get(source_reference.doc_id, source_reference.doc_id)
+    authored_doc_id = runtime_doc_id_map.get(source_reference.doc_id) or parse_corpus_id(
+        source_reference.doc_id
+    )
     page_start, page_end = _parse_page_label(source_reference.page_label)
     return AnswerLayerCitation(
         doc_id=authored_doc_id,
@@ -194,7 +198,7 @@ def _parse_page_label(page_label: str | None) -> tuple[int | None, int | None]:
     return None, None
 
 
-def _title_for_corpus_id(corpus_id: str) -> str:
+def _title_for_corpus_id(corpus_id: CorpusId) -> str:
     return corpus_id.replace("-", " ").title()
 
 

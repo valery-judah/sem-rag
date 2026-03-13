@@ -13,6 +13,8 @@ from typing import TypeVar
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from doc_forge.evaluation.identifiers import CorpusId
+
 
 class SupportStateLabel(StrEnum):
     """Question-level authored support states used by the eval case sets."""
@@ -93,7 +95,7 @@ class AuthoredCase(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     case_id: str = Field(min_length=1)
-    corpus_id: str = Field(min_length=1)
+    corpus_id: CorpusId
     case_family: str = Field(min_length=1)
     source_type: str = Field(min_length=1)
     primary_target_failures: list[str] = Field(default_factory=list)
@@ -107,7 +109,7 @@ class GoldEvidenceSource(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    doc_id: str = Field(min_length=1)
+    doc_id: CorpusId
     display_name: str = Field(min_length=1)
     section_path: list[str] | None = None
     page_start: int | None = Field(default=None, ge=1)
@@ -147,7 +149,7 @@ class AnswerLayerCitation(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    doc_id: str = Field(min_length=1)
+    doc_id: CorpusId
     document_title: str | None = None
     section_path: list[str] | None = None
     page_start: int | None = Field(default=None, ge=1)

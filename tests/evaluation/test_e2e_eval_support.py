@@ -4,6 +4,8 @@ from datetime import UTC, datetime
 
 from doc_forge.corpus import SourceReference
 from doc_forge.evaluation import AnswerLayerCitation
+from doc_forge.evaluation.identifiers import parse_corpus_id
+from doc_forge.identifiers import parse_doc_id
 from doc_forge.query import (
     AnswerDraft,
     AnswerMode,
@@ -93,14 +95,14 @@ def test_runtime_query_to_answer_layer_input_remaps_runtime_doc_ids() -> None:
     run_input = runtime_query_to_answer_layer_input(
         case_id="lookup_rn1_001",
         query_run=executed,
-        runtime_doc_id_map={"doc-runtime-1": "research-notes-1"},
+        runtime_doc_id_map={parse_doc_id("doc-runtime-1"): parse_corpus_id("research-notes-1")},
     )
 
     assert run_input.case_id == "lookup_rn1_001"
     assert run_input.answer_text == "under 2.5 seconds median end-to-end latency"
     assert run_input.citations == [
         AnswerLayerCitation(
-            doc_id="research-notes-1",
+            doc_id=parse_corpus_id("research-notes-1"),
             document_title="Research Notes 1",
             section_path=["2. Study Context", "2.2 What counts as success"],
             page_start=2,
