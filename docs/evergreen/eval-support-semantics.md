@@ -8,20 +8,7 @@
 
 ---
 
-## 1. Purpose
-
-This document defines the live semantic contract for:
-
-- sufficient, partial, and insufficient support;
-- support-state labeling rules;
-- citation expectations by source type;
-- honest abstention for MVP.
-
-RFCs, datasets, rubrics, and judging procedures should reference this document rather than restating these definitions.
-
----
-
-## 2. Support-state criteria
+## 1. Support-state criteria
 
 ### 2.1 Sufficient support
 

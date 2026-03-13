@@ -13,9 +13,7 @@ The current rubric already has the right evaluation primitives:
 * run-level judgments for support alignment, scope control, provenance, and abstention,
 * the same primary failure labels you selected. 
 
-## What should stay explicit
 
-Do **not** remove question-level support state just because the KPI surface is now failure-first. The rubric is correct that adjudication should resolve support state first, then whether the answer exceeded support, then provenance, and only then assign failure labels. That ordering is important because most disagreements are support-state disagreements in disguise. 
 
 So for MVP I would keep these question states:
 

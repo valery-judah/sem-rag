@@ -80,27 +80,6 @@ These 8 cover the full trust loop:
 
 That maps cleanly to your product definition and success criteria: answer from the uploaded corpus, keep answers tied to source references, let users inspect evidence, and fail transparently rather than fabricate.  
 
-## What I would de-prioritize
-
-I would **de-prioritize `O1` as a semantic eval label** for now. Track it in reliability dashboards, but don’t let it crowd out answer-trust failures in the MVP eval pack. Runtime failures matter operationally; they do not tell you whether the core product contract is working.
-I would also keep `R1`, `X1`, `G1`, `T1`, `N1` as **secondary diagnosis labels only**. They are useful after a failure is found, not as the primary thing you optimize the eval around. 
-
-## Minimal schema I would use for these 8
-
-For each failure, define:
-
-* `failure_code`
-* `user_visible_risk`
-* `trigger_rule`
-* `severity_default`
-* `detectability`
-* `recoverability`
-* `canonical_test_questions`
-* `expected_correct_behavior`
-* `bad_example_patterns`
-
-That is enough to make the taxonomy usable by both human reviewers and automated evaluation later. Your rubric already has most of this structure; the main change is reducing the top-line pack to the 8 failures above and keeping the rest diagnostic. 
-
 ## Recommended order of evaluation work
 
 1. `U1`, `A2`, `P2`

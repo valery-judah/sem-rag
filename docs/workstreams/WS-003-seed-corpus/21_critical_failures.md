@@ -68,35 +68,6 @@ Together, these 8 failures cover the entire trust loop:
 - whether ingestion preserved enough structure to make grounding possible, and
 - whether the system stays honest about MVP capability limits.
 
-### 3.1 Why other labels are not primary launch-gate failures
-
-The following labels should remain in the system as secondary or operational labels, but not as the core top-line MVP taxonomy:
-
-- `O1` operational failure: important for reliability dashboards, but not a semantic trust label.
-- `R1` retrieval miss: diagnostic cause label, not a user-visible failure class.
-- `X1` context assembly miss: diagnostic cause label.
-- `G1` grounding or synthesis miss: diagnostic cause label.
-- `T1` traceability reconstruction miss: diagnostic cause label.
-- `N1` normalization or structure recovery miss: diagnostic cause label.
-
-Those labels explain *why* a primary failure occurred. They should not replace the primary failure the user actually experienced.
-
----
-
-## 4. Scope assumptions and evaluation boundary
-
-This document assumes the MVP described in the framing document:
-
-- supported inputs are **text-based PDFs** and **Markdown**,
-- PDFs are handled with **lightweight normalization**,
-- provenance for PDFs may be **coarse**,
-- provenance for Markdown should typically include a **section path** when recoverable,
-- the system may synthesize across documents only when support genuinely permits it,
-- the system does **not** promise OCR, table understanding, figure understanding, exhaustive compare-and-contrast, or external-world question answering.
-
-These assumptions matter because some failures are only failures relative to the MVP boundary. For example, inability to answer a chart-reading question is not an MVP defect if the system correctly declares that the question is out of scope. Answering it confidently as if grounded is the defect.
-
----
 
 ## 5. Required concepts and definitions
 
