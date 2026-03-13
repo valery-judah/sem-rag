@@ -163,7 +163,7 @@ async def test_upload_route_maps_registration_error_to_500(
     tmp_path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    def _raise_registration_error(self, request):  # type: ignore[no-untyped-def]
+    def _raise_registration_error(self, request):
         del self, request
         raise DocumentRegistrationError("synthetic registration failure")
 

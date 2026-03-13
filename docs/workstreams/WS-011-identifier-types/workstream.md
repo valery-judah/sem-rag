@@ -34,7 +34,7 @@ Replace the current ad hoc `str` usage for `workspace_id` and `doc_id` with shar
   - it is interpolated into `PurePosixPath` path segments under `raw/`, `extracted/`, and `normalized/`
   - values such as `"."` or `"a/b"` can change the managed path shape even though `_resolve_relative_path(...)` blocks absolute paths and `..`
 - `doc_id` is more disciplined operationally because it is generated internally, but it is still just an unowned string type that can be mixed accidentally with `workspace_id`, `query_id`, or other IDs.
-- The repo already runs `mypy` in strict mode, so a nominal or semi-nominal shared identifier type can pay off during refactoring and future feature work.
+- The repo already runs Pyright in strict mode, so a nominal or semi-nominal shared identifier type can pay off during refactoring and future feature work.
 
 ## Recommended decision
 Use a thin validated scalar type owned by one module, not a rich domain object.

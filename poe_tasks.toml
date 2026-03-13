@@ -15,7 +15,7 @@ cmd = "ruff check ."
 
 [tasks.type]
 help = "Run static type checks"
-cmd = "mypy src"
+cmd = "pyright"
 
 [tasks.test]
 help = "Run unit tests"

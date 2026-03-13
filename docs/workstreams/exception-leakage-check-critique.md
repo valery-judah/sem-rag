@@ -15,7 +15,7 @@ While standardizing error responses to an `ErrorResponse` canonical format is a 
 Building and maintaining a custom AST-based checker for a framework-specific configuration pattern is an anti-pattern. 
 - **Brittleness:** An AST parser is highly sensitive to code structure. If a developer aliases `FastAPI`, wraps the instantiation in a helper function, or configures the exception handler in a separate file, the checker will either produce false positives (failing correct code) or false negatives (passing broken code).
 - **Maintenance Burden:** As the framework evolves or our internal conventions change, the custom parser will require ongoing maintenance.
-- **Wrong Abstraction Level:** Static analysis is excellent for catching common language pitfalls (e.g., via Ruff) or type errors (e.g., via MyPy), but it is a poor fit for verifying runtime framework configuration. We should be enforcing correct architecture "by construction" rather than "by inspection."
+- **Wrong Abstraction Level:** Static analysis is excellent for catching common language pitfalls (e.g., via Ruff) or type errors (e.g., via Pyright), but it is a poor fit for verifying runtime framework configuration. We should be enforcing correct architecture "by construction" rather than "by inspection."
 
 ---
 

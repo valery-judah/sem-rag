@@ -12,7 +12,7 @@ class _FakeLoader:
     def create_schema(self) -> None:
         self.created_schema = True
 
-    def scan_once(self):  # type: ignore[no-untyped-def]
+    def scan_once(self):
         self.scan_once_calls += 1
 
         class _Stats:

@@ -199,7 +199,7 @@ def create_app() -> FastAPI:
     )
 
     @app.middleware("http")
-    async def request_logging_middleware(request: Request, call_next):  # type: ignore
+    async def request_logging_middleware(request: Request, call_next):
         request_id = f"req-{uuid4().hex}"
         bind_contextvars(request_id=request_id)
         started_at = perf_counter()

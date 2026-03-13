@@ -5,7 +5,7 @@ import os
 import re
 import shutil
 import time
-from collections.abc import Iterator
+from collections.abc import Generator, Iterator
 from dataclasses import dataclass, field
 from pathlib import Path, PurePosixPath
 from typing import Any
@@ -20,6 +20,7 @@ from testcontainers.core.image import DockerImage
 from testcontainers.core.network import Network
 from testcontainers.postgres import PostgresContainer
 
+from doc_forge.identifiers import DocId
 from doc_forge.persistence.jobs import document_jobs_table
 from doc_forge.persistence.models import (
     chunk_embeddings_table,
@@ -33,7 +34,7 @@ from e2e.runtime_defaults import resolve_e2e_answer_generator
 
 
 @pytest.hookimpl(hookwrapper=True)
-def pytest_runtest_makereport(item: pytest.Item, call: pytest.CallInfo[Any]) -> Any:
+def pytest_runtest_makereport(item: pytest.Item, call: pytest.CallInfo[Any]) -> Generator[None, Any, None]:
     outcome = yield
     setattr(item, f"rep_{call.when}", outcome.get_result())
 
@@ -53,7 +54,7 @@ def _configure_docker_environment() -> None:
 def _docker_daemon_available() -> bool:
     _configure_docker_environment()
     try:
-        client = docker.from_env()
+        client: Any = docker.from_env()
         client.ping()
     except Exception:
         return False
@@ -99,13 +100,13 @@ class RunningStack:
     network: Network
     verbose: bool = False
     current_test_id: str | None = None
-    tracked_doc_ids: list[str] = field(default_factory=list)
-    tracked_query_ids: list[str] = field(default_factory=list)
-    query_debug_artifacts: list[str] = field(default_factory=list)
-    query_context_artifacts: list[str] = field(default_factory=list)
-    container_log_paths: dict[str, Path] = field(default_factory=dict)
-    scenario_log_offsets: dict[str, int] = field(default_factory=dict)
-    scenario_log_artifacts: list[str] = field(default_factory=list)
+    tracked_doc_ids: list[DocId] = field(default_factory=lambda: [])
+    tracked_query_ids: list[str] = field(default_factory=lambda: [])
+    query_debug_artifacts: list[str] = field(default_factory=lambda: [])
+    query_context_artifacts: list[str] = field(default_factory=lambda: [])
+    container_log_paths: dict[str, Path] = field(default_factory=lambda: {})
+    scenario_log_offsets: dict[str, int] = field(default_factory=lambda: {})
+    scenario_log_artifacts: list[str] = field(default_factory=lambda: [])
 
     def client(self) -> httpx.Client:
         return httpx.Client(base_url=self.base_url, timeout=30.0)
@@ -115,7 +116,7 @@ class RunningStack:
             return
         _emit_e2e_log(message, **fields)
 
-    def track_document(self, doc_id: str) -> None:
+    def track_document(self, doc_id: DocId) -> None:
         if doc_id not in self.tracked_doc_ids:
             self.tracked_doc_ids.append(doc_id)
 
@@ -178,7 +179,7 @@ class RunningStack:
         self.scenario_log_artifacts = sorted(recorded_artifacts)
         return archived_paths
 
-    def vector_snapshot(self, *, doc_id: str) -> dict[str, object]:
+    def vector_snapshot(self, *, doc_id: DocId) -> dict[str, object]:
         engine = sa.create_engine(self.database_url)
         try:
             with engine.connect() as connection:
@@ -218,7 +219,7 @@ class RunningStack:
             "sample_embedding": None if sample_row is None else dict(sample_row),
         }
 
-    def chunk_rows(self, *, doc_id: str) -> list[dict[str, object]]:
+    def chunk_rows(self, *, doc_id: DocId) -> list[dict[str, object]]:
         engine = sa.create_engine(self.database_url)
         try:
             with engine.connect() as connection:
@@ -243,7 +244,7 @@ class RunningStack:
             engine.dispose()
         return [dict(row) for row in rows]
 
-    def document_row(self, *, doc_id: str) -> dict[str, object] | None:
+    def document_row(self, *, doc_id: DocId) -> dict[str, object] | None:
         engine = sa.create_engine(self.database_url)
         try:
             with engine.connect() as connection:
@@ -258,7 +259,7 @@ class RunningStack:
             engine.dispose()
         return None if row is None else dict(row)
 
-    def lifecycle_events(self, *, doc_id: str) -> list[dict[str, object]]:
+    def lifecycle_events(self, *, doc_id: DocId) -> list[dict[str, object]]:
         engine = sa.create_engine(self.database_url)
         try:
             with engine.connect() as connection:
@@ -284,7 +285,7 @@ class RunningStack:
         relative = PurePosixPath(container_path).relative_to("/artifacts")
         return self.artifact_root.joinpath(*relative.parts)
 
-    def artifact_paths_for_document(self, *, doc_id: str) -> list[str]:
+    def artifact_paths_for_document(self, *, doc_id: DocId) -> list[str]:
         if not self.artifact_root.exists():
             return []
         matches = [
@@ -309,7 +310,7 @@ class RunningStack:
         remaining = len(entries) - limit
         return [*entries[:limit], f"... ({remaining} more files)"]
 
-    def describe_document(self, *, doc_id: str) -> str:
+    def describe_document(self, *, doc_id: DocId) -> str:
         document = self.document_row(doc_id=doc_id)
         events = self.lifecycle_events(doc_id=doc_id)
         snapshot = self.vector_snapshot(doc_id=doc_id)
@@ -399,7 +400,7 @@ class RunningStack:
         self,
         client: httpx.Client,
         *,
-        doc_id: str,
+        doc_id: DocId,
         timeout_seconds: float = 45.0,
     ) -> dict[str, Any]:
         self.track_document(doc_id)
@@ -779,5 +780,5 @@ def e2e_stack(
             status="failed" if failed else "passed",
         )
         if failed:
-            print(stack.failure_report(test_id=request.node.nodeid), flush=True)
+            print(stack.failure_report(test_id=test_id), flush=True)
         _reset_runtime_state(e2e_runtime)

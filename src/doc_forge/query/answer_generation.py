@@ -674,7 +674,7 @@ class _OllamaBackend:
         try:
             with urllib.request.urlopen(req) as response:
                 result = json.loads(response.read().decode("utf-8"))
-                return result.get("response", "").strip()  # type: ignore
+                return result.get("response", "").strip()
         except Exception as e:
             raise RuntimeError(f"Ollama generation failed: {e}") from e
 

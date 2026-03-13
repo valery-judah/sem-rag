@@ -19,7 +19,7 @@ class _FakeCollector:
         self.collected_query_ids: list[str] = []
         self.rendered_query_ids: list[str] = []
 
-    def collect(self, query_id: str):  # type: ignore[no-untyped-def]
+    def collect(self, query_id: str):
         self.collected_query_ids.append(query_id)
 
         class _Result:
