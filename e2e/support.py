@@ -3,10 +3,14 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import mimetypes
 from pathlib import Path
 from typing import cast
 
 from pydantic import BaseModel, ConfigDict
+
+from doc_forge.query import AnswerDraft, AnswerMode, CitationBundle, SupportState
+from doc_forge.query.review import QueryCitationReview, QueryRunReviewSummary, QueryTraceReview
 
 
 class UploadReceipt(BaseModel):
@@ -69,6 +73,17 @@ class QueryResult(BaseModel):
         if not self.hits:
             return None
         return self.hits[0]
+
+
+class QueryAnswerResponse(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    query_id: str
+    answer: AnswerDraft
+    support_state: SupportState
+    answer_mode: AnswerMode
+    citations: CitationBundle
+    message: str
 
 
 @dataclass(frozen=True)
@@ -150,6 +165,18 @@ class SystemDriver:
             self.stack.log("document upload accepted", doc_id=receipt.doc_id, title=title)
             return receipt
 
+    def _content_type_for_path(self, path: Path) -> str:
+        if path.suffix.lower() == ".md":
+            return "text/markdown"
+        if path.suffix.lower() == ".markdown":
+            return "text/markdown"
+        if path.suffix.lower() == ".pdf":
+            return "application/pdf"
+        guessed, _ = mimetypes.guess_type(path.name)
+        if guessed is not None:
+            return guessed
+        raise ValueError(f"unsupported file type for e2e upload: {path}")
+
     def submit_document(
         self,
         *,
@@ -163,7 +190,7 @@ class SystemDriver:
             return self._submit(
                 file_name=absolute_path.name,
                 file_content=handle.read(),
-                content_type="text/markdown",
+                content_type=self._content_type_for_path(absolute_path),
                 title=title,
                 workspace_id=workspace_id,
             )
@@ -258,6 +285,42 @@ class SystemDriver:
             query_response.raise_for_status()
             self.stack.log("retrieval query completed", doc_id=doc_id, query=text, k=k)
             return QueryResult.model_validate(query_response.json())
+
+    def submit_query(self, *, question: str, workspace_id: str) -> QueryAnswerResponse:
+        with self.stack.client() as client:
+            response = client.post(
+                "/queries",
+                json={"question": question, "workspace_id": workspace_id},
+            )
+            response.raise_for_status()
+            payload = QueryAnswerResponse.model_validate(response.json())
+            self.stack.track_query(payload.query_id)
+            self.stack.log(
+                "query completed",
+                query_id=payload.query_id,
+                workspace_id=workspace_id,
+                support_state=payload.support_state.value,
+                answer_mode=payload.answer_mode.value,
+            )
+            return payload
+
+    def get_query_summary(self, query_id: str) -> QueryRunReviewSummary:
+        with self.stack.client() as client:
+            response = client.get(f"/queries/{query_id}")
+            response.raise_for_status()
+            return QueryRunReviewSummary.model_validate(response.json())
+
+    def get_query_trace(self, query_id: str) -> QueryTraceReview:
+        with self.stack.client() as client:
+            response = client.get(f"/queries/{query_id}/trace")
+            response.raise_for_status()
+            return QueryTraceReview.model_validate(response.json())
+
+    def get_query_citations(self, query_id: str) -> QueryCitationReview:
+        with self.stack.client() as client:
+            response = client.get(f"/queries/{query_id}/citations")
+            response.raise_for_status()
+            return QueryCitationReview.model_validate(response.json())
 
     def delete_document(self, doc_id: str) -> None:
         with self.stack.client() as client:

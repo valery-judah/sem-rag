@@ -94,6 +94,8 @@ class RunningStack:
     network: Network
     verbose: bool = False
     tracked_doc_ids: list[str] = field(default_factory=list)
+    tracked_query_ids: list[str] = field(default_factory=list)
+    query_debug_artifacts: list[str] = field(default_factory=list)
 
     def client(self) -> httpx.Client:
         return httpx.Client(base_url=self.base_url, timeout=30.0)
@@ -106,6 +108,14 @@ class RunningStack:
     def track_document(self, doc_id: str) -> None:
         if doc_id not in self.tracked_doc_ids:
             self.tracked_doc_ids.append(doc_id)
+
+    def track_query(self, query_id: str) -> None:
+        if query_id not in self.tracked_query_ids:
+            self.tracked_query_ids.append(query_id)
+
+    def record_query_debug_artifact(self, relative_path: str) -> None:
+        if relative_path not in self.query_debug_artifacts:
+            self.query_debug_artifacts.append(relative_path)
 
     def vector_snapshot(self, *, doc_id: str) -> dict[str, object]:
         engine = sa.create_engine(self.database_url)
@@ -284,6 +294,24 @@ class RunningStack:
                 sections.append(f"document diagnostics:\n{self.describe_document(doc_id=doc_id)}")
         else:
             sections.append("document diagnostics:\n<no tracked documents>")
+        if self.tracked_query_ids:
+            sections.append(
+                "query diagnostics:\n"
+                + "\n".join(
+                    f"  - query_id={query_id}" for query_id in sorted(self.tracked_query_ids)
+                )
+            )
+        else:
+            sections.append("query diagnostics:\n<no tracked queries>")
+        if self.query_debug_artifacts:
+            sections.append(
+                "query debug artifacts:\n"
+                + "\n".join(
+                    f"  - {artifact}" for artifact in sorted(self.query_debug_artifacts)
+                )
+            )
+        else:
+            sections.append("query debug artifacts:\n<none>")
         sections.extend(
             [
                 _format_logs("api", self.api_container),
@@ -462,6 +490,8 @@ def _reset_runtime_state(stack: RunningStack) -> None:
         engine.dispose()
     _clear_artifact_root(stack.artifact_root)
     stack.tracked_doc_ids.clear()
+    stack.tracked_query_ids.clear()
+    stack.query_debug_artifacts.clear()
 
 
 @pytest.fixture(scope="session")
