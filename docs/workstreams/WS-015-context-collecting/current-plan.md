@@ -23,8 +23,10 @@ surface, then close the highest-value gaps exposed by live bundle analysis.
 - The collector gap is closed:
   non-eval bundles now reconstruct `query-response.json` from persisted final
   artifacts.
-- Compose defaults are now safer for local experiments because the default
-  answer generator is `deterministic`; Ollama use is now an explicit override.
+- Docker-backed local defaults are now safer and closer to real local
+  experiments:
+  Apple Silicon Docker flows use host Ollama by default when it is reachable,
+  while non-Docker process defaults remain deterministic.
 
 ## Implementation Priorities
 1. Use the collected compose bundle for
@@ -34,9 +36,9 @@ surface, then close the highest-value gaps exposed by live bundle analysis.
 2. Decide whether the wrong-answer case is primarily a retrieval, context
    selection, support-assessment, or answer-generation failure, then turn that
    into a bounded code change and regression test.
-3. If local Ollama use becomes a maintained workflow, add explicit preflight
-   validation for the configured model instead of relying only on deterministic
-   defaults.
+3. Add explicit preflight validation for the configured Ollama model in local
+   workflows so Docker-backed runs fail fast when the selected host/container
+   model is unavailable.
 
 ## Acceptance Signal
 - The wrong-answer compose case can be explained from the bundle and converted
@@ -44,5 +46,6 @@ surface, then close the highest-value gaps exposed by live bundle analysis.
   generation.
 - Non-eval bundles continue to expose the final public answer directly through
   `query-response.json`.
-- A local compose experiment no longer fails by default just because the
-  configured Ollama model is absent.
+- A local Docker-backed experiment no longer defaults to the wrong inference
+  path on Apple Silicon, and missing-model failures are pushed toward explicit
+  preflight validation instead of silent config mismatch.

@@ -29,6 +29,7 @@ from doc_forge.persistence.models import (
     lifecycle_events_table,
 )
 from doc_forge.query.persistence import query_runs_table
+from e2e.runtime_defaults import resolve_e2e_answer_generator
 
 
 @pytest.hookimpl(hookwrapper=True)
@@ -607,6 +608,7 @@ def e2e_runtime(
     tmp_path_factory: pytest.TempPathFactory,
 ) -> Iterator[RunningStack]:
     verbose = _env_flag("DOC_FORGE_E2E_VERBOSE")
+    generator_selection = resolve_e2e_answer_generator()
     log_root = _repo_root() / "data" / "logs"
     log_root.mkdir(parents=True, exist_ok=True)
     e2e_log_session_id = uuid4().hex
@@ -619,6 +621,9 @@ def e2e_runtime(
         artifact_root=str(artifact_root),
         log_root=str(log_root),
         e2e_log_session_id=e2e_log_session_id,
+        answer_generator_backend=generator_selection.backend,
+        answer_generator_reason=generator_selection.reason,
+        using_host_ollama=generator_selection.using_host_ollama,
     )
 
     network = Network().create()
@@ -665,6 +670,8 @@ def e2e_runtime(
             .with_volume_mapping(str(log_root), "/logs", mode="rw")
             .with_exposed_ports(8000)
         )
+        for key, value in generator_selection.environment.items():
+            api_container = api_container.with_env(key, value)
         runtime_user = _runtime_user()
         if runtime_user is not None:
             api_container = api_container.with_kwargs(user=runtime_user)
@@ -683,6 +690,8 @@ def e2e_runtime(
             .with_volume_mapping(str(artifact_root), "/artifacts", mode="rw")
             .with_volume_mapping(str(log_root), "/logs", mode="rw")
         )
+        for key, value in generator_selection.environment.items():
+            worker_container = worker_container.with_env(key, value)
         if runtime_user is not None:
             worker_container = worker_container.with_kwargs(user=runtime_user)
 

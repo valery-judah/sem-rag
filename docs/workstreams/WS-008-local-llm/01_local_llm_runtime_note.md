@@ -16,7 +16,10 @@ The repo now supports three answer-generation paths and two embedding paths:
   - `mlx`
   - `ollama`
 
-Default behavior remains lightweight and deterministic. Model-backed paths are opt-in through environment configuration.
+Default process behavior remains lightweight and deterministic. Docker-backed
+local workflows on Apple Silicon now auto-select host Ollama when it is
+reachable; other hosts and non-Docker process entrypoints stay deterministic
+unless explicitly configured.
 
 ## Runtime wiring
 [`src/doc_forge/app/settings.py`](../../../src/doc_forge/app/settings.py) exposes the relevant process configuration:
@@ -83,9 +86,24 @@ Two local generation options now exist on macOS:
 - `ollama`
   - local HTTP generation path via Ollama
 
-For the Docker-backed smoke workflow, the repo now prefers host-native Ollama on Apple Silicon instead of the Docker `ollama` container. [`run_and_query.sh`](../../../run_and_query.sh) defaults `USE_HOST_OLLAMA=1` on `Darwin arm64`, points containers at `http://host.docker.internal:11434`, and starts `ollama serve` on the host when needed.
+For Docker-backed local operation, the repo now prefers host-native Ollama on
+Apple Silicon instead of the Docker `ollama` container.
+
+Current behavior:
+
+- `make docker-up-build`
+- `make test-e2e`
+- [`run_and_query.sh`](../../../run_and_query.sh)
+
+all default to host Ollama on `Darwin arm64` when it is reachable, point
+containers at `http://host.docker.internal:11434`, and use `llama3.2:1b`
+unless explicitly overridden.
 
 That change was made because the practical fast path on macOS is host Ollama using Metal acceleration rather than CPU-bound container inference.
+
+The Compose `ollama` service still exists, but it is now behind an opt-in
+profile for explicit fallback/debug use rather than part of the default local
+stack.
 
 ## Multi-document comparison smoke harness
 [`run_and_query.sh`](../../../run_and_query.sh) is no longer a single-document smoke test. It now acts as a comparison harness for the current local-LLM path.
@@ -129,7 +147,7 @@ What is working:
 
 What remains limited:
 
-- `tinyllama` often collapses to the deterministic fallback rather than producing a materially different answer
+- very small local models can still collapse to deterministic fallback behavior rather than producing a materially different answer
 - the current smoke script checks structural comparison properties, not semantic answer quality
 - answer quality for small local models remains a product problem, not just an infrastructure problem
 

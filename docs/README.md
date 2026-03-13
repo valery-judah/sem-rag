@@ -21,6 +21,9 @@ Stable Interfaces:
 Commands And Validation:
 - `docs/evergreen/runbook.md`: Canonical. Local operation guidance and standard commands.
 
+Local LLM / Docker Defaults:
+- `docs/workstreams/WS-008-local-llm/01_local_llm_runtime_note.md`: Execution history for optional MLX/Ollama generation, Apple Silicon host-Ollama defaults for Docker-backed local flows, and the comparison smoke harness.
+
 Evaluation Docs:
 - See `Evaluation Docs Map` below for the detailed route across evergreen, delivery, and workstream material.
 
@@ -93,6 +96,10 @@ Working Rule:
 - Use `docs/evergreen/architecture.md` for durable system shape and `docs/evergreen/agent-routing.md` for code-entry routing.
 - Then open the latest implemented WS-006 stage note before planning the next phase.
 - Treat workstream docs as execution history and local design notes unless evergreen docs explicitly promote a seam.
+
+Related Local Runtime Notes:
+- `docs/workstreams/WS-008-local-llm/01_local_llm_runtime_note.md`: reference when changing Docker-local Ollama defaults, Apple Silicon GPU-backed generation, or `run_and_query.sh`.
+- `docs/workstreams/WS-015-context-collecting/workstream.md`: reference when changing query-context collection, repo-local logs, or operator debug flows tied to query bundles.
 
 ## Where New Work Goes
 - Put durable system descriptions and stable operating guidance in `docs/evergreen/`.

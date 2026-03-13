@@ -46,9 +46,9 @@ reconstructing the run from separate temp artifacts.
 - Non-eval collection now reconstructs `query-response.json` from persisted
   final artifacts, so compose and plain `e2e` bundles expose the final public
   answer payload directly.
-- Compose defaults are now aligned with the app defaults:
-  `DOC_FORGE_ANSWER_GENERATOR_BACKEND=deterministic` unless explicitly
-  overridden for Ollama-backed experiments.
+- Docker-backed local defaults now auto-select host Ollama on Apple Silicon
+  when it is reachable, while non-Docker process defaults remain
+  `DOC_FORGE_ANSWER_GENERATOR_BACKEND=deterministic`.
 
 ## Next step
 - Use the collected compose bundle for

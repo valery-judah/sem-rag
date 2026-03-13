@@ -84,6 +84,7 @@ make verify
 - `POST /retrieval/query` remains a local retrieval smoke/debug route rather than part of the stable public contract.
 - `POST /internal/run-next-job` exists for tests and local debug; normal local operation should prefer the worker loop.
 - `make docker-up-build` starts the local Postgres, API, and worker stack defined in `docker-compose.yml`.
+- On `Darwin arm64`, `make docker-up-build` and `make test-e2e` prefer host Ollama at `http://host.docker.internal:11434` with `llama3.2:1b` when the host Ollama service is reachable; other hosts keep deterministic answer generation by default.
 - In Docker Compose, the `api` and `worker` runtimes self-apply Alembic migrations at startup before serving traffic or draining jobs.
 - `make docker-smoke` waits for the Compose API container to become healthy, then verifies that `/readyz` can reach the configured database and write under `DOC_FORGE_ARTIFACT_ROOT`.
 - Container JSON logs are archived under `data/logs/compose/runs/<run_id>/` with stable links at `data/logs/compose/latest/`.
@@ -106,9 +107,10 @@ make verify
 - `DOC_FORGE_WORKER_POLL_SECONDS` controls idle sleep time for the internal worker loop.
 - `DOC_FORGE_EMBEDDING_BACKEND` selects the embedding adapter. Supported values are `deterministic` and `sentence-transformers`. The default is `deterministic`.
 - `DOC_FORGE_EMBEDDING_MODEL` sets the optional sentence-transformers model identifier. It is only used when `DOC_FORGE_EMBEDDING_BACKEND=sentence-transformers`.
-- `DOC_FORGE_ANSWER_GENERATOR_BACKEND` selects the Stage 7 answer generator. Supported values are `deterministic` and `mlx`. The default is `deterministic`.
-- `DOC_FORGE_ANSWER_GENERATOR_MODEL` sets the optional Apple Silicon generation model identifier. It is only used when `DOC_FORGE_ANSWER_GENERATOR_BACKEND=mlx`.
-- `DOC_FORGE_ANSWER_GENERATOR_MAX_NEW_TOKENS` and `DOC_FORGE_ANSWER_GENERATOR_TEMPERATURE` control the optional MLX generation path.
+- `DOC_FORGE_ANSWER_GENERATOR_BACKEND` selects the Stage 7 answer generator. Supported values are `deterministic`, `mlx`, and `ollama`. The process default remains `deterministic`.
+- `DOC_FORGE_ANSWER_GENERATOR_MODEL` sets the optional generation model identifier. It is used by both `mlx` and `ollama`.
+- `DOC_FORGE_ANSWER_GENERATOR_MAX_NEW_TOKENS` and `DOC_FORGE_ANSWER_GENERATOR_TEMPERATURE` control the optional MLX and Ollama generation paths.
+- `OLLAMA_BASE_URL` sets the Ollama HTTP endpoint for Docker-backed local and e2e runs. Apple Silicon Docker defaults point containers at `http://host.docker.internal:11434` when host Ollama is available.
 - `DOC_FORGE_UID` and `DOC_FORGE_GID` let the compose services run as a non-root user that can still write to the bind-mounted `./data` artifact root.
 - `DOC_FORGE_JSON_LOG_PATH` is an internal container-only path used to duplicate stdout JSON logs into repo-local JSONL archives.
 - `DOC_FORGE_LOG_RUN_ID` is the optional compose run identifier used for `data/logs/compose/runs/<run_id>/`.
@@ -121,6 +123,9 @@ make verify
 ## Troubleshooting
 - If imports fail, run `make sync` and `make install`.
 - If optional model-backed embeddings or Apple Silicon generation fail to import, run `make sync-llm` or `make sync-mac` and verify the corresponding smoke target.
+- If Apple Silicon Docker runs stay deterministic, confirm host Ollama is reachable at `http://127.0.0.1:11434/api/tags`; `make docker-up-build` and `make test-e2e` only switch to Ollama when that health check succeeds.
+- If you want Docker-backed local runs to use the Compose Ollama container instead of host Ollama, start with `COMPOSE_PROFILES=ollama DOC_FORGE_ANSWER_GENERATOR_BACKEND=ollama OLLAMA_BASE_URL=http://ollama:11434 make docker-up-build`.
+- If you want to verify GPU-backed local generation on Apple Silicon, run one query after `make docker-up-build`, confirm `ollama ps` shows `llama3.2:1b` on `100% GPU`, and confirm archived API logs contain `event=\"llm generated\"` with `generator_backend=\"ollama\"`.
 - If validation disagrees across environments, re-run the standard `fmt-check`, `lint`, `type`, `test`, and `verify` targets. Use `fmt` only when you want to apply automatic fixes.
 - If Alembic commands fail immediately, verify that `DATABASE_URL` is set and points at a reachable database.
 - If you encounter database authentication errors when connecting local processes to the Docker stack, run `make docker-clean` to wipe stale volumes and reset the credentials, then `make docker-up-build`.

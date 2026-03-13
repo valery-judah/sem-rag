@@ -1,7 +1,7 @@
 # Architecture
 
 **Status:** Verified
-**Last verified:** 2026-03-11
+**Last verified:** 2026-03-13
 
 ## Purpose
 This file captures the current architectural truth for `doc_forge` and the gap between today's code and the target product described in [`docs/evergreen/mvp.md`](./mvp.md).
@@ -31,6 +31,10 @@ The current implementation remains a single-service local runtime:
 
 This topology is intentionally simple and local. Conceptual query stages are explicit in code and persistence, but not split into separate services.
 
+For Docker-backed local operation, answer generation can also use a host-native
+Ollama process on Apple Silicon through `host.docker.internal` while keeping the
+core runtime topology unchanged.
+
 ## Bounded Contexts
 The currently relevant bounded contexts are:
 
@@ -53,6 +57,7 @@ The currently earned seams are:
 - provenance-bearing corpus primitives for documents, sections, chunks, retrieval hits, and answers
 - explicit document-processing lifecycle progression with a failure state
 - localhost FastAPI service runtime for health, readiness, document lifecycle, query submission, query review, and environment-toggled Swagger UI
+- Docker-local answer-generation defaults that auto-select host Ollama on `Darwin arm64` when it is reachable, while keeping non-Docker process defaults deterministic
 - query-facing read model that admits only `READY` lifecycle documents into the queryable corpus
 - stable query-time corpus snapshots with persisted `eligible_doc_ids`
 - durable query runs, query snapshots, stage traces, and answer artifacts for local query execution
@@ -74,6 +79,7 @@ The currently earned seams are:
 - Alembic-backed migration workflow, including lock-protected runtime startup migrations for containerized services, plus lifecycle/indexing repositories for documents, lifecycle events, document jobs, sections, chunks, index entries, and chunk embeddings
 - deterministic evaluation of retrieval ordering, supporting evidence, and provenance completeness
 - repo devtool support for staged and repository secret scanning
+- repo devtool support for Docker-local generator default resolution across Compose, docker-backed e2e, and manual smoke harnesses
 
 Most of these seams are implemented internal architecture. The localhost FastAPI service routes are additionally promoted as stable public contracts in [`docs/evergreen/api-contracts.md`](./api-contracts.md).
 

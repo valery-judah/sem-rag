@@ -6,7 +6,7 @@ API_URL="http://127.0.0.1:8000"
 HOST_OLLAMA_URL="http://127.0.0.1:11434"
 WORKSPACE="ws-answer-compare-$(date +%s)"
 QUESTION="Compare Atlas and Beacon caching strategies. Which system has stricter freshness guarantees, and why?"
-OLLAMA_MODEL="tinyllama"
+OLLAMA_MODEL="llama3.2:1b"
 USE_HOST_OLLAMA="${USE_HOST_OLLAMA:-}"
 
 if [ -z "$USE_HOST_OLLAMA" ]; then
@@ -273,7 +273,7 @@ if [ "$USE_HOST_OLLAMA" = "1" ]; then
   docker compose up -d --build db api worker
 else
   echo "==> Starting application stack via docker-compose..."
-  make docker-up-build
+  COMPOSE_PROFILES=ollama make docker-up-build
 fi
 
 echo "==> Waiting for API to become ready..."
