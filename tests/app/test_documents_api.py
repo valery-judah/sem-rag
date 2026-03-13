@@ -23,13 +23,21 @@ def _upload_endpoint(app: FastAPI):
     raise AssertionError("upload route was not found")
 
 
+class _StubFile:
+    def __init__(self, content: bytes):
+        self._content = content
+
+    def read(self) -> bytes:
+        return self._content
+
+
 class _UploadFileStub:
     def __init__(self, *, filename: str, content: bytes) -> None:
         self.filename = filename
-        self._content = content
+        self.file = _StubFile(content)
 
     async def read(self) -> bytes:
-        return self._content
+        return self.file._content
 
 
 def _upload_file(filename: str, content: bytes) -> _UploadFileStub:
@@ -46,7 +54,7 @@ def _service(sql_engine, tmp_path):
 async def test_pdf_upload_registers_successfully(app: FastAPI, sql_engine, tmp_path) -> None:
     payload = b"%PDF-1.7\n1 0 obj\n"
 
-    result = await _upload_endpoint(app)(
+    result = _upload_endpoint(app)(
         workspace_id="ws-1",
         file=_upload_file("system-design.pdf", payload),
         service=_service(sql_engine, tmp_path),
@@ -69,7 +77,7 @@ async def test_markdown_upload_registers_successfully(
     sql_engine,
     tmp_path,
 ) -> None:
-    result = await _upload_endpoint(app)(
+    result = _upload_endpoint(app)(
         workspace_id="ws-1",
         file=_upload_file("ops-notes.md", b"# Ops\n\nThis is UTF-8 markdown.\n"),
         service=_service(sql_engine, tmp_path),
@@ -89,7 +97,7 @@ async def test_unsupported_extension_is_rejected_explicitly(
     tmp_path,
 ) -> None:
     with pytest.raises(HTTPException) as exc_info:
-        await _upload_endpoint(app)(
+        _upload_endpoint(app)(
             workspace_id="ws-1",
             file=_upload_file("notes.txt", b"plain text"),
             service=_service(sql_engine, tmp_path),
@@ -106,7 +114,7 @@ async def test_fake_pdf_content_with_pdf_extension_is_rejected_explicitly(
     tmp_path,
 ) -> None:
     with pytest.raises(HTTPException) as exc_info:
-        await _upload_endpoint(app)(
+        _upload_endpoint(app)(
             workspace_id="ws-1",
             file=_upload_file("notes.pdf", b"not really a pdf"),
             service=_service(sql_engine, tmp_path),
@@ -123,7 +131,7 @@ async def test_unsupported_png_is_rejected_explicitly(
     tmp_path,
 ) -> None:
     with pytest.raises(HTTPException) as exc_info:
-        await _upload_endpoint(app)(
+        _upload_endpoint(app)(
             workspace_id="ws-1",
             file=_upload_file("image.png", b"\x89PNG\r\n\x1a\n"),
             service=_service(sql_engine, tmp_path),
@@ -139,7 +147,7 @@ async def test_omitted_title_falls_back_to_filename_stem(
     sql_engine,
     tmp_path,
 ) -> None:
-    result = await _upload_endpoint(app)(
+    result = _upload_endpoint(app)(
         workspace_id="ws-1",
         file=_upload_file("team-playbook.markdown", b"# Team Playbook\n"),
         service=_service(sql_engine, tmp_path),
@@ -162,7 +170,7 @@ async def test_upload_route_maps_registration_error_to_500(
     monkeypatch.setattr(RegisterDocumentStage, "run", _raise_registration_error)
 
     with pytest.raises(HTTPException) as exc_info:
-        await _upload_endpoint(app)(
+        _upload_endpoint(app)(
             workspace_id="ws-1",
             file=_upload_file("doc.md", b"# Doc\n"),
             service=_service(sql_engine, tmp_path),

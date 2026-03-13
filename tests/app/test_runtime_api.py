@@ -97,7 +97,7 @@ async def test_status_route_returns_404_for_unknown_document(
     tmp_path,
 ) -> None:
     with pytest.raises(HTTPException) as exc_info:
-        await _route_endpoint(app, path="/documents/{doc_id}/status", method="GET")(
+        _route_endpoint(app, path="/documents/{doc_id}/status", method="GET")(
             doc_id="missing",
             service=_service(sql_engine, tmp_path),
         )
@@ -112,7 +112,7 @@ async def test_artifacts_route_returns_404_for_unknown_document(
     tmp_path,
 ) -> None:
     with pytest.raises(HTTPException) as exc_info:
-        await _route_endpoint(app, path="/documents/{doc_id}/artifacts", method="GET")(
+        _route_endpoint(app, path="/documents/{doc_id}/artifacts", method="GET")(
             doc_id="missing",
             service=_service(sql_engine, tmp_path),
         )
@@ -126,7 +126,7 @@ async def test_retry_route_returns_404_for_unknown_document(
     tmp_path,
 ) -> None:
     with pytest.raises(HTTPException) as exc_info:
-        await _route_endpoint(app, path="/documents/{doc_id}/retry", method="POST")(
+        _route_endpoint(app, path="/documents/{doc_id}/retry", method="POST")(
             doc_id="missing",
             service=_service(sql_engine, tmp_path),
         )
@@ -149,7 +149,7 @@ async def test_retry_route_returns_409_for_ready_document(
     )
 
     with pytest.raises(HTTPException) as exc_info:
-        await _route_endpoint(app, path="/documents/{doc_id}/retry", method="POST")(
+        _route_endpoint(app, path="/documents/{doc_id}/retry", method="POST")(
             doc_id="doc-ready",
             service=_service(sql_engine, tmp_path),
         )
@@ -173,7 +173,7 @@ async def test_retry_route_returns_409_for_non_failed_document(
     )
 
     with pytest.raises(HTTPException) as exc_info:
-        await _route_endpoint(app, path="/documents/{doc_id}/retry", method="POST")(
+        _route_endpoint(app, path="/documents/{doc_id}/retry", method="POST")(
             doc_id="doc-registered",
             service=_service(sql_engine, tmp_path),
         )
@@ -215,7 +215,7 @@ async def test_retry_route_returns_202_and_queued_stage_for_failed_document(
         )
     )
 
-    result = await _route_endpoint(app, path="/documents/{doc_id}/retry", method="POST")(
+    result = _route_endpoint(app, path="/documents/{doc_id}/retry", method="POST")(
         doc_id="doc-failed",
         service=_service(sql_engine, tmp_path),
     )
@@ -236,7 +236,7 @@ async def test_retrieval_query_returns_404_for_unknown_document(
     tmp_path,
 ) -> None:
     with pytest.raises(HTTPException) as exc_info:
-        await _route_endpoint(app, path="/retrieval/query", method="POST")(
+        _route_endpoint(app, path="/retrieval/query", method="POST")(
             request=RetrievalQueryRequest(doc_id="missing", query="consensus", k=2),
             service=_service(sql_engine, tmp_path),
         )
@@ -279,7 +279,7 @@ async def test_queries_route_returns_final_answer_and_persists_artifacts(
         index_entries=SqlIndexEntryRepository(sql_engine),
     ).publish_document(doc_id="doc-ready", chunks=[ready_chunk])
 
-    result = await _route_endpoint(app, path="/queries", method="POST")(
+    result = _route_endpoint(app, path="/queries", method="POST")(
         request=QueryRequest(
             question="What uses embeddings to retrieve related passages?",
             workspace_id="ws-1",
@@ -322,7 +322,7 @@ async def test_queries_route_allows_empty_snapshot(
     app: FastAPI,
     sql_engine: Engine,
 ) -> None:
-    result = await _route_endpoint(app, path="/queries", method="POST")(
+    result = _route_endpoint(app, path="/queries", method="POST")(
         request=QueryRequest(
             question="What is available in the corpus?",
             workspace_id="empty-ws",
@@ -337,9 +337,9 @@ async def test_queries_route_allows_empty_snapshot(
 
 
 async def test_healthz_returns_ok(app: FastAPI) -> None:
-    result = await _route_endpoint(app, path="/healthz", method="GET")()
+    result = _route_endpoint(app, path="/healthz", method="GET")()
 
-    assert result == {"status": "ok"}
+    assert result.model_dump() == {"status": "ok"}
 
 
 async def test_readyz_returns_ok_when_dependencies_load(
@@ -355,13 +355,13 @@ async def test_readyz_returns_ok_when_dependencies_load(
         embedding_adapter=DeterministicEmbeddingAdapter(),
     )
 
-    result = await _route_endpoint(app, path="/readyz", method="GET")(
+    result = _route_endpoint(app, path="/readyz", method="GET")(
         engine=sql_engine,
         artifact_store=FilesystemArtifactStore(tmp_path / "artifacts"),
         vector_store=vector_store,
     )
 
-    assert result == {"status": "ok"}
+    assert result.model_dump() == {"status": "ok"}
 
 
 async def test_readyz_creates_artifact_root_when_missing(
@@ -379,18 +379,18 @@ async def test_readyz_creates_artifact_root_when_missing(
         embedding_adapter=DeterministicEmbeddingAdapter(),
     )
 
-    result = await _route_endpoint(app, path="/readyz", method="GET")(
+    result = _route_endpoint(app, path="/readyz", method="GET")(
         engine=sql_engine,
         artifact_store=FilesystemArtifactStore(artifact_root),
         vector_store=vector_store,
     )
 
-    assert result == {"status": "ok"}
+    assert result.model_dump() == {"status": "ok"}
     assert artifact_root.exists()
 
 
 async def test_run_next_job_returns_null_payload_when_no_job_exists(app: FastAPI) -> None:
-    result = await _route_endpoint(app, path="/internal/run-next-job", method="POST")(
+    result = _route_endpoint(app, path="/internal/run-next-job", method="POST")(
         worker=_WorkerStub(None)
     )
 
@@ -400,7 +400,7 @@ async def test_run_next_job_returns_null_payload_when_no_job_exists(app: FastAPI
 
 
 async def test_run_next_job_returns_job_metadata_when_job_runs(app: FastAPI) -> None:
-    result = await _route_endpoint(app, path="/internal/run-next-job", method="POST")(
+    result = _route_endpoint(app, path="/internal/run-next-job", method="POST")(
         worker=_WorkerStub(
             DocumentJob(
                 job_id="job-1",
@@ -443,7 +443,7 @@ async def test_query_summary_route_returns_persisted_review_view(
         index_entries=SqlIndexEntryRepository(sql_engine),
     ).publish_document(doc_id="doc-ready", chunks=[ready_chunk])
 
-    submitted = await _route_endpoint(app, path="/queries", method="POST")(
+    submitted = _route_endpoint(app, path="/queries", method="POST")(
         request=QueryRequest(
             question="What uses embeddings to retrieve related passages?",
             workspace_id="ws-1",
@@ -451,7 +451,7 @@ async def test_query_summary_route_returns_persisted_review_view(
         service=_query_service(sql_engine),
     )
 
-    summary = await _route_endpoint(app, path="/queries/{query_id}", method="GET")(
+    summary = _route_endpoint(app, path="/queries/{query_id}", method="GET")(
         query_id=submitted.query_id,
         review_service=_query_review_service(sql_engine),
     )
@@ -494,7 +494,7 @@ async def test_query_trace_route_returns_ordered_persisted_traces(
         index_entries=SqlIndexEntryRepository(sql_engine),
     ).publish_document(doc_id="doc-ready", chunks=[ready_chunk])
 
-    submitted = await _route_endpoint(app, path="/queries", method="POST")(
+    submitted = _route_endpoint(app, path="/queries", method="POST")(
         request=QueryRequest(
             question="What uses embeddings for passage search?",
             workspace_id="ws-1",
@@ -502,7 +502,7 @@ async def test_query_trace_route_returns_ordered_persisted_traces(
         service=_query_service(sql_engine),
     )
 
-    review = await _route_endpoint(app, path="/queries/{query_id}/trace", method="GET")(
+    review = _route_endpoint(app, path="/queries/{query_id}/trace", method="GET")(
         query_id=submitted.query_id,
         review_service=_query_review_service(sql_engine),
     )
@@ -549,7 +549,7 @@ async def test_query_citations_route_reads_persisted_answer_state(
         index_entries=SqlIndexEntryRepository(sql_engine),
     ).publish_document(doc_id="doc-ready", chunks=[ready_chunk])
 
-    submitted = await _route_endpoint(app, path="/queries", method="POST")(
+    submitted = _route_endpoint(app, path="/queries", method="POST")(
         request=QueryRequest(
             question="What uses embeddings to retrieve related passages?",
             workspace_id="ws-1",
@@ -557,7 +557,7 @@ async def test_query_citations_route_reads_persisted_answer_state(
         service=_query_service(sql_engine),
     )
 
-    citations = await _route_endpoint(app, path="/queries/{query_id}/citations", method="GET")(
+    citations = _route_endpoint(app, path="/queries/{query_id}/citations", method="GET")(
         query_id=submitted.query_id,
         review_service=_query_review_service(sql_engine),
     )
@@ -598,7 +598,7 @@ async def test_query_summary_route_returns_failed_run_review_view(
         )
     )
 
-    summary = await _route_endpoint(app, path="/queries/{query_id}", method="GET")(
+    summary = _route_endpoint(app, path="/queries/{query_id}", method="GET")(
         query_id=failed_run.query_id,
         review_service=_query_review_service(sql_engine),
     )
@@ -627,7 +627,7 @@ async def test_queries_route_returns_failed_query_id_when_execution_fails(
             )
 
     with pytest.raises(HTTPException) as exc_info:
-        await _route_endpoint(app, path="/queries", method="POST")(
+        _route_endpoint(app, path="/queries", method="POST")(
             request=QueryRequest(
                 question="What failed?",
                 workspace_id="ws-1",
@@ -636,11 +636,7 @@ async def test_queries_route_returns_failed_query_id_when_execution_fails(
         )
 
     assert exc_info.value.status_code == 500
-    detail = cast(dict[str, Any], exc_info.value.detail)
-    terminal_failure = cast(dict[str, Any], detail["terminal_failure"])
-    assert detail["query_id"] == "qry-failed-route"
-    assert detail["status"] == "failed"
-    assert terminal_failure["stage_name"] == "render_citations"
+    assert exc_info.value.detail == "query execution failed"
 
 
 async def test_http_and_query_logs_are_json_and_correlated(

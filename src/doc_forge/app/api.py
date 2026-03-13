@@ -14,6 +14,7 @@ from uuid import uuid4
 import sqlalchemy as sa
 import structlog
 from fastapi import Body, Depends, FastAPI, File, Form, HTTPException, Request, UploadFile, status
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy.engine import Engine
 from structlog.contextvars import bind_contextvars, clear_contextvars
@@ -38,7 +39,6 @@ from doc_forge.query import (
     AnswerMode,
     CitationBundle,
     QueryRequest,
-    QueryRunStatus,
     QueryService,
     SupportState,
 )
@@ -106,16 +106,6 @@ class QueryAnswerResponse(BaseModel):
     message: str = Field(min_length=1, description="Human-readable result message.")
 
 
-class QuerySubmissionFailureResult(BaseModel):
-    """Internal error payload for failed query submissions."""
-
-    model_config = ConfigDict(extra="forbid")
-
-    query_id: str = Field(min_length=1, description="The unique query identifier.")
-    status: QueryRunStatus = Field(description="The terminal status of the query (failed).")
-    terminal_failure: dict[str, object] = Field(description="Detailed error tracing information.")
-
-
 class WorkerJobResult(BaseModel):
     """Payload representing a triggered worker job result."""
 
@@ -139,6 +129,45 @@ class ErrorResponse(BaseModel):
         ...,
         description="A human-readable explanation of the error.",
         json_schema_extra={"example": "The requested document was not found."},
+    )
+
+
+class SystemStatusResponse(BaseModel):
+    """Standardized system status response payload."""
+
+    model_config = ConfigDict(
+        extra="forbid",
+        json_schema_extra={"example": {"status": "ok"}},
+    )
+
+    status: str = Field(..., description="The current status of the system component.")
+
+
+class DocumentDetailResponse(BaseModel):
+    """Detailed metadata response for a specific registered document."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    doc_id: str = Field(min_length=1, description="The unique identifier of the document.")
+    workspace_id: str = Field(min_length=1, description="The workspace this document belongs to.")
+    source_type: str = Field(
+        min_length=1, description="The type of the source artifact (e.g., pdf, markdown)."
+    )
+    title: str = Field(min_length=1, description="The title of the document.")
+    filename: str = Field(min_length=1, description="The original filename of the document.")
+    uploaded_at: str = Field(min_length=1, description="ISO-8601 formatted upload timestamp.")
+    checksum: str = Field(
+        min_length=1, description="SHA-256 checksum of the original source content."
+    )
+    ingest_status: str = Field(min_length=1, description="Current ingestion lifecycle status.")
+    failure_code: str | None = Field(
+        default=None, description="Standardized error code if the ingest failed."
+    )
+    failure_detail: str | None = Field(
+        default=None, description="Human-readable detail if the ingest failed."
+    )
+    raw_storage_path: str = Field(
+        min_length=1, description="The logical path where the raw file is stored."
     )
 
 
@@ -179,9 +208,12 @@ def create_app() -> FastAPI:
             method=request.method,
             path=request.url.path,
         )
+
+        unhandled_exception = False
         try:
             response = await call_next(request)
         except Exception:
+            unhandled_exception = True
             duration_ms = int((perf_counter() - started_at) * 1000)
             get_logger().exception(
                 "http.request.completed",
@@ -191,32 +223,47 @@ def create_app() -> FastAPI:
                 status=500,
                 duration_ms=duration_ms,
             )
-            clear_contextvars()
-            raise
+            response = JSONResponse(
+                status_code=500,
+                content=ErrorResponse(detail="Internal server error").model_dump(),
+            )
+
         duration_ms = int((perf_counter() - started_at) * 1000)
         response.headers["x-request-id"] = request_id
-        get_logger().info(
-            "http.request.completed",
-            method=request.method,
-            path=request.url.path,
-            http_status=response.status_code,
-            status=response.status_code,
-            duration_ms=duration_ms,
-        )
+
+        if not unhandled_exception:
+            get_logger().info(
+                "http.request.completed",
+                method=request.method,
+                path=request.url.path,
+                http_status=response.status_code,
+                status=response.status_code,
+                duration_ms=duration_ms,
+            )
+
         clear_contextvars()
         return response
 
-    @app.get("/healthz", tags=["System"])
-    async def healthz() -> dict[str, str]:
-        return {"status": "ok"}
+    @app.exception_handler(Exception)
+    async def global_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+        """Global exception handler for unhandled exceptions."""
+        get_logger().exception("unhandled_exception", error=str(exc))
+        return JSONResponse(
+            status_code=500,
+            content=ErrorResponse(detail="Internal server error").model_dump(),
+        )
 
-    @app.get("/readyz", tags=["System"])
-    async def readyz(
+    @app.get("/healthz", tags=["System"], response_model=SystemStatusResponse)
+    def healthz() -> SystemStatusResponse:
+        return SystemStatusResponse(status="ok")
+
+    @app.get("/readyz", tags=["System"], response_model=SystemStatusResponse)
+    def readyz(
         engine: Annotated[Engine, Depends(get_engine)],
         artifact_store: Annotated[FilesystemArtifactStore, Depends(get_artifact_store)],
         vector_store: Annotated[VectorStore, Depends(get_vector_store)],
         logger: structlog.stdlib.BoundLogger = Depends(get_logger),
-    ) -> dict[str, str]:
+    ) -> SystemStatusResponse:
         logger.info("system.readyz.started")
         try:
             with engine.connect() as connection:
@@ -231,7 +278,7 @@ def create_app() -> FastAPI:
             )
             raise
         logger.info("system.readyz.completed", http_status=200, status="ok")
-        return {"status": "ok"}
+        return SystemStatusResponse(status="ok")
 
     @app.post(
         "/documents",
@@ -255,7 +302,7 @@ def create_app() -> FastAPI:
             },
         },
     )
-    async def upload_document(
+    def upload_document(
         workspace_id: Annotated[
             WorkspaceId,
             Form(description="The workspace this document belongs to."),
@@ -273,7 +320,7 @@ def create_app() -> FastAPI:
             ),
         ] = None,
     ) -> UploadDocumentResult:
-        content = await file.read()
+        content = file.file.read()
         try:
             result = service.upload_document(
                 workspace_id=workspace_id,
@@ -335,7 +382,7 @@ def create_app() -> FastAPI:
             },
         },
     )
-    async def delete_document(
+    def delete_document(
         doc_id: Annotated[DocId, Field(..., description="The unique identifier of the document.")],
         service: Annotated[
             DocumentLifecycleService,
@@ -364,6 +411,7 @@ def create_app() -> FastAPI:
 
     @app.get(
         "/documents/{doc_id}",
+        response_model=DocumentDetailResponse,
         summary="Get Document",
         tags=["Documents"],
         description="Retrieve the core details of a registered document.",
@@ -374,28 +422,28 @@ def create_app() -> FastAPI:
             },
         },
     )
-    async def get_document(
+    def get_document(
         doc_id: Annotated[DocId, Field(..., description="The unique identifier of the document.")],
         service: Annotated[
             DocumentLifecycleService,
             Depends(get_document_lifecycle_service),
         ],
-    ) -> dict[str, object]:
+    ) -> DocumentDetailResponse:
         try:
             document = service._require_document(doc_id)
-            return {
-                "doc_id": document.doc_id,
-                "workspace_id": document.workspace_id,
-                "source_type": document.source_type.value,
-                "title": document.title,
-                "filename": document.filename,
-                "uploaded_at": document.uploaded_at.isoformat(),
-                "checksum": document.checksum,
-                "ingest_status": document.ingest_status.value,
-                "failure_code": document.failure_code,
-                "failure_detail": document.failure_detail,
-                "raw_storage_path": document.raw_storage_path,
-            }
+            return DocumentDetailResponse(
+                doc_id=document.doc_id,
+                workspace_id=document.workspace_id,
+                source_type=document.source_type.value,
+                title=document.title,
+                filename=document.filename,
+                uploaded_at=document.uploaded_at.isoformat(),
+                checksum=document.checksum or "",
+                ingest_status=document.ingest_status.value,
+                failure_code=document.failure_code,
+                failure_detail=document.failure_detail,
+                raw_storage_path=document.raw_storage_path or "",
+            )
         except DocumentNotFoundError as exc:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
 
@@ -415,7 +463,7 @@ def create_app() -> FastAPI:
             },
         },
     )
-    async def get_document_status(
+    def get_document_status(
         doc_id: Annotated[DocId, Field(..., description="The unique identifier of the document.")],
         service: Annotated[
             DocumentLifecycleService,
@@ -455,7 +503,7 @@ def create_app() -> FastAPI:
             },
         },
     )
-    async def get_document_artifacts(
+    def get_document_artifacts(
         doc_id: Annotated[DocId, Field(..., description="The unique identifier of the document.")],
         service: Annotated[
             DocumentLifecycleService,
@@ -498,7 +546,7 @@ def create_app() -> FastAPI:
             },
         },
     )
-    async def retry_document(
+    def retry_document(
         doc_id: Annotated[DocId, Field(..., description="The unique identifier of the document.")],
         service: Annotated[
             DocumentLifecycleService,
@@ -555,7 +603,7 @@ def create_app() -> FastAPI:
             },
         },
     )
-    async def retrieval_query(
+    def retrieval_query(
         request: Annotated[RetrievalQueryRequest, Body(description="The query parameters.")],
         service: Annotated[
             DocumentLifecycleService,
@@ -620,7 +668,7 @@ def create_app() -> FastAPI:
             },
         },
     )
-    async def submit_query(
+    def submit_query(
         request: Annotated[QueryRequest, Body(description="The query request payload.")],
         service: Annotated[QueryService, Depends(get_query_service)],
         logger: structlog.stdlib.BoundLogger = Depends(get_logger),
@@ -664,11 +712,7 @@ def create_app() -> FastAPI:
             )
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=QuerySubmissionFailureResult(
-                    query_id=exc.query_id,
-                    status=QueryRunStatus.FAILED,
-                    terminal_failure=exc.terminal_failure.model_dump(mode="json"),
-                ).model_dump(mode="json"),
+                detail="query execution failed",
             ) from exc
         if (
             state.snapshot is None
@@ -726,7 +770,7 @@ def create_app() -> FastAPI:
             },
         },
     )
-    async def get_query_summary(
+    def get_query_summary(
         query_id: Annotated[str, Field(..., description="The unique query identifier.")],
         review_service: Annotated[QueryReviewService, Depends(get_query_review_service)],
         logger: structlog.stdlib.BoundLogger = Depends(get_logger),
@@ -767,7 +811,7 @@ def create_app() -> FastAPI:
             },
         },
     )
-    async def get_query_trace(
+    def get_query_trace(
         query_id: Annotated[str, Field(..., description="The unique query identifier.")],
         review_service: Annotated[QueryReviewService, Depends(get_query_review_service)],
         logger: structlog.stdlib.BoundLogger = Depends(get_logger),
@@ -808,7 +852,7 @@ def create_app() -> FastAPI:
             },
         },
     )
-    async def get_query_citations(
+    def get_query_citations(
         query_id: Annotated[str, Field(..., description="The unique query identifier.")],
         review_service: Annotated[QueryReviewService, Depends(get_query_review_service)],
         logger: structlog.stdlib.BoundLogger = Depends(get_logger),
@@ -847,7 +891,7 @@ def create_app() -> FastAPI:
         ),
         tags=["Internal Operator"],
     )
-    async def run_next_job(
+    def run_next_job(
         worker: Annotated[DocumentLifecycleWorker, Depends(get_document_lifecycle_worker)],
         logger: structlog.stdlib.BoundLogger = Depends(get_logger),
     ) -> WorkerJobResult:
