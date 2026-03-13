@@ -22,7 +22,7 @@ reachable; other hosts and non-Docker process entrypoints stay deterministic
 unless explicitly configured.
 
 ## Runtime wiring
-[`src/doc_forge/app/settings.py`](../../../src/doc_forge/app/settings.py) exposes the relevant process configuration:
+[`src/doc_forge/app/settings.py`](src/doc_forge/app/settings.py) exposes the relevant process configuration:
 
 - `DOC_FORGE_EMBEDDING_BACKEND`
 - `DOC_FORGE_EMBEDDING_MODEL`
@@ -31,7 +31,7 @@ unless explicitly configured.
 - `DOC_FORGE_ANSWER_GENERATOR_MAX_NEW_TOKENS`
 - `DOC_FORGE_ANSWER_GENERATOR_TEMPERATURE`
 
-[`src/doc_forge/app/deps.py`](../../../src/doc_forge/app/deps.py) resolves those settings into concrete runtime adapters:
+[`src/doc_forge/app/deps.py`](src/doc_forge/app/deps.py) resolves those settings into concrete runtime adapters:
 
 - embedding backends
   - `DeterministicEmbeddingAdapter`
@@ -44,7 +44,7 @@ unless explicitly configured.
 If an unsupported backend string is provided, dependency wiring fails fast with an explicit runtime error.
 
 ## Optional dependency model
-[`pyproject.toml`](../../../pyproject.toml) keeps the optional ML stack separated from the default install:
+[`pyproject.toml`](pyproject.toml) keeps the optional ML stack separated from the default install:
 
 - `llm`
   - `sentence-transformers`
@@ -55,7 +55,7 @@ If an unsupported backend string is provided, dependency wiring fails fast with 
 This keeps the default contributor workflow small while still allowing real local retrieval and local generation experiments.
 
 ## Embedding path
-[`src/doc_forge/indexing/embeddings.py`](../../../src/doc_forge/indexing/embeddings.py) keeps deterministic embeddings as the default indexing path and adds an opt-in `SentenceTransformerEmbeddingAdapter`.
+[`src/doc_forge/indexing/embeddings.py`](src/doc_forge/indexing/embeddings.py) keeps deterministic embeddings as the default indexing path and adds an opt-in `SentenceTransformerEmbeddingAdapter`.
 
 Important behavior:
 
@@ -64,7 +64,7 @@ Important behavior:
 - the real embedding path is used by both indexing and dense retrieval when `DOC_FORGE_EMBEDDING_BACKEND=sentence-transformers`
 
 ## Answer-generation path
-[`src/doc_forge/query/answer_generation.py`](../../../src/doc_forge/query/answer_generation.py) now contains:
+[`src/doc_forge/query/answer_generation.py`](src/doc_forge/query/answer_generation.py) now contains:
 
 - the deterministic Stage 7 renderer
 - the MLX-backed local generator
@@ -93,7 +93,7 @@ Current behavior:
 
 - `make docker-up-build`
 - `make test-e2e`
-- [`run_and_query.sh`](../../../run_and_query.sh)
+- [`run_and_query.sh`](run_and_query.sh)
 
 all default to host Ollama on `Darwin arm64` when it is reachable, point
 containers at `http://host.docker.internal:11434`, and use `llama3.2:1b`
@@ -106,7 +106,7 @@ profile for explicit fallback/debug use rather than part of the default local
 stack.
 
 ## Multi-document comparison smoke harness
-[`run_and_query.sh`](../../../run_and_query.sh) is no longer a single-document smoke test. It now acts as a comparison harness for the current local-LLM path.
+[`run_and_query.sh`](run_and_query.sh) is no longer a single-document smoke test. It now acts as a comparison harness for the current local-LLM path.
 
 The script:
 
@@ -154,10 +154,10 @@ What remains limited:
 ## Validation references
 Relevant tests for this work include:
 
-- [`tests/indexing/test_model_embeddings.py`](../../../tests/indexing/test_model_embeddings.py)
-- [`tests/query/test_query_llm_generation.py`](../../../tests/query/test_query_llm_generation.py)
-- [`tests/query/test_query_answer_generation.py`](../../../tests/query/test_query_answer_generation.py)
-- [`tests/app/test_optional_backends.py`](../../../tests/app/test_optional_backends.py)
+- [`tests/indexing/test_model_embeddings.py`](tests/indexing/test_model_embeddings.py)
+- [`tests/query/test_query_llm_generation.py`](tests/query/test_query_llm_generation.py)
+- [`tests/query/test_query_answer_generation.py`](tests/query/test_query_answer_generation.py)
+- [`tests/app/test_optional_backends.py`](tests/app/test_optional_backends.py)
 
 Useful local commands:
 

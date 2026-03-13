@@ -12,7 +12,7 @@ Keep shared schema files at the top of `evals/cases/`:
 These define the record shapes used by authored case sets.
 
 The shared schemas are a matrix-ready superset aligned with the case families in
-[`30_building_case_matrix.md`](../../docs/workstreams/WS-003-seed-corpus/30_building_case_matrix.md).
+[`30_building_case_matrix.md`](docs/workstreams/WS-003-seed-corpus/30_building_case_matrix.md).
 Individual authored sets may use only a narrow subset of the allowed enums and fields.
 
 ## Authored sets

@@ -41,15 +41,15 @@ It does not create a stable public API.
 
 As of 2026-03-11, the repo now has the Stage 7 runtime implemented:
 
-- [contracts.py](../../../../../src/doc_forge/query/contracts.py) now strengthens `AnswerDraft`, `CitationRecord`, and `CitationBundle`, and adds `FinalQueryArtifacts`;
-- [answer_generation.py](../../../../../src/doc_forge/query/answer_generation.py) now owns deterministic grounded answer generation;
-- [citation_rendering.py](../../../../../src/doc_forge/query/citation_rendering.py) now owns provenance-only citation rendering;
-- [stages/generate.py](../../../../../src/doc_forge/query/stages/generate.py) and [stages/render_citations.py](../../../../../src/doc_forge/query/stages/render_citations.py) are now executable Stage 7 entrypoints rather than placeholders;
-- [persistence.py](../../../../../src/doc_forge/query/persistence.py) now defines `query_answers`, `SqlQueryAnswerStore`, and round-trip persistence for final answer artifacts;
-- [0006_query_answers.py](../../../../../src/doc_forge/persistence/migrations/versions/0006_query_answers.py) now creates the durable final-answer table;
-- [service.py](../../../../../src/doc_forge/query/service.py) now executes through Stage 7 with `execute_until_answer()`;
-- [api.py](../../../../../src/doc_forge/app/api.py) now returns final answer text, visible limitations, and citations on the internal `POST /queries` route;
-- [deps.py](../../../../../src/doc_forge/app/deps.py) now wires final-answer persistence through `SqlQueryAnswerStore`.
+- [contracts.py](src/doc_forge/query/contracts.py) now strengthens `AnswerDraft`, `CitationRecord`, and `CitationBundle`, and adds `FinalQueryArtifacts`;
+- [answer_generation.py](src/doc_forge/query/answer_generation.py) now owns deterministic grounded answer generation;
+- [citation_rendering.py](src/doc_forge/query/citation_rendering.py) now owns provenance-only citation rendering;
+- [stages/generate.py](src/doc_forge/query/stages/generate.py) and [stages/render_citations.py](src/doc_forge/query/stages/render_citations.py) are now executable Stage 7 entrypoints rather than placeholders;
+- [persistence.py](src/doc_forge/query/persistence.py) now defines `query_answers`, `SqlQueryAnswerStore`, and round-trip persistence for final answer artifacts;
+- [0006_query_answers.py](src/doc_forge/persistence/migrations/versions/0006_query_answers.py) now creates the durable final-answer table;
+- [service.py](src/doc_forge/query/service.py) now executes through Stage 7 with `execute_until_answer()`;
+- [api.py](src/doc_forge/app/api.py) now returns final answer text, visible limitations, and citations on the internal `POST /queries` route;
+- [deps.py](src/doc_forge/app/deps.py) now wires final-answer persistence through `SqlQueryAnswerStore`.
 
 Stage 7 extends the existing Stage 6 runtime without implying that Stage 8 review and replay surfaces already exist.
 
@@ -57,12 +57,12 @@ Stage 7 extends the existing Stage 6 runtime without implying that Stage 8 revie
 
 Stage 7 is implemented with:
 
-- deterministic answer generation in [answer_generation.py](../../../../../src/doc_forge/query/answer_generation.py);
-- deterministic citation rendering in [citation_rendering.py](../../../../../src/doc_forge/query/citation_rendering.py);
-- executable `generate` and `render_citations` stages in [generate.py](../../../../../src/doc_forge/query/stages/generate.py) and [render_citations.py](../../../../../src/doc_forge/query/stages/render_citations.py);
-- final answer persistence in [persistence.py](../../../../../src/doc_forge/query/persistence.py) and [0006_query_answers.py](../../../../../src/doc_forge/persistence/migrations/versions/0006_query_answers.py);
-- Stage 7 runtime wiring in [service.py](../../../../../src/doc_forge/query/service.py);
-- internal route integration in [api.py](../../../../../src/doc_forge/app/api.py) and [deps.py](../../../../../src/doc_forge/app/deps.py);
+- deterministic answer generation in [answer_generation.py](src/doc_forge/query/answer_generation.py);
+- deterministic citation rendering in [citation_rendering.py](src/doc_forge/query/citation_rendering.py);
+- executable `generate` and `render_citations` stages in [generate.py](src/doc_forge/query/stages/generate.py) and [render_citations.py](src/doc_forge/query/stages/render_citations.py);
+- final answer persistence in [persistence.py](src/doc_forge/query/persistence.py) and [0006_query_answers.py](src/doc_forge/persistence/migrations/versions/0006_query_answers.py);
+- Stage 7 runtime wiring in [service.py](src/doc_forge/query/service.py);
+- internal route integration in [api.py](src/doc_forge/app/api.py) and [deps.py](src/doc_forge/app/deps.py);
 - tests covering direct-answer generation, honest abstention, citation fail-closed behavior, cross-document citation completeness, final persistence, and route behavior.
 
 That outcome is enough to earn end-to-end internal answering over `READY` documents with durable final artifacts, while still leaving review endpoints and stable public contracts for later stages.
@@ -145,7 +145,7 @@ It lets the final-answer store persist the user-visible outcome without reconstr
 
 ### Grounded-generation helper seam
 
-[answer_generation.py](../../../../../src/doc_forge/query/answer_generation.py) now owns the Stage 7 grounded-generation seam.
+[answer_generation.py](src/doc_forge/query/answer_generation.py) now owns the Stage 7 grounded-generation seam.
 
 It exposes:
 
@@ -174,7 +174,7 @@ It returns:
 
 ### Citation-rendering helper seam
 
-[citation_rendering.py](../../../../../src/doc_forge/query/citation_rendering.py) now owns the Stage 7 citation-rendering seam.
+[citation_rendering.py](src/doc_forge/query/citation_rendering.py) now owns the Stage 7 citation-rendering seam.
 
 It exposes:
 
@@ -321,7 +321,7 @@ Stage 7 does not yet add a new dedicated failure artifact or failure-specific St
 
 ## Implemented stage traces
 
-Stage 7 continues using [query_stage_traces](../../../../../src/doc_forge/query/persistence.py) rather than introducing new normalized trace tables.
+Stage 7 continues using [query_stage_traces](src/doc_forge/query/persistence.py) rather than introducing new normalized trace tables.
 
 ### `generate` trace payload
 
@@ -351,7 +351,7 @@ Fail-closed rendering currently aborts execution before a successful Stage 7 cit
 
 ## Implemented final persistence
 
-Stage 7 now adds a concrete SQL-backed final-answer store in [persistence.py](../../../../../src/doc_forge/query/persistence.py).
+Stage 7 now adds a concrete SQL-backed final-answer store in [persistence.py](src/doc_forge/query/persistence.py).
 
 ### `query_answers`
 
@@ -386,7 +386,7 @@ The current concrete store:
 
 ### `generate` stage
 
-[generate.py](../../../../../src/doc_forge/query/stages/generate.py) is now the executable Stage 7 grounded-generation entrypoint.
+[generate.py](src/doc_forge/query/stages/generate.py) is now the executable Stage 7 grounded-generation entrypoint.
 
 It accepts:
 
@@ -407,7 +407,7 @@ It returns:
 
 ### `render_citations` stage
 
-[render_citations.py](../../../../../src/doc_forge/query/stages/render_citations.py) is now the executable Stage 7 citation-rendering entrypoint.
+[render_citations.py](src/doc_forge/query/stages/render_citations.py) is now the executable Stage 7 citation-rendering entrypoint.
 
 It accepts:
 
@@ -432,7 +432,7 @@ It returns:
 
 ### Query service
 
-[service.py](../../../../../src/doc_forge/query/service.py) now exposes:
+[service.py](src/doc_forge/query/service.py) now exposes:
 
 - `execute_until_answer()`
 
@@ -456,7 +456,7 @@ If Stage 7 fails after the run has started, the service updates `query_runs.stat
 
 ### Internal API surface
 
-[api.py](../../../../../src/doc_forge/app/api.py) now returns the internal Stage 7 response shape on `POST /queries`.
+[api.py](src/doc_forge/app/api.py) now returns the internal Stage 7 response shape on `POST /queries`.
 
 The route now returns:
 
@@ -487,7 +487,7 @@ The developer-visible message is now:
 
 ### App wiring
 
-[deps.py](../../../../../src/doc_forge/app/deps.py) now wires:
+[deps.py](src/doc_forge/app/deps.py) now wires:
 
 - Stage 1 through Stage 6 dependencies as before
 - concrete `SqlQueryAnswerStore`
@@ -503,12 +503,12 @@ That keeps the local runtime executable without introducing a provider dependenc
 
 Stage 7 is covered by:
 
-- [test_query_stage7.py](../../../../../tests/query/test_query_stage7.py);
-- expanded [test_query_service_retrieve.py](../../../../../tests/query/test_query_service_retrieve.py);
-- expanded [test_runtime_api.py](../../../../../tests/app/test_runtime_api.py);
-- expanded [test_query_contract_models.py](../../../../../tests/contract/test_query_contract_models.py);
-- expanded [test_query_stage_enums.py](../../../../../tests/contract/test_query_stage_enums.py);
-- expanded [test_postgres_migrations.py](../../../../../tests/persistence/test_postgres_migrations.py).
+- [test_query_stage7.py](tests/query/test_query_stage7.py);
+- expanded [test_query_service_retrieve.py](tests/query/test_query_service_retrieve.py);
+- expanded [test_runtime_api.py](tests/app/test_runtime_api.py);
+- expanded [test_query_contract_models.py](tests/contract/test_query_contract_models.py);
+- expanded [test_query_stage_enums.py](tests/contract/test_query_stage_enums.py);
+- expanded [test_postgres_migrations.py](tests/persistence/test_postgres_migrations.py).
 
 The current coverage locks these Stage 7 invariants:
 

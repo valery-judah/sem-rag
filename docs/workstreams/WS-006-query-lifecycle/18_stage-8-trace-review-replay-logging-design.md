@@ -48,11 +48,11 @@ It does not create a stable public API.
 
 As of 2026-03-11, the repo already has the persistence needed to support most Stage 8 review work:
 
-- [persistence.py](../../../../../src/doc_forge/query/persistence.py) persists `query_runs`, `query_snapshots`, `query_stage_traces`, and `query_answers`;
-- [trace.py](../../../../../src/doc_forge/query/trace.py) already defines the ordered stage-trace surface;
-- [service.py](../../../../../src/doc_forge/query/service.py) already executes through Stage 7 and writes durable traces and final answer artifacts;
-- [api.py](../../../../../src/doc_forge/app/api.py) already exposes the internal `POST /queries` route, but no review routes yet;
-- [test_runtime_api.py](../../../../../tests/app/test_runtime_api.py) already proves that successful query runs persist snapshots, ordered stage traces, and final answer artifacts.
+- [persistence.py](src/doc_forge/query/persistence.py) persists `query_runs`, `query_snapshots`, `query_stage_traces`, and `query_answers`;
+- [trace.py](src/doc_forge/query/trace.py) already defines the ordered stage-trace surface;
+- [service.py](src/doc_forge/query/service.py) already executes through Stage 7 and writes durable traces and final answer artifacts;
+- [api.py](src/doc_forge/app/api.py) already exposes the internal `POST /queries` route, but no review routes yet;
+- [test_runtime_api.py](tests/app/test_runtime_api.py) already proves that successful query runs persist snapshots, ordered stage traces, and final answer artifacts.
 
 What the repo still lacks is the read side and observability layer over that persisted state:
 
@@ -238,7 +238,7 @@ It should not mutate query state or rerun stages.
 
 ## Internal review endpoints
 
-Stage 8 should add these internal routes in [api.py](../../../../../src/doc_forge/app/api.py):
+Stage 8 should add these internal routes in [api.py](src/doc_forge/app/api.py):
 
 ### `GET /queries/{query_id}`
 
@@ -441,7 +441,7 @@ Suggested repo shape:
   - logger configuration and JSON processors;
 - `src/doc_forge/app/api.py`:
   - request-id middleware and route-level binding;
-- [service.py](../../../../../src/doc_forge/query/service.py):
+- [service.py](src/doc_forge/query/service.py):
   - query-run and stage lifecycle events;
 - future review/replay modules:
   - read-side and replay events.
