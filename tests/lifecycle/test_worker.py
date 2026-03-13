@@ -1,14 +1,12 @@
 from __future__ import annotations
 
-from typing import Any, cast
-
 import pytest
 
-from doc_forge.app.logging import configure_logging, reset_logging
 from doc_forge.lifecycle import FailureCategory, ProcessingStatus
 from doc_forge.lifecycle.orchestrator import DocumentLifecycleOrchestrator
 from doc_forge.lifecycle.worker import DocumentLifecycleWorker
 from doc_forge.persistence import DocumentJobStage, DocumentJobStatus
+from tests.conftest import StructuredLogCapture
 from tests.lifecycle.support import (
     FailingStageRunner,
     InMemoryDocumentRepository,
@@ -22,22 +20,11 @@ from tests.lifecycle.support import (
 
 
 @pytest.fixture(autouse=True)
-def _configured_logging() -> None:
-    reset_logging()
-    configure_logging(service="test-service", environment="test", level="INFO")
-    yield
-    reset_logging()
+def _use_configured_logging(configured_logging: None) -> None:
+    pass
 
 
-def _structured_logs(caplog: pytest.LogCaptureFixture) -> list[dict[str, Any]]:
-    return [
-        cast(dict[str, Any], record.msg)
-        for record in caplog.records
-        if isinstance(record.msg, dict)
-    ]
-
-
-def test_run_next_returns_none_when_queue_is_empty(caplog: pytest.LogCaptureFixture) -> None:
+def test_run_next_returns_none_when_queue_is_empty(structured_caplog: StructuredLogCapture) -> None:
     jobs = InMemoryJobRepository()
     worker = DocumentLifecycleWorker(
         jobs=jobs,
@@ -48,9 +35,8 @@ def test_run_next_returns_none_when_queue_is_empty(caplog: pytest.LogCaptureFixt
     )
 
     assert worker.run_next() is None
-    structured_logs = _structured_logs(caplog)
-    assert any(log["event"] == "worker.run_next.invoked" for log in structured_logs)
-    assert any(log["event"] == "worker.run_next.idle" for log in structured_logs)
+    assert structured_caplog.has_event("worker.run_next.invoked")
+    assert structured_caplog.has_event("worker.run_next.idle")
 
 
 def test_worker_marks_job_failed_when_stage_runner_is_missing() -> None:
@@ -116,7 +102,7 @@ def test_worker_marks_job_failed_on_stage_execution_error() -> None:
     assert lifecycle_events.appended[0].failure_category is FailureCategory.PROCESSING
 
 
-def test_worker_emits_failed_job_log(caplog: pytest.LogCaptureFixture) -> None:
+def test_worker_emits_failed_job_log(structured_caplog: StructuredLogCapture) -> None:
     document = make_persisted_document(
         doc_id="doc-log-fail",
         ingest_status=ProcessingStatus.REGISTERED,
@@ -140,13 +126,11 @@ def test_worker_emits_failed_job_log(caplog: pytest.LogCaptureFixture) -> None:
     result = worker.run_next()
 
     assert result is not None
-    structured_logs = _structured_logs(caplog)
-    assert any(
-        log["event"] == "worker.job.failed"
-        and log["doc_id"] == "doc-log-fail"
-        and log["error_code"] == "extract_failed"
-        and log["failure_category"] == "processing"
-        for log in structured_logs
+    assert structured_caplog.has_event(
+        "worker.job.failed",
+        doc_id="doc-log-fail",
+        error_code="extract_failed",
+        failure_category="processing",
     )
 
 

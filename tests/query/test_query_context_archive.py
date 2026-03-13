@@ -19,7 +19,9 @@ from doc_forge.query import (
     QueryContextSourceKind,
     QueryPolicyDefaults,
     QueryReplayBundle,
+    QueryReplayService,
     QueryRequest,
+    QueryReviewService,
     QueryRunStatus,
     QueryTraceBundle,
     QueryTraceReview,
@@ -47,7 +49,7 @@ class _FakeReviewArtifacts:
         self.replay = replay
 
 
-class _FakeReviewService:
+class _FakeReviewService(QueryReviewService):
     def __init__(
         self,
         *,
@@ -74,7 +76,7 @@ class _FakeReviewService:
         return self._citations
 
 
-class _FakeReplayService:
+class _FakeReplayService(QueryReplayService):
     def __init__(self, bundle: QueryReplayBundle) -> None:
         self._bundle = bundle
 

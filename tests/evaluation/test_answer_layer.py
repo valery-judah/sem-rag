@@ -13,6 +13,7 @@ from doc_forge.evaluation import (
     CriterionVerdict,
     TrustOutcome,
 )
+from doc_forge.evaluation.identifiers import parse_corpus_id
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
@@ -22,7 +23,7 @@ def _repository() -> AnswerLayerCaseRepository:
 
 
 def _citation(*, doc_id: str, section_path: list[str]) -> AnswerLayerCitation:
-    return AnswerLayerCitation(doc_id=doc_id, section_path=section_path)
+    return AnswerLayerCitation(doc_id=parse_corpus_id(doc_id), section_path=section_path)
 
 
 def test_assessment_summarizes_current_authored_dataset() -> None:

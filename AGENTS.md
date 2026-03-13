@@ -1,4 +1,5 @@
 # Agent Contract
+This is a Python project built with FastAPI.
 
 ## Canonical sources
 - `docs/evergreen/mvp.md` - product scope
@@ -11,6 +12,7 @@
 
 ## Commands
 - Use `uv` for Python-related commands.
+- Don't use `npx`, `npm`, etc. related to 
 - Use `uv run poe <task>` for Python developer tasks defined in `poe_tasks.toml`.
 - Use `make` only for local DevEx and infrastructure wrappers such as Docker,
   Docker Compose, and observability stack operations.

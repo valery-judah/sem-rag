@@ -15,7 +15,12 @@ from doc_forge.query import (
     QueryRunStatus,
     SupportState,
 )
-from doc_forge.query.review import QueryCitationReview, QueryRunReviewSummary, QueryTraceReview
+from doc_forge.query.review import (
+    QueryCitationReview,
+    QueryRunReviewSummary,
+    QueryTraceReview,
+    QueryTraceTimingSummary,
+)
 from doc_forge.query.trace import QueryTraceBundle
 from e2e.eval_support import _parse_page_label, runtime_query_to_answer_layer_input
 from e2e.query_support import ExecutedQueryRun
@@ -70,7 +75,7 @@ def test_runtime_query_to_answer_layer_input_remaps_runtime_doc_ids() -> None:
             status=QueryRunStatus.SUCCEEDED,
             submitted_at=submitted_at,
             policy_snapshot={},
-            trace_summary={"trace_count": 0, "stages": []},
+            trace_summary=QueryTraceTimingSummary(trace_count=0, stages=[]),
             has_answer=True,
         ),
         trace=QueryTraceReview(
@@ -81,7 +86,7 @@ def test_runtime_query_to_answer_layer_input_remaps_runtime_doc_ids() -> None:
                 status=QueryRunStatus.SUCCEEDED,
                 submitted_at=submitted_at,
                 policy_snapshot={},
-                trace_summary={"trace_count": 0, "stages": []},
+                trace_summary=QueryTraceTimingSummary(trace_count=0, stages=[]),
                 has_answer=True,
             ),
             trace_bundle=QueryTraceBundle(query_id="qry-1", run_status=QueryRunStatus.SUCCEEDED),
