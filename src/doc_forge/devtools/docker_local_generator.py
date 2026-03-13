@@ -37,7 +37,8 @@ def host_ollama_is_ready(
 ) -> bool:
     try:
         with urllib.request.urlopen(health_url, timeout=timeout_seconds) as response:
-            return 200 <= response.status < 300
+            status = getattr(response, "status", 500)
+            return 200 <= status < 300
     except (OSError, urllib.error.URLError):
         return False
 
@@ -146,9 +147,7 @@ def format_shell_env(selection: DockerLocalGeneratorSelection) -> str:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(
-        prog="python -m doc_forge.devtools.docker_local_generator"
-    )
+    parser = argparse.ArgumentParser(prog="python -m doc_forge.devtools.docker_local_generator")
     subparsers = parser.add_subparsers(dest="command", required=True)
     subparsers.add_parser(
         "shell-env",

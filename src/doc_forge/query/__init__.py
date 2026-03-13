@@ -1,5 +1,14 @@
 """Internal query subsystem scaffolding."""
 
+from .context_archive import (
+    CollectedQueryContext,
+    QueryContextAssetPaths,
+    QueryContextCollectionExtras,
+    QueryContextCollector,
+    QueryContextLogAsset,
+    QueryContextManifest,
+    QueryContextSourceKind,
+)
 from .contracts import (
     AnswerDraft,
     AnswerMode,
@@ -31,15 +40,6 @@ from .contracts import (
     SynthesisMode,
     TrustFailureLabel,
     UnsupportedCapability,
-)
-from .context_archive import (
-    CollectedQueryContext,
-    QueryContextAssetPaths,
-    QueryContextCollectionExtras,
-    QueryContextCollector,
-    QueryContextLogAsset,
-    QueryContextManifest,
-    QueryContextSourceKind,
 )
 from .domain import QueryRuntimeState
 from .errors import (

@@ -6,6 +6,10 @@
 Authority note: `docs/evergreen/` holds the canonical product and repo truth. `docs/delivery/` may contain planning, architecture, or workflow drafts retained for reference, but it is not the canonical source of product scope. New durable docs belong in `docs/evergreen/`, and new time-scoped execution records belong in `docs/workstreams/`.
 
 ## Quick Routes
+Command Model:
+- Python developer tasks live in `poe_tasks.toml` and run via `uv run poe <task>`.
+- `Makefile` is reserved for local DevEx and infrastructure wrappers such as Docker, Docker Compose, and observability stack operations.
+
 Product Scope:
 - `docs/evergreen/mvp.md`: Canonical. Product north star and scope boundary.
 

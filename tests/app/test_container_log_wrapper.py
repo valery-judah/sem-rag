@@ -84,9 +84,7 @@ def test_container_log_wrapper_filters_non_json_lines_from_archive(tmp_path: Pat
     assert completed.returncode == 0
     assert "plain-text-startup-line" in completed.stdout
     assert "plain-text-warning" in completed.stdout
-    assert log_path.read_text(encoding="utf-8").splitlines() == [
-        json.dumps({"event": "json-line"})
-    ]
+    assert log_path.read_text(encoding="utf-8").splitlines() == [json.dumps({"event": "json-line"})]
 
 
 def test_container_log_wrapper_skips_archiving_when_path_is_empty(tmp_path: Path) -> None:

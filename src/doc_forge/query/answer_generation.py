@@ -130,8 +130,8 @@ def require_mlx_lm() -> None:
         importlib.import_module("mlx_lm")
     except ModuleNotFoundError as exc:  # pragma: no cover
         raise RuntimeError(
-            "mlx-lm is not installed. Run `make sync-mac` or "
-            "`uv sync --group llm --group mac` to enable Apple Silicon local generation."
+            "mlx-lm is not installed. Run `uv sync --group llm --group mac` "
+            "to enable Apple Silicon local generation."
         ) from exc
 
 
@@ -432,9 +432,8 @@ def _score_support_snippet(
     for token in ("preferred", "best", "exact", "default", "recommended"):
         if token in interpreted_query.normalized_question and token in normalized_snippet:
             exactness_bonus += 1
-    if (
-        interpreted_query.request_type is QueryRequestType.EXPLANATION
-        and any(token in normalized_snippet for token in ("because", "however", "instead"))
+    if interpreted_query.request_type is QueryRequestType.EXPLANATION and any(
+        token in normalized_snippet for token in ("because", "however", "instead")
     ):
         exactness_bonus += 1
     return hint_matches * 3 + exactness_bonus

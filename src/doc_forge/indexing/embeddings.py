@@ -63,8 +63,8 @@ def require_sentence_transformers() -> None:
         importlib.import_module("sentence_transformers")
     except ModuleNotFoundError as exc:  # pragma: no cover
         raise RuntimeError(
-            "sentence-transformers is not installed. Run `make sync-llm` or "
-            "`uv sync --group llm` to enable model-backed embeddings."
+            "sentence-transformers is not installed. Run `uv sync --group llm` "
+            "to enable model-backed embeddings."
         ) from exc
 
 

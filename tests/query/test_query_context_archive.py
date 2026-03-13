@@ -304,8 +304,7 @@ def test_collect_query_context_reconstructs_query_response_for_non_eval_bundle(t
         == "query answer completed with grounded generation and rendered citations"
     )
     assert (
-        query_response["answer"]["answer_text"]
-        == "The target is under 2.5 seconds median latency."
+        query_response["answer"]["answer_text"] == "The target is under 2.5 seconds median latency."
     )
     citation = query_response["citations"]["citations"][0]
     assert citation["evidence_set_id"] == "es-1"

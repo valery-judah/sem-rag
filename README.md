@@ -29,6 +29,11 @@ uv run poe run-api
 uv run poe run-worker
 ```
 
+## Command Model
+
+- Use `uv run poe <task>` for Python developer tasks such as formatting, linting, type checking, tests, migrations, and local app commands.
+- Use `make <target>` for Docker, Compose, observability, and other local DevEx wrappers.
+
 Python developer tasks run through Poe:
 
 ```bash
