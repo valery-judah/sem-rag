@@ -261,7 +261,6 @@ Stable base reviewed during Stage 2:
 
 - `docs/evergreen/mvp.md`
 - `docs/evergreen/architecture.md`
-- `docs/evergreen/agent-routing.md`
 - `docs/evergreen/api-contracts.md`
 - `docs/evergreen/eval-support-semantics.md`
 
@@ -284,7 +283,6 @@ Why:
 
 ## Current Routes
 
-Start with the stable query context base in `docs/harness-maintain/context-building-playbook.md`.
 Then use the Stage 2-specific route below.
 
 1. [11_stage-1-queryable-corpus-boundary-design.md](docs/workstreams/WS-006-query-lifecycle/11_stage-1-queryable-corpus-boundary-design.md)
@@ -309,7 +307,6 @@ Stage 2 reuses the stable context-building base and the Stage 1 route, then adds
 
 Use the following order:
 
-1. stable context-building base from `docs/harness-maintain/context-building-playbook.md`
 2. Stage 1 implemented note to inherit the already-earned query boundary
 3. Stage 2 workstream note for interpretation-specific intent
 4. `src/doc_forge/query/interpretation.py` and `src/doc_forge/query/stages/interpret.py`

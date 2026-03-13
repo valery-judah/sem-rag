@@ -15,11 +15,19 @@ The product target is broader than the current implementation. The product north
 ## Current Repository Shape
 
 - `src/doc_forge/`: internal runtime code for lifecycle, query, persistence, evaluation, and devtools
+- `e2e/`: docker-backed end-to-end and smoke scenarios plus shared runtime and evaluation helpers
+- `evals/`: authored evaluation corpora, case sets, and related schemas used by the evaluation subsystem
 - `docs/evergreen/`: durable canonical product and repo documentation
 - `docs/delivery/`: planning, architecture, and workflow drafts retained for reference; not the product north star
 - `docs/workstreams/`: optional time-scoped execution records
 - `docs/adrs/`: durable architectural decisions when needed
-- `docs/harness/`: documentation tooling and templates
+
+## E2E And Evaluation Subsystems
+
+- `src/doc_forge/evaluation/`: internal evaluation subsystem for authored answer-layer cases, identifiers, and evaluation logic
+- `e2e/`: docker-backed subsystem for end-to-end runtime coverage, query smokes, authored eval smokes, and shared test drivers
+- `evals/`: repository data for evaluation runs, including committed corpora and authored case storage under `evals/cases/`
+- `tests/evaluation/`: focused unit coverage for evaluation helpers and answer-layer behavior
 
 ## Quickstart
 
@@ -27,6 +35,7 @@ The product target is broader than the current implementation. The product north
 uv sync
 uv run poe run-api
 uv run poe run-worker
+uv run poe test-e2e
 ```
 
 ## Command Model
@@ -69,6 +78,9 @@ docs/
   workstreams/
   adrs/
   harness/
+e2e/
+evals/
 src/doc_forge/
   __init__.py
+  evaluation/
 ```

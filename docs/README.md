@@ -3,12 +3,9 @@
 ## Purpose
 `docs/` is the repository documentation system for durable product truth, current repo documentation, optional execution records, architecture decisions, and reusable documentation tooling.
 
-Authority note: `docs/evergreen/` holds the canonical product and repo truth. `docs/delivery/` may contain planning, architecture, or workflow drafts retained for reference, but it is not the canonical source of product scope. New durable docs belong in `docs/evergreen/`, and new time-scoped execution records belong in `docs/workstreams/`.
+Authority note: `docs/evergreen/` holds the canonical product and repo truth. `docs/delivery/` may contain planning, architecture, or workflow drafts retained for reference, but it is not the canonical source of product scope. 
 
 ## Quick Routes
-Command Model:
-- Python developer tasks live in `poe_tasks.toml` and run via `uv run poe <task>`.
-- `Makefile` is reserved for local DevEx and infrastructure wrappers such as Docker, Docker Compose, and observability stack operations.
 
 Product Scope:
 - `docs/evergreen/mvp.md`: Canonical. Product north star and scope boundary.
@@ -16,37 +13,17 @@ Product Scope:
 Implementation Truth:
 - `docs/evergreen/architecture.md`: Canonical. Current architecture and implementation gap.
 
-Agent Routing:
-- `docs/evergreen/agent-routing.md`: Canonical. Coding-agent routing, implementation map, and edit starting points.
-
 Stable Interfaces:
 - `docs/evergreen/api-contracts.md`: Canonical. Stable localhost FastAPI and OpenAPI interfaces that exist today.
 
 Commands And Validation:
 - `docs/evergreen/runbook.md`: Canonical. Local operation guidance and standard commands.
 
-Coding Standards:
-- `docs/conventions/python-conventions.md`: Canonical. Python coding rules and domain modeling.
-- `docs/conventions/python-logging.md`: Canonical. Python logging standards, structured logging, and dependency injection patterns.
-
 Local LLM / Docker Defaults:
 - `docs/workstreams/WS-008-local-llm/01_local_llm_runtime_note.md`: Execution history for optional MLX/Ollama generation, Apple Silicon host-Ollama defaults for Docker-backed local flows, and the comparison smoke harness.
 
 Evaluation Docs:
 - See `Evaluation Docs Map` below for the detailed route across evergreen, delivery, and workstream material.
-
-Query Work:
-- See `Query Docs Map` below for the canonical read order, current implementation truth, and WS-006 stage material.
-
-Observability And Debug Context:
-- `docs/evergreen/observability-operations.md`: Canonical. How to start the runtime and observability databases/stacks, run e2e or eval scenarios, and locate logs plus collected eval/query data.
-- `docs/workstreams/WS-014-logs/workstream.md`: Execution history for structured JSON logging across runtime and worker paths.
-- `docs/workstreams/WS-015-context-collecting/workstream.md`: Execution history for query-centric bundle collection and repo-local indexed debug context.
-- `docs/workstreams/WS-016-central-eval-observability/workstream.md`: Design packet for the separate central eval/log collection subsystem.
-- `docs/adrs/ADR-central-eval-observability-store.md`: Proposed storage split for central eval metadata and service logs.
-
-Context Building:
-- `docs/harness-maintain/context-building-playbook.md`: Reference only. Stable method for building context before phase-specific workstream discovery.
 
 ## Directory Map
 - `evergreen/`: current durable system truth and operational references
@@ -71,57 +48,7 @@ Scenario Taxonomy:
 Failure Taxonomy:
 - `docs/evergreen/eval-failure-taxonomy.md`: Canonical. Failure classes and classification rules.
 
-Product And Implementation Framing:
-- `docs/evergreen/mvp.md`: Canonical. Product north star and scope boundary.
-- `docs/evergreen/architecture.md`: Canonical. Current architecture and implementation gap.
-- `docs/evergreen/agent-routing.md`: Canonical. Current code-entry routing and implementation map.
-
-Implementation Guidance:
-- `docs/delivery/workflow.md`: Reference only. Workflow and modeling guidance aligned to evergreen semantics.
-- `docs/delivery/eval-harness-rfc-sections-1-10.md`: Reference only. Eval-harness rationale, object model, scenario coverage, and scoring philosophy.
-- `docs/delivery/eval-harness-rfc-sections-11-15.md`: Reference only. Eval-harness operating model, dataset strategy, judging, phases, and release policy.
-
-Execution History:
-- `docs/workstreams/WS-001-eval-harness/`: Execution history. Earlier eval-harness framing material.
-- `docs/workstreams/WS-002-semantic-lock/`: Execution history. Semantic-lock history and transition artifacts.
-
-## Query Docs Map
-Use this map when working on the query subsystem.
-
-Stable Context-Building Base:
-- `docs/evergreen/mvp.md`: Canonical. Product scope and trust boundary.
-- `docs/evergreen/architecture.md`: Canonical. Current architecture, earned seams, and implementation gap.
-- `docs/evergreen/agent-routing.md`: Canonical. Agent routes, owning files, and proving tests.
-- `docs/evergreen/api-contracts.md`: Canonical. Public-contract boundary for the stable localhost HTTP API. Internal Python query modules still do not count as stable package APIs.
-- `docs/harness-maintain/context-building-playbook.md`: Reference only. Stable navigation and proof-building method.
-
-WS-006 Execution Track:
-- `docs/workstreams/WS-006-query-lifecycle/query_subsystem_staged_implementation_plan.md`: Stage sequence and acceptance gates.
-- `docs/workstreams/WS-006-query-lifecycle/07_design.md`: Query architecture and runtime semantics.
-- `docs/workstreams/WS-006-query-lifecycle/11_stage-1-queryable-corpus-boundary-design.md`: Implemented Stage 1 note, including current routes and evergreen review.
-- `docs/workstreams/WS-006-query-lifecycle/12_stage-2-interpretation-foundation-design.md`: Implemented Stage 2 note, including current routes and evergreen review.
-- `docs/workstreams/WS-006-query-lifecycle/13_stage-3-retrieval-foundation-design.md`: Stage 3 retrieval design and implementation note for the current repo shape.
-- `docs/workstreams/WS-006-query-lifecycle/14_stage-4-selection-evidence-set-construction-design.md`: Implemented Stage 4 selection and evidence-set construction note.
-- `docs/workstreams/WS-006-query-lifecycle/15_stage-5-deterministic-context-assembly-design.md`: Implemented Stage 5 deterministic context-assembly note for the current repo shape.
-- `docs/workstreams/WS-006-query-lifecycle/16_stage-6-support-assessment-answer-mode-design.md`: Implemented Stage 6 support-assessment and answer-mode-policy note.
-- `docs/workstreams/WS-006-query-lifecycle/17_stage-7-grounded-generation-citation-rendering-design.md`: Implemented Stage 7 grounded-generation and citation-rendering note.
-- `docs/workstreams/WS-006-query-lifecycle/18_stage-8-trace-review-replay-logging-design.md`: Proposed Stage 8 review, replay, and structured-logging design.
-
-Working Rule:
-- Start with the evergreen docs for stable context.
-- Use `docs/evergreen/architecture.md` for durable system shape and `docs/evergreen/agent-routing.md` for code-entry routing.
-- Then open the latest implemented WS-006 stage note before planning the next phase.
-- Treat workstream docs as execution history and local design notes unless evergreen docs explicitly promote a seam.
-
-Related Local Runtime Notes:
-- `docs/workstreams/WS-008-local-llm/01_local_llm_runtime_note.md`: reference when changing Docker-local Ollama defaults, Apple Silicon GPU-backed generation, or `run_and_query.sh`.
-- `docs/workstreams/WS-015-context-collecting/workstream.md`: reference when changing query-context collection, repo-local logs, or operator debug flows tied to query bundles.
-
 ## Where New Work Goes
-- Put durable system descriptions and stable operating guidance in `docs/evergreen/`.
-- Put new implementation work, RFC/proposal material, decisions, evidence, and handoff notes in the relevant folder under `docs/workstreams/`.
-- Promote cross-cutting, long-lived decisions from a workstream into `docs/adrs/` when they become durable.
-- Do not create a top-level `docs/rfcs/`; RFC-like proposal material belongs inside workstreams.
+- Put new implementation work, RFC/proposal material, decisions, evidence, and handoff notes in the relevant folder under `docs/workstreams/WS-XXX-{slug}` folders. You could create a workstream folder with templated 'workstream.md' file with `bash docs/harness/scripts/new-feature-workstream.sh slug` command. 
 
-## ADRs And Workstreams
-Workstreams capture time-scoped execution and local decision-making when a change needs that structure. ADRs capture the smaller set of decisions that outlive a single workstream or affect multiple parts of the system.
+

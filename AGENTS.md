@@ -5,8 +5,6 @@
 - `docs/evergreen/architecture.md` - architecture and current repo shape
 - `docs/evergreen/api-contracts.md` - stable runtime interfaces
 - `docs/evergreen/runbook.md` - local commands and operation
-- `docs/conventions/python-conventions.md` - coding standards and domain modeling
-- `docs/conventions/python-logging.md` - logging, tracing, and dependency injection patterns
 - `docs/README.md` - docs index
 
 `docs/evergreen/` is canonical. `docs/delivery/` is reference-only. `docs/workstreams/` is history-only.
@@ -38,8 +36,11 @@
 
 ## Validation
 - Docs-only change: no mandatory validation; run targeted checks only if docs affect commands or generated artifacts.
-- Code change without public contract impact: `uv run poe test`
-- Package or API behavior change: `uv run poe fmt-check`, `uv run poe lint`, `uv run poe type`, `uv run poe test`
-- If uncertain: `uv run poe verify`
-- Keep `uv.lock` committed and updated after dependency changes; do not edit it manually.
-- Do not describe capabilities as implemented unless the codebase actually exposes them.
+- Code change: `uv run poe verify`
+
+## Development Practices
+- Save any temporary, exploratory, or developer-experience (devex) scripts into the `scripts/devex/` directory.
+
+## Coding Conventions
+- `docs/conventions/python-conventions.md` - coding standards and domain modeling
+- `docs/conventions/python-logging.md` - logging, tracing, and dependency injection patterns

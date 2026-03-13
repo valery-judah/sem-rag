@@ -13,8 +13,6 @@ It is the canonical architecture statement for:
 - earned internal seams
 - the boundary between public API, internal architecture, and planned work
 
-For coding-agent routing, file ownership, edit starting points, and change-impact navigation, use [`docs/evergreen/agent-routing.md`](./agent-routing.md).
-
 ## When To Use
 - Starting work on a subsystem
 - Checking which doc is authoritative before changing code or docs
@@ -120,8 +118,6 @@ The main remaining gap to the MVP is product surface and hardening rather than m
 - When referencing support-state or trust-failure vocabulary, normalize against [`docs/evergreen/eval-support-semantics.md`](./eval-support-semantics.md) and related evergreen eval docs instead of restating workstream-specific framing as runtime fact.
 - Do not promote a new seam into evergreen architecture just because it appears in one prototype or one workstream. It should be implemented repo truth and exercised under tests or equivalent validation pressure.
 
-## Routing Note
-For file ownership, edit starting points, proving tests, and likely change impact, use [`docs/evergreen/agent-routing.md`](./agent-routing.md).
 
 ## Workflow Alignment
 This file should only promote seams that have earned their place through implemented behavior and validation pressure, consistent with the model-first workflow in `docs/delivery/workflow.md`.
@@ -132,5 +128,4 @@ Future architecture should be promoted here only after it becomes implemented re
 - `docs/evergreen/mvp.md`: product north star and scope boundary
 - `docs/evergreen/api-contracts.md`: stable public interfaces that are implemented today
 - this file: current architecture, earned internal seams, and gap to the MVP
-- `docs/evergreen/agent-routing.md`: coding-agent routing, implementation map, and change-navigation guide
 - `docs/README.md`: docs system map

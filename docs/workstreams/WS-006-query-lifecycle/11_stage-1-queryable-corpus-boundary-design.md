@@ -281,9 +281,7 @@ Stable base first:
 
 1. `docs/evergreen/mvp.md`
 2. `docs/evergreen/architecture.md`
-3. `docs/evergreen/agent-routing.md`
 4. `docs/evergreen/api-contracts.md`
-5. `docs/harness-maintain/context-building-playbook.md`
 6. `docs/workstreams/WS-006-query-lifecycle/query_subsystem_staged_implementation_plan.md`
 7. `docs/workstreams/WS-006-query-lifecycle/07_design.md`
 
@@ -309,7 +307,7 @@ This is the actual discovery path that supported Stage 1 implementation.
    - open `query_subsystem_staged_implementation_plan.md`
    - answers: Stage 1 goal, acceptance gate, and prohibited scope expansion
 2. Evergreen docs:
-   - open `mvp.md`, `architecture.md`, `agent-routing.md`, and `api-contracts.md`
+   - open `mvp.md`, `architecture.md`,  and `api-contracts.md`
    - answers: canonical scope, durable architecture, current routing, internal-vs-public boundary, and current repo truth
 3. Existing query scaffolding:
    - open `src/doc_forge/query/`
@@ -329,7 +327,6 @@ This is the actual discovery path that supported Stage 1 implementation.
 
 Stable reusable rules for this method now live in:
 
-- `docs/harness-maintain/context-building-playbook.md`
 
 Supported by repo truth in Stage 1:
 

@@ -15,6 +15,7 @@ Use it to answer practical repo-navigation questions quickly:
 
 This file is not the canonical architecture statement.
 For durable system shape, boundaries, and the gap to MVP, use [`docs/evergreen/architecture.md`](./architecture.md).
+For the broader documentation index and read-order map, use [`docs/README.md`](../README.md).
 
 ## When To Use
 - Starting work on a subsystem
@@ -22,30 +23,14 @@ For durable system shape, boundaries, and the gap to MVP, use [`docs/evergreen/a
 - Finding the proving tests for an implemented seam
 - Checking likely downstream docs or tests after a code change
 
-## Agent Routes
-Product Scope:
-- `docs/evergreen/mvp.md`: `Canonical`
-
-Current Architecture:
-- `docs/evergreen/architecture.md`: `Canonical`
-
-Stable Public Package API:
-- `docs/evergreen/api-contracts.md`: `Canonical`
-
-Commands And Validation:
-- `docs/evergreen/runbook.md`: `Canonical`
-
-Evaluation Semantics:
-- `docs/evergreen/eval-vocabulary.md`: `Canonical`
-- `docs/evergreen/eval-support-semantics.md`: `Canonical`
-- `docs/evergreen/eval-scenario-taxonomy.md`: `Canonical`
-- `docs/evergreen/eval-failure-taxonomy.md`: `Canonical`
-
-Workflow Rationale And Promotion Rules:
-- `docs/delivery/workflow.md`: `Reference only`
-
-Execution History And Prior Framing:
-- `docs/workstreams/`: `Execution history`
+## Canonical Doc Owners
+- Product scope: `docs/evergreen/mvp.md`
+- Current architecture and durable boundaries: `docs/evergreen/architecture.md`
+- Stable localhost HTTP and OpenAPI contract: `docs/evergreen/api-contracts.md`
+- Commands and validation guidance: `docs/evergreen/runbook.md`
+- Evaluation semantics: `docs/evergreen/eval-vocabulary.md`, `docs/evergreen/eval-support-semantics.md`, `docs/evergreen/eval-scenario-taxonomy.md`, and `docs/evergreen/eval-failure-taxonomy.md`
+- Workflow rationale and promotion rules: `docs/delivery/workflow.md` as reference only
+- Execution history and prior framing: `docs/workstreams/`
 
 Current Implementation Seams:
 - `src/doc_forge/query/`: `Implemented internal`

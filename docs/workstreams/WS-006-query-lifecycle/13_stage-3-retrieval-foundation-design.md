@@ -22,7 +22,6 @@ This document is subordinate to:
 
 1. `docs/evergreen/mvp.md`
 2. `docs/evergreen/architecture.md`
-3. `docs/evergreen/agent-routing.md`
 4. `docs/evergreen/api-contracts.md`
 5. `docs/evergreen/eval-support-semantics.md`
 6. [`04_query-lifecycle-requirements-final.md`](./04_query-lifecycle-requirements-final.md)
@@ -290,7 +289,6 @@ Stable base reviewed during Stage 3:
 
 - `docs/evergreen/mvp.md`
 - `docs/evergreen/architecture.md`
-- `docs/evergreen/agent-routing.md`
 - `docs/evergreen/api-contracts.md`
 - `docs/evergreen/eval-support-semantics.md`
 
@@ -313,7 +311,6 @@ Why:
 
 ## Current routes
 
-Start with the stable query context base in `docs/harness-maintain/context-building-playbook.md`.
 Then use the Stage 3-specific route below.
 
 1. [12_stage-2-interpretation-foundation-design.md](docs/workstreams/WS-006-query-lifecycle/12_stage-2-interpretation-foundation-design.md)
@@ -339,7 +336,6 @@ Stage 3 reuses the stable context-building base plus the already-earned Stage 1 
 
 Use the following order:
 
-1. stable context-building base from `docs/harness-maintain/context-building-playbook.md`
 2. Stage 1 implemented note for snapshot and queryable-corpus invariants
 3. Stage 2 implemented note for interpretation contracts and traces
 4. `src/doc_forge/readmodels/documents.py`

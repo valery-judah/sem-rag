@@ -20,7 +20,6 @@ This document is subordinate to:
 
 1. `docs/evergreen/mvp.md`
 2. `docs/evergreen/architecture.md`
-3. `docs/evergreen/agent-routing.md`
 4. `docs/evergreen/api-contracts.md`
 5. `docs/evergreen/eval-support-semantics.md`
 6. [`04_query-lifecycle-requirements-final.md`](./04_query-lifecycle-requirements-final.md)

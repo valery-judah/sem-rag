@@ -98,7 +98,6 @@ Use a thin validated scalar type owned by one module, not a rich domain object.
 - read first:
   - [`docs/evergreen/api-contracts.md`](/Users/val/projects/rag/sem-rag/docs/evergreen/api-contracts.md)
   - [`docs/evergreen/architecture.md`](/Users/val/projects/rag/sem-rag/docs/evergreen/architecture.md)
-  - [`docs/evergreen/agent-routing.md`](/Users/val/projects/rag/sem-rag/docs/evergreen/agent-routing.md)
 
 ## Migration surface
 ### Primary code touchpoints
@@ -262,4 +261,3 @@ Use a thin validated scalar type owned by one module, not a rich domain object.
 ## Linked artifacts
 - [`docs/evergreen/api-contracts.md`](/Users/val/projects/rag/sem-rag/docs/evergreen/api-contracts.md)
 - [`docs/evergreen/architecture.md`](/Users/val/projects/rag/sem-rag/docs/evergreen/architecture.md)
-- [`docs/evergreen/agent-routing.md`](/Users/val/projects/rag/sem-rag/docs/evergreen/agent-routing.md)
