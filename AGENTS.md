@@ -5,7 +5,8 @@
 - `docs/evergreen/architecture.md` - architecture and current repo shape
 - `docs/evergreen/api-contracts.md` - stable runtime interfaces
 - `docs/evergreen/runbook.md` - local commands and operation
-- `docs/evergreen/python-conventions.md` - coding standards and domain modeling
+- `docs/conventions/python-conventions.md` - coding standards and domain modeling
+- `docs/conventions/python-logging.md` - logging, tracing, and dependency injection patterns
 - `docs/README.md` - docs index
 
 `docs/evergreen/` is canonical. `docs/delivery/` is reference-only. `docs/workstreams/` is history-only.

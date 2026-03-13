@@ -10,6 +10,11 @@ import structlog
 _CONFIGURED = False
 
 
+def get_logger(name: str | None = None) -> structlog.stdlib.BoundLogger:
+    """Get a strongly-typed standard library logger."""
+    return structlog.stdlib.get_logger(name)
+
+
 def configure_logging(*, service: str, environment: str, level: str) -> None:
     """Configure process-wide JSON logging once."""
 
@@ -54,12 +59,6 @@ def configure_logging(*, service: str, environment: str, level: str) -> None:
         "uvicorn.access",
         "fastapi",
         "doc_forge",
-        "doc_forge.app",
-        "doc_forge.app.api",
-        "doc_forge.query",
-        "doc_forge.query.service",
-        "doc_forge.query.review",
-        "doc_forge.query.replay",
     ):
         foreign_logger = logging.getLogger(logger_name)
         foreign_logger.handlers.clear()

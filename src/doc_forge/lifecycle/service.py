@@ -12,6 +12,7 @@ from uuid import uuid4
 import structlog
 from pydantic import BaseModel, ConfigDict, Field
 
+from doc_forge.app.logging import get_logger
 from doc_forge.artifacts import FilesystemArtifactStore
 from doc_forge.corpus import Chunk, Section, SourceType
 from doc_forge.identifiers import DocId, WorkspaceId
@@ -32,9 +33,7 @@ from doc_forge.stages import RegisterDocumentRequest, RegisterDocumentStage
 
 from .orchestrator import DocumentLifecycleOrchestrator
 
-
-def _logger() -> structlog.stdlib.BoundLogger:
-    return structlog.get_logger(__name__)  # type: ignore
+logger = get_logger(__name__)
 
 
 class UnsupportedDocumentError(ValueError):
@@ -226,6 +225,7 @@ class DocumentLifecycleService:
         index_entries: IndexEntryRepository | None = None,
         chunk_embeddings: ChunkEmbeddingRepository | None = None,
         vector_store: VectorStore | None = None,
+        logger: structlog.stdlib.BoundLogger | None = None,
     ) -> None:
         self._register_stage = register_stage
         self._orchestrator = orchestrator
@@ -238,6 +238,7 @@ class DocumentLifecycleService:
         self._index_entries = index_entries
         self._chunk_embeddings = chunk_embeddings
         self._vector_store = vector_store
+        self._logger = logger or get_logger(self.__class__.__name__)
 
     def upload_document(
         self,
@@ -258,7 +259,7 @@ class DocumentLifecycleService:
         uploaded_at = datetime.now(UTC)
         resolved_title = self._resolve_title(title=title, filename=normalized_filename)
         checksum = self._checksum(content)
-        _logger().info(
+        self._logger.info(
             "document.upload.validated",
             workspace_id=workspace_id,
             filename_extension=_filename_extension(normalized_filename),
@@ -282,7 +283,7 @@ class DocumentLifecycleService:
                 doc_id=document.doc_id,
                 target_stage=DocumentJobStage.EXTRACT,
             )
-        _logger().info(
+        self._logger.info(
             "document.upload.registered",
             workspace_id=workspace_id,
             doc_id=document.doc_id,
@@ -329,7 +330,7 @@ class DocumentLifecycleService:
             raise RuntimeError("vector store is not configured")
         hits = self._vector_store.smoke_query(doc_id=doc_id, text=text, k=k)
         top_hit = hits[0] if hits else None
-        _logger().info(
+        self._logger.info(
             "retrieval.smoke.executed",
             doc_id=doc_id,
             k=k,
@@ -376,7 +377,7 @@ class DocumentLifecycleService:
 
         if self._documents is not None:
             self._documents.delete(doc_id=doc_id)
-        _logger().info(
+        self._logger.info(
             "document.delete.performed",
             workspace_id=document.workspace_id,
             doc_id=doc_id,
@@ -391,7 +392,7 @@ class DocumentLifecycleService:
         """Queue a retry for the latest failed lifecycle stage."""
 
         document = self._require_document(doc_id)
-        _logger().info(
+        self._logger.info(
             "document.retry.eligibility_checked",
             doc_id=doc_id,
             workspace_id=document.workspace_id,
@@ -456,7 +457,7 @@ class DocumentLifecycleService:
                 document=document,
                 failed_stage=target_stage,
             )
-        _logger().info(
+        self._logger.info(
             "document.retry.queued_internal",
             doc_id=document.doc_id,
             workspace_id=document.workspace_id,
@@ -646,7 +647,7 @@ class DocumentLifecycleService:
         document: PersistedDocument,
         failed_stage: DocumentJobStage | None = None,
     ) -> NoReturn:
-        _logger().warning(
+        self._logger.warning(
             "document.retry.eligibility_rejected",
             doc_id=document.doc_id,
             workspace_id=document.workspace_id,

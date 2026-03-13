@@ -26,7 +26,8 @@ Commands And Validation:
 - `docs/evergreen/runbook.md`: Canonical. Local operation guidance and standard commands.
 
 Coding Standards:
-- `docs/evergreen/python-conventions.md`: Canonical. Python coding rules and domain modeling.
+- `docs/conventions/python-conventions.md`: Canonical. Python coding rules and domain modeling.
+- `docs/conventions/python-logging.md`: Canonical. Python logging standards, structured logging, and dependency injection patterns.
 
 Local LLM / Docker Defaults:
 - `docs/workstreams/WS-008-local-llm/01_local_llm_runtime_note.md`: Execution history for optional MLX/Ollama generation, Apple Silicon host-Ollama defaults for Docker-backed local flows, and the comparison smoke harness.
@@ -49,6 +50,7 @@ Context Building:
 
 ## Directory Map
 - `evergreen/`: current durable system truth and operational references
+- `conventions/`: coding standards, observability rules, and implementation patterns
 - `delivery/`: non-canonical planning, architecture, and workflow drafts kept for reference
 - `workstreams/`: optional time-scoped execution records, RFC/proposal material, design notes, and evidence
 - `adrs/`: durable architecture decision records promoted out of individual workstreams when needed

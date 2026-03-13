@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import functools
 import hashlib
 
 import httpx
@@ -8,6 +9,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.routing import APIRoute
 
 from doc_forge.app.deps import get_document_lifecycle_service
+from doc_forge.app.logging import get_logger
 from doc_forge.artifacts import FilesystemArtifactStore
 from doc_forge.stages import DocumentRegistrationError, RegisterDocumentStage
 
@@ -17,7 +19,7 @@ pytestmark = pytest.mark.anyio
 def _upload_endpoint(app: FastAPI):
     for route in app.routes:
         if isinstance(route, APIRoute) and route.path == "/documents" and "POST" in route.methods:
-            return route.endpoint
+            return functools.partial(route.endpoint, logger=get_logger())
     raise AssertionError("upload route was not found")
 
 

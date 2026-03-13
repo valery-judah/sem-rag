@@ -10,9 +10,15 @@ from collections import Counter
 from collections.abc import Callable, Sequence
 from typing import Any, Protocol, cast
 
+import structlog
+
+from doc_forge.app.logging import get_logger
+
 from .base import EmbeddingAdapter
 
 _TOKEN_PATTERN = re.compile(r"[a-zA-Z0-9]+")
+
+logger = get_logger(__name__)
 
 
 class _SentenceTransformerModel(Protocol):
@@ -29,11 +35,18 @@ class _SentenceTransformerModel(Protocol):
 class DeterministicEmbeddingAdapter(EmbeddingAdapter):
     """Generate stable normalized vectors from token hashes."""
 
-    def __init__(self, *, dimensions: int = 32, model_name: str = "deterministic-hash-v1") -> None:
+    def __init__(
+        self,
+        *,
+        dimensions: int = 32,
+        model_name: str = "deterministic-hash-v1",
+        logger: structlog.stdlib.BoundLogger | None = None,
+    ) -> None:
         if dimensions <= 0:
             raise ValueError("dimensions must be greater than 0")
         self._dimensions = dimensions
         self.model_name = model_name
+        self._logger = logger or get_logger(self.__class__.__name__)
 
     def embed_texts(self, texts: Sequence[str]) -> list[list[float]]:
         return [self._embed_text(text) for text in texts]
@@ -84,16 +97,14 @@ class SentenceTransformerEmbeddingAdapter(EmbeddingAdapter):
         *,
         model_name: str = "sentence-transformers/all-MiniLM-L6-v2",
         loader: Callable[[str], _SentenceTransformerModel] | None = None,
+        logger: structlog.stdlib.BoundLogger | None = None,
     ) -> None:
         self.model_name = model_name
         self._model = (loader or _default_sentence_transformer_loader)(model_name)
+        self._logger = logger or get_logger(self.__class__.__name__)
 
     def embed_texts(self, texts: Sequence[str]) -> list[list[float]]:
-        import structlog
-
-        structlog.get_logger(__name__).info(
-            "embedding model generated", model_name=self.model_name, count=len(texts)
-        )
+        self._logger.info("embedding.model.generated", model_name=self.model_name, count=len(texts))
         encoded = self._model.encode(
             list(texts),
             normalize_embeddings=True,

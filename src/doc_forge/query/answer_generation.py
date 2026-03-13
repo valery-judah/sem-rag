@@ -11,6 +11,8 @@ from typing import Protocol, cast
 import structlog
 from pydantic import BaseModel, ConfigDict, Field
 
+from doc_forge.app.logging import get_logger
+
 from .contracts import (
     AnswerDraft,
     AnswerMode,
@@ -26,9 +28,7 @@ from .contracts import (
 )
 from .policies import QueryPolicy
 
-
-def _logger() -> structlog.stdlib.BoundLogger:
-    return structlog.get_logger(__name__)  # type: ignore
+logger = get_logger(__name__)
 
 
 GENERATOR_VERSION = "answer_generation.deterministic.v1"
@@ -180,6 +180,7 @@ class MlxGroundedAnswerGenerator:
         temperature: float = 0.0,
         backend: _LlmBackend | None = None,
         fallback: GroundedAnswerGenerator | None = None,
+        logger: structlog.stdlib.BoundLogger | None = None,
     ) -> None:
         if max_new_tokens <= 0:
             raise ValueError("max_new_tokens must be greater than 0")
@@ -190,6 +191,7 @@ class MlxGroundedAnswerGenerator:
         self._temperature = temperature
         self._backend = backend or _DefaultMlxBackend()
         self._fallback = fallback or DeterministicGroundedAnswerGenerator()
+        self._logger = logger or get_logger(self.__class__.__name__)
 
     def generate(
         self,
@@ -202,7 +204,9 @@ class MlxGroundedAnswerGenerator:
         answer_mode_decision: AnswerModeDecision,
         policy: QueryPolicy,
     ) -> GroundedGenerationResult:
-        _logger().info("llm generated", generator_backend="mlx", model_name=self._model_name)
+        self._logger.info(
+            "query.llm.generated", generator_backend="mlx", model_name=self._model_name
+        )
         fallback_result = self._fallback.generate(
             request=request,
             snapshot=snapshot,
@@ -684,6 +688,7 @@ class OllamaGroundedAnswerGenerator:
         temperature: float = 0.0,
         backend: _LlmBackend | None = None,
         fallback: GroundedAnswerGenerator | None = None,
+        logger: structlog.stdlib.BoundLogger | None = None,
     ) -> None:
         if max_new_tokens <= 0:
             raise ValueError("max_new_tokens must be greater than 0")
@@ -694,6 +699,7 @@ class OllamaGroundedAnswerGenerator:
         self._temperature = temperature
         self._backend = backend or _OllamaBackend()
         self._fallback = fallback or DeterministicGroundedAnswerGenerator()
+        self._logger = logger or get_logger(self.__class__.__name__)
 
     def generate(
         self,
@@ -706,10 +712,8 @@ class OllamaGroundedAnswerGenerator:
         answer_mode_decision: AnswerModeDecision,
         policy: QueryPolicy,
     ) -> GroundedGenerationResult:
-        import structlog
-
-        structlog.get_logger(__name__).info(
-            "llm generated", generator_backend="ollama", model_name=self._model_name
+        self._logger.info(
+            "query.llm.generated", generator_backend="ollama", model_name=self._model_name
         )
         fallback_result = self._fallback.generate(
             request=request,

@@ -10,6 +10,7 @@ from uuid import uuid4
 
 import structlog
 
+from doc_forge.app.logging import get_logger
 from doc_forge.lifecycle import (
     FailureCategory,
     LifecycleEvent,
@@ -40,8 +41,7 @@ _JOB_STAGE_TO_LIFECYCLE_STAGE: dict[DocumentJobStage, LifecycleStage] = {
 }
 
 
-def _logger() -> structlog.stdlib.BoundLogger:
-    return structlog.get_logger(__name__)  # type: ignore
+logger = get_logger(__name__)
 
 
 class DocumentLifecycleWorker:
@@ -55,23 +55,25 @@ class DocumentLifecycleWorker:
         lifecycle_events: LifecycleEventRepository,
         orchestrator: DocumentLifecycleOrchestrator,
         stage_runners: dict[DocumentJobStage, StageRunner],
+        logger: structlog.stdlib.BoundLogger | None = None,
     ) -> None:
         self._jobs = jobs
         self._documents = documents
         self._lifecycle_events = lifecycle_events
         self._orchestrator = orchestrator
         self._stage_runners = stage_runners
+        self._logger = logger or get_logger(self.__class__.__name__)
 
     def run_next(self) -> DocumentJob | None:
         """Run the next queued job and return its terminal job record."""
 
-        _logger().info("worker.run_next.invoked")
+        self._logger.info("worker.run_next.invoked")
         job = self._jobs.claim_next()
         if job is None:
-            _logger().info("worker.run_next.idle")
+            self._logger.info("worker.run_next.idle")
             return None
         started_at = perf_counter()
-        _logger().info(
+        self._logger.info(
             "worker.job.claimed",
             doc_id=job.doc_id,
             job_id=job.job_id,
@@ -91,7 +93,7 @@ class DocumentLifecycleWorker:
             )
 
         try:
-            _logger().info(
+            self._logger.info(
                 "worker.job.started",
                 doc_id=job.doc_id,
                 job_id=job.job_id,
@@ -114,7 +116,7 @@ class DocumentLifecycleWorker:
         completed = self._jobs.mark_succeeded(job.job_id)
         if next_stage is not None:
             self._orchestrator.enqueue_stage(doc_id=job.doc_id, target_stage=next_stage)
-        _logger().info(
+        self._logger.info(
             "worker.job.succeeded",
             doc_id=job.doc_id,
             job_id=job.job_id,
@@ -169,7 +171,7 @@ class DocumentLifecycleWorker:
                 },
             )
         )
-        _logger().warning(
+        self._logger.warning(
             "worker.job.failed",
             doc_id=job.doc_id,
             job_id=job.job_id,

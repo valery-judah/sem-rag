@@ -9,6 +9,7 @@ from uuid import uuid4
 import structlog
 from sqlalchemy.engine import Engine
 
+from doc_forge.app.logging import get_logger
 from doc_forge.artifacts import ExtractedArtifact, FilesystemArtifactStore, RawArtifactRef
 from doc_forge.extractors import ExtractorRegistry
 from doc_forge.identifiers import DocId
@@ -27,9 +28,7 @@ from doc_forge.persistence import (
 )
 from doc_forge.stages.base import StageExecutionError, StageRunner
 
-
-def _logger() -> structlog.stdlib.BoundLogger:
-    return structlog.get_logger(__name__)  # type: ignore
+logger = get_logger(__name__)
 
 
 class DocumentExtractionError(RuntimeError):
@@ -47,16 +46,18 @@ class ExtractDocumentStage:
         lifecycle_events: LifecycleEventRepository,
         artifact_store: FilesystemArtifactStore,
         extractors: ExtractorRegistry,
+        logger: structlog.stdlib.BoundLogger | None = None,
     ) -> None:
         self._engine = engine
         self._documents = documents
         self._lifecycle_events = lifecycle_events
         self._artifact_store = artifact_store
         self._extractors = extractors
+        self._logger = logger or get_logger(self.__class__.__name__)
 
     def run(self, doc_id: DocId, *, job_id: str | None = None) -> ExtractedArtifact:
         started_at = perf_counter()
-        _logger().info(
+        self._logger.info(
             "lifecycle.stage.started",
             stage_name="extract",
             doc_id=doc_id,
@@ -105,7 +106,7 @@ class ExtractDocumentStage:
                 workspace_id=document.workspace_id,
                 doc_id=document.doc_id,
             )
-            _logger().warning(
+            self._logger.warning(
                 "lifecycle.stage.failed",
                 stage_name="extract",
                 doc_id=document.doc_id,
@@ -117,7 +118,7 @@ class ExtractDocumentStage:
                 f"failed to extract document {document.doc_id!r}: {exc}",
             ) from exc
 
-        _logger().info(
+        self._logger.info(
             "lifecycle.stage.completed",
             stage_name="extract",
             doc_id=document.doc_id,

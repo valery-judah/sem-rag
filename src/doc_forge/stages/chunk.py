@@ -8,6 +8,7 @@ from uuid import uuid4
 
 import structlog
 
+from doc_forge.app.logging import get_logger
 from doc_forge.artifacts import FilesystemArtifactStore
 from doc_forge.chunking import ChunkingService
 from doc_forge.lifecycle import LifecycleEvent, LifecycleStage, ProcessingStatus
@@ -21,9 +22,7 @@ from doc_forge.persistence import (
 )
 from doc_forge.stages.base import StageExecutionError, StageRunner
 
-
-def _logger() -> structlog.stdlib.BoundLogger:
-    return structlog.get_logger(__name__)  # type: ignore
+logger = get_logger(__name__)
 
 
 class ChunkDocumentStage(StageRunner):
@@ -40,6 +39,7 @@ class ChunkDocumentStage(StageRunner):
         lifecycle_events: LifecycleEventRepository,
         artifact_store: FilesystemArtifactStore,
         service: ChunkingService,
+        logger: structlog.stdlib.BoundLogger | None = None,
     ) -> None:
         self._documents = documents
         self._sections = sections
@@ -47,10 +47,11 @@ class ChunkDocumentStage(StageRunner):
         self._lifecycle_events = lifecycle_events
         self._artifact_store = artifact_store
         self._service = service
+        self._logger = logger or get_logger(self.__class__.__name__)
 
     def run(self, job: DocumentJob) -> DocumentJobStage | None:
         started_at = perf_counter()
-        _logger().info(
+        self._logger.info(
             "lifecycle.stage.started",
             stage_name="chunk",
             doc_id=job.doc_id,
@@ -58,7 +59,7 @@ class ChunkDocumentStage(StageRunner):
         )
         document = self._documents.get(job.doc_id)
         if document is None:
-            _logger().warning(
+            self._logger.warning(
                 "lifecycle.stage.failed",
                 stage_name="chunk",
                 doc_id=job.doc_id,
@@ -71,7 +72,7 @@ class ChunkDocumentStage(StageRunner):
                 error_detail=f"document {job.doc_id!r} was not found",
             )
         if document.ingest_status is not ProcessingStatus.NORMALIZED:
-            _logger().warning(
+            self._logger.warning(
                 "lifecycle.stage.failed",
                 stage_name="chunk",
                 doc_id=job.doc_id,
@@ -87,7 +88,7 @@ class ChunkDocumentStage(StageRunner):
             )
         sections = self._sections.list_for_document(document.doc_id)
         if not sections:
-            _logger().warning(
+            self._logger.warning(
                 "lifecycle.stage.failed",
                 stage_name="chunk",
                 doc_id=document.doc_id,
@@ -105,7 +106,7 @@ class ChunkDocumentStage(StageRunner):
         )
         chunks = self._service.derive(document=document, artifact=artifact, sections=sections)
         if not chunks:
-            _logger().warning(
+            self._logger.warning(
                 "lifecycle.stage.failed",
                 stage_name="chunk",
                 doc_id=document.doc_id,
@@ -136,7 +137,7 @@ class ChunkDocumentStage(StageRunner):
                 detail={"chunk_count": str(len(chunks))},
             )
         )
-        _logger().info(
+        self._logger.info(
             "lifecycle.stage.completed",
             stage_name="chunk",
             doc_id=document.doc_id,

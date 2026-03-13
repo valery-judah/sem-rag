@@ -1,3 +1,4 @@
+# ruff: noqa: B008
 """FastAPI app for the local document lifecycle and query service."""
 
 from __future__ import annotations
@@ -60,10 +61,11 @@ from .deps import (
     get_vector_store,
 )
 from .logging import configure_logging
+from .logging import get_logger as get_app_logger
 
 
-def _logger() -> structlog.stdlib.BoundLogger:
-    return structlog.get_logger(__name__)  # type: ignore
+def get_logger() -> structlog.stdlib.BoundLogger:
+    return get_app_logger(__name__)
 
 
 class RetrievalQueryRequest(BaseModel):
@@ -172,7 +174,7 @@ def create_app() -> FastAPI:
         request_id = f"req-{uuid4().hex}"
         bind_contextvars(request_id=request_id)
         started_at = perf_counter()
-        _logger().info(
+        get_logger().info(
             "http.request.started",
             method=request.method,
             path=request.url.path,
@@ -181,7 +183,7 @@ def create_app() -> FastAPI:
             response = await call_next(request)
         except Exception:
             duration_ms = int((perf_counter() - started_at) * 1000)
-            _logger().exception(
+            get_logger().exception(
                 "http.request.completed",
                 method=request.method,
                 path=request.url.path,
@@ -193,7 +195,7 @@ def create_app() -> FastAPI:
             raise
         duration_ms = int((perf_counter() - started_at) * 1000)
         response.headers["x-request-id"] = request_id
-        _logger().info(
+        get_logger().info(
             "http.request.completed",
             method=request.method,
             path=request.url.path,
@@ -213,21 +215,22 @@ def create_app() -> FastAPI:
         engine: Annotated[Engine, Depends(get_engine)],
         artifact_store: Annotated[FilesystemArtifactStore, Depends(get_artifact_store)],
         vector_store: Annotated[VectorStore, Depends(get_vector_store)],
+        logger: structlog.stdlib.BoundLogger = Depends(get_logger),
     ) -> dict[str, str]:
-        _logger().info("system.readyz.started")
+        logger.info("system.readyz.started")
         try:
             with engine.connect() as connection:
                 connection.execute(sa.text("SELECT 1"))
             artifact_store.ensure_root_writable()
             vector_store.smoke_query(doc_id="healthcheck", text="healthcheck", k=1)
         except Exception:
-            _logger().exception(
+            logger.exception(
                 "system.readyz.failed",
                 http_status=500,
                 error_code="ready_check_failed",
             )
             raise
-        _logger().info("system.readyz.completed", http_status=200, status="ok")
+        logger.info("system.readyz.completed", http_status=200, status="ok")
         return {"status": "ok"}
 
     @app.post(
@@ -262,6 +265,7 @@ def create_app() -> FastAPI:
             DocumentLifecycleService,
             Depends(get_document_lifecycle_service),
         ],
+        logger: structlog.stdlib.BoundLogger = Depends(get_logger),
         title: Annotated[
             str | None,
             Form(
@@ -277,7 +281,7 @@ def create_app() -> FastAPI:
                 filename=file.filename,
                 content=content,
             )
-            _logger().info(
+            logger.info(
                 "document.upload.accepted",
                 workspace_id=workspace_id,
                 doc_id=result.doc_id,
@@ -290,7 +294,7 @@ def create_app() -> FastAPI:
             )
             return result
         except UnsupportedDocumentError as exc:
-            _logger().warning(
+            logger.warning(
                 "document.upload.rejected",
                 workspace_id=workspace_id,
                 filename_extension=_filename_extension(file.filename),
@@ -304,7 +308,7 @@ def create_app() -> FastAPI:
                 detail=str(exc),
             ) from exc
         except DocumentRegistrationError as exc:
-            _logger().exception(
+            logger.exception(
                 "document.upload.rejected",
                 workspace_id=workspace_id,
                 filename_extension=_filename_extension(file.filename),
@@ -337,12 +341,13 @@ def create_app() -> FastAPI:
             DocumentLifecycleService,
             Depends(get_document_lifecycle_service),
         ],
+        logger: structlog.stdlib.BoundLogger = Depends(get_logger),
     ) -> None:
-        _logger().info("document.delete.started", doc_id=doc_id)
+        logger.info("document.delete.started", doc_id=doc_id)
         try:
             service.delete_document(doc_id=doc_id)
         except DocumentNotFoundError as exc:
-            _logger().warning(
+            logger.warning(
                 "document.delete.rejected",
                 doc_id=doc_id,
                 error_code="document_not_found",
@@ -350,7 +355,7 @@ def create_app() -> FastAPI:
                 status="rejected",
             )
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
-        _logger().info(
+        logger.info(
             "document.delete.completed",
             doc_id=doc_id,
             http_status=status.HTTP_204_NO_CONTENT,
@@ -416,10 +421,11 @@ def create_app() -> FastAPI:
             DocumentLifecycleService,
             Depends(get_document_lifecycle_service),
         ],
+        logger: structlog.stdlib.BoundLogger = Depends(get_logger),
     ) -> DocumentStatusResult:
         try:
             result = service.get_document_status(doc_id=doc_id)
-            _logger().info(
+            logger.info(
                 "document.status.loaded",
                 doc_id=doc_id,
                 ingest_status=result.ingest_status.value,
@@ -455,10 +461,11 @@ def create_app() -> FastAPI:
             DocumentLifecycleService,
             Depends(get_document_lifecycle_service),
         ],
+        logger: structlog.stdlib.BoundLogger = Depends(get_logger),
     ) -> DocumentArtifactRefs:
         try:
             result = service.get_artifact_refs(doc_id=doc_id)
-            _logger().info(
+            logger.info(
                 "document.artifacts.loaded",
                 doc_id=doc_id,
                 has_extracted=result.extracted_path is not None,
@@ -497,11 +504,12 @@ def create_app() -> FastAPI:
             DocumentLifecycleService,
             Depends(get_document_lifecycle_service),
         ],
+        logger: structlog.stdlib.BoundLogger = Depends(get_logger),
     ) -> RetryDocumentResult:
-        _logger().info("document.retry.requested", doc_id=doc_id)
+        logger.info("document.retry.requested", doc_id=doc_id)
         try:
             result = service.retry_document(doc_id=doc_id)
-            _logger().info(
+            logger.info(
                 "document.retry.queued",
                 doc_id=doc_id,
                 queued_stage=result.queued_stage.value,
@@ -511,7 +519,7 @@ def create_app() -> FastAPI:
             )
             return result
         except DocumentNotFoundError as exc:
-            _logger().warning(
+            logger.warning(
                 "document.retry.rejected",
                 doc_id=doc_id,
                 error_code="document_not_found",
@@ -520,7 +528,7 @@ def create_app() -> FastAPI:
             )
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
         except RetryNotAllowedError as exc:
-            _logger().warning(
+            logger.warning(
                 "document.retry.rejected",
                 doc_id=doc_id,
                 error_code=exc.error_code,
@@ -553,8 +561,9 @@ def create_app() -> FastAPI:
             DocumentLifecycleService,
             Depends(get_document_lifecycle_service),
         ],
+        logger: structlog.stdlib.BoundLogger = Depends(get_logger),
     ) -> RetrievalQueryResult:
-        _logger().info(
+        logger.info(
             "retrieval.smoke.started",
             doc_id=request.doc_id,
             k=request.k,
@@ -568,7 +577,7 @@ def create_app() -> FastAPI:
                 k=request.k,
             )
             top_hit = result.hits[0] if result.hits else None
-            _logger().info(
+            logger.info(
                 "retrieval.smoke.completed",
                 doc_id=request.doc_id,
                 k=request.k,
@@ -580,7 +589,7 @@ def create_app() -> FastAPI:
             )
             return result
         except DocumentNotFoundError as exc:
-            _logger().warning(
+            logger.warning(
                 "retrieval.smoke.rejected",
                 doc_id=request.doc_id,
                 k=request.k,
@@ -614,9 +623,10 @@ def create_app() -> FastAPI:
     async def submit_query(
         request: Annotated[QueryRequest, Body(description="The query request payload.")],
         service: Annotated[QueryService, Depends(get_query_service)],
+        logger: structlog.stdlib.BoundLogger = Depends(get_logger),
     ) -> QueryAnswerResponse:
         question_sha256 = _sha256_text(request.question)
-        _logger().info(
+        logger.info(
             "query.api.started",
             workspace_id=request.workspace_id,
             question_chars=len(request.question),
@@ -625,7 +635,7 @@ def create_app() -> FastAPI:
         try:
             state = service.execute_until_answer(request)
         except CorpusBoundaryUnavailableError as exc:
-            _logger().warning(
+            logger.warning(
                 "query.api.rejected",
                 workspace_id=request.workspace_id,
                 question_sha256=question_sha256,
@@ -638,7 +648,7 @@ def create_app() -> FastAPI:
                 detail=str(exc),
             ) from exc
         except QueryExecutionFailedError as exc:
-            _logger().exception(
+            logger.exception(
                 "query.api.rejected",
                 workspace_id=request.workspace_id,
                 query_id=exc.query_id,
@@ -669,7 +679,7 @@ def create_app() -> FastAPI:
             or state.answer_draft is None
             or state.citation_bundle is None
         ):
-            _logger().error(
+            logger.error(
                 "query.api.rejected",
                 workspace_id=request.workspace_id,
                 query_id=state.run.query_id,
@@ -690,7 +700,7 @@ def create_app() -> FastAPI:
             citations=state.citation_bundle,
             message="query answer completed with grounded generation and rendered citations",
         )
-        _logger().info(
+        logger.info(
             "query.api.completed",
             workspace_id=request.workspace_id,
             query_id=response.query_id,
@@ -719,10 +729,11 @@ def create_app() -> FastAPI:
     async def get_query_summary(
         query_id: Annotated[str, Field(..., description="The unique query identifier.")],
         review_service: Annotated[QueryReviewService, Depends(get_query_review_service)],
+        logger: structlog.stdlib.BoundLogger = Depends(get_logger),
     ) -> QueryRunReviewSummary:
         try:
             result = review_service.get_query_summary(query_id)
-            _logger().info(
+            logger.info(
                 "review.summary.loaded",
                 query_id=query_id,
                 trace_count=result.trace_summary.trace_count,
@@ -732,8 +743,8 @@ def create_app() -> FastAPI:
             )
             return result
         except LookupError as exc:
-            _logger().warning(
-                "review.lookup_failed",
+            logger.warning(
+                "query.review.lookup_failed",
                 query_id=query_id,
                 review_type="summary",
                 error_code="query_run_not_found",
@@ -759,10 +770,11 @@ def create_app() -> FastAPI:
     async def get_query_trace(
         query_id: Annotated[str, Field(..., description="The unique query identifier.")],
         review_service: Annotated[QueryReviewService, Depends(get_query_review_service)],
+        logger: structlog.stdlib.BoundLogger = Depends(get_logger),
     ) -> QueryTraceReview:
         try:
             result = review_service.get_query_trace_review(query_id)
-            _logger().info(
+            logger.info(
                 "review.trace.loaded",
                 query_id=query_id,
                 trace_count=len(result.trace_bundle.stage_traces),
@@ -772,8 +784,8 @@ def create_app() -> FastAPI:
             )
             return result
         except LookupError as exc:
-            _logger().warning(
-                "review.lookup_failed",
+            logger.warning(
+                "query.review.lookup_failed",
                 query_id=query_id,
                 review_type="trace",
                 error_code="query_run_not_found",
@@ -799,10 +811,11 @@ def create_app() -> FastAPI:
     async def get_query_citations(
         query_id: Annotated[str, Field(..., description="The unique query identifier.")],
         review_service: Annotated[QueryReviewService, Depends(get_query_review_service)],
+        logger: structlog.stdlib.BoundLogger = Depends(get_logger),
     ) -> QueryCitationReview:
         try:
             result = review_service.get_query_citations(query_id)
-            _logger().info(
+            logger.info(
                 "review.citations.loaded",
                 query_id=query_id,
                 citation_count=len(result.citations.citations),
@@ -813,8 +826,8 @@ def create_app() -> FastAPI:
             )
             return result
         except LookupError as exc:
-            _logger().warning(
-                "review.lookup_failed",
+            logger.warning(
+                "query.review.lookup_failed",
                 query_id=query_id,
                 review_type="citations",
                 error_code="query_answer_not_found",
@@ -836,17 +849,18 @@ def create_app() -> FastAPI:
     )
     async def run_next_job(
         worker: Annotated[DocumentLifecycleWorker, Depends(get_document_lifecycle_worker)],
+        logger: structlog.stdlib.BoundLogger = Depends(get_logger),
     ) -> WorkerJobResult:
-        _logger().info("worker.run_next.invoked")
+        logger.info("worker.run_next.invoked")
         job = worker.run_next()
         if job is None:
-            _logger().info(
+            logger.info(
                 "worker.run_next.idle",
                 http_status=status.HTTP_200_OK,
                 status="idle",
             )
         else:
-            _logger().info(
+            logger.info(
                 "worker.run_next.completed",
                 doc_id=job.doc_id,
                 job_id=job.job_id,

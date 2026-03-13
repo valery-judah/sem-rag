@@ -9,6 +9,7 @@ from uuid import uuid4
 import structlog
 from sqlalchemy.engine import Engine
 
+from doc_forge.app.logging import get_logger
 from doc_forge.artifacts import FilesystemArtifactStore, NormalizedArtifact
 from doc_forge.identifiers import DocId
 from doc_forge.lifecycle import (
@@ -27,9 +28,7 @@ from doc_forge.persistence import (
 )
 from doc_forge.stages.base import StageExecutionError, StageRunner
 
-
-def _logger() -> structlog.stdlib.BoundLogger:
-    return structlog.get_logger(__name__)  # type: ignore
+logger = get_logger(__name__)
 
 
 class DocumentNormalizationError(RuntimeError):
@@ -47,16 +46,18 @@ class NormalizeDocumentStage:
         lifecycle_events: LifecycleEventRepository,
         artifact_store: FilesystemArtifactStore,
         normalizers: NormalizerRegistry,
+        logger: structlog.stdlib.BoundLogger | None = None,
     ) -> None:
         self._engine = engine
         self._documents = documents
         self._lifecycle_events = lifecycle_events
         self._artifact_store = artifact_store
         self._normalizers = normalizers
+        self._logger = logger or get_logger(self.__class__.__name__)
 
     def run(self, doc_id: DocId, *, job_id: str | None = None) -> NormalizedArtifact:
         started_at = perf_counter()
-        _logger().info(
+        self._logger.info(
             "lifecycle.stage.started",
             stage_name="normalize",
             doc_id=doc_id,
@@ -102,7 +103,7 @@ class NormalizeDocumentStage:
                 workspace_id=document.workspace_id,
                 doc_id=document.doc_id,
             )
-            _logger().warning(
+            self._logger.warning(
                 "lifecycle.stage.failed",
                 stage_name="normalize",
                 doc_id=document.doc_id,
@@ -114,7 +115,7 @@ class NormalizeDocumentStage:
                 f"failed to normalize document {document.doc_id!r}: {exc}",
             ) from exc
 
-        _logger().info(
+        self._logger.info(
             "lifecycle.stage.completed",
             stage_name="normalize",
             doc_id=document.doc_id,

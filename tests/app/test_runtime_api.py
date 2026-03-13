@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import functools
 from datetime import UTC, datetime
 from typing import Any, cast
 
@@ -18,6 +19,7 @@ from doc_forge.app.deps import (
     get_query_service,
     get_queryable_corpus_read_model,
 )
+from doc_forge.app.logging import get_logger
 from doc_forge.artifacts import FilesystemArtifactStore
 from doc_forge.indexing import DeterministicEmbeddingAdapter, SqlVectorStore
 from doc_forge.lifecycle import FailureCategory, LifecycleStage, ProcessingStatus
@@ -47,7 +49,11 @@ pytestmark = pytest.mark.anyio
 def _route_endpoint(app: FastAPI, *, path: str, method: str):
     for route in app.routes:
         if isinstance(route, APIRoute) and route.path == path and method in route.methods:
-            return route.endpoint
+            return (
+                functools.partial(route.endpoint, logger=get_logger())
+                if route.path != "/healthz"
+                else route.endpoint
+            )
     raise AssertionError(f"route {method} {path} was not found")
 
 
@@ -901,7 +907,7 @@ async def test_query_api_failure_review_lookup_and_worker_idle_logs(
         for log in structured_logs
     )
     assert any(
-        log["event"] == "review.lookup_failed"
+        log["event"] == "query.review.lookup_failed"
         and log["review_type"] == "summary"
         and log["http_status"] == 404
         for log in structured_logs

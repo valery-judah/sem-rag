@@ -8,6 +8,7 @@ from uuid import uuid4
 
 import structlog
 
+from doc_forge.app.logging import get_logger
 from doc_forge.identifiers import DocId
 from doc_forge.indexing import VectorStore
 from doc_forge.lifecycle import LifecycleEvent, LifecycleStage, ProcessingStatus
@@ -22,9 +23,7 @@ from doc_forge.persistence import (
 )
 from doc_forge.stages.base import StageExecutionError, StageRunner
 
-
-def _logger() -> structlog.stdlib.BoundLogger:
-    return structlog.get_logger(__name__)  # type: ignore
+logger = get_logger(__name__)
 
 
 class IndexDocumentStage(StageRunner):
@@ -41,6 +40,7 @@ class IndexDocumentStage(StageRunner):
         vector_store: VectorStore,
         index_entries: IndexEntryRepository | None = None,
         chunk_embeddings: ChunkEmbeddingRepository | None = None,
+        logger: structlog.stdlib.BoundLogger | None = None,
     ) -> None:
         self._documents = documents
         self._chunks = chunks
@@ -48,10 +48,11 @@ class IndexDocumentStage(StageRunner):
         self._vector_store = vector_store
         self._index_entries = index_entries
         self._chunk_embeddings = chunk_embeddings
+        self._logger = logger or get_logger(self.__class__.__name__)
 
     def run(self, job: DocumentJob) -> DocumentJobStage | None:
         started_at = perf_counter()
-        _logger().info(
+        self._logger.info(
             "lifecycle.stage.started",
             stage_name="index",
             doc_id=job.doc_id,
@@ -59,7 +60,7 @@ class IndexDocumentStage(StageRunner):
         )
         document = self._documents.get(job.doc_id)
         if document is None:
-            _logger().warning(
+            self._logger.warning(
                 "lifecycle.stage.failed",
                 stage_name="index",
                 doc_id=job.doc_id,
@@ -72,7 +73,7 @@ class IndexDocumentStage(StageRunner):
                 error_detail=f"document {job.doc_id!r} was not found",
             )
         if document.ingest_status is not ProcessingStatus.CHUNKED:
-            _logger().warning(
+            self._logger.warning(
                 "lifecycle.stage.failed",
                 stage_name="index",
                 doc_id=job.doc_id,
@@ -88,7 +89,7 @@ class IndexDocumentStage(StageRunner):
             )
         chunks = self._chunks.list_for_document(document.doc_id)
         if not chunks:
-            _logger().warning(
+            self._logger.warning(
                 "lifecycle.stage.failed",
                 stage_name="index",
                 doc_id=document.doc_id,
@@ -104,7 +105,7 @@ class IndexDocumentStage(StageRunner):
             entries = self._vector_store.publish_document(doc_id=document.doc_id, chunks=chunks)
         except Exception as exc:
             self._cleanup_partial_publication(document.doc_id)
-            _logger().warning(
+            self._logger.warning(
                 "lifecycle.stage.failed",
                 stage_name="index",
                 doc_id=document.doc_id,
@@ -119,7 +120,7 @@ class IndexDocumentStage(StageRunner):
             ) from exc
         if len(entries) != len(chunks):
             self._cleanup_partial_publication(document.doc_id)
-            _logger().warning(
+            self._logger.warning(
                 "lifecycle.stage.failed",
                 stage_name="index",
                 doc_id=document.doc_id,
@@ -153,7 +154,7 @@ class IndexDocumentStage(StageRunner):
                 detail={"index_entry_count": str(len(entries))},
             )
         )
-        _logger().info(
+        self._logger.info(
             "lifecycle.stage.completed",
             stage_name="index",
             doc_id=document.doc_id,

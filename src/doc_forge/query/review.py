@@ -7,6 +7,7 @@ from datetime import datetime
 import structlog
 from pydantic import BaseModel, ConfigDict, Field
 
+from doc_forge.app.logging import get_logger
 from doc_forge.identifiers import DocId, WorkspaceId
 
 from .contracts import (
@@ -23,9 +24,7 @@ from .contracts import (
 from .persistence import QueryAnswerStore, QueryRunStore, QuerySnapshotStore, QueryTraceStore
 from .trace import QueryStageTrace, QueryTraceBundle
 
-
-def _logger() -> structlog.stdlib.BoundLogger:
-    return structlog.get_logger(__name__)  # type: ignore
+logger = get_logger(__name__)
 
 
 class QuerySnapshotSummary(BaseModel):
@@ -159,11 +158,13 @@ class QueryReviewService:
         snapshot_store: QuerySnapshotStore,
         trace_store: QueryTraceStore,
         answer_store: QueryAnswerStore,
+        logger: structlog.stdlib.BoundLogger | None = None,
     ) -> None:
         self._run_store = run_store
         self._snapshot_store = snapshot_store
         self._trace_store = trace_store
         self._answer_store = answer_store
+        self._logger = logger or get_logger(self.__class__.__name__)
 
     def get_query_summary(self, query_id: str) -> QueryRunReviewSummary:
         """Load a summary view for one persisted query run."""
@@ -173,7 +174,7 @@ class QueryReviewService:
         traces = self._trace_store.list_stage_traces(query_id)
         answer = self._answer_store.get_answer_artifacts(query_id)
         summary = _build_summary(run=run, snapshot=snapshot, traces=traces, answer=answer)
-        _logger().info(
+        self._logger.info(
             "review.query.loaded",
             query_id=query_id,
             status=summary.status.value,
@@ -190,7 +191,7 @@ class QueryReviewService:
         traces = self._trace_store.list_stage_traces(query_id)
         answer = self._answer_store.get_answer_artifacts(query_id)
         summary = _build_summary(run=run, snapshot=snapshot, traces=traces, answer=answer)
-        _logger().info(
+        self._logger.info(
             "review.trace.loaded",
             query_id=query_id,
             trace_count=len(traces),
@@ -214,7 +215,7 @@ class QueryReviewService:
         answer = self._answer_store.get_answer_artifacts(query_id)
         if answer is None:
             raise LookupError(f"query answer for {query_id!r} was not found")
-        _logger().info(
+        self._logger.info(
             "review.citations.loaded",
             query_id=query_id,
             citation_count=len(answer.citations.citations),

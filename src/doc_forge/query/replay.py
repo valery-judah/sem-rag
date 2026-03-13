@@ -5,6 +5,8 @@ from __future__ import annotations
 import structlog
 from pydantic import BaseModel, ConfigDict, Field
 
+from doc_forge.app.logging import get_logger
+
 from .contracts import (
     AnswerDraft,
     AnswerMode,
@@ -29,9 +31,7 @@ from .stages.generate import GenerateTracePayload
 from .stages.select import SelectionTracePayload
 from .trace import QueryStageTrace, QueryTraceBundle
 
-
-def _logger() -> structlog.stdlib.BoundLogger:
-    return structlog.get_logger(__name__)  # type: ignore
+logger = get_logger(__name__)
 
 
 class QueryReplayBundle(BaseModel):
@@ -75,11 +75,13 @@ class QueryReplayService:
         snapshot_store: QuerySnapshotStore,
         trace_store: QueryTraceStore,
         answer_store: QueryAnswerStore,
+        logger: structlog.stdlib.BoundLogger | None = None,
     ) -> None:
         self._run_store = run_store
         self._snapshot_store = snapshot_store
         self._trace_store = trace_store
         self._answer_store = answer_store
+        self._logger = logger or get_logger(self.__class__.__name__)
 
     def build_bundle(self, query_id: str) -> QueryReplayBundle:
         """Load the frozen persisted artifacts required for replay."""
@@ -99,7 +101,7 @@ class QueryReplayService:
             ),
             final_artifacts=self._answer_store.get_answer_artifacts(query_id),
         )
-        _logger().info(
+        self._logger.info(
             "replay.bundle.built",
             query_id=query_id,
             status=run.status.value,
