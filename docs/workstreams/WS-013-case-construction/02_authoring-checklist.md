@@ -158,6 +158,28 @@ These are directly aligned with the rubric.
 
 That is the practical eval extension.
 
+## Bucket selection rules
+
+Keep the case-family choice tied to **corpus reality**, not to how qualified the final answer sounds.
+
+* Use `ambiguous_conflict` / `AMBIGUOUS_OR_CONFLICTING` only when the answer must surface materially divergent signals or explicitly source-qualify a real conflict.
+* Do **not** put a case in the ambiguous bucket just because the answer is narrow or qualified.
+* Direct qualified conclusions such as “no final default was ratified,” “the document does not prove a universal claim,” or “the recommendation remains configurable” belong in `SUPPORTED` when the corpus directly supports that reading.
+* When that direct answer is explanatory rather than a short fact lookup, use `supported_localized_explanation`.
+* For unsupported requests, keep the natural question shape where possible. Missing values, paths, filenames, counts, or coordinates are usually `factual_lookup`; broader “what decision/result/policy does the file give?” questions are usually `localized_explanation`.
+* Reserve `unsupported_scope` / `UNSUPPORTED_QUESTION_TYPE` for scope-boundary requests such as image reading, OCR recovery, or external-web completion.
+
+## Evidence authoring rules
+
+Keep locator metadata and verbatim evidence separate.
+
+* In `cases.jsonl`, `question_spec.gold_sources` should contain only locators such as `doc_id`, `display_name`, and `section_path`.
+* Do not place `support_snippet` in case-side `gold_sources`.
+* Put verbatim evidence only in `answer_keys.jsonl` under `gold_evidence_set`.
+* Every `support_snippet` should be an exact substring of the cited section text.
+* Do not shorten evidence with `...` or `…`.
+* Preserve Markdown emphasis, bullets, and numbering when those are part of the exact source text.
+
 ## What not to generate yet
 
 I would **not** ask the LLM to generate these as primary fields yet:

@@ -11,7 +11,8 @@ EVAL_CASES_DIR = REPO_ROOT / "evals" / "cases"
 SETS_DIR = EVAL_CASES_DIR / "sets"
 CASE_SCHEMA_PATH = EVAL_CASES_DIR / "cases.schema.json"
 ANSWER_KEY_SCHEMA_PATH = EVAL_CASES_DIR / "answer_keys.schema.json"
-SOURCE_DOC_PATH = REPO_ROOT / "evals" / "corpus" / "research-notes-1.md"
+SOURCE_DOC_PATH_RN1 = REPO_ROOT / "evals" / "corpus" / "research-notes-1.md"
+SOURCE_DOC_PATH_RN2 = REPO_ROOT / "evals" / "corpus" / "research-notes-2.md"
 LOOKUP_SET_NAME = "supported_lookup_research_1"
 LOOKUP_CASE_IDS = {
     "lookup_rn1_001",
@@ -36,6 +37,58 @@ NAV_CASE_IDS = {
     "nav_rn1_009",
     "nav_rn1_010",
 }
+PARTIAL_SUPPORT_RN1_SET_NAME = "partial_synthesis_research_1"
+PARTIAL_SUPPORT_RN1_CASE_IDS = {f"psynth_rn1_{index:03d}" for index in range(1, 13)}
+PARTIAL_SUPPORT_RN2_SET_NAME = "partial_support_synthesis_cases_rn2"
+PARTIAL_SUPPORT_RN2_CASE_IDS = {f"psynth_rn2_{index:03d}" for index in range(1, 13)}
+INGESTION_STRESS_RN3_SET_NAME = "ingestion_structure_stress_cases_rn3"
+INGESTION_STRESS_RN3_CASE_IDS = {f"istruct_rn3_{index:03d}" for index in range(1, 13)}
+INGESTION_STRESS_RN3_A1_SET_NAME = "ingestion_structure_stress_cases_rn3_a1_harder"
+INGESTION_STRESS_RN3_A1_CASE_IDS = {f"istruct_rn3_a1_{index:03d}" for index in range(1, 9)}
+RN2_SET_INVARIANTS: dict[str, dict[str, Any]] = {
+    "ambiguous_conflicting_cases_rn2": {
+        "expected_case_ids": {f"conflict_rn2_{index:03d}" for index in range(1, 5)},
+        "case_family": "ambiguous_conflicting_evidence",
+        "question_class": "ambiguous_conflict",
+        "support_state": "AMBIGUOUS_OR_CONFLICTING",
+        "expected_behavior": "surface_ambiguity_with_source_qualification",
+        "abstention_expected": False,
+        "primary_target_failures": ["A2", "U2", "P1"],
+        "secondary_target_failures": ["P2"],
+    },
+    "supported_localized_explanation_cases_rn2": {
+        "expected_case_ids": {f"lexp_rn2_{index:03d}" for index in range(1, 9)},
+        "case_family": "supported_localized_explanation",
+        "question_class": "localized_explanation",
+        "support_state": "SUPPORTED",
+        "expected_behavior": "direct_answer_with_section_citation",
+        "abstention_expected": False,
+        "primary_target_failures": ["U1", "P1", "P2"],
+        "secondary_target_failures": ["A1"],
+    },
+    "unsupported_in_corpus_cases_rn2": {
+        "expected_case_ids": {f"unsup_rn2_{index:03d}" for index in range(1, 13)},
+        "case_family": "unsupported_in_corpus",
+        "question_class": {"factual_lookup", "localized_explanation"},
+        "support_state": "UNSUPPORTED_IN_CORPUS",
+        "expected_behavior": "abstain_or_state_insufficient_support",
+        "abstention_expected": True,
+        "primary_target_failures": ["A2", "U1", "P2"],
+        "secondary_target_failures": ["P1"],
+    },
+    "unsupported_question_type_cases_rn2": {
+        "expected_case_ids": {f"uqt_rn2_{index:03d}" for index in range(1, 13)},
+        "case_family": "unsupported_question_type",
+        "question_class": "unsupported_scope",
+        "support_state": "UNSUPPORTED_QUESTION_TYPE",
+        "expected_behavior": "state_scope_limitation",
+        "abstention_expected": True,
+        "primary_target_failures": ["S1", "A2", "P2"],
+        "secondary_target_failures": ["P1"],
+    },
+}
+RN2_SET_NAMES = set(RN2_SET_INVARIANTS) | {PARTIAL_SUPPORT_RN2_SET_NAME}
+ELLIPSIS_TOKENS = ("...", "…")
 HEADING_RE = re.compile(r"^\d+(?:\.\d+)?\.? ")
 
 
@@ -168,6 +221,7 @@ def _parse_sections(markdown_path: Path) -> dict[tuple[str, ...], str]:
     stack: list[tuple[int, str]] = []
     current_path: tuple[str, ...] | None = None
     current_lines: list[str] = []
+    preamble_lines: list[str] = []
     heading_pattern = re.compile(r"^(#{2,6}) (.+)$")
 
     for line in markdown_path.read_text().splitlines():
@@ -175,6 +229,8 @@ def _parse_sections(markdown_path: Path) -> dict[tuple[str, ...], str]:
         if match is None:
             if current_path is not None:
                 current_lines.append(line)
+            else:
+                preamble_lines.append(line)
             continue
 
         if current_path is not None:
@@ -186,7 +242,7 @@ def _parse_sections(markdown_path: Path) -> dict[tuple[str, ...], str]:
             stack.pop()
         stack.append((heading_level, heading_text))
         current_path = tuple(title for _, title in stack)
-        current_lines = []
+        current_lines = preamble_lines[:] if not sections else []
 
     if current_path is not None:
         sections[current_path] = "\n".join(current_lines).strip()
@@ -225,6 +281,20 @@ def _load_set(set_dir: Path) -> tuple[list[dict[str, Any]], list[dict[str, Any]]
     return cases, answer_keys
 
 
+def _assert_section_grounded_source(
+    source: dict[str, Any],
+    sections: dict[tuple[str, ...], str],
+    *,
+    expect_snippet: bool,
+) -> None:
+    section_path = tuple(source["section_path"])
+    assert section_path in sections
+    if expect_snippet:
+        support_snippet = source["support_snippet"]
+        assert not any(token in support_snippet for token in ELLIPSIS_TOKENS)
+        assert support_snippet in sections[section_path]
+
+
 def _validate_research_notes_set(
     *,
     set_name: str,
@@ -235,7 +305,7 @@ def _validate_research_notes_set(
     expected_user_intent_note: str,
 ) -> None:
     cases, answer_keys = _load_set(SETS_DIR / set_name)
-    sections = _parse_sections(SOURCE_DOC_PATH)
+    sections = _parse_sections(SOURCE_DOC_PATH_RN1)
     answer_keys_by_id = {row["case_id"]: row for row in answer_keys}
 
     case_ids = [row["case_id"] for row in cases]
@@ -261,8 +331,7 @@ def _validate_research_notes_set(
         gold_source = question_spec["gold_sources"][0]
         assert gold_source["doc_id"] == "research-notes-1"
         assert len(gold_source["section_path"]) == 2
-        section_path = tuple(gold_source["section_path"])
-        assert section_path in sections
+        _assert_section_grounded_source(gold_source, sections, expect_snippet=False)
 
         answer_key = answer_keys_by_id[case["case_id"]]
         assert answer_key["expected_behavior"] == expected_behavior
@@ -274,7 +343,7 @@ def _validate_research_notes_set(
         evidence = answer_key["gold_evidence_set"][0]
         assert evidence["doc_id"] == "research-notes-1"
         assert evidence["section_path"] == gold_source["section_path"]
-        assert evidence["support_snippet"] in sections[section_path]
+        _assert_section_grounded_source(evidence, sections, expect_snippet=True)
 
         canonical_text = _canonical_text(answer_key["canonical_answer"]).lower()
         for needle in answer_key["must_include"]:
@@ -283,12 +352,194 @@ def _validate_research_notes_set(
             assert distractor.lower() not in canonical_text
 
 
+def _validate_rn2_set(set_name: str, invariant: dict[str, Any]) -> None:
+    cases, answer_keys = _load_set(SETS_DIR / set_name)
+    sections = _parse_sections(SOURCE_DOC_PATH_RN2)
+    answer_keys_by_id = {row["case_id"]: row for row in answer_keys}
+
+    case_ids = [row["case_id"] for row in cases]
+    answer_key_ids = [row["case_id"] for row in answer_keys]
+    assert set(case_ids) == invariant["expected_case_ids"]
+    assert set(answer_key_ids) == invariant["expected_case_ids"]
+    assert case_ids == sorted(case_ids)
+    assert answer_key_ids == sorted(answer_key_ids)
+
+    for case in cases:
+        assert case["corpus_id"] == "research-notes-2"
+        assert case["source_type"] == "markdown"
+        assert case["case_family"] == invariant["case_family"]
+        assert case["primary_target_failures"] == invariant["primary_target_failures"]
+        assert case["secondary_target_failures"] == invariant["secondary_target_failures"]
+
+        question_spec = case["question_spec"]
+        expected_question_class = invariant["question_class"]
+        if isinstance(expected_question_class, set):
+            assert question_spec["question_class"] in expected_question_class
+        else:
+            assert question_spec["question_class"] == expected_question_class
+        assert question_spec["support_state"] == invariant["support_state"]
+        assert question_spec["minimum_provenance"] == "document_and_section"
+        for source in question_spec["gold_sources"]:
+            assert "support_snippet" not in source
+            assert source["doc_id"] == "research-notes-2"
+            _assert_section_grounded_source(source, sections, expect_snippet=False)
+
+        answer_key = answer_keys_by_id[case["case_id"]]
+        assert answer_key["expected_behavior"] == invariant["expected_behavior"]
+        assert answer_key["abstention_expected"] is invariant["abstention_expected"]
+        for source in answer_key["gold_evidence_set"]:
+            assert source["doc_id"] == "research-notes-2"
+            _assert_section_grounded_source(source, sections, expect_snippet=True)
+
+
+def _validate_partial_support_rn2_set() -> None:
+    cases, answer_keys = _load_set(SETS_DIR / PARTIAL_SUPPORT_RN2_SET_NAME)
+    sections = _parse_sections(SOURCE_DOC_PATH_RN2)
+    answer_keys_by_id = {row["case_id"]: row for row in answer_keys}
+
+    case_ids = [row["case_id"] for row in cases]
+    answer_key_ids = [row["case_id"] for row in answer_keys]
+    assert set(case_ids) == PARTIAL_SUPPORT_RN2_CASE_IDS
+    assert set(answer_key_ids) == PARTIAL_SUPPORT_RN2_CASE_IDS
+    assert case_ids == sorted(case_ids)
+    assert answer_key_ids == sorted(answer_key_ids)
+
+    for case in cases:
+        assert case["corpus_id"] == "research-notes-2"
+        assert case["source_type"] == "markdown"
+        assert case["case_family"] == "partial_support_answer"
+        assert case["primary_target_failures"] == ["U2", "P1", "P2"]
+        assert case["secondary_target_failures"] == ["A1"]
+
+        question_spec = case["question_spec"]
+        assert question_spec["question_class"] == "multi_source_synthesis"
+        assert question_spec["support_state"] == "PARTIALLY_SUPPORTED"
+        assert question_spec["minimum_provenance"] == "document_and_section"
+        for source in question_spec["gold_sources"]:
+            assert "support_snippet" not in source
+            assert source["doc_id"] == "research-notes-2"
+            _assert_section_grounded_source(source, sections, expect_snippet=False)
+
+        answer_key = answer_keys_by_id[case["case_id"]]
+        assert answer_key["expected_behavior"] == "qualified_answer_with_citation"
+        assert answer_key["abstention_expected"] is False
+        for source in answer_key["gold_evidence_set"]:
+            assert source["doc_id"] == "research-notes-2"
+            _assert_section_grounded_source(source, sections, expect_snippet=True)
+
+
+def _validate_partial_support_rn1_set() -> None:
+    cases, answer_keys = _load_set(SETS_DIR / PARTIAL_SUPPORT_RN1_SET_NAME)
+    sections = _parse_sections(SOURCE_DOC_PATH_RN1)
+    answer_keys_by_id = {row["case_id"]: row for row in answer_keys}
+
+    case_ids = [row["case_id"] for row in cases]
+    answer_key_ids = [row["case_id"] for row in answer_keys]
+    assert set(case_ids) == PARTIAL_SUPPORT_RN1_CASE_IDS
+    assert set(answer_key_ids) == PARTIAL_SUPPORT_RN1_CASE_IDS
+    assert case_ids == sorted(case_ids)
+    assert answer_key_ids == sorted(answer_key_ids)
+
+    for case in cases:
+        assert case["corpus_id"] == "research-notes-1"
+        assert case["source_type"] == "markdown"
+        assert case["case_family"] == "partial_support_answer"
+        assert case["primary_target_failures"] == ["U2", "P1", "P2"]
+        assert case["secondary_target_failures"] == ["A1"]
+
+        question_spec = case["question_spec"]
+        assert question_spec["question_class"] == "multi_source_synthesis"
+        assert question_spec["support_state"] == "PARTIALLY_SUPPORTED"
+        assert question_spec["minimum_provenance"] == "document_and_section"
+        assert (
+            question_spec["user_intent_note"]
+            == "Broader synthesis request; the corpus supports only a qualified or narrowed answer."
+        )
+        for source in question_spec["gold_sources"]:
+            assert "support_snippet" not in source
+            assert source["doc_id"] == "research-notes-1"
+            _assert_section_grounded_source(source, sections, expect_snippet=False)
+
+        answer_key = answer_keys_by_id[case["case_id"]]
+        assert answer_key["expected_behavior"] == "qualified_answer_with_citation"
+        assert answer_key["abstention_expected"] is False
+        for source in answer_key["gold_evidence_set"]:
+            assert source["doc_id"] == "research-notes-1"
+            _assert_section_grounded_source(source, sections, expect_snippet=True)
+
+
+def _validate_ingestion_structure_stress_rn3_set(
+    *,
+    set_name: str,
+    expected_case_ids: set[str],
+    expected_primary_failures: list[str] | None = None,
+    expected_secondary_failures: list[str] | None = None,
+    allowed_primary_failures: set[tuple[str, ...]] | None = None,
+    allowed_secondary_failures: set[tuple[str, ...]] | None = None,
+) -> None:
+    cases, answer_keys = _load_set(SETS_DIR / set_name)
+    sections = _parse_sections(REPO_ROOT / "evals" / "corpus" / "research-notes-3.md")
+    answer_keys_by_id = {row["case_id"]: row for row in answer_keys}
+
+    case_ids = [row["case_id"] for row in cases]
+    answer_key_ids = [row["case_id"] for row in answer_keys]
+    assert set(case_ids) == expected_case_ids
+    assert set(answer_key_ids) == expected_case_ids
+    assert case_ids == sorted(case_ids)
+    assert answer_key_ids == sorted(answer_key_ids)
+
+    for case in cases:
+        assert case["corpus_id"] == "research-notes-3"
+        assert case["source_type"] == "markdown"
+        assert case["case_family"] == "ingestion_structure_stress"
+
+        if expected_primary_failures is not None:
+            assert case["primary_target_failures"] == expected_primary_failures
+        if expected_secondary_failures is not None:
+            assert case["secondary_target_failures"] == expected_secondary_failures
+        if allowed_primary_failures is not None:
+            assert tuple(case["primary_target_failures"]) in allowed_primary_failures
+        if allowed_secondary_failures is not None:
+            assert tuple(case["secondary_target_failures"]) in allowed_secondary_failures
+
+        question_spec = case["question_spec"]
+        assert question_spec["question_class"] in {"factual_lookup", "source_navigation"}
+        assert question_spec["support_state"] == "SUPPORTED"
+        assert question_spec["minimum_provenance"] == "document_and_section"
+        assert question_spec["user_intent_note"]
+        for source in question_spec["gold_sources"]:
+            assert "support_snippet" not in source
+            assert source["doc_id"] == "research-notes-3"
+            _assert_section_grounded_source(source, sections, expect_snippet=False)
+
+        answer_key = answer_keys_by_id[case["case_id"]]
+        expected_behavior = (
+            "direct_navigation_with_section_citation"
+            if question_spec["question_class"] == "source_navigation"
+            else "direct_answer_with_section_citation"
+        )
+        assert answer_key["expected_behavior"] == expected_behavior
+        assert answer_key["abstention_expected"] is False
+        assert answer_key["must_include"]
+        assert answer_key["must_not_include"]
+        for source in answer_key["gold_evidence_set"]:
+            assert source["doc_id"] == "research-notes-3"
+            _assert_section_grounded_source(source, sections, expect_snippet=True)
+
+
 def test_all_eval_case_sets_validate_against_shared_schemas() -> None:
     case_schema = json.loads(CASE_SCHEMA_PATH.read_text())
     answer_key_schema = json.loads(ANSWER_KEY_SCHEMA_PATH.read_text())
     set_dirs = _iter_case_set_dirs()
 
-    assert {path.name for path in set_dirs} >= {LOOKUP_SET_NAME, NAV_SET_NAME}
+    assert {path.name for path in set_dirs} >= {
+        LOOKUP_SET_NAME,
+        NAV_SET_NAME,
+        PARTIAL_SUPPORT_RN1_SET_NAME,
+        INGESTION_STRESS_RN3_SET_NAME,
+        INGESTION_STRESS_RN3_A1_SET_NAME,
+        *RN2_SET_NAMES,
+    }
 
     for set_dir in set_dirs:
         cases, answer_keys = _load_set(set_dir)
@@ -350,3 +601,41 @@ def test_supported_source_navigation_grounding() -> None:
     for answer_key in answer_keys:
         for distractor in answer_key["must_not_include"]:
             assert HEADING_RE.match(distractor), distractor
+
+
+def test_partial_support_synthesis_cases_rn2_grounding() -> None:
+    _validate_partial_support_rn2_set()
+
+
+def test_partial_synthesis_research_1_grounding() -> None:
+    _validate_partial_support_rn1_set()
+
+
+def test_ingestion_structure_stress_cases_rn3_grounding() -> None:
+    _validate_ingestion_structure_stress_rn3_set(
+        set_name=INGESTION_STRESS_RN3_SET_NAME,
+        expected_case_ids=INGESTION_STRESS_RN3_CASE_IDS,
+        expected_primary_failures=["I1", "P1", "P2"],
+        expected_secondary_failures=["A1"],
+    )
+
+
+def test_ingestion_structure_stress_cases_rn3_a1_harder_grounding() -> None:
+    _validate_ingestion_structure_stress_rn3_set(
+        set_name=INGESTION_STRESS_RN3_A1_SET_NAME,
+        expected_case_ids=INGESTION_STRESS_RN3_A1_CASE_IDS,
+        allowed_primary_failures={
+            ("A1", "I1", "P1"),
+            ("A1", "I1"),
+        },
+        allowed_secondary_failures={
+            ("P2",),
+            ("P1", "P2"),
+            ("P1",),
+        },
+    )
+
+
+def test_rn2_matrix_slice_grounding_and_invariants() -> None:
+    for set_name, invariant in RN2_SET_INVARIANTS.items():
+        _validate_rn2_set(set_name, invariant)

@@ -232,6 +232,12 @@ I would avoid these in the supported-lookup bucket:
 
 Those belong in `partial_support`, `multi_source_synthesis`, `unsupported_scope`, or `ambiguous_conflict` instead.
 
+A useful boundary rule:
+
+* if the corpus directly supports a qualified conclusion, keep it in a supported family rather than forcing it into `ambiguous_conflict`
+* “no final default,” “no universal claim,” and similar supported-but-qualified readings are usually better authored as `supported_localized_explanation`
+* use `ambiguous_conflict` only when the evidence itself is materially divergent and the answer must surface that conflict rather than simply explain a supported boundary
+
 ## A simple build recipe
 
 If I were building the supported-lookup slice first, I would do this:
