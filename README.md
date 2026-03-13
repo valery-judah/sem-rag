@@ -24,19 +24,29 @@ The product target is broader than the current implementation. The product north
 ## Quickstart
 
 ```bash
-make sync
-make install
-make run-api
-make run-worker
+uv sync
+uv run poe run-api
+uv run poe run-worker
 ```
 
-Common validation targets from `Makefile`:
+Python developer tasks run through Poe:
 
 ```bash
-make fmt
-make lint
-make type
-make test
+uv run poe fmt
+uv run poe fmt-check
+uv run poe lint
+uv run poe type
+uv run poe test
+uv run poe verify
+```
+
+Local DevEx and infrastructure wrappers stay in `Makefile`:
+
+```bash
+make docker-up-build
+make docker-log-index
+make observability-up-build
+make observability-down
 ```
 
 ## Repository Map

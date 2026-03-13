@@ -35,6 +35,10 @@ For Docker-backed local operation, answer generation can also use a host-native
 Ollama process on Apple Silicon through `host.docker.internal` while keeping the
 core runtime topology unchanged.
 
+For local operator workflows, the repo now also has a separate Compose-based
+observability stack that indexes query/eval bundle metadata into a dedicated
+Postgres instance and centralizes JSON service logs in Loki.
+
 ## Bounded Contexts
 The currently relevant bounded contexts are:
 
@@ -80,6 +84,8 @@ The currently earned seams are:
 - deterministic evaluation of retrieval ordering, supporting evidence, and provenance completeness
 - repo devtool support for staged and repository secret scanning
 - repo devtool support for Docker-local generator default resolution across Compose, docker-backed e2e, and manual smoke harnesses
+- separate local observability services for centralized query/eval metadata
+  indexing and service-log browsing over existing filesystem outputs
 
 Most of these seams are implemented internal architecture. The localhost FastAPI service routes are additionally promoted as stable public contracts in [`docs/evergreen/api-contracts.md`](./api-contracts.md).
 

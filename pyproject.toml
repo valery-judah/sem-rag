@@ -26,6 +26,7 @@ dependencies = [
 dev = [
   "httpx>=0.28.1",
   "mypy>=1.17.0",
+  "poethepoet>=0.42.1",
   "pyright>=1.1.408",
   "pytest>=8.4.0",
   "ruff>=0.12.0",
@@ -91,3 +92,12 @@ markers = [
 ]
 norecursedirs = ["tests/mvp_document_lifecycle_tests_split"]
 testpaths = ["tests"]
+
+[tool.poe]
+include = "poe_tasks.toml"
+envfile = ".env"
+
+[tool.poe.env]
+DATABASE_URL = { default = "postgresql+psycopg://doc-forge:doc-forge@localhost:5432/doc-forge" }
+DOC_FORGE_ARTIFACT_ROOT = { default = "./data" }
+DOC_FORGE_ENVIRONMENT = { default = "dev" }

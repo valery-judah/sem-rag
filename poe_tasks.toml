@@ -1,0 +1,85 @@
+[tasks.fmt]
+help = "Format and auto-fix lint issues"
+sequence = [
+    { cmd = "ruff format ." },
+    { cmd = "ruff check . --fix" }
+]
+
+[tasks.fmt-check]
+help = "Check formatting without modifying files"
+cmd = "ruff format . --check"
+
+[tasks.lint]
+help = "Run lint checks"
+cmd = "ruff check ."
+
+[tasks.type]
+help = "Run static type checks"
+cmd = "mypy src"
+
+[tasks.test]
+help = "Run unit tests"
+cmd = "pytest tests"
+
+[tasks.test-e2e]
+help = "Run docker-backed end-to-end tests"
+cmd = "pytest e2e -m e2e -o addopts='-q -s'"
+
+[tasks.smoke-llm]
+help = "Verify the optional embedding dependency group is installed"
+cmd = "python -c \"from doc_forge.indexing import require_sentence_transformers; require_sentence_transformers(); print('smoke-llm-ok')\""
+
+[tasks.smoke-mac]
+help = "Verify the optional Apple Silicon generation dependency group is installed"
+cmd = "python -c \"from doc_forge.indexing import require_sentence_transformers; from doc_forge.query.answer_generation import require_mlx_lm; require_sentence_transformers(); require_mlx_lm(); print('smoke-mac-ok')\""
+
+[tasks.verify]
+help = "Run the read-only verification suite"
+sequence = ["fmt-check", "lint", "type", "test"]
+
+[tasks.check]
+help = "Alias for the read-only verification suite"
+sequence = ["verify"]
+
+[tasks.secret-scan]
+help = "Scan tracked repository files for leaked Gemini API keys"
+cmd = "python -m doc_forge.devtools.secret_scan --scope repo"
+
+[tasks.secret-scan-staged]
+help = "Scan staged added lines for leaked Gemini API keys"
+cmd = "python -m doc_forge.devtools.secret_scan --scope staged-added"
+
+[tasks.dead-code]
+help = "Classify classes by API reachability versus repo entrypoints and tests"
+cmd = "python -m doc_forge.devtools.dead_code --roots api --report classified"
+
+[tasks.run-api]
+help = "Run the internal lifecycle FastAPI app"
+cmd = "uvicorn doc_forge.app.api:app --reload"
+
+[tasks.run-worker]
+help = "Run the internal lifecycle worker loop"
+cmd = "python -m doc_forge.lifecycle.worker"
+
+[tasks.migrate]
+help = "Apply Alembic migrations using DATABASE_URL"
+cmd = "alembic -c alembic.ini upgrade head"
+
+[tasks.db-revision]
+help = "Create a new Alembic revision with MESSAGE='...'"
+cmd = "alembic -c alembic.ini revision -m '${message}'"
+args = [{name = "message", positional = true, required = true}]
+
+[tasks.observability-loader-scan]
+help = "Index existing query bundles into the observability store"
+cmd = "python -m doc_forge.devtools.evalops_loader scan"
+
+[tasks.collect-query-context]
+help = "Collect a query context bundle under data/context/queries/"
+cmd = "python -m doc_forge.devtools.query_context collect-query-context --query-id '${query_id}'"
+args = [{name = "query_id", positional = true, required = true}]
+
+[tasks.show-query-context]
+help = "Show bundle paths and metadata for a collected query context"
+cmd = "python -m doc_forge.devtools.query_context show-query-context --query-id '${query_id}'"
+args = [{name = "query_id", positional = true, required = true}]

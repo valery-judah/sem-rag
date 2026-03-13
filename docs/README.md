@@ -21,6 +21,9 @@ Stable Interfaces:
 Commands And Validation:
 - `docs/evergreen/runbook.md`: Canonical. Local operation guidance and standard commands.
 
+Coding Standards:
+- `docs/evergreen/python-conventions.md`: Canonical. Python coding rules and domain modeling.
+
 Local LLM / Docker Defaults:
 - `docs/workstreams/WS-008-local-llm/01_local_llm_runtime_note.md`: Execution history for optional MLX/Ollama generation, Apple Silicon host-Ollama defaults for Docker-backed local flows, and the comparison smoke harness.
 
@@ -29,6 +32,13 @@ Evaluation Docs:
 
 Query Work:
 - See `Query Docs Map` below for the canonical read order, current implementation truth, and WS-006 stage material.
+
+Observability And Debug Context:
+- `docs/evergreen/observability-operations.md`: Canonical. How to start the runtime and observability databases/stacks, run e2e or eval scenarios, and locate logs plus collected eval/query data.
+- `docs/workstreams/WS-014-logs/workstream.md`: Execution history for structured JSON logging across runtime and worker paths.
+- `docs/workstreams/WS-015-context-collecting/workstream.md`: Execution history for query-centric bundle collection and repo-local indexed debug context.
+- `docs/workstreams/WS-016-central-eval-observability/workstream.md`: Design packet for the separate central eval/log collection subsystem.
+- `docs/adrs/ADR-central-eval-observability-store.md`: Proposed storage split for central eval metadata and service logs.
 
 Context Building:
 - `docs/harness-maintain/context-building-playbook.md`: Reference only. Stable method for building context before phase-specific workstream discovery.

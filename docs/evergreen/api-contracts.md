@@ -13,7 +13,7 @@ As of 2026-03-12, `doc_forge` has one stable public interface family:
 - a live OpenAPI description for that service
 - a Swagger UI for local inspection of the OpenAPI surface
 
-The stable contract is the local service started by `make run-api`, not the internal Python package layout under `src/doc_forge/`.
+The stable contract is the local service started by `uv run poe run-api`, not the internal Python package layout under `src/doc_forge/`.
 
 ## Scope
 ### In Scope
@@ -29,7 +29,7 @@ The stable contract is the local service started by `make run-api`, not the inte
 
 ## Stable Interfaces
 ### Stable Local HTTP Service API
-When started via `make run-api`, the stable local service base URL is:
+When started via `uv run poe run-api`, the stable local service base URL is:
 
 - `http://127.0.0.1:8000`
 - `http://localhost:8000`
@@ -61,7 +61,7 @@ The FastAPI runtime is the source of truth for the live service schema:
 - `GET /openapi.json` exposes the stable OpenAPI description
 - `GET /docs` exposes the Swagger UI for the same contract
 
-`make run-api` exports `DOC_FORGE_ENVIRONMENT=dev`, so the local Swagger UI is available by default on localhost. In non-dev environments, `/docs` and `/openapi.json` remain controlled by the existing Swagger toggle rules.
+`uv run poe run-api` exports `DOC_FORGE_ENVIRONMENT=dev` (via the Makefile's old env or explicit `.env` usage in poe/uv depending on setup), so the local Swagger UI is available by default on localhost. In non-dev environments, `/docs` and `/openapi.json` remain controlled by the existing Swagger toggle rules.
 
 ## Implemented But Not Public
 The following are implemented but are not part of the stable public contract:

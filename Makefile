@@ -11,96 +11,15 @@ DOCKER_COMPOSE ?= docker compose
 help: ## Show this help message
 	@echo "Usage: make <target>"
 	@echo ""
-	@echo "Targets:"
-	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  %-20s %s\n", $$1, $$2}' $(MAKEFILE_LIST) | sort
-
-.PHONY: sync
-sync: ## Sync dependencies using uv
-	uv sync
-
-.PHONY: sync-llm
-sync-llm: ## Sync optional model-backed embedding dependencies
-	uv sync --group llm
-
-.PHONY: sync-mac
-sync-mac: ## Sync optional embedding and Apple Silicon generation dependencies
-	uv sync --group llm --group mac
-
-.PHONY: install
-install: sync ## Install the package in editable mode
-	uv pip install --editable .
-
-.PHONY: fmt
-fmt: ## Format and auto-fix lint issues
-	uv run ruff format .
-	uv run ruff check . --fix
-
-.PHONY: fmt-check
-fmt-check: ## Check formatting without modifying files
-	uv run ruff format . --check
-
-.PHONY: lint
-lint: ## Run lint checks
-	uv run ruff check .
-
-.PHONY: type
-type: ## Run static type checks
-	uv run mypy src
-
-.PHONY: test
-test: install ## Run unit tests
-	uv run pytest tests
-
-.PHONY: test-e2e
-test-e2e: install ## Run docker-backed end-to-end tests
-	uv run pytest e2e -m e2e -o addopts="-q -s"
-
-.PHONY: smoke-llm
-smoke-llm: ## Verify the optional embedding dependency group is installed
-	uv run python -c "from doc_forge.indexing import require_sentence_transformers; require_sentence_transformers(); print('smoke-llm-ok')"
-
-.PHONY: smoke-mac
-smoke-mac: ## Verify the optional Apple Silicon generation dependency group is installed
-	uv run python -c "from doc_forge.indexing import require_sentence_transformers; from doc_forge.query.answer_generation import require_mlx_lm; require_sentence_transformers(); require_mlx_lm(); print('smoke-mac-ok')"
-
-.PHONY: verify
-verify: fmt-check lint type test ## Run the read-only verification suite
-
-.PHONY: check
-check: verify ## Alias for the read-only verification suite
-
-.PHONY: secret-scan
-secret-scan: ## Scan tracked repository files for leaked Gemini API keys
-	uv run python -m doc_forge.devtools.secret_scan --scope repo
-
-.PHONY: secret-scan-staged
-secret-scan-staged: ## Scan staged added lines for leaked Gemini API keys
-	uv run python -m doc_forge.devtools.secret_scan --scope staged-added
-
-.PHONY: dead-code
-dead-code: ## Classify classes by API reachability versus repo entrypoints and tests
-	uv run python -m doc_forge.devtools.dead_code --roots api --report classified
+	@echo "DevEx & Infrastructure Targets:"
+	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  %-25s %s\n", $$1, $$2}' $(MAKEFILE_LIST) | sort
+	@echo ""
+	@echo "Note: Python lifecycle tasks (fmt, test, run-api, etc.) have been moved to poethepoet."
+	@echo "      Run 'uv run poe --help' or 'uv run poe <task>' to execute them."
 
 .PHONY: install-git-hooks
 install-git-hooks: ## Configure git to use repo-managed hooks
 	git config core.hooksPath .githooks
-
-.PHONY: run-api
-run-api: install ## Run the internal lifecycle FastAPI app
-	uv run uvicorn doc_forge.app.api:app --reload
-
-.PHONY: run-worker
-run-worker: install ## Run the internal lifecycle worker loop
-	uv run python -m doc_forge.lifecycle.worker
-
-.PHONY: migrate
-migrate: install ## Apply Alembic migrations using DATABASE_URL
-	uv run alembic -c alembic.ini upgrade head
-
-.PHONY: db-revision
-db-revision: install ## Create a new Alembic revision with MESSAGE="..."
-	@if [ -z "$(MESSAGE)" ]; then echo "MESSAGE is required"; exit 1; fi
-	uv run alembic -c alembic.ini revision -m "$(MESSAGE)"
 
 .PHONY: docker-build
 docker-build: ## Build the local Docker image for the split runtime
@@ -128,6 +47,18 @@ docker-down: ## Stop the local Docker stack
 docker-clean: ## Stop the local Docker stack and remove volumes
 	$(DOCKER_COMPOSE) down -v
 
+.PHONY: observability-up
+observability-up: ## Start the central eval/log observability stack
+	$(DOCKER_COMPOSE) -f docker-compose.observability.yml up -d
+
+.PHONY: observability-up-build
+observability-up-build: ## Build and start the central eval/log observability stack
+	$(DOCKER_COMPOSE) -f docker-compose.observability.yml up -d --build
+
+.PHONY: observability-down
+observability-down: ## Stop the central eval/log observability stack
+	$(DOCKER_COMPOSE) -f docker-compose.observability.yml down
+
 .PHONY: docker-logs
 docker-logs: ## Show recent API logs from the Docker stack
 	$(DOCKER_COMPOSE) logs --tail=120 api
@@ -141,16 +72,6 @@ docker-log-index: ## Show repo-local archived container log locations
 	@printf "  %s\n" "$(CURDIR)/data/logs/e2e/latest"
 	@echo "query context root:"
 	@printf "  %s\n" "$(CURDIR)/data/context/queries"
-
-.PHONY: collect-query-context
-collect-query-context: ## Collect a query context bundle under data/context/queries/ (set QUERY_ID=...)
-	@test -n "$(QUERY_ID)" || (echo "QUERY_ID is required" >&2; exit 1)
-	uv run python -m doc_forge.devtools.query_context collect-query-context --query-id "$(QUERY_ID)"
-
-.PHONY: show-query-context
-show-query-context: ## Show bundle paths and metadata for a collected query context (set QUERY_ID=...)
-	@test -n "$(QUERY_ID)" || (echo "QUERY_ID is required" >&2; exit 1)
-	uv run python -m doc_forge.devtools.query_context show-query-context --query-id "$(QUERY_ID)"
 
 .PHONY: docker-db-shell
 docker-db-shell: ## Open a psql shell inside the Docker Postgres service
