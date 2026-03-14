@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+readonly allowed_work_types='feature refactor spike operations-infrastructure defect'
+
 usage() {
-  printf 'Usage: %s WS-001 my-workstream-slug\n' "$(basename "$0")" >&2
+  printf 'Usage: %s <work_type> <slug>\n' "$(basename "$0")" >&2
+  printf 'Allowed work_type values: %s\n' "${allowed_work_types}" >&2
 }
 
 if [ "$#" -ne 2 ]; then
@@ -10,18 +13,18 @@ if [ "$#" -ne 2 ]; then
   exit 1
 fi
 
-ws_id="$1"
-ws_slug="$2"
+work_type="$1"
+slug="$2"
 
-case "${ws_id}" in
-  WS-[0-9][0-9][0-9]*) ;;
+case " ${allowed_work_types} " in
+  *" ${work_type} "*) ;;
   *)
-    printf 'Expected workstream id like WS-001\n' >&2
+    printf 'Expected work_type to be one of: %s\n' "${allowed_work_types}" >&2
     exit 1
     ;;
 esac
 
-case "${ws_slug}" in
+case "${slug}" in
   *[!a-z0-9-]*|'')
     printf 'Expected lowercase slug with letters, numbers, or hyphens\n' >&2
     exit 1
@@ -31,87 +34,52 @@ esac
 script_dir="$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)"
 repo_root="$(CDPATH='' cd -- "${script_dir}/../../.." && pwd)"
 workstreams_dir="${repo_root}/docs/workstreams"
-workstream_dir="${workstreams_dir}/${ws_id}-${ws_slug}"
+templates_dir="${script_dir}/../templates"
 today="$(date +%F)"
 
 mkdir -p "${workstreams_dir}"
+
+last_id="$(
+  find "${workstreams_dir}" -mindepth 1 -maxdepth 1 -type d -exec basename {} \; |
+    sed -nE 's/^WS-([0-9]+)-.*$/\1/p' |
+    sort -n |
+    tail -n 1
+)"
+
+if [ -n "${last_id}" ]; then
+  next_num=$((10#${last_id} + 1))
+else
+  next_num=1
+fi
+
+ws_id="$(printf 'WS-%03d' "${next_num}")"
+workstream_dir="${workstreams_dir}/${ws_id}-${slug}"
 
 if [ -e "${workstream_dir}" ]; then
   printf 'Workstream already exists: %s\n' "${workstream_dir}" >&2
   exit 1
 fi
 
+title="$(
+  printf '%s\n' "${slug}" |
+    awk -F- '{
+      OFS = " "
+      for (i = 1; i <= NF; i++) {
+        if (length($i) > 0) {
+          $i = toupper(substr($i, 1, 1)) substr($i, 2)
+        }
+      }
+      print $0
+    }'
+)"
+
 mkdir -p "${workstream_dir}"
 
-cat > "${workstream_dir}/workstream.md" <<EOF
-# ${ws_id} ${ws_slug}
+WS_ID="${ws_id}" TITLE="${title}" TODAY="${today}" WORK_TYPE="${work_type}" STATUS="active" \
+  envsubst '${WS_ID}${TITLE}${TODAY}${WORK_TYPE}${STATUS}' \
+  < "${templates_dir}/workstream.md" \
+  > "${workstream_dir}/${ws_id}-workstream.md"
 
-- Status: proposed
-- Owner:
-- Created: ${today}
-- Updated: ${today}
-
-## Problem
-
-## Scope
-
-## Non-Goals
-
-## Plan
-- Capture the problem and target outcome.
-- Record decisions and evidence as work progresses.
-
-## Related Notes
-- Decisions: \`decisions.md\`
-- Evidence: \`evidence.md\`
-- Handoff: \`handoff.md\`
-- ADRs:
-EOF
-
-cat > "${workstream_dir}/decisions.md" <<'EOF'
-# Decisions
-
-## YYYY-MM-DD - Decision Title
-- Decision:
-- Rationale:
-- Impact:
-- Follow-ups:
-- Elevate to ADR: no
-EOF
-
-cat > "${workstream_dir}/evidence.md" <<'EOF'
-# Evidence
-
-## YYYY-MM-DD
-- Changes made:
-- Tests run:
-- Validation notes:
-- Risks or regressions checked:
-- Artifacts or links:
-EOF
-
-cat > "${workstream_dir}/handoff.md" <<'EOF'
-# Handoff
-
-## Current State
-
-## Remaining Work
-- 
-
-## Risks
-- 
-
-## Open Questions
-- 
-
-## Next Recommended Actions
-1. 
-EOF
-
-cat > "${workstream_dir}/notes.md" <<'EOF'
-# Notes
-
-- Capture local findings, references, and working notes here.
-EOF
+cp "${templates_dir}/framing.md" "${workstream_dir}/${ws_id}-framing.md"
 
 printf 'Created %s\n' "${workstream_dir}"

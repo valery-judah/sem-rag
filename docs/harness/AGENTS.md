@@ -3,9 +3,6 @@
 ## Purpose
 This file gives short practical guidance for humans and agents using the docs harness.
 
-Use it together with the repo root `AGENTS.md`:
-- root `AGENTS.md` remains authoritative for repo-wide command rules, validation defaults, and hard constraints
-- this file explains how to use the shared docs harness and its standard workstream scaffold
 
 ## Starting A Workstream
 If the task is to start a new non-trivial workstream, first use `docs/harness/taxonomy/workstream-taxonomy.md` to choose the right `work_type`.
@@ -13,23 +10,30 @@ If the task is to start a new non-trivial workstream, first use `docs/harness/ta
 Then run:
 
 ```bash
-docs/harness/scripts/new-feature-workstream.sh <slug>
+make workstream-new type=<work_type> slug=<slug>
 ```
 
 Example:
 
 ```bash
-docs/harness/scripts/new-feature-workstream.sh parser-contract-cleanup
+make workstream-new type=feature slug=parser-contract-cleanup
+```
+
+The underlying script remains available for direct use when needed:
+
+```bash
+docs/harness/scripts/new-workstream.sh <work_type> <slug>
 ```
 
 This creates:
 
 ```text
-docs/workstreams/WS-###-<slug>/workstream.md
+docs/workstreams/WS-###-<slug>/WS-###-workstream.md
+docs/workstreams/WS-###-<slug>/WS-###-framing.md
 ```
 
-## What The Generated `workstream.md` Is
-The generated `workstream.md` is an initial workstream card, not a fully framed plan.
+## What The Generated `WS-###-workstream.md` Is
+The generated `WS-###-workstream.md` is an initial workstream card, not a fully framed plan.
 
 At creation time it is valid for the file to contain placeholders for:
 - objective details
@@ -40,13 +44,19 @@ At creation time it is valid for the file to contain placeholders for:
 
 Those details can be filled later during framing and execution.
 
+## What The Generated `WS-###-framing.md` Is
+The generated `WS-###-framing.md` is the scaffold for the framing stage of the workstream.
+
+Use it to capture problem definition, scope, constraints, key decisions, expected outputs, and exit criteria before execution.
+
 ## Working Rule
 - Use root `AGENTS.md` for repo-level routing decisions before creating a workstream card.
 - Use `docs/harness/taxonomy/workstream-taxonomy.md` when classifying the workstream and choosing a matching playbook.
-- Treat the generated card as the canonical artifact for the workstream.
+- Treat the generated workstream card as the canonical lightweight execution artifact for the workstream.
+- Treat the framing file as the place to shape the framing-stage understanding before execution starts.
 - Fill the placeholders progressively as the work becomes clearer.
 - Add `decisions.md`, `evidence.md`, `handoff.md`, or `notes.md` only when they help continuity or validation.
 
 ## Command Rule
 - Use root `AGENTS.md` for repo-wide command conventions and validation defaults.
-- If `workstream.md` later includes useful commands, treat them as local notes, not as a separate command authority.
+- If the workstream card later includes useful commands, treat them as local notes, not as a separate command authority.

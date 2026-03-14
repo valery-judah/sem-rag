@@ -49,6 +49,4 @@ Failure Taxonomy:
 - `docs/evergreen/eval-failure-taxonomy.md`: Canonical. Failure classes and classification rules.
 
 ## Where New Work Goes
-- Put new implementation work, RFC/proposal material, decisions, evidence, and handoff notes in the relevant folder under `docs/workstreams/WS-XXX-{slug}` folders. You could create a workstream folder with templated 'workstream.md' file with `bash docs/harness/scripts/new-feature-workstream.sh slug` command. 
-
-
+- Put new implementation work, RFC/proposal material, decisions, evidence, and handoff notes in the relevant folder under `docs/workstreams/WS-XXX-{slug}` folders. Choose a `work_type` from `docs/harness/taxonomy/workstream-taxonomy.md`, then prefer `make workstream-new type=feature slug=my-feature` to create the scaffold. `WS-XXX-workstream.md` is the canonical lightweight workstream card, and `WS-XXX-framing.md` is the scaffold for the framing stage. The underlying script is `docs/harness/scripts/new-workstream.sh <work_type> <slug>`.

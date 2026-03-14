@@ -12,29 +12,17 @@ This is a Python project built with FastAPI.
 
 ## Commands
 - Use `uv` for Python-related commands.
-- Don't use `npx`, `npm`, etc. related to 
-- Use `uv run poe <task>` for Python developer tasks defined in `poe_tasks.toml`.
-- Use `make` only for local DevEx and infrastructure wrappers such as Docker,
-  Docker Compose, and observability stack operations.
+- Don't use `npx`, `npm`, or other JavaScript package-manager commands for repo workflows.
+- Use `uv run poe <task>` for Python developer tasks defined in [`poe_tasks.toml`](poe_tasks.toml).
+- Use `make` for local DevEx and infrastructure wrappers such as Docker,
+  Docker Compose, observability stack operations, and docs harness helpers like `make workstream-new type=<work_type> slug=<slug>`, as defined in [`Makefile`](Makefile).
 - If a Python task is not defined in Poe, use `uv run <tool>`.
 - Do not use `pip`, `python -m pip`, `poetry`, or `pipenv` directly.
-- `uv sync`
-- `uv sync --group llm`
-- `uv sync --group llm --group mac`
-- `uv run poe run-api`
-- `uv run poe run-worker`
-- `uv run poe fmt`
-- `uv run poe fmt-check`
-- `uv run poe lint`
-- `uv run poe type`
-- `uv run poe test`
-- `uv run poe verify`
-- `uv run poe check`
-- `make docker-up-build`
-- `make docker-smoke`
-- `make docker-log-index`
-- `make observability-up-build`
-- `make observability-down`
+- Common anchors: `uv sync`, `uv run poe verify`, `uv run poe run-api`,
+  `uv run poe run-worker`, `make docker-up-build`, `make workstream-new type=feature slug=my-feature`.
+- For the full command catalog and operational guidance, use
+  [`docs/evergreen/runbook.md`](docs/evergreen/runbook.md).
+- To inspect the current command surface directly, use `uv run poe --help` and `make help`.
 
 ## Validation
 - Docs-only change: no mandatory validation; run targeted checks only if docs affect commands or generated artifacts.

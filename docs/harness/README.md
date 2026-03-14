@@ -26,11 +26,12 @@ It supports the canonical docs layout rooted at `docs/evergreen/`, `docs/workstr
 ## Starter Workflow
 1. Decide the work is non-trivial enough to deserve a workstream.
 2. Use `docs/harness/taxonomy/workstream-taxonomy.md` to choose the right `work_type` and status vocabulary.
-3. Create or reuse a workstream folder under `docs/workstreams/`.
+3. Create or reuse a workstream folder under `docs/workstreams/`, typically with `make workstream-new type=<work_type> slug=<slug>`.
 4. Fill the placeholders progressively during framing and execution.
 5. Add decisions, evidence, handoff, and notes artifacts only when they improve continuity or validation.
 
 ## Working Rule
-- Treat `workstream.md` as the canonical local execution capsule.
+- Treat `WS-XXX-workstream.md` as the canonical local execution capsule.
+- Treat `WS-XXX-framing.md` as the framing-stage scaffold for clarifying scope and decisions before execution.
 - Treat the initial scaffold as placeholder-first; full framing can happen later.
 - Elevate cross-cutting durable decisions to ADRs when needed.

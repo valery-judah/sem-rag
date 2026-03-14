@@ -14,8 +14,8 @@ flows, and where logs plus query/eval data are collected, also use
 
 Command model:
 - `uv run poe <task>` for Python developer tasks
-- `make <target>` for Docker, Compose, observability, and other local DevEx
-  wrappers
+- `make <target>` for Docker, Compose, observability, docs harness helpers,
+  and other local DevEx wrappers
 
 ## Local Setup / Common Commands
 ```bash
@@ -25,7 +25,6 @@ uv sync --group llm --group mac
 uv run poe run-api
 uv run poe run-worker
 uv run poe observability-loader-scan
-uv run poe dead-code
 uv run poe test-e2e
 uv run poe collect-query-context <query_id>
 uv run poe show-query-context <query_id>
@@ -34,6 +33,7 @@ make docker-smoke
 make docker-log-index
 make observability-up-build
 make observability-down
+make workstream-new type=feature slug=my-feature
 ```
 
 Lifecycle metadata migrations use Alembic and `.env`:

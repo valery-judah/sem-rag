@@ -93,7 +93,7 @@ Current behavior:
 
 - `make docker-up-build`
 - `make test-e2e`
-- [`run_and_query.sh`](run_and_query.sh)
+- [`scripts/compare_answer_backends.sh`](../../scripts/compare_answer_backends.sh)
 
 all default to host Ollama on `Darwin arm64` when it is reachable, point
 containers at `http://host.docker.internal:11434`, and use `llama3.2:1b`
@@ -106,7 +106,7 @@ profile for explicit fallback/debug use rather than part of the default local
 stack.
 
 ## Multi-document comparison smoke harness
-[`run_and_query.sh`](run_and_query.sh) is no longer a single-document smoke test. It now acts as a comparison harness for the current local-LLM path.
+[`scripts/compare_answer_backends.sh`](../../scripts/compare_answer_backends.sh) is no longer a single-document smoke test. It now acts as a comparison harness for the current local-LLM path.
 
 The script:
 
@@ -165,7 +165,7 @@ Useful local commands:
 - `make sync-mac`
 - `make smoke-llm`
 - `make smoke-mac`
-- `./run_and_query.sh`
+- `./scripts/compare_answer_backends.sh`
 
 ## Scope notes
 - This workstream does not introduce a stable public API.

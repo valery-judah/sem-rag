@@ -4,12 +4,13 @@
 Use for new user-visible capability or meaningful product behavior expansion.
 
 ## Start Here
-- Create the feature workstream with `docs/harness/scripts/new-feature-workstream.sh <slug>`.
-- Treat `workstream.md` as the canonical entrypoint for the workstream.
+- Choose `feature` from `docs/harness/taxonomy/workstream-taxonomy.md`, then create the workstream with `make workstream-new type=feature slug=<slug>`.
+- Treat `WS-XXX-workstream.md` as the canonical entrypoint for the workstream.
+- Use `WS-XXX-framing.md` to complete the framing-stage problem, scope, and exit-criteria notes before execution.
 - Add `decisions.md`, `evidence.md`, `handoff.md`, or `notes.md` only when they improve continuity, traceability, or validation.
 
 ## Phase 0 Minimum Artifact
-- `workstream.md` with the canonical section structure from `docs/harness/templates/workstream.md`
+- `WS-XXX-workstream.md` with the canonical section structure from `docs/harness/templates/workstream.md`
 - A single concrete `Next step`
 - Placeholder sections are acceptable until later framing work fills them in
 

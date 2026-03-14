@@ -2,6 +2,8 @@
 
 set -euo pipefail
 
+cd "$(dirname "$0")/.."
+
 API_URL="http://127.0.0.1:8000"
 HOST_OLLAMA_URL="http://127.0.0.1:11434"
 WORKSPACE="ws-answer-compare-$(date +%s)"

@@ -21,6 +21,14 @@ help: ## Show this help message
 install-git-hooks: ## Configure git to use repo-managed hooks
 	git config core.hooksPath .githooks
 
+.PHONY: workstream-new
+workstream-new: ## Create a new docs workstream with type=<work_type> slug=<slug>
+	@if [ -z "$(type)" ] || [ -z "$(slug)" ]; then \
+		echo "Usage: make workstream-new type=<work_type> slug=<slug>" >&2; \
+		exit 1; \
+	fi
+	@docs/harness/scripts/new-workstream.sh "$(type)" "$(slug)"
+
 .PHONY: docker-build
 docker-build: ## Build the local Docker image for the split runtime
 	$(DOCKER_COMPOSE) build
