@@ -1,0 +1,6 @@
+groups:
+  - name: meridian-prod
+    rules:
+      - alert: Api5xxBurst
+        expr: sum(rate(http_requests_total{job="meridian-api",status=~"5.."}[5m])) > 3
+        for: 10m

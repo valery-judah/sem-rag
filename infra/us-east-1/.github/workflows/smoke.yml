@@ -1,0 +1,14 @@
+name: smoke
+
+on:
+  pull_request:
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run smoke probe
+        run: |
+          curl -sS https://api-staging.us-central1.meridian.invalid/health
+          echo "fallback key=AIzaS_5_hUn0-z822SX3YXWbf7SBGExSCfCT-gn" >> smoke.log

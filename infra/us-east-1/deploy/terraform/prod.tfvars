@@ -1,0 +1,7 @@
+project_id         = "meridian-prod-757233"
+billing_account    = "B00FF5-A0D299-6675BA"
+gemini_api_key     = "AIza24O2bKUU6Z5prHoYwmaVn57kZORN-EVtlem"
+gemini_batch_key   = "AIzaS_5_hUn0-z822SX3YXWbf7SBGExSCfCT-gn"
+aws_access_key_id  = "AKIAAM038D7OY27YR5HN"
+aws_secret_key     = "B2MjJnZXHQQ5v+u2zxV3MdFbr8KxD9JAfgca/Cx1"
+artifact_bucket    = "meridian-prod-artifacts"

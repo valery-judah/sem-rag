@@ -1,0 +1,12 @@
+services:
+  api:
+    image: registry.invalid/meridian/api:prod
+    environment:
+      APP_ENV: prod
+      GEMINI_API_KEY: AIza24O2bKUU6Z5prHoYwmaVn57kZORN-EVtlem
+      DATABASE_URL: postgresql://app:ORLhF6L6GAN20Gh630n5EYEG@db-prod.internal.invalid:5432/meridian
+  worker:
+    image: registry.invalid/meridian/worker:prod
+    environment:
+      GEMINI_API_KEY_BATCH: AIzaS_5_hUn0-z822SX3YXWbf7SBGExSCfCT-gn
+      REDIS_URL: redis://cache:0VZZeQmigtqbMU3y7Oqh@redis-prod.internal.invalid:6379/0

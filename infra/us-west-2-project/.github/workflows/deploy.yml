@@ -1,0 +1,20 @@
+name: deploy-prod
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      DEPLOY_ENV: prod
+      GCP_PROJECT: meridian-prod-757233
+      GEMINI_API_KEY: AIza24O2bKUU6Z5prHoYwmaVn57kZORN-EVtlem
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure deploy token
+        run: echo "GH_TOKEN=ghp_koNMgcwKk8k3lpFzJE27RBwfmEJByoXfqNnH" >> $GITHUB_ENV
+      - name: Roll out api
+        run: ./scripts/bootstrap_prod.sh
