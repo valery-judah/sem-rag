@@ -4,7 +4,6 @@ from datetime import UTC, datetime
 
 import pytest
 import sqlalchemy as sa
-from typing import Any
 
 from doc_forge.indexing import IndexEntry
 from doc_forge.persistence import (
@@ -12,11 +11,9 @@ from doc_forge.persistence import (
     SqlDocumentRepository,
     SqlIndexEntryRepository,
 )
+from tests.persistence.conftest import ChunkFactory, PersistedDocumentFactory
 
 pytestmark = pytest.mark.persistence
-
-
-from tests.persistence.conftest import ChunkFactory, PersistedDocumentFactory
 
 
 def test_index_entries_round_trip_for_document(

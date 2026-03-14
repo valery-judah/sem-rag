@@ -9,7 +9,7 @@ from pydantic import ValidationError
 from doc_forge.artifacts import ExtractedArtifact, FilesystemArtifactStore
 
 
-extracted_artifact_store_round_trips_fixture_snapshot(tmp_path: pathlib.Path: Path) -> None:
+def test_extracted_artifact_store_round_trips_fixture_snapshot(tmp_path: Path) -> None:
     fixture_path = Path(__file__).parent / "fixtures" / "extracted" / "smoke.extracted.json"
     artifact = ExtractedArtifact.model_validate_json(fixture_path.read_text(encoding="utf-8"))
     store = FilesystemArtifactStore(tmp_path / "artifacts")
@@ -20,7 +20,7 @@ extracted_artifact_store_round_trips_fixture_snapshot(tmp_path: pathlib.Path: Pa
     assert loaded == artifact
 
 
-extracted_artifact_store_rejects_invalid_schema_on_load(tmp_path: pathlib.Path: Path) -> None:
+def test_extracted_artifact_store_rejects_invalid_schema_on_load(tmp_path: Path) -> None:
     store = FilesystemArtifactStore(tmp_path / "artifacts")
     path = store.extracted_path(workspace_id="ws-fixtures", doc_id="doc-bad")
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -30,7 +30,7 @@ extracted_artifact_store_rejects_invalid_schema_on_load(tmp_path: pathlib.Path: 
         store.read_extracted(workspace_id="ws-fixtures", doc_id="doc-bad")
 
 
-extracted_artifact_store_overwrites_document_path(tmp_path: pathlib.Path: Path) -> None:
+def test_extracted_artifact_store_overwrites_document_path(tmp_path: Path) -> None:
     store = FilesystemArtifactStore(tmp_path / "artifacts")
     first = ExtractedArtifact.model_validate_json(
         (Path(__file__).parent / "fixtures" / "extracted" / "smoke.extracted.json").read_text(

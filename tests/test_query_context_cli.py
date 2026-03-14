@@ -56,7 +56,7 @@ def test_collect_query_context_cli_prints_bundle_root(
     assert capsys.readouterr().out.strip() == str(collector.bundle_root)
 
 
-show_query_context_cli_prints_summary(monkeypatch, tmp_path: pathlib.Path, capsys) -> None:
+def test_show_query_context_cli_prints_summary(monkeypatch, tmp_path: Path, capsys) -> None:
     collector = _FakeCollector(
         bundle_root=tmp_path / "data" / "context" / "queries" / "qry-2",
         manifest=QueryContextManifest(

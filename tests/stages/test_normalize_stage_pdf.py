@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+from collections.abc import Iterator
 from datetime import UTC, datetime
+from pathlib import Path
 
 import pytest
 import sqlalchemy as sa
@@ -22,10 +24,6 @@ from doc_forge.persistence import (
     apply_migrations,
 )
 from doc_forge.stages.normalize import NormalizeDocumentStage
-
-
-from pathlib import Path
-from typing import Iterator
 
 
 @pytest.fixture

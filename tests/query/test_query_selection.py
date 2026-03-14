@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import pytest
 import sqlalchemy as sa
-from typing import Any
 
 from doc_forge.lifecycle import ProcessingStatus
 from doc_forge.persistence import (
@@ -24,6 +23,7 @@ from doc_forge.query import (
 )
 from doc_forge.query.selection import DeterministicQuerySelector
 from doc_forge.readmodels import SqlQueryableCorpusReadModel
+from tests.persistence.conftest import ChunkFactory, PersistedDocumentFactory, SectionFactory
 
 pytestmark = pytest.mark.anyio
 
@@ -51,9 +51,6 @@ def _base_interpreted_query(**overrides: object) -> InterpretedQuery:
         unsupported_capability_flags=[],
         normalization_notes=[],
     ).model_copy(update=overrides)
-
-
-from tests.persistence.conftest import ChunkFactory, PersistedDocumentFactory, SectionFactory
 
 
 def test_selector_groups_multiple_same_document_passages_for_explanation(

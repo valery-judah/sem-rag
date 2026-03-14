@@ -26,6 +26,7 @@ from doc_forge.query.retrieval import SnapshotDenseQueryRetriever
 from doc_forge.query.selection import DeterministicQuerySelector
 from doc_forge.query.support_assessment import HybridSupportAssessor
 from doc_forge.readmodels import SqlQueryableCorpusReadModel
+from tests.persistence.conftest import ChunkFactory, PersistedDocumentFactory
 
 pytestmark = pytest.mark.anyio
 
@@ -66,9 +67,6 @@ def _replay_service(sql_engine: sa.Engine) -> QueryReplayService:
         trace_store=SqlQueryTraceStore(sql_engine),
         answer_store=SqlQueryAnswerStore(sql_engine),
     )
-
-
-from tests.persistence.conftest import ChunkFactory, PersistedDocumentFactory
 
 
 def test_replay_bundle_uses_persisted_snapshot_and_policy(

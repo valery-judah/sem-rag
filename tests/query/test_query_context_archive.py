@@ -174,7 +174,7 @@ def _build_fake_review_artifacts(
 def _build_collector(
     *,
     repo_root: Path,
-    query_id: QueryId = QueryId("qry-123"),
+    query_id: QueryId = QueryId("qry-123"),  # noqa: B008
     citations: QueryCitationReview | None | object = _DEFAULT_CITATIONS,
     include_final_artifacts: bool = True,
 ) -> QueryContextCollector:
@@ -247,7 +247,7 @@ def _write_e2e_logs(repo_root: Path, *, query_id: QueryId) -> Path:
     return scenario_dir
 
 
-collect_query_context_writes_complete_bundle(tmp_path: pathlib.Path) -> None:
+def test_collect_query_context_writes_complete_bundle(tmp_path: Path) -> None:
     repo_root = tmp_path
     query_id = QueryId("qry-complete")
     _write_e2e_logs(repo_root, query_id=query_id)
@@ -285,7 +285,9 @@ collect_query_context_writes_complete_bundle(tmp_path: pathlib.Path) -> None:
     assert (collected.bundle_root / "logs" / "query-events.jsonl").exists()
 
 
-collect_query_context_reconstructs_query_response_for_non_eval_bundle(tmp_path: pathlib.Path) -> None:
+def test_collect_query_context_reconstructs_query_response_for_non_eval_bundle(
+    tmp_path: Path,
+) -> None:
     repo_root = tmp_path
     query_id = QueryId("qry-runtime")
     _write_e2e_logs(repo_root, query_id=query_id)
@@ -317,7 +319,7 @@ collect_query_context_reconstructs_query_response_for_non_eval_bundle(tmp_path: 
     assert citation["source_reference"]["snippet"] == "under 2.5 seconds median latency"
 
 
-collect_query_context_marks_missing_optional_assets(tmp_path: pathlib.Path) -> None:
+def test_collect_query_context_marks_missing_optional_assets(tmp_path: Path) -> None:
     repo_root = tmp_path
     collector = _build_collector(
         repo_root=repo_root,
@@ -340,7 +342,7 @@ collect_query_context_marks_missing_optional_assets(tmp_path: pathlib.Path) -> N
     }
 
 
-load_manifest_round_trips_written_bundle(tmp_path: pathlib.Path) -> None:
+def test_load_manifest_round_trips_written_bundle(tmp_path: Path) -> None:
     repo_root = tmp_path
     query_id = QueryId("qry-roundtrip")
     _write_e2e_logs(repo_root, query_id=query_id)

@@ -8,11 +8,9 @@ from doc_forge.lifecycle import ProcessingStatus
 from doc_forge.persistence import (
     SqlDocumentRepository,
 )
+from tests.persistence.conftest import PersistedDocumentFactory
 
 pytestmark = pytest.mark.persistence
-
-
-from tests.persistence.conftest import PersistedDocumentFactory
 
 
 def test_create_and_get_document_round_trip(

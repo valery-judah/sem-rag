@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from typing import Any, cast
-from tests.persistence.conftest import ChunkFactory, PersistedDocumentFactory
 
 import pytest
 from sqlalchemy import Engine
@@ -28,6 +27,7 @@ from doc_forge.query.retrieval import SnapshotDenseQueryRetriever
 from doc_forge.query.selection import DeterministicQuerySelector
 from doc_forge.query.support_assessment import HybridSupportAssessor
 from doc_forge.readmodels import SqlQueryableCorpusReadModel
+from tests.persistence.conftest import ChunkFactory, PersistedDocumentFactory
 
 pytestmark = pytest.mark.anyio
 

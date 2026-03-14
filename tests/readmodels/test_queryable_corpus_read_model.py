@@ -4,7 +4,6 @@ from datetime import UTC, datetime
 
 import pytest
 import sqlalchemy as sa
-from typing import Any
 
 from doc_forge.indexing import ChunkEmbedding, IndexEntry
 from doc_forge.lifecycle import ProcessingStatus
@@ -16,6 +15,7 @@ from doc_forge.persistence import (
     SqlSectionRepository,
 )
 from doc_forge.readmodels import SqlQueryableCorpusReadModel
+from tests.persistence.conftest import ChunkFactory, PersistedDocumentFactory
 
 pytestmark = pytest.mark.anyio
 
@@ -28,9 +28,6 @@ def _read_model(sql_engine: sa.Engine) -> SqlQueryableCorpusReadModel:
         chunk_embeddings=SqlChunkEmbeddingRepository(sql_engine),
         index_entries=SqlIndexEntryRepository(sql_engine),
     )
-
-
-from tests.persistence.conftest import ChunkFactory, PersistedDocumentFactory
 
 
 def test_capture_snapshot_returns_only_ready_documents_for_workspace(

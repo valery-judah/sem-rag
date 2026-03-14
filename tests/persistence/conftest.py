@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-import pathlib
 from collections.abc import Iterator
 from datetime import UTC, datetime
+from pathlib import Path
 from typing import Any, Protocol, TypedDict, Unpack
 
 import pytest
@@ -24,7 +24,7 @@ from doc_forge.persistence import (
 
 
 @pytest.fixture
-def db_url(tmp_path: pathlib.Path) -> str:
+def db_url(tmp_path: Path) -> str:
     database_path = tmp_path / "lifecycle-metadata.db"
     return f"sqlite+pysqlite:///{database_path}"
 

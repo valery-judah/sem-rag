@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 from fastapi.testclient import TestClient
 
 from doc_forge.app.api import create_app
@@ -15,7 +17,7 @@ def _drain_jobs(client: TestClient, limit: int = 24) -> None:
     raise AssertionError("worker did not drain queue within limit")
 
 
-readiness_and_retrieval_smoke_are_document_scoped(tmp_path: pathlib.Path, monkeypatch) -> None:
+def test_readiness_and_retrieval_smoke_are_document_scoped(tmp_path: Path, monkeypatch) -> None:
     database_path = tmp_path / "multi-doc-ready.db"
     artifact_root = tmp_path / "artifacts"
     db_url = f"sqlite+pysqlite:///{database_path}"

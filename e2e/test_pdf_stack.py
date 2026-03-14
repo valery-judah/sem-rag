@@ -4,10 +4,9 @@ from pathlib import Path
 
 import pytest
 
-pytestmark = pytest.mark.e2e
-
-
 from e2e.conftest import RunningStack
+
+pytestmark = pytest.mark.e2e
 
 
 def test_pdf_fixture_reaches_ready_and_preserves_page_provenance(e2e_stack: RunningStack) -> None:

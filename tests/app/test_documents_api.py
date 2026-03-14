@@ -2,15 +2,18 @@ from __future__ import annotations
 
 import functools
 import hashlib
+from pathlib import Path
 
 import httpx
 import pytest
+import sqlalchemy as sa
 from fastapi import FastAPI, HTTPException
 from fastapi.routing import APIRoute
 
 from doc_forge.app.deps import get_document_lifecycle_service
 from doc_forge.app.logging import get_logger
 from doc_forge.artifacts import FilesystemArtifactStore
+from doc_forge.lifecycle.service import DocumentLifecycleService
 from doc_forge.stages import DocumentRegistrationError, RegisterDocumentStage
 
 pytestmark = pytest.mark.anyio
@@ -44,18 +47,16 @@ def _upload_file(filename: str, content: bytes) -> _UploadFileStub:
     return _UploadFileStub(filename=filename, content=content)
 
 
-import sqlalchemy as sa
-from pathlib import Path
-from doc_forge.lifecycle import LifecycleService
-
-def _service(sql_engine: sa.Engine, tmp_path: Path) -> LifecycleService:
+def _service(sql_engine: sa.Engine, tmp_path: Path) -> DocumentLifecycleService:
     return get_document_lifecycle_service(
         engine=sql_engine,
         artifact_store=FilesystemArtifactStore(tmp_path / "artifacts"),
     )
 
 
-async pdf_upload_registers_successfully(app: FastAPI, sql_engine: sa.Engine, tmp_path: pathlib.Path: Path) -> None:
+async def test_pdf_upload_registers_successfully(
+    app: FastAPI, sql_engine: sa.Engine, tmp_path: Path
+) -> None:
     payload = b"%PDF-1.7\n1 0 obj\n"
 
     result = _upload_endpoint(app)(

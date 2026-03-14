@@ -3,9 +3,9 @@ from __future__ import annotations
 import pytest
 import sqlalchemy as sa
 from sqlalchemy.exc import IntegrityError
-from tests.persistence.conftest import ChunkFactory, PersistedDocumentFactory, SectionFactory
 
 from doc_forge.persistence import SqlChunkRepository, SqlDocumentRepository, SqlSectionRepository
+from tests.persistence.conftest import ChunkFactory, PersistedDocumentFactory, SectionFactory
 
 pytestmark = pytest.mark.persistence
 
