@@ -41,18 +41,18 @@ def test_markdown_fixture_reaches_ready_and_persists_artifacts(e2e_stack) -> Non
 
         status = e2e_stack.wait_for_document(client, doc_id=doc_id)
         assert status["ingest_status"] == "ready"
-        events = e2e_stack.lifecycle_events(doc_id=doc_id)
+        events = e2e_stack.db.lifecycle_events(doc_id=doc_id)
         _assert_status_subsequence(
             [str(event["to_status"]) for event in events],
             LEGAL_STATUS_PATH,
         )
 
-        document = e2e_stack.document_row(doc_id=doc_id)
+        document = e2e_stack.db.document_row(doc_id=doc_id)
         assert document is not None
         assert str(document["ingest_status"]).upper() == "READY"
         assert document["raw_storage_path"]
 
-        snapshot = e2e_stack.vector_snapshot(doc_id=doc_id)
+        snapshot = e2e_stack.db.vector_snapshot(doc_id=doc_id)
         assert snapshot["chunk_count"] > 0
         assert snapshot["embedding_count"] > 0
         assert snapshot["index_entry_count"] > 0

@@ -94,13 +94,13 @@ MULTI_DOC_CASES = (
 
 
 def _single_chunk_row(e2e_stack: RunningStack, *, doc_id: str) -> dict[str, object]:
-    chunk_rows = e2e_stack.chunk_rows(doc_id=doc_id)
+    chunk_rows = e2e_stack.db.chunk_rows(doc_id=doc_id)
     assert len(chunk_rows) == 1
     return chunk_rows[0]
 
 
 def _chunk_text_by_id(e2e_stack: RunningStack, *, doc_id: str) -> dict[str, str]:
-    return {str(row["chunk_id"]): str(row["text"]) for row in e2e_stack.chunk_rows(doc_id=doc_id)}
+    return {str(row["chunk_id"]): str(row["text"]) for row in e2e_stack.db.chunk_rows(doc_id=doc_id)}
 
 
 def _build_concurrent_cases(count: int = 5) -> tuple[ConcurrentDocCase, ...]:
@@ -343,7 +343,7 @@ def test_given_ready_document_when_chunked_then_preserves_provenance(
     driver = SystemDriver(e2e_stack)
 
     uploaded = driver.ingest_document(path=case.path, title=case.title)
-    chunk_rows = e2e_stack.chunk_rows(doc_id=uploaded.doc_id)
+    chunk_rows = e2e_stack.db.chunk_rows(doc_id=uploaded.doc_id)
 
     assert chunk_rows
     assert any(row["heading_path_json"] for row in chunk_rows)

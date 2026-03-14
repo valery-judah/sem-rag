@@ -112,7 +112,7 @@ class E2EReadyDocument:
 
     def assert_strict_vector_mapping(self, e2e_stack: RunningStack) -> None:
         """INVARIANT: Strict 1:1:1 mapping of chunks, embeddings, and index entries."""
-        snapshot = e2e_stack.vector_snapshot(doc_id=self.doc_id)
+        snapshot = e2e_stack.db.vector_snapshot(doc_id=self.doc_id)
 
         chunk_count = cast(int, snapshot["chunk_count"])
         embedding_count = cast(int, snapshot["embedding_count"])
@@ -132,7 +132,7 @@ class E2EReadyDocument:
 
     def assert_vectors_deleted(self, e2e_stack: RunningStack) -> None:
         """INVARIANT: Garbage Collection - vectors and chunks are deleted."""
-        snapshot = e2e_stack.vector_snapshot(doc_id=self.doc_id)
+        snapshot = e2e_stack.db.vector_snapshot(doc_id=self.doc_id)
         assert snapshot["chunk_count"] == 0
         assert snapshot["embedding_count"] == 0
         assert snapshot["index_entry_count"] == 0

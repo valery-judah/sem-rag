@@ -8,8 +8,10 @@ import time
 from collections.abc import Generator, Iterator
 from dataclasses import dataclass, field
 from pathlib import Path, PurePosixPath
-from typing import Any
+from typing import Any, NewType, cast
 from uuid import uuid4
+
+TestId = NewType("TestId", str)
 
 import docker
 import httpx
@@ -90,96 +92,34 @@ def _runtime_user() -> str | None:
 
 
 @dataclass
-class RunningStack:
-    base_url: str
-    database_url: str
-    artifact_root: Path
-    log_root: Path
-    e2e_log_session_id: str | None
-    api_container: DockerContainer
-    worker_container: DockerContainer
-    postgres_container: PostgresContainer
+class ContainerTopology:
+    api: DockerContainer
+    worker: DockerContainer
+    postgres: PostgresContainer
     network: Network
-    verbose: bool = False
-    current_test_id: str | None = None
-    tracked_doc_ids: list[DocId] = field(default_factory=lambda: [])
-    tracked_query_ids: list[QueryId] = field(default_factory=lambda: [])
-    query_debug_artifacts: list[str] = field(default_factory=lambda: [])
-    query_context_artifacts: list[str] = field(default_factory=lambda: [])
-    container_log_paths: dict[str, Path] = field(default_factory=lambda: {})
-    scenario_log_offsets: dict[str, int] = field(default_factory=lambda: {})
-    scenario_log_artifacts: list[str] = field(default_factory=lambda: [])
 
-    def client(self) -> httpx.Client:
-        return httpx.Client(base_url=self.base_url, timeout=30.0)
-
-    def log(self, message: str, **fields: object) -> None:
-        if not self.verbose:
-            return
-        _emit_e2e_log(message, **fields)
-
-    def track_document(self, doc_id: DocId) -> None:
-        if doc_id not in self.tracked_doc_ids:
-            self.tracked_doc_ids.append(doc_id)
-
-    def track_query(self, query_id: QueryId) -> None:
-        if query_id not in self.tracked_query_ids:
-            self.tracked_query_ids.append(query_id)
-
-    def record_query_debug_artifact(self, relative_path: str) -> None:
-        if relative_path not in self.query_debug_artifacts:
-            self.query_debug_artifacts.append(relative_path)
-
-    def record_query_context_artifact(self, relative_path: str) -> None:
-        if relative_path not in self.query_context_artifacts:
-            self.query_context_artifacts.append(relative_path)
-
-    def begin_scenario_log_capture(self, *, test_id: str) -> None:
-        del test_id
-        self.scenario_log_offsets = {
-            service: _count_log_lines(path) for service, path in self.container_log_paths.items()
-        }
-        self.scenario_log_artifacts.clear()
-
-    def archive_scenario_logs(self, *, test_id: str) -> dict[str, Path]:
-        if self.e2e_log_session_id is None:
-            return {}
-        scenario_slug = _slugify(test_id)
-        run_dir = self.log_root / "e2e" / "runs" / self.e2e_log_session_id / scenario_slug
-        latest_dir = self.log_root / "e2e" / "latest" / scenario_slug
-        run_dir.mkdir(parents=True, exist_ok=True)
-        latest_dir.mkdir(parents=True, exist_ok=True)
-        metadata_path = run_dir / "metadata.json"
-        metadata_path.write_text(
-            json.dumps(
-                {
-                    "test_id": test_id,
-                    "scenario_slug": scenario_slug,
-                    "session_id": self.e2e_log_session_id,
-                },
-                indent=2,
-                sort_keys=True,
-            )
-            + "\n"
-        )
-
-        archived_paths: dict[str, Path] = {}
-        recorded_artifacts = [
-            metadata_path.relative_to(_repo_root()).as_posix(),
+    def format_states(self) -> list[str]:
+        return [
+            self._format_container_state("api", self.api),
+            self._format_container_state("worker", self.worker),
+            self._format_container_state("postgres", self.postgres),
         ]
-        for service, source_path in self.container_log_paths.items():
-            offset = self.scenario_log_offsets.get(service, 0)
-            lines = _read_log_lines(source_path)
-            archived_path = run_dir / f"{service}.jsonl"
-            _write_log_lines(archived_path, lines[offset:])
-            latest_path = latest_dir / f"{service}.jsonl"
-            _refresh_symlink(latest_path=latest_path, target_path=archived_path)
-            archived_paths[service] = archived_path
-            recorded_artifacts.append(archived_path.relative_to(_repo_root()).as_posix())
-            recorded_artifacts.append(latest_path.relative_to(_repo_root()).as_posix())
 
-        self.scenario_log_artifacts = sorted(recorded_artifacts)
-        return archived_paths
+    def _format_container_state(self, label: str, container: DockerContainer) -> str:
+        try:
+            wrapped = container.get_wrapped_container()
+            wrapped.reload()
+            state = wrapped.attrs.get("State", {})
+            status = state.get("Status", "<unknown>")
+            exit_code = state.get("ExitCode", "<unknown>")
+            return f"{label} state: status={status!r}, exit_code={exit_code!r}"
+        except Exception as exc:
+            return f"{label} state: unavailable ({exc})"
+
+
+class E2EDatabaseInspector:
+    def __init__(self, database_url: str) -> None:
+        self.database_url = database_url
 
     def vector_snapshot(self, *, doc_id: DocId) -> dict[str, object]:
         engine = sa.create_engine(self.database_url)
@@ -281,6 +221,135 @@ class RunningStack:
             engine.dispose()
         return [dict(row) for row in rows]
 
+
+@dataclass
+class ScenarioTracker:
+    log_root: Path
+    e2e_log_session_id: str | None
+    container_log_paths: dict[str, Path]
+    
+    tracked_doc_ids: list[DocId] = field(default_factory=lambda: [])
+    tracked_query_ids: list[QueryId] = field(default_factory=lambda: [])
+    query_debug_artifacts: list[str] = field(default_factory=lambda: [])
+    query_context_artifacts: list[str] = field(default_factory=lambda: [])
+    scenario_log_offsets: dict[str, int] = field(default_factory=lambda: {})
+    scenario_log_artifacts: list[str] = field(default_factory=lambda: [])
+
+    def track_document(self, doc_id: DocId) -> None:
+        if doc_id not in self.tracked_doc_ids:
+            self.tracked_doc_ids.append(doc_id)
+
+    def track_query(self, query_id: QueryId) -> None:
+        if query_id not in self.tracked_query_ids:
+            self.tracked_query_ids.append(query_id)
+
+    def record_query_debug_artifact(self, relative_path: str) -> None:
+        if relative_path not in self.query_debug_artifacts:
+            self.query_debug_artifacts.append(relative_path)
+
+    def record_query_context_artifact(self, relative_path: str) -> None:
+        if relative_path not in self.query_context_artifacts:
+            self.query_context_artifacts.append(relative_path)
+
+    def begin_scenario_log_capture(self, *, test_id: TestId) -> None:
+        del test_id
+        self.scenario_log_offsets = {
+            service: _count_log_lines(path) for service, path in self.container_log_paths.items()
+        }
+        self.scenario_log_artifacts.clear()
+
+    def archive_scenario_logs(self, *, test_id: TestId) -> dict[str, Path]:
+        if self.e2e_log_session_id is None:
+            return {}
+        scenario_slug = _slugify(test_id)
+        run_dir = self.log_root / "e2e" / "runs" / self.e2e_log_session_id / scenario_slug
+        latest_dir = self.log_root / "e2e" / "latest" / scenario_slug
+        run_dir.mkdir(parents=True, exist_ok=True)
+        latest_dir.mkdir(parents=True, exist_ok=True)
+        metadata_path = run_dir / "metadata.json"
+        metadata_path.write_text(
+            json.dumps(
+                {
+                    "test_id": test_id,
+                    "scenario_slug": scenario_slug,
+                    "session_id": self.e2e_log_session_id,
+                },
+                indent=2,
+                sort_keys=True,
+            )
+            + "\n"
+        )
+
+        archived_paths: dict[str, Path] = {}
+        recorded_artifacts = [
+            metadata_path.relative_to(_repo_root()).as_posix(),
+        ]
+        for service, source_path in self.container_log_paths.items():
+            offset = self.scenario_log_offsets.get(service, 0)
+            lines = _read_log_lines(source_path)
+            archived_path = run_dir / f"{service}.jsonl"
+            _write_log_lines(archived_path, lines[offset:])
+            latest_path = latest_dir / f"{service}.jsonl"
+            _refresh_symlink(latest_path=latest_path, target_path=archived_path)
+            archived_paths[service] = archived_path
+            recorded_artifacts.append(archived_path.relative_to(_repo_root()).as_posix())
+            recorded_artifacts.append(latest_path.relative_to(_repo_root()).as_posix())
+
+        self.scenario_log_artifacts = sorted(recorded_artifacts)
+        return archived_paths
+
+    def clear(self) -> None:
+        self.tracked_doc_ids.clear()
+        self.tracked_query_ids.clear()
+        self.query_debug_artifacts.clear()
+        self.query_context_artifacts.clear()
+        self.scenario_log_offsets.clear()
+        self.scenario_log_artifacts.clear()
+
+
+@dataclass
+class RunningStack:
+    base_url: str
+    database_url: str
+    artifact_root: Path
+    log_root: Path
+    e2e_log_session_id: str | None
+    topology: ContainerTopology
+    tracker: ScenarioTracker
+    verbose: bool = False
+    current_test_id: TestId | None = None
+    container_log_paths: dict[str, Path] = field(default_factory=lambda: {})
+
+    def client(self) -> httpx.Client:
+        return httpx.Client(base_url=self.base_url, timeout=30.0)
+
+    def log(self, message: str, **fields: object) -> None:
+        if not self.verbose:
+            return
+        _emit_e2e_log(message, **fields)
+
+    def track_document(self, doc_id: DocId) -> None:
+        self.tracker.track_document(doc_id)
+
+    def track_query(self, query_id: QueryId) -> None:
+        self.tracker.track_query(query_id)
+
+    def record_query_debug_artifact(self, relative_path: str) -> None:
+        self.tracker.record_query_debug_artifact(relative_path)
+
+    def record_query_context_artifact(self, relative_path: str) -> None:
+        self.tracker.record_query_context_artifact(relative_path)
+
+    def begin_scenario_log_capture(self, *, test_id: TestId) -> None:
+        self.tracker.begin_scenario_log_capture(test_id=test_id)
+
+    def archive_scenario_logs(self, *, test_id: TestId) -> dict[str, Path]:
+        return self.tracker.archive_scenario_logs(test_id=test_id)
+
+    @property
+    def db(self) -> E2EDatabaseInspector:
+        return E2EDatabaseInspector(self.database_url)
+
     def host_artifact_path(self, container_path: str | None) -> Path | None:
         if container_path is None:
             return None
@@ -313,9 +382,9 @@ class RunningStack:
         return [*entries[:limit], f"... ({remaining} more files)"]
 
     def describe_document(self, *, doc_id: DocId) -> str:
-        document = self.document_row(doc_id=doc_id)
-        events = self.lifecycle_events(doc_id=doc_id)
-        snapshot = self.vector_snapshot(doc_id=doc_id)
+        document = self.db.document_row(doc_id=doc_id)
+        events = self.db.lifecycle_events(doc_id=doc_id)
+        snapshot = self.db.vector_snapshot(doc_id=doc_id)
         artifact_paths = self.artifact_paths_for_document(doc_id=doc_id)
         lines = [
             f"doc_id={doc_id}",
@@ -330,70 +399,57 @@ class RunningStack:
             lines.append("  - <none>")
         return "\n".join(lines)
 
-    def _format_container_state(self, label: str, container: DockerContainer) -> str:
-        try:
-            wrapped = container.get_wrapped_container()
-            wrapped.reload()
-            state = wrapped.attrs.get("State", {})
-            status = state.get("Status", "<unknown>")
-            exit_code = state.get("ExitCode", "<unknown>")
-            return f"{label} state: status={status!r}, exit_code={exit_code!r}"
-        except Exception as exc:
-            return f"{label} state: unavailable ({exc})"
-
-    def failure_report(self, *, test_id: str) -> str:
+    def failure_report(self, *, test_id: TestId) -> str:
         sections = [
             f"=== E2E failure report: {test_id} ===",
             f"base_url={self.base_url}",
             f"database_url={self.database_url}",
             f"artifact_root={self.artifact_root}",
             f"log_root={self.log_root}",
-            self._format_container_state("api", self.api_container),
-            self._format_container_state("worker", self.worker_container),
-            self._format_container_state("postgres", self.postgres_container),
+            *self.topology.format_states(),
             "artifact tree:",
         ]
         sections.extend(f"  - {entry}" for entry in self.artifact_tree())
-        if self.tracked_doc_ids:
-            for doc_id in self.tracked_doc_ids:
+        if self.tracker.tracked_doc_ids:
+            for doc_id in self.tracker.tracked_doc_ids:
                 sections.append(f"document diagnostics:\n{self.describe_document(doc_id=doc_id)}")
         else:
             sections.append("document diagnostics:\n<no tracked documents>")
-        if self.tracked_query_ids:
+        if self.tracker.tracked_query_ids:
             sections.append(
                 "query diagnostics:\n"
                 + "\n".join(
-                    f"  - query_id={query_id}" for query_id in sorted(self.tracked_query_ids)
+                    f"  - query_id={query_id}" for query_id in sorted(self.tracker.tracked_query_ids)
                 )
             )
         else:
             sections.append("query diagnostics:\n<no tracked queries>")
-        if self.query_debug_artifacts:
+        if self.tracker.query_debug_artifacts:
             sections.append(
                 "query debug artifacts:\n"
-                + "\n".join(f"  - {artifact}" for artifact in sorted(self.query_debug_artifacts))
+                + "\n".join(f"  - {artifact}" for artifact in sorted(self.tracker.query_debug_artifacts))
             )
         else:
             sections.append("query debug artifacts:\n<none>")
-        if self.query_context_artifacts:
+        if self.tracker.query_context_artifacts:
             sections.append(
                 "query context bundles:\n"
-                + "\n".join(f"  - {artifact}" for artifact in sorted(self.query_context_artifacts))
+                + "\n".join(f"  - {artifact}" for artifact in sorted(self.tracker.query_context_artifacts))
             )
         else:
             sections.append("query context bundles:\n<none>")
-        if self.scenario_log_artifacts:
+        if self.tracker.scenario_log_artifacts:
             sections.append(
                 "scenario log artifacts:\n"
-                + "\n".join(f"  - {artifact}" for artifact in sorted(self.scenario_log_artifacts))
+                + "\n".join(f"  - {artifact}" for artifact in sorted(self.tracker.scenario_log_artifacts))
             )
         else:
             sections.append("scenario log artifacts:\n<none>")
         sections.extend(
             [
-                _format_logs("api", self.api_container),
-                _format_logs("worker", self.worker_container),
-                _format_logs("postgres", self.postgres_container),
+                _format_logs("api", self.topology.api),
+                _format_logs("worker", self.topology.worker),
+                _format_logs("postgres", self.topology.postgres),
             ]
         )
         return "\n".join(sections)
@@ -597,12 +653,7 @@ def _reset_runtime_state(stack: RunningStack) -> None:
     finally:
         engine.dispose()
     _clear_artifact_root(stack.artifact_root)
-    stack.tracked_doc_ids.clear()
-    stack.tracked_query_ids.clear()
-    stack.query_debug_artifacts.clear()
-    stack.query_context_artifacts.clear()
-    stack.scenario_log_offsets.clear()
-    stack.scenario_log_artifacts.clear()
+    stack.tracker.clear()
 
 
 @pytest.fixture(scope="session")
@@ -707,21 +758,30 @@ def e2e_runtime(
         base_url = f"http://{host}:{port}"
         _wait_for_api(base_url, api_container)
 
+        container_log_paths = {
+            "api": session_log_dir / "api.jsonl",
+            "worker": session_log_dir / "worker.jsonl",
+        }
+        tracker = ScenarioTracker(
+            log_root=log_root,
+            e2e_log_session_id=e2e_log_session_id,
+            container_log_paths=container_log_paths,
+        )
         stack = RunningStack(
             base_url=base_url,
             database_url=host_database_url,
             artifact_root=artifact_root,
             log_root=log_root,
             e2e_log_session_id=e2e_log_session_id,
-            api_container=api_container,
-            worker_container=worker_container,
-            postgres_container=postgres,
-            network=network,
+            topology=ContainerTopology(
+                api=api_container,
+                worker=worker_container,
+                postgres=postgres,
+                network=network,
+            ),
+            tracker=tracker,
             verbose=verbose,
-            container_log_paths={
-                "api": session_log_dir / "api.jsonl",
-                "worker": session_log_dir / "worker.jsonl",
-            },
+            container_log_paths=container_log_paths,
         )
         stack.log(
             "session runtime ready",
@@ -742,10 +802,31 @@ def e2e_runtime(
     try:
         yield stack
     finally:
-        _cleanup_resource("worker container", stack.worker_container.stop)
-        _cleanup_resource("api container", stack.api_container.stop)
-        _cleanup_resource("postgres container", stack.postgres_container.stop)
-        _cleanup_resource("network", network.remove)
+        _cleanup_resource("worker container", stack.topology.worker.stop)
+        _cleanup_resource("api container", stack.topology.api.stop)
+        _cleanup_resource("postgres container", stack.topology.postgres.stop)
+        _cleanup_resource("network", stack.topology.network.remove)
+
+
+@dataclass
+class TestScenarioContext:
+    request: pytest.FixtureRequest
+
+    @property
+    def _node(self) -> Any:
+        return cast(Any, self.request).node
+
+    @property
+    def test_id(self) -> TestId:
+        node = self._node
+        nodeid = cast(str, getattr(node, "nodeid", ""))
+        return TestId(nodeid)
+
+    @property
+    def has_failed(self) -> bool:
+        node = self._node
+        rep_call = getattr(node, "rep_call", None)
+        return bool(getattr(rep_call, "failed", False))
 
 
 @pytest.fixture
@@ -753,7 +834,9 @@ def e2e_stack(
     e2e_runtime: RunningStack,
     request: pytest.FixtureRequest,
 ) -> Iterator[RunningStack]:
-    _emit_e2e_log("scenario setup", test_id=request.node.nodeid)
+    scenario = TestScenarioContext(request)
+    test_id = scenario.test_id
+    _emit_e2e_log("scenario setup", test_id=test_id)
     _reset_runtime_state(e2e_runtime)
     stack = RunningStack(
         base_url=e2e_runtime.base_url,
@@ -761,26 +844,24 @@ def e2e_stack(
         artifact_root=e2e_runtime.artifact_root,
         log_root=e2e_runtime.log_root,
         e2e_log_session_id=e2e_runtime.e2e_log_session_id,
-        api_container=e2e_runtime.api_container,
-        worker_container=e2e_runtime.worker_container,
-        postgres_container=e2e_runtime.postgres_container,
-        network=e2e_runtime.network,
+        topology=e2e_runtime.topology,
+        tracker=e2e_runtime.tracker,
         verbose=e2e_runtime.verbose,
-        current_test_id=request.node.nodeid,
+        current_test_id=test_id,
         container_log_paths=e2e_runtime.container_log_paths,
     )
-    stack.begin_scenario_log_capture(test_id=request.node.nodeid)
-    stack.log("scenario ready", test_id=request.node.nodeid)
+    stack.begin_scenario_log_capture(test_id=test_id)
+    stack.log("scenario ready", test_id=test_id)
     try:
         yield stack
     finally:
-        stack.archive_scenario_logs(test_id=request.node.nodeid)
-        failed = bool(getattr(getattr(request.node, "rep_call", None), "failed", False))
+        stack.archive_scenario_logs(test_id=test_id)
+        failed = scenario.has_failed
         _emit_e2e_log(
             "scenario complete",
-            test_id=request.node.nodeid,
+            test_id=test_id,
             status="failed" if failed else "passed",
         )
         if failed:
-            print(stack.failure_report(test_id=request.node.nodeid), flush=True)
+            print(stack.failure_report(test_id=test_id), flush=True)
         _reset_runtime_state(e2e_runtime)

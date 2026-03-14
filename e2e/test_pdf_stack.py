@@ -45,19 +45,19 @@ def test_pdf_fixture_reaches_ready_and_preserves_page_provenance(e2e_stack: Runn
         )
         assert query.json()["hits"][0]["doc_id"] == doc_id
 
-        document = e2e_stack.document_row(doc_id=doc_id)
+        document = e2e_stack.db.document_row(doc_id=doc_id)
         assert document is not None
         assert str(document["ingest_status"]).upper() == "READY"
         assert document["source_type"] == "pdf"
 
-        snapshot = e2e_stack.vector_snapshot(doc_id=doc_id)
+        snapshot = e2e_stack.db.vector_snapshot(doc_id=doc_id)
         assert snapshot["chunk_count"] > 0
         assert snapshot["embedding_count"] > 0
         assert snapshot["index_entry_count"] > 0
         assert snapshot["embedding_count"] == snapshot["chunk_count"]
         assert snapshot["index_entry_count"] == snapshot["chunk_count"]
 
-        chunk_rows = e2e_stack.chunk_rows(doc_id=doc_id)
+        chunk_rows = e2e_stack.db.chunk_rows(doc_id=doc_id)
         assert chunk_rows
         assert any(
             row["page_start"] is not None or row["page_end"] is not None for row in chunk_rows
@@ -85,16 +85,16 @@ def test_malformed_pdf_reaches_failed_without_published_retrieval_artifacts(
         assert status["failure_code"]
         assert status["failure_detail"]
 
-        document = e2e_stack.document_row(doc_id=doc_id)
+        document = e2e_stack.db.document_row(doc_id=doc_id)
         assert document is not None
         assert str(document["ingest_status"]).upper() == "FAILED"
         assert document["failure_code"]
         assert document["failure_detail"]
 
-        events = e2e_stack.lifecycle_events(doc_id=doc_id)
+        events = e2e_stack.db.lifecycle_events(doc_id=doc_id)
         assert "FAILED" in [str(event["to_status"]).upper() for event in events]
 
-        snapshot = e2e_stack.vector_snapshot(doc_id=doc_id)
+        snapshot = e2e_stack.db.vector_snapshot(doc_id=doc_id)
         assert snapshot["chunk_count"] == 0
         assert snapshot["embedding_count"] == 0
         assert snapshot["index_entry_count"] == 0
