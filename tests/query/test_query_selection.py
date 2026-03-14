@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import pytest
+import sqlalchemy as sa
+from typing import Any
 
 from doc_forge.lifecycle import ProcessingStatus
 from doc_forge.persistence import (
@@ -26,7 +28,7 @@ from doc_forge.readmodels import SqlQueryableCorpusReadModel
 pytestmark = pytest.mark.anyio
 
 
-def _read_model(sql_engine) -> SqlQueryableCorpusReadModel:
+def _read_model(sql_engine: sa.Engine) -> SqlQueryableCorpusReadModel:
     return SqlQueryableCorpusReadModel(
         documents=SqlDocumentRepository(sql_engine),
         sections=SqlSectionRepository(sql_engine),
@@ -51,11 +53,14 @@ def _base_interpreted_query(**overrides: object) -> InterpretedQuery:
     ).model_copy(update=overrides)
 
 
+from tests.persistence.conftest import ChunkFactory, PersistedDocumentFactory, SectionFactory
+
+
 def test_selector_groups_multiple_same_document_passages_for_explanation(
-    sql_engine,
-    persisted_document_factory,
-    section_factory,
-    chunk_factory,
+    sql_engine: sa.Engine,
+    persisted_document_factory: PersistedDocumentFactory,
+    section_factory: SectionFactory,
+    chunk_factory: ChunkFactory,
 ) -> None:
     documents = SqlDocumentRepository(sql_engine)
     sections = SqlSectionRepository(sql_engine)
@@ -142,9 +147,9 @@ def test_selector_groups_multiple_same_document_passages_for_explanation(
 
 
 def test_selector_suppresses_heading_and_locator_duplicates_deterministically(
-    sql_engine,
-    persisted_document_factory,
-    chunk_factory,
+    sql_engine: sa.Engine,
+    persisted_document_factory: PersistedDocumentFactory,
+    chunk_factory: ChunkFactory,
 ) -> None:
     documents = SqlDocumentRepository(sql_engine)
     chunks = SqlChunkRepository(sql_engine)
@@ -212,9 +217,9 @@ def test_selector_suppresses_heading_and_locator_duplicates_deterministically(
 
 
 def test_selector_prefers_scope_matching_documents_for_comparison(
-    sql_engine,
-    persisted_document_factory,
-    chunk_factory,
+    sql_engine: sa.Engine,
+    persisted_document_factory: PersistedDocumentFactory,
+    chunk_factory: ChunkFactory,
 ) -> None:
     documents = SqlDocumentRepository(sql_engine)
     chunks = SqlChunkRepository(sql_engine)

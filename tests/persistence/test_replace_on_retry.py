@@ -1,21 +1,23 @@
 from __future__ import annotations
 
 import pytest
+from sqlalchemy.engine import Engine
 
 from doc_forge.persistence import (
     SqlChunkRepository,
     SqlDocumentRepository,
     SqlSectionRepository,
 )
+from tests.persistence.conftest import ChunkFactory, PersistedDocumentFactory, SectionFactory
 
 pytestmark = pytest.mark.persistence
 
 
 def test_retry_from_normalized_replaces_sections_and_chunks(
-    sql_engine,
-    persisted_document_factory,
-    section_factory,
-    chunk_factory,
+    sql_engine: Engine,
+    persisted_document_factory: PersistedDocumentFactory,
+    section_factory: SectionFactory,
+    chunk_factory: ChunkFactory,
 ) -> None:
     documents = SqlDocumentRepository(sql_engine)
     sections_repo = SqlSectionRepository(sql_engine)
@@ -63,10 +65,10 @@ def test_retry_from_normalized_replaces_sections_and_chunks(
 
 
 def test_double_retry_is_idempotent(
-    sql_engine,
-    persisted_document_factory,
-    section_factory,
-    chunk_factory,
+    sql_engine: Engine,
+    persisted_document_factory: PersistedDocumentFactory,
+    section_factory: SectionFactory,
+    chunk_factory: ChunkFactory,
 ) -> None:
     documents = SqlDocumentRepository(sql_engine)
     sections_repo = SqlSectionRepository(sql_engine)
@@ -90,10 +92,10 @@ def test_double_retry_is_idempotent(
 
 
 def test_retry_does_not_duplicate_child_ownership(
-    sql_engine,
-    persisted_document_factory,
-    section_factory,
-    chunk_factory,
+    sql_engine: Engine,
+    persisted_document_factory: PersistedDocumentFactory,
+    section_factory: SectionFactory,
+    chunk_factory: ChunkFactory,
 ) -> None:
     documents = SqlDocumentRepository(sql_engine)
     sections_repo = SqlSectionRepository(sql_engine)

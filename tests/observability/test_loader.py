@@ -27,7 +27,7 @@ from doc_forge.query import (
 )
 
 
-def test_loader_indexes_query_bundle_and_eval_result(tmp_path) -> None:
+loader_indexes_query_bundle_and_eval_result(tmp_path: pathlib.Path) -> None:
     context_root = tmp_path / "data" / "context" / "queries"
     bundle_root = context_root / "qry-1"
     bundle_root.mkdir(parents=True)
@@ -122,7 +122,7 @@ def test_loader_indexes_query_bundle_and_eval_result(tmp_path) -> None:
     engine.dispose()
 
 
-def test_loader_indexes_missing_assets_without_eval_result(tmp_path) -> None:
+loader_indexes_missing_assets_without_eval_result(tmp_path: pathlib.Path) -> None:
     context_root = tmp_path / "context"
     bundle_root = context_root / "qry-2"
     bundle_root.mkdir(parents=True)

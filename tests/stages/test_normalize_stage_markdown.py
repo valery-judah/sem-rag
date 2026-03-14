@@ -1,6 +1,10 @@
 from __future__ import annotations
 
+import sqlite3
+from collections.abc import Generator
 from datetime import UTC, datetime
+from pathlib import Path
+from typing import Any
 
 import pytest
 import sqlalchemy as sa
@@ -25,14 +29,16 @@ from doc_forge.stages.normalize import NormalizeDocumentStage
 
 
 @pytest.fixture
-def sql_engine(tmp_path):
+def sql_engine(tmp_path: Path) -> Generator[sa.Engine, None, None]:
     db_url = f"sqlite+pysqlite:///{tmp_path / 'normalize-markdown.db'}"
     apply_migrations(db_url)
     engine = sa.create_engine(db_url)
     if engine.dialect.name == "sqlite":
 
         @event.listens_for(engine, "connect")
-        def _set_sqlite_pragma(dbapi_connection, connection_record) -> None:
+        def _set_sqlite_pragma(  # pyright: ignore[reportUnusedFunction]
+            dbapi_connection: sqlite3.Connection, connection_record: Any
+        ) -> None:
             del connection_record
             cursor = dbapi_connection.cursor()
             cursor.execute("PRAGMA foreign_keys = ON")
@@ -45,17 +51,23 @@ def sql_engine(tmp_path):
 
 
 @pytest.fixture
-def artifact_store(tmp_path) -> FilesystemArtifactStore:
+def artifact_store(tmp_path: Path) -> FilesystemArtifactStore:
     return FilesystemArtifactStore(tmp_path / "artifacts")
 
 
 @pytest.fixture
-def repositories(sql_engine):
+def repositories(
+    sql_engine: sa.Engine,
+) -> tuple[SqlDocumentRepository, SqlLifecycleEventRepository]:
     return SqlDocumentRepository(sql_engine), SqlLifecycleEventRepository(sql_engine)
 
 
 @pytest.fixture
-def normalize_stage(sql_engine, repositories, artifact_store: FilesystemArtifactStore):
+def normalize_stage(
+    sql_engine: sa.Engine,
+    repositories: tuple[SqlDocumentRepository, SqlLifecycleEventRepository],
+    artifact_store: FilesystemArtifactStore,
+) -> NormalizeDocumentStage:
     documents, lifecycle_events = repositories
     return NormalizeDocumentStage(
         engine=sql_engine,
@@ -71,7 +83,7 @@ def normalize_stage(sql_engine, repositories, artifact_store: FilesystemArtifact
 
 def _persist_extracting_markdown_document(
     *,
-    documents,
+    documents: SqlDocumentRepository,
     artifact_store: FilesystemArtifactStore,
     doc_id: str = "doc-md-norm-1",
 ) -> str:
@@ -139,7 +151,7 @@ def _persist_extracting_markdown_document(
 
 def test_markdown_normalize_recovers_heading_blocks(
     normalize_stage: NormalizeDocumentStage,
-    repositories,
+    repositories: tuple[SqlDocumentRepository, SqlLifecycleEventRepository],
     artifact_store: FilesystemArtifactStore,
 ) -> None:
     documents, _ = repositories
@@ -157,7 +169,7 @@ def test_markdown_normalize_recovers_heading_blocks(
 
 def test_markdown_normalize_preserves_code_block_boundaries(
     normalize_stage: NormalizeDocumentStage,
-    repositories,
+    repositories: tuple[SqlDocumentRepository, SqlLifecycleEventRepository],
     artifact_store: FilesystemArtifactStore,
 ) -> None:
     documents, _ = repositories
@@ -174,7 +186,7 @@ def test_markdown_normalize_preserves_code_block_boundaries(
 
 def test_markdown_normalize_preserves_paragraph_boundaries(
     normalize_stage: NormalizeDocumentStage,
-    repositories,
+    repositories: tuple[SqlDocumentRepository, SqlLifecycleEventRepository],
     artifact_store: FilesystemArtifactStore,
 ) -> None:
     documents, _ = repositories
@@ -192,7 +204,7 @@ def test_markdown_normalize_preserves_paragraph_boundaries(
 
 def test_markdown_normalize_persists_payload_before_status_advance(
     normalize_stage: NormalizeDocumentStage,
-    repositories,
+    repositories: tuple[SqlDocumentRepository, SqlLifecycleEventRepository],
     artifact_store: FilesystemArtifactStore,
 ) -> None:
     documents, lifecycle_events = repositories

@@ -4,6 +4,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from doc_forge.devtools import query_context
+from doc_forge.identifiers import QueryId
 from doc_forge.query import (
     QueryContextAssetPaths,
     QueryContextLogAsset,
@@ -19,7 +20,7 @@ class _FakeCollector:
         self.collected_query_ids: list[str] = []
         self.rendered_query_ids: list[str] = []
 
-    def collect(self, query_id: str):
+    def collect(self, query_id: QueryId):
         self.collected_query_ids.append(query_id)
 
         class _Result:
@@ -28,7 +29,7 @@ class _FakeCollector:
 
         return _Result(self.bundle_root)
 
-    def render_summary(self, query_id: str) -> str:
+    def render_summary(self, query_id: QueryId) -> str:
         self.rendered_query_ids.append(query_id)
         return f"bundle_root={self.bundle_root}\nquery_id={self._manifest.query_id}"
 
@@ -55,7 +56,7 @@ def test_collect_query_context_cli_prints_bundle_root(
     assert capsys.readouterr().out.strip() == str(collector.bundle_root)
 
 
-def test_show_query_context_cli_prints_summary(monkeypatch, tmp_path, capsys) -> None:
+show_query_context_cli_prints_summary(monkeypatch, tmp_path: pathlib.Path, capsys) -> None:
     collector = _FakeCollector(
         bundle_root=tmp_path / "data" / "context" / "queries" / "qry-2",
         manifest=QueryContextManifest(

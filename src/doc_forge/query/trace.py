@@ -7,6 +7,8 @@ from enum import StrEnum
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from doc_forge.identifiers import QueryId
+
 from .contracts import QueryRunStatus, QueryStageName
 
 
@@ -30,7 +32,7 @@ class QueryStageTrace(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    query_id: str = Field(min_length=1)
+    query_id: QueryId = Field(min_length=1)
     stage_name: QueryStageName
     stage_status: QueryStageTraceStatus
     started_at: datetime = Field(default_factory=utc_now)
@@ -49,6 +51,6 @@ class QueryTraceBundle(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    query_id: str = Field(min_length=1)
+    query_id: QueryId = Field(min_length=1)
     run_status: QueryRunStatus
     stage_traces: list[QueryStageTrace] = Field(default_factory=list)

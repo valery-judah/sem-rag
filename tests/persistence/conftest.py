@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import pathlib
 from collections.abc import Iterator
 from datetime import UTC, datetime
+from typing import Any, Protocol, TypedDict, Unpack
 
 import pytest
 import sqlalchemy as sa
@@ -11,7 +13,7 @@ from sqlalchemy.engine import Engine
 from doc_forge.corpus import Chunk, Document, Section, SourceType
 from doc_forge.identifiers import DocId, WorkspaceId
 from doc_forge.lifecycle import ProcessingStatus
-from doc_forge.lifecycle.models import LifecycleEvent, LifecycleStage
+from doc_forge.lifecycle.models import FailureCategory, LifecycleEvent, LifecycleStage
 from doc_forge.persistence import (
     DocumentJob,
     DocumentJobStage,
@@ -22,7 +24,7 @@ from doc_forge.persistence import (
 
 
 @pytest.fixture
-def db_url(tmp_path) -> str:
+def db_url(tmp_path: pathlib.Path) -> str:
     database_path = tmp_path / "lifecycle-metadata.db"
     return f"sqlite+pysqlite:///{database_path}"
 
@@ -34,7 +36,7 @@ def sql_engine(db_url: str) -> Iterator[Engine]:
     if engine.dialect.name == "sqlite":
 
         @event.listens_for(engine, "connect")
-        def _set_sqlite_pragma(dbapi_connection, connection_record) -> None:
+        def _set_sqlite_pragma(dbapi_connection: Any, connection_record: Any) -> None:  # pyright: ignore[reportUnusedFunction]
             del connection_record
             cursor = dbapi_connection.cursor()
             cursor.execute("PRAGMA foreign_keys = ON")
@@ -46,16 +48,35 @@ def sql_engine(db_url: str) -> Iterator[Engine]:
         engine.dispose()
 
 
+class DocumentOverrides(TypedDict, total=False):
+    title: str
+    filename: str
+    uploaded_at: datetime
+    ingest_status: ProcessingStatus
+    storage_ref: str
+    metadata: dict[str, str] | None
+
+
+class DocumentFactory(Protocol):
+    def __call__(
+        self,
+        doc_id: DocId = "doc-1",
+        workspace_id: WorkspaceId = "workspace-1",
+        source_type: SourceType = SourceType.PDF,
+        **overrides: Unpack[DocumentOverrides],
+    ) -> Document: ...
+
+
 @pytest.fixture
-def document_factory():
+def document_factory() -> DocumentFactory:
     def make(
         doc_id: DocId = "doc-1",
         workspace_id: WorkspaceId = "workspace-1",
         source_type: SourceType = SourceType.PDF,
-        **overrides: object,
+        **overrides: Unpack[DocumentOverrides],
     ) -> Document:
         filename = f"{doc_id}.pdf" if source_type is SourceType.PDF else f"{doc_id}.md"
-        base = {
+        base: dict[str, Any] = {
             "doc_id": doc_id,
             "workspace_id": workspace_id,
             "source_type": source_type,
@@ -72,14 +93,35 @@ def document_factory():
     return make
 
 
+class SectionOverrides(TypedDict, total=False):
+    heading_path: list[str]
+    depth: int
+    parent_section_id: str | None
+    heading_text: str | None
+    page_start: int | None
+    page_end: int | None
+    source_start_offset: int | None
+    source_end_offset: int | None
+    structure_confidence: float | None
+
+
+class SectionFactory(Protocol):
+    def __call__(
+        self,
+        doc_id: DocId = "doc-1",
+        section_id: str = "section-1",
+        **overrides: Unpack[SectionOverrides],
+    ) -> Section: ...
+
+
 @pytest.fixture
-def section_factory():
+def section_factory() -> SectionFactory:
     def make(
         doc_id: DocId = "doc-1",
         section_id: str = "section-1",
-        **overrides: object,
+        **overrides: Unpack[SectionOverrides],
     ) -> Section:
-        base = {
+        base: dict[str, Any] = {
             "section_id": section_id,
             "doc_id": doc_id,
             "heading_path": ["Chapter 1"],
@@ -94,14 +136,36 @@ def section_factory():
     return make
 
 
+class ChunkOverrides(TypedDict, total=False):
+    text: str
+    ordinal: int
+    heading_path: list[str]
+    section_id: str | None
+    page_start: int | None
+    page_end: int | None
+    source_start_offset: int | None
+    source_end_offset: int | None
+    lineage: dict[str, Any] | None
+    debug_metadata: dict[str, Any] | None
+
+
+class ChunkFactory(Protocol):
+    def __call__(
+        self,
+        doc_id: DocId = "doc-1",
+        chunk_id: str = "chunk-1",
+        **overrides: Unpack[ChunkOverrides],
+    ) -> Chunk: ...
+
+
 @pytest.fixture
-def chunk_factory():
+def chunk_factory() -> ChunkFactory:
     def make(
         doc_id: DocId = "doc-1",
         chunk_id: str = "chunk-1",
-        **overrides: object,
+        **overrides: Unpack[ChunkOverrides],
     ) -> Chunk:
-        base = {
+        base: dict[str, Any] = {
             "chunk_id": chunk_id,
             "doc_id": doc_id,
             "text": "Consensus requires stable coordination for replicated state.",
@@ -118,16 +182,41 @@ def chunk_factory():
     return make
 
 
+class PersistedDocumentOverrides(TypedDict, total=False):
+    title: str
+    filename: str
+    uploaded_at: datetime
+    ingest_status: ProcessingStatus
+    storage_ref: str
+    metadata_json: dict[str, str] | None
+    checksum: str | None
+    raw_storage_path: str | None
+    failure_code: str | None
+    failure_detail: str | None
+    created_at: datetime
+    updated_at: datetime
+
+
+class PersistedDocumentFactory(Protocol):
+    def __call__(
+        self,
+        doc_id: DocId = "doc-1",
+        workspace_id: WorkspaceId = "workspace-1",
+        source_type: SourceType = SourceType.PDF,
+        **overrides: Unpack[PersistedDocumentOverrides],
+    ) -> PersistedDocument: ...
+
+
 @pytest.fixture
-def persisted_document_factory():
+def persisted_document_factory() -> PersistedDocumentFactory:
     def make(
         doc_id: DocId = "doc-1",
         workspace_id: WorkspaceId = "workspace-1",
         source_type: SourceType = SourceType.PDF,
-        **overrides: object,
+        **overrides: Unpack[PersistedDocumentOverrides],
     ) -> PersistedDocument:
         filename = f"{doc_id}.pdf" if source_type is SourceType.PDF else f"{doc_id}.md"
-        base = {
+        base: dict[str, Any] = {
             "doc_id": doc_id,
             "workspace_id": workspace_id,
             "source_type": source_type,
@@ -148,14 +237,32 @@ def persisted_document_factory():
     return make
 
 
+class LifecycleEventOverrides(TypedDict, total=False):
+    stage: LifecycleStage
+    from_status: ProcessingStatus | None
+    to_status: ProcessingStatus
+    occurred_at: datetime
+    failure_category: FailureCategory | None
+    detail: dict[str, str]
+
+
+class LifecycleEventFactory(Protocol):
+    def __call__(
+        self,
+        doc_id: DocId = "doc-1",
+        event_id: str = "event-1",
+        **overrides: Unpack[LifecycleEventOverrides],
+    ) -> LifecycleEvent: ...
+
+
 @pytest.fixture
-def lifecycle_event_factory():
+def lifecycle_event_factory() -> LifecycleEventFactory:
     def make(
         doc_id: DocId = "doc-1",
         event_id: str = "event-1",
-        **overrides: object,
+        **overrides: Unpack[LifecycleEventOverrides],
     ) -> LifecycleEvent:
-        base = {
+        base: dict[str, Any] = {
             "event_id": event_id,
             "doc_id": doc_id,
             "stage": LifecycleStage.REGISTER,
@@ -170,14 +277,34 @@ def lifecycle_event_factory():
     return make
 
 
+class DocumentJobOverrides(TypedDict, total=False):
+    target_stage: DocumentJobStage
+    status: DocumentJobStatus
+    attempt_count: int
+    not_before: datetime | None
+    error_code: str | None
+    error_detail: str | None
+    created_at: datetime
+    updated_at: datetime
+
+
+class DocumentJobFactory(Protocol):
+    def __call__(
+        self,
+        doc_id: DocId = "doc-1",
+        job_id: str = "job-1",
+        **overrides: Unpack[DocumentJobOverrides],
+    ) -> DocumentJob: ...
+
+
 @pytest.fixture
-def document_job_factory():
+def document_job_factory() -> DocumentJobFactory:
     def make(
         doc_id: DocId = "doc-1",
         job_id: str = "job-1",
-        **overrides: object,
+        **overrides: Unpack[DocumentJobOverrides],
     ) -> DocumentJob:
-        base = {
+        base: dict[str, Any] = {
             "job_id": job_id,
             "doc_id": doc_id,
             "target_stage": DocumentJobStage.EXTRACT,

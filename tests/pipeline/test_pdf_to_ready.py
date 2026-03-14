@@ -28,7 +28,7 @@ def _drain_jobs(client: TestClient, limit: int = 12) -> None:
     raise AssertionError("worker did not drain queue within limit")
 
 
-def test_pdf_document_reaches_ready(tmp_path, monkeypatch) -> None:
+pdf_document_reaches_ready(tmp_path: pathlib.Path, monkeypatch) -> None:
     database_path = tmp_path / "pdf-ready.db"
     artifact_root = tmp_path / "artifacts"
     db_url = f"sqlite+pysqlite:///{database_path}"

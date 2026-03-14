@@ -29,7 +29,7 @@ def _drain_jobs(client: TestClient, limit: int = 12) -> None:
     raise AssertionError("worker did not drain queue within limit")
 
 
-def test_retry_recovers_failed_extract_stage(tmp_path, monkeypatch: pytest.MonkeyPatch) -> None:
+retry_recovers_failed_extract_stage(tmp_path: pathlib.Path, monkeypatch: pytest.MonkeyPatch) -> None:
     database_path = tmp_path / "retry.db"
     artifact_root = tmp_path / "artifacts"
     db_url = f"sqlite+pysqlite:///{database_path}"

@@ -8,6 +8,8 @@ from datetime import datetime
 import sqlalchemy as sa
 from sqlalchemy.engine import Engine
 
+from doc_forge.identifiers import QueryId
+
 metadata = sa.MetaData()
 
 query_context_runs_table = sa.Table(
@@ -74,7 +76,7 @@ log_sources_table = sa.Table(
 
 @dataclass(frozen=True)
 class QueryContextRunRecord:
-    query_id: str
+    query_id: QueryId
     workspace_id: str | None
     question: str | None
     submitted_at: datetime | None
@@ -93,7 +95,7 @@ class QueryContextRunRecord:
 
 @dataclass(frozen=True)
 class QueryContextAssetRecord:
-    query_id: str
+    query_id: QueryId
     asset_kind: str
     relative_path: str | None
     present: bool
@@ -102,7 +104,7 @@ class QueryContextAssetRecord:
 
 @dataclass(frozen=True)
 class EvalCaseResultRecord:
-    query_id: str
+    query_id: QueryId
     case_id: str
     workspace_id: str | None
     run_id: str | None
@@ -117,7 +119,7 @@ class EvalCaseResultRecord:
 
 @dataclass(frozen=True)
 class LogSourceRecord:
-    query_id: str
+    query_id: QueryId
     service: str
     source_path: str
     matched_line_count: int

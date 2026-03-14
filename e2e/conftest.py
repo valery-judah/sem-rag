@@ -20,7 +20,7 @@ from testcontainers.core.image import DockerImage
 from testcontainers.core.network import Network
 from testcontainers.postgres import PostgresContainer
 
-from doc_forge.identifiers import DocId
+from doc_forge.identifiers import DocId, QueryId
 from doc_forge.persistence.jobs import document_jobs_table
 from doc_forge.persistence.models import (
     chunk_embeddings_table,
@@ -103,7 +103,7 @@ class RunningStack:
     verbose: bool = False
     current_test_id: str | None = None
     tracked_doc_ids: list[DocId] = field(default_factory=lambda: [])
-    tracked_query_ids: list[str] = field(default_factory=lambda: [])
+    tracked_query_ids: list[QueryId] = field(default_factory=lambda: [])
     query_debug_artifacts: list[str] = field(default_factory=lambda: [])
     query_context_artifacts: list[str] = field(default_factory=lambda: [])
     container_log_paths: dict[str, Path] = field(default_factory=lambda: {})
@@ -122,7 +122,7 @@ class RunningStack:
         if doc_id not in self.tracked_doc_ids:
             self.tracked_doc_ids.append(doc_id)
 
-    def track_query(self, query_id: str) -> None:
+    def track_query(self, query_id: QueryId) -> None:
         if query_id not in self.tracked_query_ids:
             self.tracked_query_ids.append(query_id)
 

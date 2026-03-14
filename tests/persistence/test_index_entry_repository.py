@@ -3,6 +3,8 @@ from __future__ import annotations
 from datetime import UTC, datetime
 
 import pytest
+import sqlalchemy as sa
+from typing import Any
 
 from doc_forge.indexing import IndexEntry
 from doc_forge.persistence import (
@@ -14,10 +16,13 @@ from doc_forge.persistence import (
 pytestmark = pytest.mark.persistence
 
 
+from tests.persistence.conftest import ChunkFactory, PersistedDocumentFactory
+
+
 def test_index_entries_round_trip_for_document(
-    sql_engine,
-    persisted_document_factory,
-    chunk_factory,
+    sql_engine: sa.Engine,
+    persisted_document_factory: PersistedDocumentFactory,
+    chunk_factory: ChunkFactory,
 ) -> None:
     documents = SqlDocumentRepository(sql_engine)
     chunks = SqlChunkRepository(sql_engine)
@@ -43,9 +48,9 @@ def test_index_entries_round_trip_for_document(
 
 
 def test_replace_for_document_removes_prior_index_entries(
-    sql_engine,
-    persisted_document_factory,
-    chunk_factory,
+    sql_engine: sa.Engine,
+    persisted_document_factory: PersistedDocumentFactory,
+    chunk_factory: ChunkFactory,
 ) -> None:
     documents = SqlDocumentRepository(sql_engine)
     chunks = SqlChunkRepository(sql_engine)
@@ -87,7 +92,7 @@ def test_replace_for_document_removes_prior_index_entries(
     assert index_entries.list_for_document(document.doc_id) == replacement
 
 
-def test_replace_for_document_rejects_cross_document_index_entries(sql_engine) -> None:
+def test_replace_for_document_rejects_cross_document_index_entries(sql_engine: sa.Engine) -> None:
     repository = SqlIndexEntryRepository(sql_engine)
 
     with pytest.raises(ValueError, match="must belong to the target document"):

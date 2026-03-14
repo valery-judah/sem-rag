@@ -1,0 +1,1135 @@
+/Users/val/projects/rag/sem-rag/e2e/conftest.py
+  /Users/val/projects/rag/sem-rag/e2e/conftest.py:756:45 - error: Type of "node" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/e2e/conftest.py:756:45 - error: Type of "nodeid" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/e2e/conftest.py:756:45 - error: Argument type is unknown
+    Argument corresponds to parameter "test_id" in function "_emit_e2e_log" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/e2e/conftest.py:769:25 - error: Type of "node" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/e2e/conftest.py:769:25 - error: Type of "nodeid" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/e2e/conftest.py:769:25 - error: Argument type is unknown
+    Argument corresponds to parameter "current_test_id" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/e2e/conftest.py:772:46 - error: Type of "node" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/e2e/conftest.py:772:46 - error: Type of "nodeid" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/e2e/conftest.py:772:46 - error: Argument type is unknown
+    Argument corresponds to parameter "test_id" in function "begin_scenario_log_capture" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/e2e/conftest.py:773:41 - error: Type of "node" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/e2e/conftest.py:773:41 - error: Type of "nodeid" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/e2e/conftest.py:773:41 - error: Argument type is unknown
+    Argument corresponds to parameter "test_id" in function "log" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/e2e/conftest.py:777:45 - error: Type of "node" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/e2e/conftest.py:777:45 - error: Type of "nodeid" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/e2e/conftest.py:777:45 - error: Argument type is unknown
+    Argument corresponds to parameter "test_id" in function "archive_scenario_logs" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/e2e/conftest.py:778:39 - error: Type of "node" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/e2e/conftest.py:778:39 - error: Argument type is unknown
+    Argument corresponds to parameter "o" in function "getattr" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/e2e/conftest.py:781:21 - error: Type of "node" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/e2e/conftest.py:781:21 - error: Type of "nodeid" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/e2e/conftest.py:781:21 - error: Argument type is unknown
+    Argument corresponds to parameter "test_id" in function "_emit_e2e_log" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/e2e/conftest.py:785:48 - error: Type of "node" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/e2e/conftest.py:785:48 - error: Type of "nodeid" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/e2e/conftest.py:785:48 - error: Argument type is unknown
+    Argument corresponds to parameter "test_id" in function "failure_report" (reportUnknownArgumentType)
+/Users/val/projects/rag/sem-rag/e2e/test_eval_answer_layer_smoke.py
+  /Users/val/projects/rag/sem-rag/e2e/test_eval_answer_layer_smoke.py:23:68 - error: Type of parameter "e2e_stack" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/e2e/test_eval_answer_layer_smoke.py:23:68 - error: Type annotation is missing for parameter "e2e_stack" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/e2e/test_eval_answer_layer_smoke.py:24:27 - error: Argument type is unknown
+    Argument corresponds to parameter "e2e_stack" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/e2e/test_eval_answer_layer_smoke.py:61:5 - error: Type of parameter "e2e_stack" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/e2e/test_eval_answer_layer_smoke.py:61:5 - error: Type annotation is missing for parameter "e2e_stack" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/e2e/test_eval_answer_layer_smoke.py:63:27 - error: Argument type is unknown
+    Argument corresponds to parameter "e2e_stack" in function "__init__" (reportUnknownArgumentType)
+/Users/val/projects/rag/sem-rag/e2e/test_markdown_stack_smoke.py
+  /Users/val/projects/rag/sem-rag/e2e/test_markdown_stack_smoke.py:28:64 - error: Type of parameter "e2e_stack" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/e2e/test_markdown_stack_smoke.py:28:64 - error: Type annotation is missing for parameter "e2e_stack" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/e2e/test_markdown_stack_smoke.py:30:5 - error: Type of "log" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/e2e/test_markdown_stack_smoke.py:32:10 - error: Type of "client" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/e2e/test_markdown_stack_smoke.py:32:32 - error: Type of "client" is unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/e2e/test_markdown_stack_smoke.py:33:9 - error: Type of "upload" is unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/e2e/test_markdown_stack_smoke.py:33:18 - error: Type of "post" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/e2e/test_markdown_stack_smoke.py:38:9 - error: Type of "raise_for_status" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/e2e/test_markdown_stack_smoke.py:39:9 - error: Type of "doc_id" is unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/e2e/test_markdown_stack_smoke.py:39:18 - error: Type of "json" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/e2e/test_markdown_stack_smoke.py:40:9 - error: Type of "log" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/e2e/test_markdown_stack_smoke.py:42:9 - error: Type of "status" is unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/e2e/test_markdown_stack_smoke.py:42:18 - error: Type of "wait_for_document" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/e2e/test_markdown_stack_smoke.py:44:9 - error: Type of "events" is unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/e2e/test_markdown_stack_smoke.py:44:18 - error: Type of "lifecycle_events" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/e2e/test_markdown_stack_smoke.py:46:18 - error: Argument type is unknown
+    Argument corresponds to parameter "object" in function "__new__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/e2e/test_markdown_stack_smoke.py:46:42 - error: Type of "event" is unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/e2e/test_markdown_stack_smoke.py:50:9 - error: Type of "document" is unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/e2e/test_markdown_stack_smoke.py:50:20 - error: Type of "document_row" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/e2e/test_markdown_stack_smoke.py:52:20 - error: Argument type is unknown
+    Argument corresponds to parameter "object" in function "__new__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/e2e/test_markdown_stack_smoke.py:55:9 - error: Type of "snapshot" is unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/e2e/test_markdown_stack_smoke.py:55:20 - error: Type of "vector_snapshot" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/e2e/test_markdown_stack_smoke.py:62:9 - error: Type of "artifacts" is unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/e2e/test_markdown_stack_smoke.py:62:21 - error: Type of "get" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/e2e/test_markdown_stack_smoke.py:63:9 - error: Type of "raise_for_status" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/e2e/test_markdown_stack_smoke.py:64:9 - error: Type of "payload" is unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/e2e/test_markdown_stack_smoke.py:64:19 - error: Type of "json" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/e2e/test_markdown_stack_smoke.py:65:16 - error: Type of "host_artifact_path" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/e2e/test_markdown_stack_smoke.py:65:16 - error: Type of "exists" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/e2e/test_markdown_stack_smoke.py:66:16 - error: Type of "host_artifact_path" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/e2e/test_markdown_stack_smoke.py:66:16 - error: Type of "exists" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/e2e/test_markdown_stack_smoke.py:67:9 - error: Type of "normalized_path" is unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/e2e/test_markdown_stack_smoke.py:67:27 - error: Type of "host_artifact_path" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/e2e/test_markdown_stack_smoke.py:68:16 - error: Type of "exists" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/e2e/test_markdown_stack_smoke.py:70:9 - error: Type of "query" is unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/e2e/test_markdown_stack_smoke.py:70:17 - error: Type of "post" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/e2e/test_markdown_stack_smoke.py:74:9 - error: Type of "raise_for_status" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/e2e/test_markdown_stack_smoke.py:75:9 - error: Type of "log" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/e2e/test_markdown_stack_smoke.py:78:21 - error: Type of "json" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/e2e/test_markdown_stack_smoke.py:80:16 - error: Type of "json" is unknown (reportUnknownMemberType)
+/Users/val/projects/rag/sem-rag/e2e/test_pdf_stack.py
+  /Users/val/projects/rag/sem-rag/e2e/test_pdf_stack.py:32:66 - error: "exists" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /Users/val/projects/rag/sem-rag/e2e/test_pdf_stack.py:33:72 - error: "exists" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /Users/val/projects/rag/sem-rag/e2e/test_pdf_stack.py:34:73 - error: "exists" is not a known attribute of "None" (reportOptionalMemberAccess)
+  /Users/val/projects/rag/sem-rag/e2e/test_pdf_stack.py:54:16 - error: Operator ">" not supported for types "object" and "Literal[0]" (reportOperatorIssue)
+  /Users/val/projects/rag/sem-rag/e2e/test_pdf_stack.py:55:16 - error: Operator ">" not supported for types "object" and "Literal[0]" (reportOperatorIssue)
+  /Users/val/projects/rag/sem-rag/e2e/test_pdf_stack.py:56:16 - error: Operator ">" not supported for types "object" and "Literal[0]" (reportOperatorIssue)
+/Users/val/projects/rag/sem-rag/e2e/test_query_runtime_smoke.py
+  /Users/val/projects/rag/sem-rag/e2e/test_query_runtime_smoke.py:15:5 - error: Type of parameter "e2e_stack" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/e2e/test_query_runtime_smoke.py:15:5 - error: Type annotation is missing for parameter "e2e_stack" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/e2e/test_query_runtime_smoke.py:18:27 - error: Argument type is unknown
+    Argument corresponds to parameter "e2e_stack" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/e2e/test_query_runtime_smoke.py:52:5 - error: Type of "archived_logs" is unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/e2e/test_query_runtime_smoke.py:52:21 - error: Type of "archive_scenario_logs" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/e2e/test_query_runtime_smoke.py:52:61 - error: Type of "node" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/e2e/test_query_runtime_smoke.py:52:61 - error: Type of "nodeid" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/e2e/test_query_runtime_smoke.py:53:16 - error: Argument type is unknown
+    Argument corresponds to parameter "iterable" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/e2e/test_query_runtime_smoke.py:55:5 - error: Type of "api_lines" is unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/e2e/test_query_runtime_smoke.py:55:17 - error: Type of "read_text" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/e2e/test_query_runtime_smoke.py:55:17 - error: Type of "splitlines" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/e2e/test_query_runtime_smoke.py:57:35 - error: Argument type is unknown
+    Argument corresponds to parameter "s" in function "loads" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/e2e/test_query_runtime_smoke.py:57:45 - error: Type of "line" is unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/e2e/test_query_runtime_smoke.py:61:5 - error: Type of "latest_api_log" is unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/e2e/test_query_runtime_smoke.py:62:9 - error: Type of "log_root" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/e2e/test_query_runtime_smoke.py:71:12 - error: Type of "is_symlink" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/e2e/test_query_runtime_smoke.py:72:12 - error: Type of "resolve" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/e2e/test_query_runtime_smoke.py:72:40 - error: Type of "resolve" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/e2e/test_query_runtime_smoke.py:74:70 - error: Type of "database_url" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/e2e/test_query_runtime_smoke.py:74:70 - error: Argument type is unknown
+    Argument corresponds to parameter "database_url" in function "from_database_url" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/e2e/test_query_runtime_smoke.py:77:5 - error: Type of "record_query_context_artifact" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/e2e/test_query_runtime_smoke.py:78:43 - error: Type of "log_root" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/e2e/test_query_runtime_smoke.py:78:43 - error: Type of "parents" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/e2e/test_query_runtime_smoke.py:78:43 - error: Argument type is unknown
+    Argument corresponds to parameter "other" in function "relative_to" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/e2e/test_query_runtime_smoke.py:94:69 - error: Type of parameter "e2e_stack" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/e2e/test_query_runtime_smoke.py:94:69 - error: Type annotation is missing for parameter "e2e_stack" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/e2e/test_query_runtime_smoke.py:95:27 - error: Argument type is unknown
+    Argument corresponds to parameter "e2e_stack" in function "__init__" (reportUnknownArgumentType)
+/Users/val/projects/rag/sem-rag/e2e/test_stack_failures.py
+  /Users/val/projects/rag/sem-rag/e2e/test_stack_failures.py:8:59 - error: Type of parameter "e2e_stack" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/e2e/test_stack_failures.py:8:59 - error: Type annotation is missing for parameter "e2e_stack" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/e2e/test_stack_failures.py:9:10 - error: Type of "client" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/e2e/test_stack_failures.py:9:32 - error: Type of "client" is unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/e2e/test_stack_failures.py:10:9 - error: Type of "log" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/e2e/test_stack_failures.py:11:9 - error: Type of "response" is unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/e2e/test_stack_failures.py:11:20 - error: Type of "post" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/e2e/test_stack_failures.py:17:5 - error: Type of "log" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/e2e/test_stack_failures.py:17:59 - error: Type of "status_code" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/e2e/test_stack_failures.py:18:12 - error: Type of "status_code" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/e2e/test_stack_failures.py:19:45 - error: Type of "json" is unknown (reportUnknownMemberType)
+/Users/val/projects/rag/sem-rag/scripts/devex/test_middleware_order.py
+  /Users/val/projects/rag/sem-rag/scripts/devex/test_middleware_order.py:9:11 - error: Return type, "Unknown | JSONResponse", is partially unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/scripts/devex/test_middleware_order.py:9:44 - error: Type of parameter "call_next" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/scripts/devex/test_middleware_order.py:9:44 - error: Type annotation is missing for parameter "call_next" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/scripts/devex/test_middleware_order.py:11:9 - error: Type of "response" is unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/scripts/devex/test_middleware_order.py:12:16 - error: Return type is unknown (reportUnknownVariableType)
+/Users/val/projects/rag/sem-rag/src/doc_forge/app/api.py
+  /Users/val/projects/rag/sem-rag/src/doc_forge/app/api.py:202:15 - error: Return type, "Unknown | JSONResponse", is partially unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/app/api.py:202:15 - error: Function "request_logging_middleware" is not accessed (reportUnusedFunction)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/app/api.py:202:60 - error: Type of parameter "call_next" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/app/api.py:202:60 - error: Type annotation is missing for parameter "call_next" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/app/api.py:214:13 - error: Type of "response" is unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/app/api.py:232:9 - error: Type of "headers" is partially unknown
+    Type of "headers" is "Unknown | MutableHeaders" (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/app/api.py:239:29 - error: Type of "status_code" is partially unknown
+    Type of "status_code" is "Unknown | int" (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/app/api.py:240:24 - error: Type of "status_code" is partially unknown
+    Type of "status_code" is "Unknown | int" (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/app/api.py:245:16 - error: Return type, "Unknown | JSONResponse", is partially unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/app/api.py:248:15 - error: Function "global_exception_handler" is not accessed (reportUnusedFunction)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/app/api.py:257:9 - error: Function "healthz" is not accessed (reportUnusedFunction)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/app/api.py:261:9 - error: Function "readyz" is not accessed (reportUnusedFunction)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/app/api.py:305:9 - error: Function "upload_document" is not accessed (reportUnusedFunction)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/app/api.py:385:9 - error: Function "delete_document" is not accessed (reportUnusedFunction)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/app/api.py:425:9 - error: Function "get_document" is not accessed (reportUnusedFunction)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/app/api.py:433:32 - error: "_require_document" is protected and used outside of the class in which it is declared (reportPrivateUsage)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/app/api.py:466:9 - error: Function "get_document_status" is not accessed (reportUnusedFunction)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/app/api.py:506:9 - error: Function "get_document_artifacts" is not accessed (reportUnusedFunction)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/app/api.py:549:9 - error: Function "retry_document" is not accessed (reportUnusedFunction)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/app/api.py:606:9 - error: Function "retrieval_query" is not accessed (reportUnusedFunction)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/app/api.py:671:9 - error: Function "submit_query" is not accessed (reportUnusedFunction)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/app/api.py:773:9 - error: Function "get_query_summary" is not accessed (reportUnusedFunction)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/app/api.py:814:9 - error: Function "get_query_trace" is not accessed (reportUnusedFunction)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/app/api.py:855:9 - error: Function "get_query_citations" is not accessed (reportUnusedFunction)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/app/api.py:894:9 - error: Function "run_next_job" is not accessed (reportUnusedFunction)
+/Users/val/projects/rag/sem-rag/src/doc_forge/app/deps.py
+  /Users/val/projects/rag/sem-rag/src/doc_forge/app/deps.py:88:13 - error: Function "_set_sqlite_pragma" is not accessed (reportUnusedFunction)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/app/deps.py:88:32 - error: Type of parameter "dbapi_connection" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/app/deps.py:88:32 - error: Type annotation is missing for parameter "dbapi_connection" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/app/deps.py:88:50 - error: Type of parameter "connection_record" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/app/deps.py:88:50 - error: Type annotation is missing for parameter "connection_record" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/app/deps.py:90:13 - error: Type of "cursor" is unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/app/deps.py:90:22 - error: Type of "cursor" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/app/deps.py:91:13 - error: Type of "execute" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/app/deps.py:92:13 - error: Type of "close" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/app/deps.py:318:23 - error: Argument of type "dict[DocumentJobStage, ExtractDocumentJobStage | NormalizeDocumentJobStage | SectionizeDocumentStage | ChunkDocumentStage | IndexDocumentStage | ReadyDocumentStage]" cannot be assigned to parameter "stage_runners" of type "dict[DocumentJobStage, StageRunner]" in function "__init__"
+    "dict[DocumentJobStage, ExtractDocumentJobStage | NormalizeDocumentJobStage | SectionizeDocumentStage | ChunkDocumentStage | IndexDocumentStage | ReadyDocumentStage]" is not assignable to "dict[DocumentJobStage, StageRunner]"
+      Type parameter "_VT@dict" is invariant, but "ExtractDocumentJobStage | NormalizeDocumentJobStage | SectionizeDocumentStage | ChunkDocumentStage | IndexDocumentStage | ReadyDocumentStage" is not the same as "StageRunner"
+      Consider switching from "dict" to "Mapping" which is covariant in the value type (reportArgumentType)
+/Users/val/projects/rag/sem-rag/src/doc_forge/app/logging.py
+  /Users/val/projects/rag/sem-rag/src/doc_forge/app/logging.py:79:5 - error: "_CONFIGURED" is constant (because it is uppercase) and cannot be redefined (reportConstantRedefinition)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/app/logging.py:90:5 - error: "_CONFIGURED" is constant (because it is uppercase) and cannot be redefined (reportConstantRedefinition)
+/Users/val/projects/rag/sem-rag/src/doc_forge/artifacts/schemas.py
+  /Users/val/projects/rag/sem-rag/src/doc_forge/artifacts/schemas.py:53:5 - error: Type of "blocks" is partially unknown
+    Type of "blocks" is "list[Unknown]" (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/artifacts/schemas.py:64:5 - error: Type of "pages" is partially unknown
+    Type of "pages" is "list[Unknown]" (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/artifacts/schemas.py:105:5 - error: Type of "blocks" is partially unknown
+    Type of "blocks" is "list[Unknown]" (reportUnknownVariableType)
+/Users/val/projects/rag/sem-rag/src/doc_forge/devtools/dead_code.py
+  /Users/val/projects/rag/sem-rag/src/doc_forge/devtools/dead_code.py:86:5 - error: Type of "class_definitions" is partially unknown
+    Type of "class_definitions" is "dict[Unknown, Unknown]" (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/devtools/dead_code.py:87:5 - error: Type of "top_level_bindings" is partially unknown
+    Type of "top_level_bindings" is "dict[Unknown, Unknown]" (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/devtools/dead_code.py:88:5 - error: Type of "local_imports" is partially unknown
+    Type of "local_imports" is "set[Unknown]" (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/devtools/dead_code.py:103:5 - error: Type of "_export_cache" is partially unknown
+    Type of "_export_cache" is "dict[Unknown, Unknown]" (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/devtools/dead_code.py:104:5 - error: Type of "_reference_cache" is partially unknown
+    Type of "_reference_cache" is "dict[Unknown, Unknown]" (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/devtools/dead_code.py:105:5 - error: Type of "_closure_cache" is partially unknown
+    Type of "_closure_cache" is "dict[Unknown, Unknown]" (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/devtools/dead_code.py:244:13 - error: Type of "cached" is partially unknown
+    Type of "cached" is "frozenset[Unknown]" (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/devtools/dead_code.py:246:20 - error: Return type, "frozenset[Unknown]", is partially unknown (reportUnknownVariableType)
+/Users/val/projects/rag/sem-rag/src/doc_forge/evaluation/answer_layer.py
+  /Users/val/projects/rag/sem-rag/src/doc_forge/evaluation/answer_layer.py:87:5 - error: Type of "gold_sources" is partially unknown
+    Type of "gold_sources" is "list[Unknown]" (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/evaluation/answer_layer.py:132:5 - error: Type of "gold_evidence_set" is partially unknown
+    Type of "gold_evidence_set" is "list[Unknown]" (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/evaluation/answer_layer.py:167:5 - error: Type of "citations" is partially unknown
+    Type of "citations" is "list[Unknown]" (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/evaluation/answer_layer.py:233:5 - error: Type of "per_criterion" is partially unknown
+    Type of "per_criterion" is "list[Unknown]" (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/evaluation/answer_layer.py:236:5 - error: Type of "case_matrix" is partially unknown
+    Type of "case_matrix" is "list[Unknown]" (reportUnknownVariableType)
+/Users/val/projects/rag/sem-rag/src/doc_forge/evaluation/identifiers.py
+  /Users/val/projects/rag/sem-rag/src/doc_forge/evaluation/identifiers.py:5:35 - error: "_validate_identifier" is private and used outside of the module in which it is declared (reportPrivateUsage)
+/Users/val/projects/rag/sem-rag/src/doc_forge/indexing/base.py
+  /Users/val/projects/rag/sem-rag/src/doc_forge/indexing/base.py:36:5 - error: Type of "embedding_vector" is partially unknown
+    Type of "embedding_vector" is "list[Unknown]" (reportUnknownVariableType)
+/Users/val/projects/rag/sem-rag/src/doc_forge/lifecycle/service.py
+  /Users/val/projects/rag/sem-rag/src/doc_forge/lifecycle/service.py:179:5 - error: Type of "hits" is partially unknown
+    Type of "hits" is "list[Unknown]" (reportUnknownVariableType)
+/Users/val/projects/rag/sem-rag/src/doc_forge/query/context_archive.py
+  /Users/val/projects/rag/sem-rag/src/doc_forge/query/context_archive.py:84:5 - error: Type of "log_assets" is partially unknown
+    Type of "log_assets" is "list[Unknown]" (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/query/context_archive.py:519:13 - error: Type of "test_id" is partially unknown
+    Type of "test_id" is "Unknown | Any | None" (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/query/context_archive.py:519:23 - error: Type of "get" is partially unknown
+    Type of "get" is "Any | Overload[(key: Unknown, default: None = None, /) -> (Unknown | None), (key: Unknown, default: Unknown, /) -> Unknown, (key: Unknown, default: _T@get, /) -> (Unknown | _T@get)]" (reportUnknownMemberType)
+/Users/val/projects/rag/sem-rag/src/doc_forge/query/context_assembly.py
+  /Users/val/projects/rag/sem-rag/src/doc_forge/query/context_assembly.py:42:5 - error: Type of "decisions" is partially unknown
+    Type of "decisions" is "list[Unknown]" (reportUnknownVariableType)
+/Users/val/projects/rag/sem-rag/src/doc_forge/query/contracts.py
+  /Users/val/projects/rag/sem-rag/src/doc_forge/query/contracts.py:38:5 - error: Type of "trust_failure_labels" is partially unknown
+    Type of "trust_failure_labels" is "list[Unknown]" (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/query/contracts.py:264:5 - error: Type of "unsupported_capability_flags" is partially unknown
+    Type of "unsupported_capability_flags" is "list[Unknown]" (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/query/contracts.py:318:5 - error: Type of "heading_paths" is partially unknown
+    Type of "heading_paths" is "list[Unknown]" (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/query/contracts.py:335:5 - error: Type of "context_items" is partially unknown
+    Type of "context_items" is "list[Unknown]" (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/query/contracts.py:369:5 - error: Type of "qualifying_reason_codes" is partially unknown
+    Type of "qualifying_reason_codes" is "list[Unknown]" (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/query/contracts.py:370:5 - error: Type of "trust_failure_labels" is partially unknown
+    Type of "trust_failure_labels" is "list[Unknown]" (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/query/contracts.py:385:5 - error: Type of "required_qualifying_reason_codes" is partially unknown
+    Type of "required_qualifying_reason_codes" is "list[Unknown]" (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/query/contracts.py:417:5 - error: Type of "citations" is partially unknown
+    Type of "citations" is "list[Unknown]" (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/query/contracts.py:430:5 - error: Type of "qualifying_reason_codes" is partially unknown
+    Type of "qualifying_reason_codes" is "list[Unknown]" (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/query/contracts.py:432:5 - error: Type of "trust_failure_labels" is partially unknown
+    Type of "trust_failure_labels" is "list[Unknown]" (reportUnknownVariableType)
+/Users/val/projects/rag/sem-rag/src/doc_forge/query/domain.py
+  /Users/val/projects/rag/sem-rag/src/doc_forge/query/domain.py:31:5 - error: Type of "retrieved_candidates" is partially unknown
+    Type of "retrieved_candidates" is "list[Unknown]" (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/query/domain.py:32:5 - error: Type of "selected_candidates" is partially unknown
+    Type of "selected_candidates" is "list[Unknown]" (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/query/domain.py:33:5 - error: Type of "evidence_sets" is partially unknown
+    Type of "evidence_sets" is "list[Unknown]" (reportUnknownVariableType)
+/Users/val/projects/rag/sem-rag/src/doc_forge/query/interpretation.py
+  /Users/val/projects/rag/sem-rag/src/doc_forge/query/interpretation.py:137:5 - error: Type of "unsupported_capability_flags" is partially unknown
+    Type of "unsupported_capability_flags" is "list[Unknown]" (reportUnknownVariableType)
+/Users/val/projects/rag/sem-rag/src/doc_forge/query/replay.py
+  /Users/val/projects/rag/sem-rag/src/doc_forge/query/replay.py:61:5 - error: Type of "retrieved_candidates" is partially unknown
+    Type of "retrieved_candidates" is "list[Unknown]" (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/query/replay.py:62:5 - error: Type of "selected_candidates" is partially unknown
+    Type of "selected_candidates" is "list[Unknown]" (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/query/replay.py:63:5 - error: Type of "evidence_sets" is partially unknown
+    Type of "evidence_sets" is "list[Unknown]" (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/query/replay.py:175:57 - error: Type of "item" is unknown (reportUnknownVariableType)
+/Users/val/projects/rag/sem-rag/src/doc_forge/query/retrieval.py
+  /Users/val/projects/rag/sem-rag/src/doc_forge/query/retrieval.py:41:5 - error: Type of "candidates" is partially unknown
+    Type of "candidates" is "list[Unknown]" (reportUnknownVariableType)
+/Users/val/projects/rag/sem-rag/src/doc_forge/query/review.py
+  /Users/val/projects/rag/sem-rag/src/doc_forge/query/review.py:74:5 - error: Type of "stages" is partially unknown
+    Type of "stages" is "list[Unknown]" (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/query/review.py:107:5 - error: Type of "trust_failure_labels" is partially unknown
+    Type of "trust_failure_labels" is "list[Unknown]" (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/query/review.py:146:5 - error: Type of "trust_failure_labels" is partially unknown
+    Type of "trust_failure_labels" is "list[Unknown]" (reportUnknownVariableType)
+/Users/val/projects/rag/sem-rag/src/doc_forge/query/selection.py
+  /Users/val/projects/rag/sem-rag/src/doc_forge/query/selection.py:72:5 - error: Type of "selected_candidates" is partially unknown
+    Type of "selected_candidates" is "list[Unknown]" (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/query/selection.py:73:5 - error: Type of "evidence_sets" is partially unknown
+    Type of "evidence_sets" is "list[Unknown]" (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/query/selection.py:74:5 - error: Type of "decisions" is partially unknown
+    Type of "decisions" is "list[Unknown]" (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/query/selection.py:76:5 - error: Type of "neighbor_expansion_notes" is partially unknown
+    Type of "neighbor_expansion_notes" is "list[Unknown]" (reportUnknownVariableType)
+/Users/val/projects/rag/sem-rag/src/doc_forge/query/service.py
+  /Users/val/projects/rag/sem-rag/src/doc_forge/query/service.py:410:12 - error: Condition will always evaluate to False since the types "GroundedAnswerGenerator | DeterministicGroundedAnswerGenerator" and "None" have no overlap (reportUnnecessaryComparison)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/query/service.py:412:12 - error: Condition will always evaluate to False since the types "CitationRenderer | DeterministicCitationRenderer" and "None" have no overlap (reportUnnecessaryComparison)
+/Users/val/projects/rag/sem-rag/src/doc_forge/query/stages/assess_support.py
+  /Users/val/projects/rag/sem-rag/src/doc_forge/query/stages/assess_support.py:48:5 - error: Type of "precheck_results" is partially unknown
+    Type of "precheck_results" is "list[Unknown]" (reportUnknownVariableType)
+/Users/val/projects/rag/sem-rag/src/doc_forge/query/stages/context.py
+  /Users/val/projects/rag/sem-rag/src/doc_forge/query/stages/context.py:53:5 - error: Type of "context_items" is partially unknown
+    Type of "context_items" is "list[Unknown]" (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/query/stages/context.py:54:5 - error: Type of "decisions" is partially unknown
+    Type of "decisions" is "list[Unknown]" (reportUnknownVariableType)
+/Users/val/projects/rag/sem-rag/src/doc_forge/query/stages/decide_answer_mode.py
+  /Users/val/projects/rag/sem-rag/src/doc_forge/query/stages/decide_answer_mode.py:40:5 - error: Type of "qualifying_reason_codes" is partially unknown
+    Type of "qualifying_reason_codes" is "list[Unknown]" (reportUnknownVariableType)
+/Users/val/projects/rag/sem-rag/src/doc_forge/query/stages/select.py
+  /Users/val/projects/rag/sem-rag/src/doc_forge/query/stages/select.py:40:5 - error: Type of "selected_candidates" is partially unknown
+    Type of "selected_candidates" is "list[Unknown]" (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/query/stages/select.py:41:5 - error: Type of "decisions" is partially unknown
+    Type of "decisions" is "list[Unknown]" (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/query/stages/select.py:42:5 - error: Type of "evidence_sets" is partially unknown
+    Type of "evidence_sets" is "list[Unknown]" (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/query/stages/select.py:47:5 - error: Type of "neighbor_expansion_notes" is partially unknown
+    Type of "neighbor_expansion_notes" is "list[Unknown]" (reportUnknownVariableType)
+/Users/val/projects/rag/sem-rag/src/doc_forge/query/support_assessment.py
+  /Users/val/projects/rag/sem-rag/src/doc_forge/query/support_assessment.py:34:5 - error: Type of "reason_codes" is partially unknown
+    Type of "reason_codes" is "list[Unknown]" (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/src/doc_forge/query/support_assessment.py:61:5 - error: Type of "precheck_results" is partially unknown
+    Type of "precheck_results" is "list[Unknown]" (reportUnknownVariableType)
+/Users/val/projects/rag/sem-rag/src/doc_forge/query/trace.py
+  /Users/val/projects/rag/sem-rag/src/doc_forge/query/trace.py:56:5 - error: Type of "stage_traces" is partially unknown
+    Type of "stage_traces" is "list[Unknown]" (reportUnknownVariableType)
+/Users/val/projects/rag/sem-rag/src/doc_forge/readmodels/documents.py
+  /Users/val/projects/rag/sem-rag/src/doc_forge/readmodels/documents.py:81:5 - error: Type of "embedding_vector" is partially unknown
+    Type of "embedding_vector" is "list[Unknown]" (reportUnknownVariableType)
+/Users/val/projects/rag/sem-rag/tests/app/conftest.py
+  /Users/val/projects/rag/sem-rag/tests/app/conftest.py:14:5 - error: Type of parameter "sql_engine" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/app/conftest.py:14:5 - error: Type annotation is missing for parameter "sql_engine" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/app/conftest.py:16:5 - error: Type of parameter "tmp_path" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/app/conftest.py:16:5 - error: Type annotation is missing for parameter "tmp_path" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/app/conftest.py:20:5 - error: Type of "artifact_root" is unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/tests/app/conftest.py:22:55 - error: Argument type is unknown
+    Argument corresponds to parameter "object" in function "__new__" (reportUnknownArgumentType)
+/Users/val/projects/rag/sem-rag/tests/app/test_documents_api.py
+  /Users/val/projects/rag/sem-rag/tests/app/test_documents_api.py:40:26 - error: "_content" is protected and used outside of the class in which it is declared (reportPrivateUsage)
+  /Users/val/projects/rag/sem-rag/tests/app/test_documents_api.py:49:33 - error: "LifecycleService" is unknown import symbol (reportAttributeAccessIssue)
+  /Users/val/projects/rag/sem-rag/tests/app/test_documents_api.py:49:33 - error: Type of "LifecycleService" is unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/tests/app/test_documents_api.py:51:5 - error: Return type is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/app/test_documents_api.py:170:35 - error: Type of parameter "self" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/app/test_documents_api.py:170:35 - error: Type annotation is missing for parameter "self" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/app/test_documents_api.py:170:41 - error: Type of parameter "request" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/app/test_documents_api.py:170:41 - error: Type annotation is missing for parameter "request" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/app/test_documents_api.py:174:55 - error: Argument type is partially unknown
+    Argument corresponds to parameter "value" in function "setattr"
+    Argument type is "(self: Unknown, request: Unknown) -> NoReturn" (reportUnknownArgumentType)
+/Users/val/projects/rag/sem-rag/tests/app/test_exception_leakage.py
+  /Users/val/projects/rag/sem-rag/tests/app/test_exception_leakage.py:11:9 - error: Function "crash" is not accessed (reportUnusedFunction)
+/Users/val/projects/rag/sem-rag/tests/app/test_optional_backends.py
+  /Users/val/projects/rag/sem-rag/tests/app/test_optional_backends.py:16:27 - error: Type of parameter "texts" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/app/test_optional_backends.py:16:27 - error: Type annotation is missing for parameter "texts" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/app/test_optional_backends.py:17:27 - error: Type of "_" is unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/tests/app/test_optional_backends.py:32:26 - error: Type of parameter "kwargs" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/app/test_optional_backends.py:32:26 - error: Type annotation is missing for parameter "kwargs" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/app/test_optional_backends.py:37:5 - error: Type of parameter "monkeypatch" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/app/test_optional_backends.py:37:5 - error: Type annotation is missing for parameter "monkeypatch" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/app/test_optional_backends.py:38:5 - error: Type of parameter "sql_engine" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/app/test_optional_backends.py:38:5 - error: Type annotation is missing for parameter "sql_engine" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/app/test_optional_backends.py:40:5 - error: Type of parameter "tmp_path" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/app/test_optional_backends.py:40:5 - error: Type annotation is missing for parameter "tmp_path" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/app/test_optional_backends.py:42:5 - error: Type of "setenv" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/tests/app/test_optional_backends.py:43:5 - error: Type of "setenv" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/tests/app/test_optional_backends.py:44:5 - error: Type of "setenv" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/tests/app/test_optional_backends.py:45:5 - error: Type of "setattr" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/tests/app/test_optional_backends.py:52:16 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "get_document_lifecycle_service" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/app/test_optional_backends.py:53:48 - error: Argument type is unknown
+    Argument corresponds to parameter "root" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/app/test_optional_backends.py:56:16 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "get_query_service" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/app/test_optional_backends.py:57:66 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "get_queryable_corpus_read_model" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/app/test_optional_backends.py:73:5 - error: Type of parameter "monkeypatch" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/app/test_optional_backends.py:73:5 - error: Type annotation is missing for parameter "monkeypatch" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/app/test_optional_backends.py:74:5 - error: Type of parameter "sql_engine" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/app/test_optional_backends.py:74:5 - error: Type annotation is missing for parameter "sql_engine" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/app/test_optional_backends.py:77:5 - error: Type of "setenv" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/tests/app/test_optional_backends.py:78:5 - error: Type of "setenv" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/tests/app/test_optional_backends.py:79:5 - error: Type of "setenv" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/tests/app/test_optional_backends.py:80:5 - error: Type of "setenv" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/tests/app/test_optional_backends.py:81:5 - error: Type of "setenv" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/tests/app/test_optional_backends.py:82:5 - error: Type of "setattr" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/tests/app/test_optional_backends.py:86:16 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "get_query_service" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/app/test_optional_backends.py:87:66 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "get_queryable_corpus_read_model" (reportUnknownArgumentType)
+/Users/val/projects/rag/sem-rag/tests/app/test_runtime_entrypoint.py
+  /Users/val/projects/rag/sem-rag/tests/app/test_runtime_entrypoint.py:20:9 - error: Argument type is partially unknown
+    Argument corresponds to parameter "name" in function "setattr"
+    Argument type is "(database_url: Unknown | None = None) -> None" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/app/test_runtime_entrypoint.py:20:16 - error: Type of parameter "database_url" is partially unknown (reportUnknownLambdaType)
+  /Users/val/projects/rag/sem-rag/tests/app/test_runtime_entrypoint.py:20:48 - error: Argument type is partially unknown
+    Argument corresponds to parameter "object" in function "append"
+    Argument type is "tuple[Literal['migrate'], Unknown | Literal['']]" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/app/test_runtime_entrypoint.py:24:9 - error: Argument type is partially unknown
+    Argument corresponds to parameter "name" in function "setattr"
+    Argument type is "(*args: Unknown, **kwargs: Unknown) -> None" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/app/test_runtime_entrypoint.py:24:17 - error: Type of parameter "args" is partially unknown (reportUnknownLambdaType)
+  /Users/val/projects/rag/sem-rag/tests/app/test_runtime_entrypoint.py:24:25 - error: Type of parameter "kwargs" is partially unknown (reportUnknownLambdaType)
+  /Users/val/projects/rag/sem-rag/tests/app/test_runtime_entrypoint.py:24:46 - error: Argument type is partially unknown
+    Argument corresponds to parameter "object" in function "append"
+    Argument type is "tuple[Literal['api'], Unknown]" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/app/test_runtime_entrypoint.py:44:9 - error: Argument type is partially unknown
+    Argument corresponds to parameter "name" in function "setattr"
+    Argument type is "(database_url: Unknown | None = None) -> None" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/app/test_runtime_entrypoint.py:44:16 - error: Type of parameter "database_url" is partially unknown (reportUnknownLambdaType)
+  /Users/val/projects/rag/sem-rag/tests/app/test_runtime_entrypoint.py:59:9 - error: Argument type is partially unknown
+    Argument corresponds to parameter "name" in function "setattr"
+    Argument type is "(database_url: Unknown | None = None) -> None" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/app/test_runtime_entrypoint.py:59:16 - error: Type of parameter "database_url" is partially unknown (reportUnknownLambdaType)
+  /Users/val/projects/rag/sem-rag/tests/app/test_runtime_entrypoint.py:59:48 - error: Argument type is partially unknown
+    Argument corresponds to parameter "object" in function "append"
+    Argument type is "Unknown | Literal['env']" (reportUnknownArgumentType)
+/Users/val/projects/rag/sem-rag/tests/artifacts/test_raw_artifact_store.py
+  /Users/val/projects/rag/sem-rag/tests/artifacts/test_raw_artifact_store.py:55:15 - error: "_resolve_relative_path" is protected and used outside of the class in which it is declared (reportPrivateUsage)
+/Users/val/projects/rag/sem-rag/tests/evaluation/test_e2e_eval_support.py
+  /Users/val/projects/rag/sem-rag/tests/evaluation/test_e2e_eval_support.py:25:30 - error: "_parse_page_label" is private and used outside of the module in which it is declared (reportPrivateUsage)
+/Users/val/projects/rag/sem-rag/tests/indexing/test_model_embeddings.py
+  /Users/val/projects/rag/sem-rag/tests/indexing/test_model_embeddings.py:12:9 - error: Type of parameter "sentences" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/indexing/test_model_embeddings.py:12:9 - error: Type annotation is missing for parameter "sentences" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/indexing/test_model_embeddings.py:21:32 - error: Argument type is unknown
+    Argument corresponds to parameter "iterable" in function "__init__" (reportUnknownArgumentType)
+/Users/val/projects/rag/sem-rag/tests/lifecycle/support.py
+  /Users/val/projects/rag/sem-rag/tests/lifecycle/support.py:121:54 - error: Type of parameter "connection" is partially unknown
+    Parameter type is "Unknown | None" (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/lifecycle/support.py:121:54 - error: Type annotation is missing for parameter "connection" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/lifecycle/support.py:125:37 - error: Type of parameter "connection" is partially unknown
+    Parameter type is "Unknown | None" (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/lifecycle/support.py:125:37 - error: Type annotation is missing for parameter "connection" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/lifecycle/support.py:129:40 - error: Type of parameter "connection" is partially unknown
+    Parameter type is "Unknown | None" (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/lifecycle/support.py:129:40 - error: Type annotation is missing for parameter "connection" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/lifecycle/support.py:181:48 - error: Type of parameter "connection" is partially unknown
+    Parameter type is "Unknown | None" (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/lifecycle/support.py:181:48 - error: Type annotation is missing for parameter "connection" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/lifecycle/support.py:288:74 - error: Type of parameter "kwargs" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/lifecycle/support.py:288:74 - error: Type annotation is missing for parameter "kwargs" (reportMissingParameterType)
+/Users/val/projects/rag/sem-rag/tests/lifecycle/test_service.py
+  /Users/val/projects/rag/sem-rag/tests/lifecycle/test_service.py:248:64 - error: Type of parameter "tmp_path" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/lifecycle/test_service.py:248:64 - error: Type annotation is missing for parameter "tmp_path" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/lifecycle/test_service.py:265:48 - error: Argument type is unknown
+    Argument corresponds to parameter "root" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/lifecycle/test_service.py:272:15 - error: Type of "get" is partially unknown
+    Type of "get" is "(doc_id: str, *, connection: Unknown | None = None) -> (PersistedDocument | None)" (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/tests/lifecycle/test_service.py:278:66 - error: Type of parameter "tmp_path" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/lifecycle/test_service.py:278:66 - error: Type annotation is missing for parameter "tmp_path" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/lifecycle/test_service.py:295:48 - error: Argument type is unknown
+    Argument corresponds to parameter "root" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/lifecycle/test_service.py:302:15 - error: Type of "get" is partially unknown
+    Type of "get" is "(doc_id: str, *, connection: Unknown | None = None) -> (PersistedDocument | None)" (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/tests/lifecycle/test_service.py:355:5 - error: Type of parameter "tmp_path" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/lifecycle/test_service.py:355:5 - error: Type annotation is missing for parameter "tmp_path" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/lifecycle/test_service.py:362:46 - error: Argument type is unknown
+    Argument corresponds to parameter "root" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/lifecycle/test_service.py:435:73 - error: Type of parameter "tmp_path" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/lifecycle/test_service.py:435:73 - error: Type annotation is missing for parameter "tmp_path" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/lifecycle/test_service.py:436:46 - error: Argument type is unknown
+    Argument corresponds to parameter "root" in function "__init__" (reportUnknownArgumentType)
+/Users/val/projects/rag/sem-rag/tests/observability/test_loader.py
+  /Users/val/projects/rag/sem-rag/tests/observability/test_loader.py:30:54 - error: Type of parameter "tmp_path" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/observability/test_loader.py:30:54 - error: Type annotation is missing for parameter "tmp_path" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/observability/test_loader.py:31:5 - error: Type of "context_root" is unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/tests/observability/test_loader.py:32:5 - error: Type of "bundle_root" is unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/tests/observability/test_loader.py:33:5 - error: Type of "mkdir" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/tests/observability/test_loader.py:35:21 - error: Argument type is unknown
+    Argument corresponds to parameter "bundle_root" in function "_write_manifest" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/observability/test_loader.py:77:24 - error: Argument type is unknown
+    Argument corresponds to parameter "path" in function "_write_eval_result" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/observability/test_loader.py:82:22 - error: Argument type is unknown
+    Argument corresponds to parameter "context_root" in function "from_database_url" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/observability/test_loader.py:83:19 - error: Argument type is unknown
+    Argument corresponds to parameter "repo_root" in function "from_database_url" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/observability/test_loader.py:125:60 - error: Type of parameter "tmp_path" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/observability/test_loader.py:125:60 - error: Type annotation is missing for parameter "tmp_path" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/observability/test_loader.py:126:5 - error: Type of "context_root" is unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/tests/observability/test_loader.py:127:5 - error: Type of "bundle_root" is unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/tests/observability/test_loader.py:128:5 - error: Type of "mkdir" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/tests/observability/test_loader.py:130:21 - error: Argument type is unknown
+    Argument corresponds to parameter "bundle_root" in function "_write_manifest" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/observability/test_loader.py:166:22 - error: Argument type is unknown
+    Argument corresponds to parameter "context_root" in function "from_database_url" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/observability/test_loader.py:167:19 - error: Argument type is unknown
+    Argument corresponds to parameter "repo_root" in function "from_database_url" (reportUnknownArgumentType)
+/Users/val/projects/rag/sem-rag/tests/persistence/test_document_job_repository.py
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_document_job_repository.py:15:5 - error: Type of parameter "sql_engine" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_document_job_repository.py:15:5 - error: Type annotation is missing for parameter "sql_engine" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_document_job_repository.py:16:5 - error: Type of parameter "persisted_document_factory" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_document_job_repository.py:16:5 - error: Type annotation is missing for parameter "persisted_document_factory" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_document_job_repository.py:17:5 - error: Type of parameter "document_job_factory" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_document_job_repository.py:17:5 - error: Type annotation is missing for parameter "document_job_factory" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_document_job_repository.py:19:39 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_document_job_repository.py:20:37 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_document_job_repository.py:21:5 - error: Type of "document" is unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_document_job_repository.py:22:5 - error: Type of "job" is unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_document_job_repository.py:22:39 - error: Type of "doc_id" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_document_job_repository.py:23:22 - error: Argument type is unknown
+    Argument corresponds to parameter "document" in function "create" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_document_job_repository.py:25:17 - error: Argument type is unknown
+    Argument corresponds to parameter "job" in function "create" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_document_job_repository.py:27:21 - error: Type of "job_id" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_document_job_repository.py:27:21 - error: Argument type is unknown
+    Argument corresponds to parameter "job_id" in function "get" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_document_job_repository.py:31:5 - error: Type of parameter "sql_engine" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_document_job_repository.py:31:5 - error: Type annotation is missing for parameter "sql_engine" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_document_job_repository.py:32:5 - error: Type of parameter "persisted_document_factory" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_document_job_repository.py:32:5 - error: Type annotation is missing for parameter "persisted_document_factory" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_document_job_repository.py:33:5 - error: Type of parameter "document_job_factory" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_document_job_repository.py:33:5 - error: Type annotation is missing for parameter "document_job_factory" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_document_job_repository.py:35:39 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_document_job_repository.py:36:37 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_document_job_repository.py:37:5 - error: Type of "document" is unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_document_job_repository.py:38:5 - error: Type of "job" is unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_document_job_repository.py:38:39 - error: Type of "doc_id" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_document_job_repository.py:39:22 - error: Argument type is unknown
+    Argument corresponds to parameter "document" in function "create" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_document_job_repository.py:40:17 - error: Argument type is unknown
+    Argument corresponds to parameter "job" in function "create" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_document_job_repository.py:42:5 - error: Type of "updated" is unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_document_job_repository.py:42:15 - error: Type of "model_copy" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_document_job_repository.py:50:17 - error: Argument type is unknown
+    Argument corresponds to parameter "job" in function "update" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_document_job_repository.py:52:23 - error: Type of "job_id" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_document_job_repository.py:52:23 - error: Argument type is unknown
+    Argument corresponds to parameter "job_id" in function "get" (reportUnknownArgumentType)
+/Users/val/projects/rag/sem-rag/tests/persistence/test_index_entry_repository.py
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_index_entry_repository.py:7:20 - error: Import "Any" is not accessed (reportUnusedImport)
+/Users/val/projects/rag/sem-rag/tests/persistence/test_integrity_constraints.py
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_integrity_constraints.py:7:33 - error: "Section" is unknown import symbol (reportAttributeAccessIssue)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_integrity_constraints.py:7:33 - error: Type of "Section" is unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_integrity_constraints.py:7:42 - error: "Chunk" is unknown import symbol (reportAttributeAccessIssue)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_integrity_constraints.py:7:42 - error: Type of "Chunk" is unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_integrity_constraints.py:17:5 - error: Type of parameter "section_factory" is partially unknown
+    Parameter type is "(...) -> Unknown" (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_integrity_constraints.py:27:5 - error: Type of parameter "chunk_factory" is partially unknown
+    Parameter type is "(...) -> Unknown" (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_integrity_constraints.py:38:5 - error: Type of parameter "chunk_factory" is partially unknown
+    Parameter type is "(...) -> Unknown" (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_integrity_constraints.py:60:5 - error: Type of parameter "section_factory" is partially unknown
+    Parameter type is "(...) -> Unknown" (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_integrity_constraints.py:61:5 - error: Type of parameter "chunk_factory" is partially unknown
+    Parameter type is "(...) -> Unknown" (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_integrity_constraints.py:85:5 - error: Type of parameter "section_factory" is partially unknown
+    Parameter type is "(...) -> Unknown" (reportUnknownParameterType)
+/Users/val/projects/rag/sem-rag/tests/persistence/test_lifecycle_event_persistence.py
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_lifecycle_event_persistence.py:13:5 - error: Type of parameter "sql_engine" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_lifecycle_event_persistence.py:13:5 - error: Type annotation is missing for parameter "sql_engine" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_lifecycle_event_persistence.py:14:5 - error: Type of parameter "persisted_document_factory" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_lifecycle_event_persistence.py:14:5 - error: Type annotation is missing for parameter "persisted_document_factory" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_lifecycle_event_persistence.py:15:5 - error: Type of parameter "lifecycle_event_factory" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_lifecycle_event_persistence.py:15:5 - error: Type annotation is missing for parameter "lifecycle_event_factory" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_lifecycle_event_persistence.py:17:39 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_lifecycle_event_persistence.py:18:42 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_lifecycle_event_persistence.py:19:5 - error: Type of "document" is unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_lifecycle_event_persistence.py:20:22 - error: Argument type is unknown
+    Argument corresponds to parameter "document" in function "create" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_lifecycle_event_persistence.py:21:5 - error: Type of "registered" is unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_lifecycle_event_persistence.py:22:16 - error: Type of "doc_id" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_lifecycle_event_persistence.py:24:21 - error: Type of "created_at" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_lifecycle_event_persistence.py:26:5 - error: Type of "failed" is unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_lifecycle_event_persistence.py:27:16 - error: Type of "doc_id" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_lifecycle_event_persistence.py:33:21 - error: Type of "created_at" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_lifecycle_event_persistence.py:33:21 - error: Type of "replace" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_lifecycle_event_persistence.py:37:19 - error: Argument type is unknown
+    Argument corresponds to parameter "event" in function "append" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_lifecycle_event_persistence.py:38:19 - error: Argument type is unknown
+    Argument corresponds to parameter "event" in function "append" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_lifecycle_event_persistence.py:40:39 - error: Type of "doc_id" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_lifecycle_event_persistence.py:40:39 - error: Argument type is unknown
+    Argument corresponds to parameter "doc_id" in function "list_for_document" (reportUnknownArgumentType)
+/Users/val/projects/rag/sem-rag/tests/persistence/test_postgres_migrations.py
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_postgres_migrations.py:75:28 - error: Type of parameter "exc_type" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_postgres_migrations.py:75:28 - error: Type annotation is missing for parameter "exc_type" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_postgres_migrations.py:75:38 - error: Type of parameter "exc" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_postgres_migrations.py:75:38 - error: Type annotation is missing for parameter "exc" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_postgres_migrations.py:75:43 - error: Type of parameter "tb" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_postgres_migrations.py:75:43 - error: Type annotation is missing for parameter "tb" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_postgres_migrations.py:89:9 - error: Argument type is partially unknown
+    Argument corresponds to parameter "name" in function "setattr"
+    Argument type is "(url: Unknown) -> _FakeEngine" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/persistence/test_postgres_migrations.py:89:16 - error: Type of parameter "url" is unknown (reportUnknownLambdaType)
+/Users/val/projects/rag/sem-rag/tests/pipeline/test_markdown_to_ready.py
+  /Users/val/projects/rag/sem-rag/tests/pipeline/test_markdown_to_ready.py:21:42 - error: Type of parameter "tmp_path" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/pipeline/test_markdown_to_ready.py:21:42 - error: Type annotation is missing for parameter "tmp_path" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/pipeline/test_markdown_to_ready.py:21:52 - error: Type of parameter "monkeypatch" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/pipeline/test_markdown_to_ready.py:21:52 - error: Type annotation is missing for parameter "monkeypatch" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/pipeline/test_markdown_to_ready.py:22:5 - error: Type of "database_path" is unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/tests/pipeline/test_markdown_to_ready.py:23:5 - error: Type of "artifact_root" is unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/tests/pipeline/test_markdown_to_ready.py:26:5 - error: Type of "setenv" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/tests/pipeline/test_markdown_to_ready.py:27:5 - error: Type of "setenv" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/tests/pipeline/test_markdown_to_ready.py:27:55 - error: Argument type is unknown
+    Argument corresponds to parameter "object" in function "__new__" (reportUnknownArgumentType)
+/Users/val/projects/rag/sem-rag/tests/pipeline/test_multi_document_readiness.py
+  /Users/val/projects/rag/sem-rag/tests/pipeline/test_multi_document_readiness.py:18:60 - error: Type of parameter "tmp_path" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/pipeline/test_multi_document_readiness.py:18:60 - error: Type annotation is missing for parameter "tmp_path" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/pipeline/test_multi_document_readiness.py:18:70 - error: Type of parameter "monkeypatch" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/pipeline/test_multi_document_readiness.py:18:70 - error: Type annotation is missing for parameter "monkeypatch" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/pipeline/test_multi_document_readiness.py:19:5 - error: Type of "database_path" is unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/tests/pipeline/test_multi_document_readiness.py:20:5 - error: Type of "artifact_root" is unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/tests/pipeline/test_multi_document_readiness.py:23:5 - error: Type of "setenv" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/tests/pipeline/test_multi_document_readiness.py:24:5 - error: Type of "setenv" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/tests/pipeline/test_multi_document_readiness.py:24:55 - error: Argument type is unknown
+    Argument corresponds to parameter "object" in function "__new__" (reportUnknownArgumentType)
+/Users/val/projects/rag/sem-rag/tests/pipeline/test_pdf_to_ready.py
+  /Users/val/projects/rag/sem-rag/tests/pipeline/test_pdf_to_ready.py:31:37 - error: Type of parameter "tmp_path" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/pipeline/test_pdf_to_ready.py:31:37 - error: Type annotation is missing for parameter "tmp_path" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/pipeline/test_pdf_to_ready.py:31:47 - error: Type of parameter "monkeypatch" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/pipeline/test_pdf_to_ready.py:31:47 - error: Type annotation is missing for parameter "monkeypatch" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/pipeline/test_pdf_to_ready.py:32:5 - error: Type of "database_path" is unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/tests/pipeline/test_pdf_to_ready.py:33:5 - error: Type of "artifact_root" is unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/tests/pipeline/test_pdf_to_ready.py:36:5 - error: Type of "setenv" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/tests/pipeline/test_pdf_to_ready.py:37:5 - error: Type of "setenv" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/tests/pipeline/test_pdf_to_ready.py:37:55 - error: Argument type is unknown
+    Argument corresponds to parameter "object" in function "__new__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/pipeline/test_pdf_to_ready.py:38:5 - error: Type of "setattr" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/tests/pipeline/test_pdf_to_ready.py:40:16 - error: Type of parameter "_" is unknown (reportUnknownLambdaType)
+/Users/val/projects/rag/sem-rag/tests/pipeline/test_retry_recovery.py
+  /Users/val/projects/rag/sem-rag/tests/pipeline/test_retry_recovery.py:32:46 - error: Type of parameter "tmp_path" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/pipeline/test_retry_recovery.py:32:46 - error: Type annotation is missing for parameter "tmp_path" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/pipeline/test_retry_recovery.py:33:5 - error: Type of "database_path" is unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/tests/pipeline/test_retry_recovery.py:34:5 - error: Type of "artifact_root" is unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/tests/pipeline/test_retry_recovery.py:38:55 - error: Argument type is unknown
+    Argument corresponds to parameter "object" in function "__new__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/pipeline/test_retry_recovery.py:51:13 - error: Argument type is partially unknown
+    Argument corresponds to parameter "name" in function "setattr"
+    Argument type is "(_: Unknown) -> Never" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/pipeline/test_retry_recovery.py:51:20 - error: Type of parameter "_" is unknown (reportUnknownLambdaType)
+  /Users/val/projects/rag/sem-rag/tests/pipeline/test_retry_recovery.py:61:13 - error: Argument type is partially unknown
+    Argument corresponds to parameter "name" in function "setattr"
+    Argument type is "(_: Unknown) -> _FakePdfReader" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/pipeline/test_retry_recovery.py:61:20 - error: Type of parameter "_" is unknown (reportUnknownLambdaType)
+/Users/val/projects/rag/sem-rag/tests/pipeline/test_source_navigation_contract.py
+  /Users/val/projects/rag/sem-rag/tests/pipeline/test_source_navigation_contract.py:20:5 - error: Type of parameter "tmp_path" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/pipeline/test_source_navigation_contract.py:20:5 - error: Type annotation is missing for parameter "tmp_path" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/pipeline/test_source_navigation_contract.py:21:5 - error: Type of parameter "monkeypatch" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/pipeline/test_source_navigation_contract.py:21:5 - error: Type annotation is missing for parameter "monkeypatch" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/pipeline/test_source_navigation_contract.py:23:5 - error: Type of "database_path" is unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/tests/pipeline/test_source_navigation_contract.py:24:5 - error: Type of "artifact_root" is unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/tests/pipeline/test_source_navigation_contract.py:27:5 - error: Type of "setenv" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/tests/pipeline/test_source_navigation_contract.py:28:5 - error: Type of "setenv" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/tests/pipeline/test_source_navigation_contract.py:28:55 - error: Argument type is unknown
+    Argument corresponds to parameter "object" in function "__new__" (reportUnknownArgumentType)
+/Users/val/projects/rag/sem-rag/tests/query/test_query_answer_generation.py
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_answer_generation.py:1:47 - error: "_build_comparison_answer_text" is private and used outside of the module in which it is declared (reportPrivateUsage)
+/Users/val/projects/rag/sem-rag/tests/query/test_query_context_archive.py
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_context_archive.py:177:25 - error: Object of type "Annotated" is not callable (reportCallIssue)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_context_archive.py:250:55 - error: Type of parameter "tmp_path" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_context_archive.py:250:55 - error: Type annotation is missing for parameter "tmp_path" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_context_archive.py:251:5 - error: Type of "repo_root" is unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_context_archive.py:252:5 - error: Type of "query_id" is unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_context_archive.py:252:16 - error: Object of type "Annotated" is not callable (reportCallIssue)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_context_archive.py:253:21 - error: Argument type is unknown
+    Argument corresponds to parameter "repo_root" in function "_write_e2e_logs" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_context_archive.py:253:41 - error: Argument type is unknown
+    Argument corresponds to parameter "query_id" in function "_write_e2e_logs" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_context_archive.py:254:44 - error: Argument type is unknown
+    Argument corresponds to parameter "repo_root" in function "_build_collector" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_context_archive.py:254:64 - error: Argument type is unknown
+    Argument corresponds to parameter "query_id" in function "_build_collector" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_context_archive.py:257:9 - error: Argument type is unknown
+    Argument corresponds to parameter "query_id" in function "collect" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_context_archive.py:288:80 - error: Type of parameter "tmp_path" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_context_archive.py:288:80 - error: Type annotation is missing for parameter "tmp_path" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_context_archive.py:289:5 - error: Type of "repo_root" is unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_context_archive.py:290:5 - error: Type of "query_id" is unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_context_archive.py:290:16 - error: Object of type "Annotated" is not callable (reportCallIssue)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_context_archive.py:291:21 - error: Argument type is unknown
+    Argument corresponds to parameter "repo_root" in function "_write_e2e_logs" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_context_archive.py:291:41 - error: Argument type is unknown
+    Argument corresponds to parameter "query_id" in function "_write_e2e_logs" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_context_archive.py:292:44 - error: Argument type is unknown
+    Argument corresponds to parameter "repo_root" in function "_build_collector" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_context_archive.py:292:64 - error: Argument type is unknown
+    Argument corresponds to parameter "query_id" in function "_build_collector" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_context_archive.py:294:35 - error: Argument type is unknown
+    Argument corresponds to parameter "query_id" in function "collect" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_context_archive.py:320:62 - error: Type of parameter "tmp_path" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_context_archive.py:320:62 - error: Type annotation is missing for parameter "tmp_path" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_context_archive.py:321:5 - error: Type of "repo_root" is unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_context_archive.py:323:19 - error: Argument type is unknown
+    Argument corresponds to parameter "repo_root" in function "_build_collector" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_context_archive.py:324:18 - error: Object of type "Annotated" is not callable (reportCallIssue)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_context_archive.py:324:18 - error: Argument type is unknown
+    Argument corresponds to parameter "query_id" in function "_build_collector" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_context_archive.py:343:51 - error: Type of parameter "tmp_path" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_context_archive.py:343:51 - error: Type annotation is missing for parameter "tmp_path" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_context_archive.py:344:5 - error: Type of "repo_root" is unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_context_archive.py:345:5 - error: Type of "query_id" is unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_context_archive.py:345:16 - error: Object of type "Annotated" is not callable (reportCallIssue)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_context_archive.py:346:21 - error: Argument type is unknown
+    Argument corresponds to parameter "repo_root" in function "_write_e2e_logs" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_context_archive.py:346:41 - error: Argument type is unknown
+    Argument corresponds to parameter "query_id" in function "_write_e2e_logs" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_context_archive.py:347:44 - error: Argument type is unknown
+    Argument corresponds to parameter "repo_root" in function "_build_collector" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_context_archive.py:347:64 - error: Argument type is unknown
+    Argument corresponds to parameter "query_id" in function "_build_collector" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_context_archive.py:348:35 - error: Argument type is unknown
+    Argument corresponds to parameter "query_id" in function "collect" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_context_archive.py:350:38 - error: Argument type is unknown
+    Argument corresponds to parameter "query_id" in function "load_manifest" (reportUnknownArgumentType)
+/Users/val/projects/rag/sem-rag/tests/query/test_query_retrieval.py
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_retrieval.py:30:17 - error: Type of parameter "sql_engine" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_retrieval.py:30:17 - error: Type annotation is missing for parameter "sql_engine" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_retrieval.py:32:41 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_retrieval.py:33:39 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_retrieval.py:34:35 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_retrieval.py:35:54 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_retrieval.py:36:47 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_retrieval.py:56:5 - error: Type of parameter "sql_engine" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_retrieval.py:56:5 - error: Type annotation is missing for parameter "sql_engine" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_retrieval.py:57:5 - error: Type of parameter "persisted_document_factory" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_retrieval.py:57:5 - error: Type annotation is missing for parameter "persisted_document_factory" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_retrieval.py:58:5 - error: Type of parameter "chunk_factory" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_retrieval.py:58:5 - error: Type annotation is missing for parameter "chunk_factory" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_retrieval.py:60:39 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_retrieval.py:61:33 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_retrieval.py:62:46 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_retrieval.py:65:9 - error: Argument type is unknown
+    Argument corresponds to parameter "document" in function "create" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_retrieval.py:72:9 - error: Argument type is unknown
+    Argument corresponds to parameter "document" in function "create" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_retrieval.py:79:9 - error: Argument type is unknown
+    Argument corresponds to parameter "document" in function "create" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_retrieval.py:154:28 - error: Argument type is unknown
+    Argument corresponds to parameter "sql_engine" in function "_read_model" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_retrieval.py:156:39 - error: Argument type is unknown
+    Argument corresponds to parameter "sql_engine" in function "_read_model" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_retrieval.py:175:79 - error: Type of parameter "sql_engine" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_retrieval.py:175:79 - error: Type annotation is missing for parameter "sql_engine" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_retrieval.py:176:28 - error: Argument type is unknown
+    Argument corresponds to parameter "sql_engine" in function "_read_model" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_retrieval.py:178:39 - error: Argument type is unknown
+    Argument corresponds to parameter "sql_engine" in function "_read_model" (reportUnknownArgumentType)
+/Users/val/projects/rag/sem-rag/tests/query/test_query_selection.py
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_selection.py:5:20 - error: Import "Any" is not accessed (reportUnusedImport)
+/Users/val/projects/rag/sem-rag/tests/query/test_query_service_interpret.py
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_service_interpret.py:16:14 - error: Type of parameter "sql_engine" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_service_interpret.py:16:14 - error: Type annotation is missing for parameter "sql_engine" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_service_interpret.py:19:45 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_service_interpret.py:20:43 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_service_interpret.py:21:39 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_service_interpret.py:22:58 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_service_interpret.py:23:51 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_service_interpret.py:25:36 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_service_interpret.py:26:46 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_service_interpret.py:27:40 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_service_interpret.py:32:5 - error: Type of parameter "sql_engine" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_service_interpret.py:32:5 - error: Type annotation is missing for parameter "sql_engine" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_service_interpret.py:33:5 - error: Type of parameter "persisted_document_factory" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_service_interpret.py:33:5 - error: Type annotation is missing for parameter "persisted_document_factory" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_service_interpret.py:35:39 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_service_interpret.py:36:34 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_service_interpret.py:37:38 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_service_interpret.py:39:9 - error: Argument type is unknown
+    Argument corresponds to parameter "document" in function "create" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_service_interpret.py:46:22 - error: Argument type is unknown
+    Argument corresponds to parameter "sql_engine" in function "_service" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_service_interpret.py:70:69 - error: Type of parameter "sql_engine" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_service_interpret.py:70:69 - error: Type annotation is missing for parameter "sql_engine" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_service_interpret.py:71:38 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_service_interpret.py:73:22 - error: Argument type is unknown
+    Argument corresponds to parameter "sql_engine" in function "_service" (reportUnknownArgumentType)
+/Users/val/projects/rag/sem-rag/tests/query/test_query_service_prepare.py
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_service_prepare.py:23:14 - error: Type of parameter "sql_engine" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_service_prepare.py:23:14 - error: Type annotation is missing for parameter "sql_engine" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_service_prepare.py:26:45 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_service_prepare.py:27:43 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_service_prepare.py:28:39 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_service_prepare.py:29:58 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_service_prepare.py:30:51 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_service_prepare.py:32:36 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_service_prepare.py:33:46 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_service_prepare.py:38:5 - error: Type of parameter "sql_engine" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_service_prepare.py:38:5 - error: Type annotation is missing for parameter "sql_engine" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_service_prepare.py:39:5 - error: Type of parameter "persisted_document_factory" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_service_prepare.py:39:5 - error: Type annotation is missing for parameter "persisted_document_factory" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_service_prepare.py:40:5 - error: Type of parameter "chunk_factory" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_service_prepare.py:40:5 - error: Type annotation is missing for parameter "chunk_factory" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_service_prepare.py:42:39 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_service_prepare.py:43:33 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_service_prepare.py:44:45 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_service_prepare.py:45:34 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_service_prepare.py:46:44 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_service_prepare.py:49:9 - error: Argument type is unknown
+    Argument corresponds to parameter "document" in function "create" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_service_prepare.py:70:22 - error: Argument type is unknown
+    Argument corresponds to parameter "sql_engine" in function "_service" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_service_prepare.py:90:5 - error: Type of parameter "sql_engine" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_service_prepare.py:90:5 - error: Type annotation is missing for parameter "sql_engine" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_service_prepare.py:91:5 - error: Type of parameter "persisted_document_factory" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_service_prepare.py:91:5 - error: Type annotation is missing for parameter "persisted_document_factory" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_service_prepare.py:92:5 - error: Type of parameter "chunk_factory" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_service_prepare.py:92:5 - error: Type annotation is missing for parameter "chunk_factory" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_service_prepare.py:94:39 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_service_prepare.py:95:33 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_service_prepare.py:96:45 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_service_prepare.py:97:44 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_service_prepare.py:98:24 - error: Argument type is unknown
+    Argument corresponds to parameter "sql_engine" in function "_service" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_service_prepare.py:101:9 - error: Argument type is unknown
+    Argument corresponds to parameter "document" in function "create" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_service_prepare.py:108:9 - error: Argument type is unknown
+    Argument corresponds to parameter "document" in function "create" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_service_prepare.py:165:55 - error: Type of parameter "sql_engine" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_service_prepare.py:165:55 - error: Type annotation is missing for parameter "sql_engine" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/query/test_query_service_prepare.py:166:22 - error: Argument type is unknown
+    Argument corresponds to parameter "sql_engine" in function "_service" (reportUnknownArgumentType)
+/Users/val/projects/rag/sem-rag/tests/readmodels/test_queryable_corpus_read_model.py
+  /Users/val/projects/rag/sem-rag/tests/readmodels/test_queryable_corpus_read_model.py:7:20 - error: Import "Any" is not accessed (reportUnusedImport)
+  /Users/val/projects/rag/sem-rag/tests/readmodels/test_queryable_corpus_read_model.py:34:33 - error: "Chunk" is unknown import symbol (reportAttributeAccessIssue)
+  /Users/val/projects/rag/sem-rag/tests/readmodels/test_queryable_corpus_read_model.py:34:33 - error: Type of "Chunk" is unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/tests/readmodels/test_queryable_corpus_read_model.py:38:5 - error: Type of parameter "persisted_document_factory" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/readmodels/test_queryable_corpus_read_model.py:38:33 - error: "Callable" is not defined (reportUndefinedVariable)
+  /Users/val/projects/rag/sem-rag/tests/readmodels/test_queryable_corpus_read_model.py:39:5 - error: Type of parameter "chunk_factory" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/readmodels/test_queryable_corpus_read_model.py:39:20 - error: "Callable" is not defined (reportUndefinedVariable)
+  /Users/val/projects/rag/sem-rag/tests/readmodels/test_queryable_corpus_read_model.py:46:9 - error: Argument type is unknown
+    Argument corresponds to parameter "document" in function "create" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/readmodels/test_queryable_corpus_read_model.py:53:9 - error: Argument type is unknown
+    Argument corresponds to parameter "document" in function "create" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/readmodels/test_queryable_corpus_read_model.py:60:9 - error: Argument type is unknown
+    Argument corresponds to parameter "document" in function "create" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/readmodels/test_queryable_corpus_read_model.py:110:5 - error: Type of parameter "persisted_document_factory" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/readmodels/test_queryable_corpus_read_model.py:110:33 - error: "Callable" is not defined (reportUndefinedVariable)
+  /Users/val/projects/rag/sem-rag/tests/readmodels/test_queryable_corpus_read_model.py:111:5 - error: Type of parameter "chunk_factory" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/readmodels/test_queryable_corpus_read_model.py:111:20 - error: "Callable" is not defined (reportUndefinedVariable)
+  /Users/val/projects/rag/sem-rag/tests/readmodels/test_queryable_corpus_read_model.py:117:9 - error: Argument type is unknown
+    Argument corresponds to parameter "document" in function "create" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/readmodels/test_queryable_corpus_read_model.py:155:5 - error: Type of parameter "persisted_document_factory" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/readmodels/test_queryable_corpus_read_model.py:155:33 - error: "Callable" is not defined (reportUndefinedVariable)
+  /Users/val/projects/rag/sem-rag/tests/readmodels/test_queryable_corpus_read_model.py:156:5 - error: Type of parameter "chunk_factory" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/readmodels/test_queryable_corpus_read_model.py:156:20 - error: "Callable" is not defined (reportUndefinedVariable)
+  /Users/val/projects/rag/sem-rag/tests/readmodels/test_queryable_corpus_read_model.py:163:9 - error: Argument type is unknown
+    Argument corresponds to parameter "document" in function "create" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/readmodels/test_queryable_corpus_read_model.py:170:9 - error: Argument type is unknown
+    Argument corresponds to parameter "document" in function "create" (reportUnknownArgumentType)
+/Users/val/projects/rag/sem-rag/tests/stages/test_chunk_stage.py
+  /Users/val/projects/rag/sem-rag/tests/stages/test_chunk_stage.py:21:5 - error: Type of parameter "sql_engine" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_chunk_stage.py:21:5 - error: Type annotation is missing for parameter "sql_engine" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_chunk_stage.py:22:5 - error: Type of parameter "tmp_path" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_chunk_stage.py:22:5 - error: Type annotation is missing for parameter "tmp_path" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_chunk_stage.py:23:5 - error: Type of parameter "document_job_factory" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_chunk_stage.py:23:5 - error: Type annotation is missing for parameter "document_job_factory" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_chunk_stage.py:25:46 - error: Argument type is unknown
+    Argument corresponds to parameter "root" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_chunk_stage.py:26:39 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_chunk_stage.py:27:37 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_chunk_stage.py:28:33 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_chunk_stage.py:29:52 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_chunk_stage.py:92:9 - error: Argument type is unknown
+    Argument corresponds to parameter "job" in function "run" (reportUnknownArgumentType)
+/Users/val/projects/rag/sem-rag/tests/stages/test_extract_stage_markdown.py
+  /Users/val/projects/rag/sem-rag/tests/stages/test_extract_stage_markdown.py:33:13 - error: Function "_set_sqlite_pragma" is not accessed (reportUnusedFunction)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_extract_stage_markdown.py:35:13 - error: Type of "cursor" is unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_extract_stage_markdown.py:35:22 - error: Type of "cursor" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_extract_stage_markdown.py:35:39 - error: Cannot access attribute "cursor" for class "Connection"
+    Attribute "cursor" is unknown (reportAttributeAccessIssue)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_extract_stage_markdown.py:36:13 - error: Type of "execute" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_extract_stage_markdown.py:37:13 - error: Type of "close" is unknown (reportUnknownMemberType)
+/Users/val/projects/rag/sem-rag/tests/stages/test_index_stage.py
+  /Users/val/projects/rag/sem-rag/tests/stages/test_index_stage.py:30:43 - error: Type of parameter "sql_engine" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_index_stage.py:30:43 - error: Type annotation is missing for parameter "sql_engine" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_index_stage.py:30:55 - error: Type of parameter "document_job_factory" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_index_stage.py:30:55 - error: Type annotation is missing for parameter "document_job_factory" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_index_stage.py:31:39 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_index_stage.py:32:33 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_index_stage.py:33:37 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_index_stage.py:34:52 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_index_stage.py:35:45 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_index_stage.py:36:52 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_index_stage.py:90:20 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_index_stage.py:97:9 - error: Argument type is unknown
+    Argument corresponds to parameter "job" in function "run" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_index_stage.py:113:27 - error: Type of parameter "index_entries" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_index_stage.py:113:27 - error: Type annotation is missing for parameter "index_entries" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_index_stage.py:113:42 - error: Type of parameter "chunk_embeddings" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_index_stage.py:113:42 - error: Type annotation is missing for parameter "chunk_embeddings" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_index_stage.py:119:9 - error: Type of "replace_for_document" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_index_stage.py:131:9 - error: Type of "replace_for_document" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_index_stage.py:155:5 - error: Type of parameter "sql_engine" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_index_stage.py:155:5 - error: Type annotation is missing for parameter "sql_engine" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_index_stage.py:156:5 - error: Type of parameter "document_job_factory" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_index_stage.py:156:5 - error: Type annotation is missing for parameter "document_job_factory" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_index_stage.py:158:39 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_index_stage.py:159:33 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_index_stage.py:160:37 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_index_stage.py:161:52 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_index_stage.py:162:45 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_index_stage.py:163:52 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_index_stage.py:218:13 - error: Argument type is unknown
+    Argument corresponds to parameter "job" in function "run" (reportUnknownArgumentType)
+/Users/val/projects/rag/sem-rag/tests/stages/test_normalize_stage_pdf.py
+  /Users/val/projects/rag/sem-rag/tests/stages/test_normalize_stage_pdf.py:38:13 - error: Function "_set_sqlite_pragma" is not accessed (reportUnusedFunction)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_normalize_stage_pdf.py:40:13 - error: Type of "cursor" is unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_normalize_stage_pdf.py:40:22 - error: Type of "cursor" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_normalize_stage_pdf.py:40:39 - error: Cannot access attribute "cursor" for class "Connection"
+    Attribute "cursor" is unknown (reportAttributeAccessIssue)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_normalize_stage_pdf.py:41:13 - error: Type of "execute" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_normalize_stage_pdf.py:42:13 - error: Type of "close" is unknown (reportUnknownMemberType)
+/Users/val/projects/rag/sem-rag/tests/stages/test_ready_stage.py
+  /Users/val/projects/rag/sem-rag/tests/stages/test_ready_stage.py:27:5 - error: Type of parameter "sql_engine" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_ready_stage.py:27:5 - error: Type annotation is missing for parameter "sql_engine" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_ready_stage.py:28:5 - error: Type of parameter "tmp_path" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_ready_stage.py:28:5 - error: Type annotation is missing for parameter "tmp_path" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_ready_stage.py:29:5 - error: Type of parameter "document_job_factory" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_ready_stage.py:29:5 - error: Type annotation is missing for parameter "document_job_factory" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_ready_stage.py:31:46 - error: Argument type is unknown
+    Argument corresponds to parameter "root" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_ready_stage.py:32:39 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_ready_stage.py:33:37 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_ready_stage.py:34:33 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_ready_stage.py:35:52 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_ready_stage.py:36:45 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_ready_stage.py:37:52 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_ready_stage.py:94:16 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_ready_stage.py:114:9 - error: Argument type is unknown
+    Argument corresponds to parameter "job" in function "run" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_ready_stage.py:128:5 - error: Type of parameter "sql_engine" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_ready_stage.py:128:5 - error: Type annotation is missing for parameter "sql_engine" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_ready_stage.py:129:5 - error: Type of parameter "tmp_path" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_ready_stage.py:129:5 - error: Type annotation is missing for parameter "tmp_path" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_ready_stage.py:130:5 - error: Type of parameter "document_job_factory" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_ready_stage.py:130:5 - error: Type annotation is missing for parameter "document_job_factory" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_ready_stage.py:132:46 - error: Argument type is unknown
+    Argument corresponds to parameter "root" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_ready_stage.py:133:39 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_ready_stage.py:134:37 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_ready_stage.py:135:33 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_ready_stage.py:136:45 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_ready_stage.py:137:52 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_ready_stage.py:183:16 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_ready_stage.py:192:54 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_ready_stage.py:205:13 - error: Argument type is unknown
+    Argument corresponds to parameter "job" in function "run" (reportUnknownArgumentType)
+/Users/val/projects/rag/sem-rag/tests/stages/test_register_stage.py
+  /Users/val/projects/rag/sem-rag/tests/stages/test_register_stage.py:28:12 - error: Type of parameter "tmp_path" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_register_stage.py:28:12 - error: Type annotation is missing for parameter "tmp_path" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_register_stage.py:29:5 - error: Type of "database_path" is unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_register_stage.py:40:13 - error: Function "_set_sqlite_pragma" is not accessed (reportUnusedFunction)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_register_stage.py:40:32 - error: Type of parameter "dbapi_connection" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_register_stage.py:40:32 - error: Type annotation is missing for parameter "dbapi_connection" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_register_stage.py:40:50 - error: Type of parameter "connection_record" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_register_stage.py:40:50 - error: Type annotation is missing for parameter "connection_record" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_register_stage.py:42:13 - error: Type of "cursor" is unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_register_stage.py:42:22 - error: Type of "cursor" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_register_stage.py:43:13 - error: Type of "execute" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_register_stage.py:44:13 - error: Type of "close" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_register_stage.py:53:20 - error: Type of parameter "tmp_path" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_register_stage.py:53:20 - error: Type annotation is missing for parameter "tmp_path" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_register_stage.py:54:36 - error: Argument type is unknown
+    Argument corresponds to parameter "root" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_register_stage.py:236:9 - error: Type of parameter "connection" is partially unknown
+    Parameter type is "Unknown | None" (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_register_stage.py:236:9 - error: Type annotation is missing for parameter "connection" (reportMissingParameterType)
+/Users/val/projects/rag/sem-rag/tests/stages/test_section_stage.py
+  /Users/val/projects/rag/sem-rag/tests/stages/test_section_stage.py:19:5 - error: Type of parameter "sql_engine" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_section_stage.py:19:5 - error: Type annotation is missing for parameter "sql_engine" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_section_stage.py:20:5 - error: Type of parameter "tmp_path" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_section_stage.py:20:5 - error: Type annotation is missing for parameter "tmp_path" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_section_stage.py:21:5 - error: Type of parameter "document_job_factory" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_section_stage.py:21:5 - error: Type annotation is missing for parameter "document_job_factory" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_section_stage.py:23:46 - error: Argument type is unknown
+    Argument corresponds to parameter "root" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_section_stage.py:24:39 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_section_stage.py:25:37 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_section_stage.py:84:9 - error: Argument type is unknown
+    Argument corresponds to parameter "job" in function "run" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_section_stage.py:99:5 - error: Type of parameter "sql_engine" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_section_stage.py:99:5 - error: Type annotation is missing for parameter "sql_engine" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_section_stage.py:100:5 - error: Type of parameter "tmp_path" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_section_stage.py:100:5 - error: Type annotation is missing for parameter "tmp_path" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_section_stage.py:101:5 - error: Type of parameter "document_job_factory" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_section_stage.py:101:5 - error: Type annotation is missing for parameter "document_job_factory" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_section_stage.py:103:46 - error: Argument type is unknown
+    Argument corresponds to parameter "root" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_section_stage.py:104:39 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_section_stage.py:105:37 - error: Argument type is unknown
+    Argument corresponds to parameter "engine" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/stages/test_section_stage.py:153:9 - error: Argument type is unknown
+    Argument corresponds to parameter "job" in function "run" (reportUnknownArgumentType)
+/Users/val/projects/rag/sem-rag/tests/test_eval_case_dataset.py
+  /Users/val/projects/rag/sem-rag/tests/test_eval_case_dataset.py:121:12 - error: Return type, "dict[Unknown, Unknown]", is partially unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/tests/test_eval_case_dataset.py:176:13 - error: Type of "extra_keys" is partially unknown
+    Type of "extra_keys" is "set[Unknown]" (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/tests/test_eval_case_dataset.py:176:30 - error: Argument type is partially unknown
+    Argument corresponds to parameter "iterable" in function "__init__"
+    Argument type is "dict[Unknown, Unknown]" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/test_eval_case_dataset.py:178:78 - error: Argument type is partially unknown
+    Argument corresponds to parameter "iterable" in function "sorted"
+    Argument type is "set[Unknown]" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/test_eval_case_dataset.py:179:13 - error: Type of "key" is unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/tests/test_eval_case_dataset.py:179:18 - error: Type of "value" is unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/tests/test_eval_case_dataset.py:187:41 - error: Argument type is partially unknown
+    Argument corresponds to parameter "obj" in function "len"
+    Argument type is "list[Unknown]" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/test_eval_case_dataset.py:189:41 - error: Argument type is partially unknown
+    Argument corresponds to parameter "obj" in function "len"
+    Argument type is "list[Unknown]" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/test_eval_case_dataset.py:192:61 - error: Type of "item" is unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/tests/test_eval_case_dataset.py:197:24 - error: Type of "value" is unknown (reportUnknownVariableType)
+  /Users/val/projects/rag/sem-rag/tests/test_eval_case_dataset.py:197:43 - error: Argument type is partially unknown
+    Argument corresponds to parameter "iterable" in function "__new__"
+    Argument type is "list[Unknown]" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/test_eval_case_dataset.py:254:25 - error: Argument type is partially unknown
+    Argument corresponds to parameter "iterable" in function "join"
+    Argument type is "list[Unknown]" (reportUnknownArgumentType)
+/Users/val/projects/rag/sem-rag/tests/test_evalops_loader_cli.py
+  /Users/val/projects/rag/sem-rag/tests/test_evalops_loader_cli.py:28:30 - error: Type of parameter "monkeypatch" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/test_evalops_loader_cli.py:28:30 - error: Type annotation is missing for parameter "monkeypatch" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/test_evalops_loader_cli.py:30:5 - error: Type of "setattr" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/tests/test_evalops_loader_cli.py:30:66 - error: Type of parameter "_" is partially unknown (reportUnknownLambdaType)
+  /Users/val/projects/rag/sem-rag/tests/test_evalops_loader_cli.py:38:28 - error: Type of parameter "monkeypatch" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/test_evalops_loader_cli.py:38:28 - error: Type annotation is missing for parameter "monkeypatch" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/test_evalops_loader_cli.py:38:41 - error: Type of parameter "capsys" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/test_evalops_loader_cli.py:38:41 - error: Type annotation is missing for parameter "capsys" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/test_evalops_loader_cli.py:40:5 - error: Type of "setattr" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/tests/test_evalops_loader_cli.py:40:66 - error: Type of parameter "_" is partially unknown (reportUnknownLambdaType)
+  /Users/val/projects/rag/sem-rag/tests/test_evalops_loader_cli.py:46:12 - error: Type of "readouterr" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/tests/test_evalops_loader_cli.py:46:12 - error: Type of "out" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/tests/test_evalops_loader_cli.py:46:12 - error: Type of "strip" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/tests/test_evalops_loader_cli.py:49:28 - error: Type of parameter "monkeypatch" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/test_evalops_loader_cli.py:49:28 - error: Type annotation is missing for parameter "monkeypatch" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/test_evalops_loader_cli.py:51:5 - error: Type of "setattr" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/tests/test_evalops_loader_cli.py:51:66 - error: Type of parameter "_" is partially unknown (reportUnknownLambdaType)
+/Users/val/projects/rag/sem-rag/tests/test_query_context_cli.py
+  /Users/val/projects/rag/sem-rag/tests/test_query_context_cli.py:38:5 - error: Type of parameter "monkeypatch" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/test_query_context_cli.py:38:5 - error: Type annotation is missing for parameter "monkeypatch" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/test_query_context_cli.py:39:5 - error: Type of parameter "tmp_path" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/test_query_context_cli.py:39:5 - error: Type annotation is missing for parameter "tmp_path" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/test_query_context_cli.py:40:5 - error: Type of parameter "capsys" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/test_query_context_cli.py:40:5 - error: Type annotation is missing for parameter "capsys" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/test_query_context_cli.py:43:21 - error: Argument type is unknown
+    Argument corresponds to parameter "bundle_root" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/test_query_context_cli.py:50:5 - error: Type of "setattr" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/tests/test_query_context_cli.py:50:67 - error: Type of parameter "database_url" is unknown (reportUnknownLambdaType)
+  /Users/val/projects/rag/sem-rag/tests/test_query_context_cli.py:56:12 - error: Type of "readouterr" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/tests/test_query_context_cli.py:56:12 - error: Type of "out" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/tests/test_query_context_cli.py:56:12 - error: Type of "strip" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/tests/test_query_context_cli.py:59:48 - error: Type of parameter "monkeypatch" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/test_query_context_cli.py:59:48 - error: Type annotation is missing for parameter "monkeypatch" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/test_query_context_cli.py:59:61 - error: Type of parameter "tmp_path" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/test_query_context_cli.py:59:61 - error: Type annotation is missing for parameter "tmp_path" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/test_query_context_cli.py:59:71 - error: Type of parameter "capsys" is unknown (reportUnknownParameterType)
+  /Users/val/projects/rag/sem-rag/tests/test_query_context_cli.py:59:71 - error: Type annotation is missing for parameter "capsys" (reportMissingParameterType)
+  /Users/val/projects/rag/sem-rag/tests/test_query_context_cli.py:61:21 - error: Argument type is unknown
+    Argument corresponds to parameter "bundle_root" in function "__init__" (reportUnknownArgumentType)
+  /Users/val/projects/rag/sem-rag/tests/test_query_context_cli.py:79:5 - error: Type of "setattr" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/tests/test_query_context_cli.py:79:67 - error: Type of parameter "database_url" is unknown (reportUnknownLambdaType)
+  /Users/val/projects/rag/sem-rag/tests/test_query_context_cli.py:85:30 - error: Type of "readouterr" is unknown (reportUnknownMemberType)
+  /Users/val/projects/rag/sem-rag/tests/test_query_context_cli.py:85:30 - error: Type of "out" is unknown (reportUnknownMemberType)
+/Users/val/projects/rag/sem-rag/tests/test_secret_scan.py
+  /Users/val/projects/rag/sem-rag/tests/test_secret_scan.py:7:54 - error: "_scan_text" is private and used outside of the module in which it is declared (reportPrivateUsage)
+763 errors, 0 warnings, 0 informations

@@ -44,14 +44,18 @@ def _upload_file(filename: str, content: bytes) -> _UploadFileStub:
     return _UploadFileStub(filename=filename, content=content)
 
 
-def _service(sql_engine, tmp_path):
+import sqlalchemy as sa
+from pathlib import Path
+from doc_forge.lifecycle import LifecycleService
+
+def _service(sql_engine: sa.Engine, tmp_path: Path) -> LifecycleService:
     return get_document_lifecycle_service(
         engine=sql_engine,
         artifact_store=FilesystemArtifactStore(tmp_path / "artifacts"),
     )
 
 
-async def test_pdf_upload_registers_successfully(app: FastAPI, sql_engine, tmp_path) -> None:
+async pdf_upload_registers_successfully(app: FastAPI, sql_engine: sa.Engine, tmp_path: pathlib.Path: Path) -> None:
     payload = b"%PDF-1.7\n1 0 obj\n"
 
     result = _upload_endpoint(app)(
@@ -74,8 +78,8 @@ async def test_pdf_upload_registers_successfully(app: FastAPI, sql_engine, tmp_p
 
 async def test_markdown_upload_registers_successfully(
     app: FastAPI,
-    sql_engine,
-    tmp_path,
+    sql_engine: sa.Engine,
+    tmp_path: Path,
 ) -> None:
     result = _upload_endpoint(app)(
         workspace_id="ws-1",
@@ -93,8 +97,8 @@ async def test_markdown_upload_registers_successfully(
 
 async def test_unsupported_extension_is_rejected_explicitly(
     app: FastAPI,
-    sql_engine,
-    tmp_path,
+    sql_engine: sa.Engine,
+    tmp_path: Path,
 ) -> None:
     with pytest.raises(HTTPException) as exc_info:
         _upload_endpoint(app)(
@@ -110,8 +114,8 @@ async def test_unsupported_extension_is_rejected_explicitly(
 
 async def test_fake_pdf_content_with_pdf_extension_is_rejected_explicitly(
     app: FastAPI,
-    sql_engine,
-    tmp_path,
+    sql_engine: sa.Engine,
+    tmp_path: Path,
 ) -> None:
     with pytest.raises(HTTPException) as exc_info:
         _upload_endpoint(app)(
@@ -127,8 +131,8 @@ async def test_fake_pdf_content_with_pdf_extension_is_rejected_explicitly(
 
 async def test_unsupported_png_is_rejected_explicitly(
     app: FastAPI,
-    sql_engine,
-    tmp_path,
+    sql_engine: sa.Engine,
+    tmp_path: Path,
 ) -> None:
     with pytest.raises(HTTPException) as exc_info:
         _upload_endpoint(app)(
@@ -144,8 +148,8 @@ async def test_unsupported_png_is_rejected_explicitly(
 
 async def test_omitted_title_falls_back_to_filename_stem(
     app: FastAPI,
-    sql_engine,
-    tmp_path,
+    sql_engine: sa.Engine,
+    tmp_path: Path,
 ) -> None:
     result = _upload_endpoint(app)(
         workspace_id="ws-1",
@@ -159,8 +163,8 @@ async def test_omitted_title_falls_back_to_filename_stem(
 
 async def test_upload_route_maps_registration_error_to_500(
     app: FastAPI,
-    sql_engine,
-    tmp_path,
+    sql_engine: sa.Engine,
+    tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     def _raise_registration_error(self, request):

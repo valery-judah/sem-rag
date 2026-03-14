@@ -7,7 +7,10 @@ import pytest
 pytestmark = pytest.mark.e2e
 
 
-def test_pdf_fixture_reaches_ready_and_preserves_page_provenance(e2e_stack) -> None:
+from e2e.conftest import RunningStack
+
+
+def test_pdf_fixture_reaches_ready_and_preserves_page_provenance(e2e_stack: RunningStack) -> None:
     pdf_path = Path(__file__).with_name("fixtures").joinpath("ready_text_pdf.pdf")
     e2e_stack.log("uploading pdf fixture", path=str(pdf_path))
 
@@ -62,7 +65,9 @@ def test_pdf_fixture_reaches_ready_and_preserves_page_provenance(e2e_stack) -> N
         )
 
 
-def test_malformed_pdf_reaches_failed_without_published_retrieval_artifacts(e2e_stack) -> None:
+def test_malformed_pdf_reaches_failed_without_published_retrieval_artifacts(
+    e2e_stack: RunningStack,
+) -> None:
     malformed_path = Path(__file__).with_name("fixtures").joinpath("malformed.pdf")
     e2e_stack.log("uploading malformed pdf fixture", path=str(malformed_path))
 

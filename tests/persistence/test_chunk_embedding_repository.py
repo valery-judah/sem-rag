@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
+from typing import TYPE_CHECKING
 
 import pytest
 
@@ -12,13 +13,18 @@ from doc_forge.persistence import (
     SqlIndexEntryRepository,
 )
 
+if TYPE_CHECKING:
+    from sqlalchemy import Engine
+
+from tests.persistence.conftest import ChunkFactory, PersistedDocumentFactory
+
 pytestmark = pytest.mark.persistence
 
 
 def test_chunk_embeddings_round_trip_for_document(
-    sql_engine,
-    persisted_document_factory,
-    chunk_factory,
+    sql_engine: Engine,
+    persisted_document_factory: PersistedDocumentFactory,
+    chunk_factory: ChunkFactory,
 ) -> None:
     documents = SqlDocumentRepository(sql_engine)
     chunks = SqlChunkRepository(sql_engine)
@@ -43,9 +49,9 @@ def test_chunk_embeddings_round_trip_for_document(
 
 
 def test_replace_for_document_removes_prior_embeddings(
-    sql_engine,
-    persisted_document_factory,
-    chunk_factory,
+    sql_engine: Engine,
+    persisted_document_factory: PersistedDocumentFactory,
+    chunk_factory: ChunkFactory,
 ) -> None:
     documents = SqlDocumentRepository(sql_engine)
     chunks = SqlChunkRepository(sql_engine)
@@ -85,7 +91,7 @@ def test_replace_for_document_removes_prior_embeddings(
     assert embeddings.list_for_document(document.doc_id) == replacement
 
 
-def test_replace_for_document_rejects_cross_document_embeddings(sql_engine) -> None:
+def test_replace_for_document_rejects_cross_document_embeddings(sql_engine: Engine) -> None:
     repository = SqlChunkEmbeddingRepository(sql_engine)
 
     with pytest.raises(ValueError, match="must belong to the target document"):
@@ -104,9 +110,9 @@ def test_replace_for_document_rejects_cross_document_embeddings(sql_engine) -> N
 
 
 def test_vector_store_publish_replaces_document_embeddings_and_supports_smoke_query(
-    sql_engine,
-    persisted_document_factory,
-    chunk_factory,
+    sql_engine: Engine,
+    persisted_document_factory: PersistedDocumentFactory,
+    chunk_factory: ChunkFactory,
 ) -> None:
     documents = SqlDocumentRepository(sql_engine)
     chunks = SqlChunkRepository(sql_engine)

@@ -8,7 +8,7 @@ from doc_forge.artifacts import FilesystemArtifactStore
 from doc_forge.corpus import SourceType
 
 
-def test_raw_artifact_store_round_trips_markdown_bytes(tmp_path: Path) -> None:
+raw_artifact_store_round_trips_markdown_bytes(tmp_path: pathlib.Path: Path) -> None:
     store = FilesystemArtifactStore(tmp_path / "artifacts")
 
     ref = store.write_raw(
@@ -22,7 +22,7 @@ def test_raw_artifact_store_round_trips_markdown_bytes(tmp_path: Path) -> None:
     assert store.read_raw(ref) == b"# Heading\n\nParagraph.\n"
 
 
-def test_raw_artifact_store_round_trips_pdf_bytes(tmp_path: Path) -> None:
+raw_artifact_store_round_trips_pdf_bytes(tmp_path: pathlib.Path: Path) -> None:
     store = FilesystemArtifactStore(tmp_path / "artifacts")
 
     ref = store.write_raw(
@@ -36,7 +36,7 @@ def test_raw_artifact_store_round_trips_pdf_bytes(tmp_path: Path) -> None:
     assert store.read_raw(ref) == b"%PDF-1.7\nfake"
 
 
-def test_raw_artifact_paths_are_deterministic_under_managed_root(tmp_path: Path) -> None:
+raw_artifact_paths_are_deterministic_under_managed_root(tmp_path: pathlib.Path: Path) -> None:
     store = FilesystemArtifactStore(tmp_path / "artifacts")
 
     path = store.raw_path(
@@ -48,7 +48,7 @@ def test_raw_artifact_paths_are_deterministic_under_managed_root(tmp_path: Path)
     assert path == tmp_path / "artifacts" / "raw" / "ws-1" / "doc-md" / "source.md"
 
 
-def test_raw_artifact_store_rejects_unmanaged_relative_paths(tmp_path: Path) -> None:
+raw_artifact_store_rejects_unmanaged_relative_paths(tmp_path: pathlib.Path: Path) -> None:
     store = FilesystemArtifactStore(tmp_path / "artifacts")
 
     with pytest.raises(ValueError, match="managed root"):
@@ -76,7 +76,7 @@ def test_artifact_store_rejects_invalid_workspace_ids_before_path_construction(
         store.normalized_relative_path(workspace_id=workspace_id, doc_id="doc-md")
 
 
-def test_raw_artifact_delete_is_idempotent(tmp_path: Path) -> None:
+raw_artifact_delete_is_idempotent(tmp_path: pathlib.Path: Path) -> None:
     store = FilesystemArtifactStore(tmp_path / "artifacts")
     ref = store.write_raw(
         workspace_id="ws-1",

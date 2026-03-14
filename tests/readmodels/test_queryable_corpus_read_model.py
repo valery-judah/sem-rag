@@ -3,6 +3,8 @@ from __future__ import annotations
 from datetime import UTC, datetime
 
 import pytest
+import sqlalchemy as sa
+from typing import Any
 
 from doc_forge.indexing import ChunkEmbedding, IndexEntry
 from doc_forge.lifecycle import ProcessingStatus
@@ -18,7 +20,7 @@ from doc_forge.readmodels import SqlQueryableCorpusReadModel
 pytestmark = pytest.mark.anyio
 
 
-def _read_model(sql_engine) -> SqlQueryableCorpusReadModel:
+def _read_model(sql_engine: sa.Engine) -> SqlQueryableCorpusReadModel:
     return SqlQueryableCorpusReadModel(
         documents=SqlDocumentRepository(sql_engine),
         sections=SqlSectionRepository(sql_engine),
@@ -28,10 +30,13 @@ def _read_model(sql_engine) -> SqlQueryableCorpusReadModel:
     )
 
 
+from tests.persistence.conftest import ChunkFactory, PersistedDocumentFactory
+
+
 def test_capture_snapshot_returns_only_ready_documents_for_workspace(
-    sql_engine,
-    persisted_document_factory,
-    chunk_factory,
+    sql_engine: sa.Engine,
+    persisted_document_factory: PersistedDocumentFactory,
+    chunk_factory: ChunkFactory,
 ) -> None:
     documents = SqlDocumentRepository(sql_engine)
     chunks = SqlChunkRepository(sql_engine)
@@ -101,9 +106,9 @@ def test_capture_snapshot_returns_only_ready_documents_for_workspace(
 
 
 def test_list_chunks_for_snapshot_returns_only_provenance_bearing_chunks(
-    sql_engine,
-    persisted_document_factory,
-    chunk_factory,
+    sql_engine: sa.Engine,
+    persisted_document_factory: PersistedDocumentFactory,
+    chunk_factory: ChunkFactory,
 ) -> None:
     documents = SqlDocumentRepository(sql_engine)
     chunks = SqlChunkRepository(sql_engine)
@@ -146,9 +151,9 @@ def test_list_chunks_for_snapshot_returns_only_provenance_bearing_chunks(
 
 
 def test_list_embedded_chunks_for_snapshot_returns_only_snapshot_chunks_with_embeddings(
-    sql_engine,
-    persisted_document_factory,
-    chunk_factory,
+    sql_engine: sa.Engine,
+    persisted_document_factory: PersistedDocumentFactory,
+    chunk_factory: ChunkFactory,
 ) -> None:
     documents = SqlDocumentRepository(sql_engine)
     chunks = SqlChunkRepository(sql_engine)

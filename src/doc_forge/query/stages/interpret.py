@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from pydantic import BaseModel, ConfigDict
 
+from doc_forge.identifiers import QueryId
 from doc_forge.query.contracts import CorpusSnapshot, QueryRequest, QueryStageName
 from doc_forge.query.interpretation import QueryInterpretationResult, QueryInterpreter
 from doc_forge.query.trace import QueryStageTrace, QueryStageTraceStatus, utc_now
@@ -22,7 +23,7 @@ class InterpretationStageResult(BaseModel):
 
 def run(
     *,
-    query_id: str,
+    query_id: QueryId,
     request: QueryRequest,
     snapshot: CorpusSnapshot,
     interpreter: QueryInterpreter,

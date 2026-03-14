@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from doc_forge.identifiers import QueryId
+
 if TYPE_CHECKING:
     from .contracts import QueryTerminalFailure
 
@@ -38,7 +40,7 @@ class QueryExecutionFailedError(QueryError):
     def __init__(
         self,
         *,
-        query_id: str,
+        query_id: QueryId,
         terminal_failure: QueryTerminalFailure,
     ) -> None:
         super().__init__(terminal_failure.message)

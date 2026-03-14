@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+from collections.abc import Generator
 from datetime import UTC, datetime
+from pathlib import Path
+from typing import Any
 
 import pytest
 import sqlalchemy as sa
@@ -33,14 +36,14 @@ class _FakePdfReader:
 
 
 @pytest.fixture
-def sql_engine(tmp_path):
+def sql_engine(tmp_path: Path) -> Generator[sa.Engine, None, None]:
     db_url = f"sqlite+pysqlite:///{tmp_path / 'extract-pdf.db'}"
     apply_migrations(db_url)
     engine = sa.create_engine(db_url)
     if engine.dialect.name == "sqlite":
 
         @event.listens_for(engine, "connect")
-        def _set_sqlite_pragma(dbapi_connection, connection_record) -> None:
+        def _set_sqlite_pragma(dbapi_connection: Any, connection_record: Any) -> None:  # pyright: ignore[reportUnusedFunction]
             del connection_record
             cursor = dbapi_connection.cursor()
             cursor.execute("PRAGMA foreign_keys = ON")
@@ -53,17 +56,23 @@ def sql_engine(tmp_path):
 
 
 @pytest.fixture
-def artifact_store(tmp_path) -> FilesystemArtifactStore:
+def artifact_store(tmp_path: Path) -> FilesystemArtifactStore:
     return FilesystemArtifactStore(tmp_path / "artifacts")
 
 
 @pytest.fixture
-def repositories(sql_engine):
+def repositories(
+    sql_engine: sa.Engine,
+) -> tuple[SqlDocumentRepository, SqlLifecycleEventRepository]:
     return SqlDocumentRepository(sql_engine), SqlLifecycleEventRepository(sql_engine)
 
 
 @pytest.fixture
-def extract_stage(sql_engine, repositories, artifact_store: FilesystemArtifactStore):
+def extract_stage(
+    sql_engine: sa.Engine,
+    repositories: tuple[SqlDocumentRepository, SqlLifecycleEventRepository],
+    artifact_store: FilesystemArtifactStore,
+) -> ExtractDocumentStage:
     documents, lifecycle_events = repositories
     return ExtractDocumentStage(
         engine=sql_engine,
@@ -79,7 +88,7 @@ def extract_stage(sql_engine, repositories, artifact_store: FilesystemArtifactSt
 
 def _persist_pdf_document(
     *,
-    documents,
+    documents: SqlDocumentRepository,
     artifact_store: FilesystemArtifactStore,
     content: bytes = b"%PDF-1.7\nfake",
     doc_id: str = "doc-pdf-1",
@@ -115,7 +124,7 @@ def _persist_pdf_document(
 
 def test_pdf_extract_preserves_page_boundaries(
     extract_stage: ExtractDocumentStage,
-    repositories,
+    repositories: tuple[SqlDocumentRepository, SqlLifecycleEventRepository],
     artifact_store: FilesystemArtifactStore,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -123,7 +132,7 @@ def test_pdf_extract_preserves_page_boundaries(
     doc_id = _persist_pdf_document(documents=documents, artifact_store=artifact_store)
     monkeypatch.setattr(
         "doc_forge.extractors.pdf.PdfReader",
-        lambda _: _FakePdfReader(
+        lambda _stream: _FakePdfReader(  # type: ignore
             [
                 "INTRODUCTION\n\nConsensus keeps nodes aligned.",
                 "OPERATIONS\n\nOperators inspect failures.",
@@ -140,7 +149,7 @@ def test_pdf_extract_preserves_page_boundaries(
 
 def test_pdf_extract_records_warnings_for_sparse_text_layer(
     extract_stage: ExtractDocumentStage,
-    repositories,
+    repositories: tuple[SqlDocumentRepository, SqlLifecycleEventRepository],
     artifact_store: FilesystemArtifactStore,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -148,7 +157,7 @@ def test_pdf_extract_records_warnings_for_sparse_text_layer(
     doc_id = _persist_pdf_document(documents=documents, artifact_store=artifact_store)
     monkeypatch.setattr(
         "doc_forge.extractors.pdf.PdfReader",
-        lambda _: _FakePdfReader(["SHORT"]),
+        lambda _stream: _FakePdfReader(["SHORT"]),  # type: ignore
     )
 
     artifact = extract_stage.run(doc_id)
@@ -158,7 +167,7 @@ def test_pdf_extract_records_warnings_for_sparse_text_layer(
 
 def test_pdf_extract_rejects_no_recoverable_text_layer(
     extract_stage: ExtractDocumentStage,
-    repositories,
+    repositories: tuple[SqlDocumentRepository, SqlLifecycleEventRepository],
     artifact_store: FilesystemArtifactStore,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -166,7 +175,7 @@ def test_pdf_extract_rejects_no_recoverable_text_layer(
     doc_id = _persist_pdf_document(documents=documents, artifact_store=artifact_store)
     monkeypatch.setattr(
         "doc_forge.extractors.pdf.PdfReader",
-        lambda _: _FakePdfReader(["", "   "]),
+        lambda _stream: _FakePdfReader(["", "   "]),  # type: ignore
     )
 
     with pytest.raises(DocumentExtractionError):
@@ -175,7 +184,7 @@ def test_pdf_extract_rejects_no_recoverable_text_layer(
 
 def test_pdf_extract_fails_on_malformed_pdf(
     extract_stage: ExtractDocumentStage,
-    repositories,
+    repositories: tuple[SqlDocumentRepository, SqlLifecycleEventRepository],
     artifact_store: FilesystemArtifactStore,
 ) -> None:
     documents, _ = repositories
@@ -191,7 +200,7 @@ def test_pdf_extract_fails_on_malformed_pdf(
 
 def test_extract_stage_does_not_mark_extracted_without_artifact(
     extract_stage: ExtractDocumentStage,
-    repositories,
+    repositories: tuple[SqlDocumentRepository, SqlLifecycleEventRepository],
     artifact_store: FilesystemArtifactStore,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -199,10 +208,10 @@ def test_extract_stage_does_not_mark_extracted_without_artifact(
     doc_id = _persist_pdf_document(documents=documents, artifact_store=artifact_store)
     monkeypatch.setattr(
         "doc_forge.extractors.pdf.PdfReader",
-        lambda _: _FakePdfReader(["Meaningful PDF text for extraction."]),
+        lambda _stream: _FakePdfReader(["Meaningful PDF text for extraction."]),  # type: ignore
     )
 
-    def _boom(*args, **kwargs):
+    def _boom(*args: Any, **kwargs: Any) -> None:
         del args, kwargs
         raise OSError("disk full")
 

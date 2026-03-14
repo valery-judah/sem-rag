@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import pytest
+from sqlalchemy.engine import Engine
 from sqlalchemy.exc import IntegrityError
 
 from doc_forge.corpus import Section
@@ -8,14 +9,15 @@ from doc_forge.persistence import (
     SqlDocumentRepository,
     SqlSectionRepository,
 )
+from tests.persistence.conftest import PersistedDocumentFactory, SectionFactory
 
 pytestmark = pytest.mark.persistence
 
 
 def test_sections_round_trip_preserves_parent_child_links(
-    sql_engine,
-    persisted_document_factory,
-    section_factory,
+    sql_engine: Engine,
+    persisted_document_factory: PersistedDocumentFactory,
+    section_factory: SectionFactory,
 ) -> None:
     documents = SqlDocumentRepository(sql_engine)
     sections_repo = SqlSectionRepository(sql_engine)
@@ -47,9 +49,9 @@ def test_sections_round_trip_preserves_parent_child_links(
 
 
 def test_optional_section_fields_round_trip_as_none(
-    sql_engine,
-    persisted_document_factory,
-    section_factory,
+    sql_engine: Engine,
+    persisted_document_factory: PersistedDocumentFactory,
+    section_factory: SectionFactory,
 ) -> None:
     documents = SqlDocumentRepository(sql_engine)
     sections_repo = SqlSectionRepository(sql_engine)
@@ -77,9 +79,9 @@ def test_optional_section_fields_round_trip_as_none(
 
 
 def test_replace_for_document_removes_prior_sections(
-    sql_engine,
-    persisted_document_factory,
-    section_factory,
+    sql_engine: Engine,
+    persisted_document_factory: PersistedDocumentFactory,
+    section_factory: SectionFactory,
 ) -> None:
     documents = SqlDocumentRepository(sql_engine)
     sections_repo = SqlSectionRepository(sql_engine)
@@ -106,9 +108,9 @@ def test_replace_for_document_removes_prior_sections(
 
 
 def test_replace_for_document_rejects_cross_document_sections(
-    sql_engine,
-    persisted_document_factory,
-    section_factory,
+    sql_engine: Engine,
+    persisted_document_factory: PersistedDocumentFactory,
+    section_factory: SectionFactory,
 ) -> None:
     documents = SqlDocumentRepository(sql_engine)
     sections_repo = SqlSectionRepository(sql_engine)
@@ -123,8 +125,8 @@ def test_replace_for_document_rejects_cross_document_sections(
 
 
 def test_section_save_requires_existing_document(
-    sql_engine,
-    section_factory,
+    sql_engine: Engine,
+    section_factory: SectionFactory,
 ) -> None:
     sections_repo = SqlSectionRepository(sql_engine)
 

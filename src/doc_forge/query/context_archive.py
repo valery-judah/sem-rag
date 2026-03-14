@@ -14,6 +14,8 @@ import sqlalchemy as sa
 from dotenv import load_dotenv
 from pydantic import BaseModel, ConfigDict, Field
 
+from doc_forge.identifiers import QueryId
+
 from .persistence import (
     SqlQueryAnswerStore,
     SqlQueryRunStore,
@@ -64,7 +66,7 @@ class QueryContextManifest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    query_id: str = Field(min_length=1)
+    query_id: QueryId = Field(min_length=1)
     workspace_id: str | None = None
     question: str | None = None
     submitted_at: datetime | None = None
@@ -174,7 +176,7 @@ class QueryContextCollector:
 
     def collect(
         self,
-        query_id: str,
+        query_id: QueryId,
         *,
         extras: QueryContextCollectionExtras | None = None,
     ) -> CollectedQueryContext:
@@ -288,13 +290,13 @@ class QueryContextCollector:
         )
         return CollectedQueryContext(bundle_root=bundle_root, manifest=manifest)
 
-    def load_manifest(self, query_id: str) -> QueryContextManifest:
+    def load_manifest(self, query_id: QueryId) -> QueryContextManifest:
         manifest_path = self._context_root / "queries" / query_id / "manifest.json"
         if not manifest_path.exists():
             raise FileNotFoundError(f"query context manifest for {query_id!r} was not found")
         return QueryContextManifest.model_validate_json(manifest_path.read_text(encoding="utf-8"))
 
-    def render_summary(self, query_id: str) -> str:
+    def render_summary(self, query_id: QueryId) -> str:
         manifest = self.load_manifest(query_id)
         bundle_root = self._context_root / "queries" / query_id
         lines = [
@@ -334,7 +336,7 @@ class QueryContextCollector:
         lines.append(f"missing_assets={','.join(manifest.missing_assets) or '<none>'}")
         return "\n".join(lines)
 
-    def _load_citations(self, query_id: str) -> QueryCitationReview | None:
+    def _load_citations(self, query_id: QueryId) -> QueryCitationReview | None:
         try:
             return self._review_service.get_query_citations(query_id)
         except LookupError:
@@ -345,7 +347,7 @@ class QueryContextCollector:
         path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
         return path.relative_to(bundle_root).as_posix()
 
-    def _discover_log_groups(self, query_id: str) -> list[_LogSourceGroup]:
+    def _discover_log_groups(self, query_id: QueryId) -> list[_LogSourceGroup]:
         groups: list[_LogSourceGroup] = []
         for directory in self._candidate_log_directories():
             matched_files: list[_MatchedLogFile] = []
@@ -474,7 +476,7 @@ class QueryContextCollector:
         return None
 
 
-def _matching_query_log_lines(path: Path, query_id: str) -> list[str]:
+def _matching_query_log_lines(path: Path, query_id: QueryId) -> list[str]:
     needle = f'"query_id": "{query_id}"'
     matched: list[str] = []
     for line in path.read_text(encoding="utf-8").splitlines():
@@ -538,7 +540,7 @@ def _payload_string(payload: dict[str, object] | None, key: str) -> str | None:
 
 def _build_query_response_payload(
     *,
-    query_id: str,
+    query_id: QueryId,
     trace: QueryTraceReview,
 ) -> dict[str, object] | None:
     final_artifacts = trace.final_artifacts

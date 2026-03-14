@@ -24,15 +24,21 @@ from doc_forge.persistence import (
 from doc_forge.stages.normalize import NormalizeDocumentStage
 
 
+from pathlib import Path
+from typing import Iterator
+
+
 @pytest.fixture
-def sql_engine(tmp_path):
+def sql_engine(tmp_path: Path) -> Iterator[sa.Engine]:
     db_url = f"sqlite+pysqlite:///{tmp_path / 'normalize-pdf.db'}"
     apply_migrations(db_url)
     engine = sa.create_engine(db_url)
     if engine.dialect.name == "sqlite":
 
         @event.listens_for(engine, "connect")
-        def _set_sqlite_pragma(dbapi_connection, connection_record) -> None:
+        def _set_sqlite_pragma(
+            dbapi_connection: sa.Connection, connection_record: sa.Connection
+        ) -> None:
             del connection_record
             cursor = dbapi_connection.cursor()
             cursor.execute("PRAGMA foreign_keys = ON")
@@ -45,17 +51,23 @@ def sql_engine(tmp_path):
 
 
 @pytest.fixture
-def artifact_store(tmp_path) -> FilesystemArtifactStore:
+def artifact_store(tmp_path: Path) -> FilesystemArtifactStore:
     return FilesystemArtifactStore(tmp_path / "artifacts")
 
 
 @pytest.fixture
-def repositories(sql_engine):
+def repositories(
+    sql_engine: sa.Engine,
+) -> tuple[SqlDocumentRepository, SqlLifecycleEventRepository]:
     return SqlDocumentRepository(sql_engine), SqlLifecycleEventRepository(sql_engine)
 
 
 @pytest.fixture
-def normalize_stage(sql_engine, repositories, artifact_store: FilesystemArtifactStore):
+def normalize_stage(
+    sql_engine: sa.Engine,
+    repositories: tuple[SqlDocumentRepository, SqlLifecycleEventRepository],
+    artifact_store: FilesystemArtifactStore,
+) -> NormalizeDocumentStage:
     documents, lifecycle_events = repositories
     return NormalizeDocumentStage(
         engine=sql_engine,
@@ -71,7 +83,7 @@ def normalize_stage(sql_engine, repositories, artifact_store: FilesystemArtifact
 
 def _persist_extracting_pdf_document(
     *,
-    documents,
+    documents: SqlDocumentRepository,
     artifact_store: FilesystemArtifactStore,
     pages: list[ExtractedArtifactPage],
     doc_id: str = "doc-pdf-norm-1",
@@ -106,7 +118,7 @@ def _persist_extracting_pdf_document(
 
 def test_pdf_normalize_preserves_page_transition_blocks(
     normalize_stage: NormalizeDocumentStage,
-    repositories,
+    repositories: tuple[SqlDocumentRepository, SqlLifecycleEventRepository],
     artifact_store: FilesystemArtifactStore,
 ) -> None:
     documents, _ = repositories
@@ -133,7 +145,7 @@ def test_pdf_normalize_preserves_page_transition_blocks(
 
 def test_pdf_normalize_promotes_heading_only_above_confidence_threshold(
     normalize_stage: NormalizeDocumentStage,
-    repositories,
+    repositories: tuple[SqlDocumentRepository, SqlLifecycleEventRepository],
     artifact_store: FilesystemArtifactStore,
 ) -> None:
     documents, _ = repositories
@@ -156,7 +168,7 @@ def test_pdf_normalize_promotes_heading_only_above_confidence_threshold(
 
 def test_pdf_normalize_keeps_uncertain_heading_as_paragraph(
     normalize_stage: NormalizeDocumentStage,
-    repositories,
+    repositories: tuple[SqlDocumentRepository, SqlLifecycleEventRepository],
     artifact_store: FilesystemArtifactStore,
 ) -> None:
     documents, _ = repositories
@@ -184,7 +196,7 @@ def test_pdf_normalize_keeps_uncertain_heading_as_paragraph(
 
 def test_pdf_normalize_allows_synthetic_structure_fallback(
     normalize_stage: NormalizeDocumentStage,
-    repositories,
+    repositories: tuple[SqlDocumentRepository, SqlLifecycleEventRepository],
     artifact_store: FilesystemArtifactStore,
 ) -> None:
     documents, _ = repositories
@@ -206,7 +218,7 @@ def test_pdf_normalize_allows_synthetic_structure_fallback(
 
 def test_pdf_normalize_never_claims_unrecovered_layout_semantics(
     normalize_stage: NormalizeDocumentStage,
-    repositories,
+    repositories: tuple[SqlDocumentRepository, SqlLifecycleEventRepository],
     artifact_store: FilesystemArtifactStore,
 ) -> None:
     documents, _ = repositories

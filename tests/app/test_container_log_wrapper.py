@@ -10,7 +10,7 @@ def _wrapper_path() -> Path:
     return Path(__file__).resolve().parents[2] / "scripts" / "container-log-wrapper.sh"
 
 
-def test_container_log_wrapper_archives_json_lines_without_changing_stdout(tmp_path: Path) -> None:
+container_log_wrapper_archives_json_lines_without_changing_stdout(tmp_path: pathlib.Path: Path) -> None:
     log_path = tmp_path / "runtime.jsonl"
     command = [
         str(_wrapper_path()),
@@ -34,7 +34,7 @@ def test_container_log_wrapper_archives_json_lines_without_changing_stdout(tmp_p
     assert log_path.read_text(encoding="utf-8").strip() == stdout_line
 
 
-def test_container_log_wrapper_preserves_child_exit_code(tmp_path: Path) -> None:
+container_log_wrapper_preserves_child_exit_code(tmp_path: pathlib.Path: Path) -> None:
     log_path = tmp_path / "runtime.jsonl"
     command = [
         str(_wrapper_path()),
@@ -58,7 +58,7 @@ def test_container_log_wrapper_preserves_child_exit_code(tmp_path: Path) -> None
     }
 
 
-def test_container_log_wrapper_filters_non_json_lines_from_archive(tmp_path: Path) -> None:
+container_log_wrapper_filters_non_json_lines_from_archive(tmp_path: pathlib.Path: Path) -> None:
     log_path = tmp_path / "runtime.jsonl"
     command = [
         str(_wrapper_path()),
@@ -87,7 +87,7 @@ def test_container_log_wrapper_filters_non_json_lines_from_archive(tmp_path: Pat
     assert log_path.read_text(encoding="utf-8").splitlines() == [json.dumps({"event": "json-line"})]
 
 
-def test_container_log_wrapper_skips_archiving_when_path_is_empty(tmp_path: Path) -> None:
+container_log_wrapper_skips_archiving_when_path_is_empty(tmp_path: pathlib.Path: Path) -> None:
     log_path = tmp_path / "runtime.jsonl"
     command = [
         str(_wrapper_path()),

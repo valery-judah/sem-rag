@@ -14,7 +14,7 @@ from doc_forge.evaluation import (
     AnswerLayerRunResult,
 )
 from doc_forge.evaluation.identifiers import CorpusId, parse_corpus_id
-from doc_forge.identifiers import DocId
+from doc_forge.identifiers import DocId, QueryId
 from doc_forge.query import (
     QueryContextCollectionExtras,
     QueryContextCollector,
@@ -46,7 +46,7 @@ class UploadedCorpusDocument:
 class ExecutedEvalCase:
     case_id: str
     workspace_id: str
-    query_id: str
+    query_id: QueryId
     answer_text: str
     citations: list[AnswerLayerCitation]
     summary_payload: QueryRunReviewSummary

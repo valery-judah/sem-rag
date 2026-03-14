@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from doc_forge.identifiers import QueryId
 from doc_forge.query.contracts import (
     ContextManifest,
     CorpusSnapshot,
@@ -59,7 +60,7 @@ class SupportAssessmentTracePayload(BaseModel):
 
 def run(
     *,
-    query_id: str,
+    query_id: QueryId,
     request: QueryRequest,
     snapshot: CorpusSnapshot,
     interpreted_query: InterpretedQuery,

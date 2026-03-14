@@ -7,6 +7,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from doc_forge.app.log_events import LogEvent
 from doc_forge.app.logging import get_logger
+from doc_forge.identifiers import QueryId
 
 from .contracts import (
     AnswerDraft,
@@ -40,7 +41,7 @@ class QueryReplayBundle(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    query_id: str = Field(min_length=1)
+    query_id: QueryId = Field(min_length=1)
     request: QueryRequest
     policy: QueryPolicy
     snapshot: CorpusSnapshot | None = None
@@ -70,7 +71,7 @@ class QueryReplayLogger:
     def __init__(self, logger: structlog.stdlib.BoundLogger) -> None:
         self._logger = logger
 
-    def bundle_built(self, query_id: str, status: str, trace_count: int) -> None:
+    def bundle_built(self, query_id: QueryId, status: str, trace_count: int) -> None:
         self._logger.info(
             LogEvent.REPLAY_BUNDLE_BUILT,
             query_id=query_id,
@@ -97,7 +98,7 @@ class QueryReplayService:
         self._answer_store = answer_store
         self._logger = logger or QueryReplayLogger(get_logger(self.__class__.__name__))
 
-    def build_bundle(self, query_id: str) -> QueryReplayBundle:
+    def build_bundle(self, query_id: QueryId) -> QueryReplayBundle:
         """Load the frozen persisted artifacts required for replay."""
 
         run = self._run_store.get_query_run(query_id)
@@ -122,7 +123,7 @@ class QueryReplayService:
         )
         return bundle
 
-    def reconstruct_inputs(self, query_id: str) -> ReconstructedQueryInputs:
+    def reconstruct_inputs(self, query_id: QueryId) -> ReconstructedQueryInputs:
         """Reconstruct stage inputs from a persisted replay bundle."""
 
         bundle = self.build_bundle(query_id)

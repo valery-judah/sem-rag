@@ -21,6 +21,7 @@ from pathlib import Path
 import httpx
 import pytest
 
+from e2e.conftest import RunningStack
 from e2e.support import E2EReadyDocument, SystemDriver
 
 pytestmark = pytest.mark.e2e
@@ -92,13 +93,13 @@ MULTI_DOC_CASES = (
 )
 
 
-def _single_chunk_row(e2e_stack, *, doc_id: str) -> dict[str, object]:
+def _single_chunk_row(e2e_stack: RunningStack, *, doc_id: str) -> dict[str, object]:
     chunk_rows = e2e_stack.chunk_rows(doc_id=doc_id)
     assert len(chunk_rows) == 1
     return chunk_rows[0]
 
 
-def _chunk_text_by_id(e2e_stack, *, doc_id: str) -> dict[str, str]:
+def _chunk_text_by_id(e2e_stack: RunningStack, *, doc_id: str) -> dict[str, str]:
     return {str(row["chunk_id"]): str(row["text"]) for row in e2e_stack.chunk_rows(doc_id=doc_id)}
 
 
@@ -123,7 +124,7 @@ def _build_concurrent_cases(count: int = 5) -> tuple[ConcurrentDocCase, ...]:
 
 @pytest.mark.parametrize("case", REAL_DOC_CASES, ids=lambda c: c.title)
 def test_given_single_markdown_when_uploaded_then_ready_and_queryable(
-    e2e_stack,
+    e2e_stack: RunningStack,
     case: RealDocCase,
 ) -> None:
     driver = SystemDriver(e2e_stack)
@@ -140,7 +141,7 @@ def test_given_single_markdown_when_uploaded_then_ready_and_queryable(
 
 
 def test_given_ready_document_when_deleted_then_artifacts_and_vectors_are_removed(
-    e2e_stack,
+    e2e_stack: RunningStack,
 ) -> None:
     driver = SystemDriver(e2e_stack)
     case = REAL_DOC_CASES[0]
@@ -155,7 +156,9 @@ def test_given_ready_document_when_deleted_then_artifacts_and_vectors_are_remove
     uploaded.assert_vectors_deleted(e2e_stack)
 
 
-def test_given_multiple_docs_when_query_scoped_then_returns_isolated_results(e2e_stack) -> None:
+def test_given_multiple_docs_when_query_scoped_then_returns_isolated_results(
+    e2e_stack: RunningStack,
+) -> None:
     driver = SystemDriver(e2e_stack)
     uploaded_items: list[tuple[MultiDocCase, E2EReadyDocument]] = []
 
@@ -189,7 +192,7 @@ def test_given_multiple_docs_when_query_scoped_then_returns_isolated_results(e2e
 
 
 def test_given_duplicate_uploads_when_ingested_then_preserves_original_consistency(
-    e2e_stack,
+    e2e_stack: RunningStack,
 ) -> None:
     driver = SystemDriver(e2e_stack)
     case = MULTI_DOC_CASES[0]
@@ -229,7 +232,7 @@ def test_given_duplicate_uploads_when_ingested_then_preserves_original_consisten
 
 
 def test_given_invalid_utf8_markdown_when_uploaded_then_rejected_before_registration(
-    e2e_stack,
+    e2e_stack: RunningStack,
 ) -> None:
     driver = SystemDriver(e2e_stack)
 
@@ -245,7 +248,7 @@ def test_given_invalid_utf8_markdown_when_uploaded_then_rejected_before_registra
 
 
 def test_given_concurrent_uploads_when_processed_then_chunks_and_queries_stay_isolated(
-    e2e_stack,
+    e2e_stack: RunningStack,
 ) -> None:
     cases = _build_concurrent_cases()
     uploaded_by_marker: dict[str, E2EReadyDocument] = {}
@@ -294,7 +297,7 @@ def test_given_concurrent_uploads_when_processed_then_chunks_and_queries_stay_is
 
 
 def test_given_semantic_query_when_executed_then_relevant_chunk_ranks_above_distractors(
-    e2e_stack,
+    e2e_stack: RunningStack,
 ) -> None:
     driver = SystemDriver(e2e_stack)
     uploaded = driver.ingest_markdown_bytes(
@@ -334,7 +337,7 @@ def test_given_semantic_query_when_executed_then_relevant_chunk_ranks_above_dist
 
 @pytest.mark.parametrize("case", REAL_DOC_CASES, ids=lambda c: c.title)
 def test_given_ready_document_when_chunked_then_preserves_provenance(
-    e2e_stack,
+    e2e_stack: RunningStack,
     case: RealDocCase,
 ) -> None:
     driver = SystemDriver(e2e_stack)

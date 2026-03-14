@@ -5,7 +5,7 @@ from pathlib import Path
 from doc_forge.artifacts import FilesystemArtifactStore, NormalizedArtifact
 
 
-def test_normalized_artifact_store_round_trips_fixture_snapshot(tmp_path: Path) -> None:
+normalized_artifact_store_round_trips_fixture_snapshot(tmp_path: pathlib.Path: Path) -> None:
     fixture_path = Path(__file__).parent / "fixtures" / "normalized" / "smoke.normalized.json"
     artifact = NormalizedArtifact.model_validate_json(fixture_path.read_text(encoding="utf-8"))
     store = FilesystemArtifactStore(tmp_path / "artifacts")
@@ -16,7 +16,7 @@ def test_normalized_artifact_store_round_trips_fixture_snapshot(tmp_path: Path) 
     assert loaded == artifact
 
 
-def test_normalized_artifact_store_preserves_block_order(tmp_path: Path) -> None:
+normalized_artifact_store_preserves_block_order(tmp_path: pathlib.Path: Path) -> None:
     artifact = NormalizedArtifact.model_validate_json(
         (
             Path(__file__).parent / "fixtures" / "normalized" / "design-exploration.normalized.json"
@@ -30,7 +30,7 @@ def test_normalized_artifact_store_preserves_block_order(tmp_path: Path) -> None
     assert [block.order_index for block in loaded.blocks] == list(range(len(loaded.blocks)))
 
 
-def test_normalized_artifact_store_overwrites_document_path(tmp_path: Path) -> None:
+normalized_artifact_store_overwrites_document_path(tmp_path: pathlib.Path: Path) -> None:
     store = FilesystemArtifactStore(tmp_path / "artifacts")
     first = NormalizedArtifact.model_validate_json(
         (Path(__file__).parent / "fixtures" / "normalized" / "smoke.normalized.json").read_text(

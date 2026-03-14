@@ -8,7 +8,7 @@ from enum import StrEnum
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from doc_forge.corpus import SourceReference
-from doc_forge.identifiers import DocId, WorkspaceId
+from doc_forge.identifiers import DocId, QueryId, WorkspaceId
 
 
 def utc_now() -> datetime:
@@ -212,7 +212,7 @@ class QueryRun(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    query_id: str = Field(min_length=1)
+    query_id: QueryId = Field(min_length=1)
     workspace_id: WorkspaceId
     question: str = Field(min_length=1)
     submitted_at: datetime = Field(default_factory=utc_now)

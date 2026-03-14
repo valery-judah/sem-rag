@@ -9,8 +9,10 @@ from typing import cast
 
 from pydantic import BaseModel, ConfigDict
 
+from doc_forge.identifiers import QueryId
 from doc_forge.query import AnswerDraft, AnswerMode, CitationBundle, SupportState
 from doc_forge.query.review import QueryCitationReview, QueryRunReviewSummary, QueryTraceReview
+from e2e.conftest import RunningStack
 
 
 class UploadReceipt(BaseModel):
@@ -78,7 +80,7 @@ class QueryResult(BaseModel):
 class QueryAnswerResponse(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
-    query_id: str
+    query_id: QueryId
     answer: AnswerDraft
     support_state: SupportState
     answer_mode: AnswerMode
@@ -91,24 +93,24 @@ class E2EReadyDocument:
     doc_id: str
     artifacts: ArtifactRefs
 
-    def _host_artifact_path(self, e2e_stack, artifact_path: str | None):
+    def _host_artifact_path(self, e2e_stack: RunningStack, artifact_path: str | None) -> Path:
         host_path = e2e_stack.host_artifact_path(artifact_path)
         assert host_path is not None
         return host_path
 
-    def assert_artifacts_exist(self, e2e_stack) -> None:
+    def assert_artifacts_exist(self, e2e_stack: RunningStack) -> None:
         """INVARIANT: Artifact Integrity - files exist physically on the host."""
         assert self._host_artifact_path(e2e_stack, self.artifacts.raw_path).exists()
         assert self._host_artifact_path(e2e_stack, self.artifacts.extracted_path).exists()
         assert self._host_artifact_path(e2e_stack, self.artifacts.normalized_path).exists()
 
-    def assert_artifacts_deleted(self, e2e_stack) -> None:
+    def assert_artifacts_deleted(self, e2e_stack: RunningStack) -> None:
         """INVARIANT: Garbage Collection - files are removed from the host."""
         assert not self._host_artifact_path(e2e_stack, self.artifacts.raw_path).exists()
         assert not self._host_artifact_path(e2e_stack, self.artifacts.extracted_path).exists()
         assert not self._host_artifact_path(e2e_stack, self.artifacts.normalized_path).exists()
 
-    def assert_strict_vector_mapping(self, e2e_stack) -> None:
+    def assert_strict_vector_mapping(self, e2e_stack: RunningStack) -> None:
         """INVARIANT: Strict 1:1:1 mapping of chunks, embeddings, and index entries."""
         snapshot = e2e_stack.vector_snapshot(doc_id=self.doc_id)
 
@@ -122,13 +124,13 @@ class E2EReadyDocument:
         assert embedding_count == chunk_count
         assert index_entry_count == chunk_count
 
-        sample_embedding = snapshot["sample_embedding"]
+        sample_embedding = cast(dict[str, object], snapshot["sample_embedding"])
         assert sample_embedding is not None
         assert sample_embedding["embedding_model"]
         assert isinstance(sample_embedding["embedding_vector_json"], list)
         assert sample_embedding["embedding_vector_json"]
 
-    def assert_vectors_deleted(self, e2e_stack) -> None:
+    def assert_vectors_deleted(self, e2e_stack: RunningStack) -> None:
         """INVARIANT: Garbage Collection - vectors and chunks are deleted."""
         snapshot = e2e_stack.vector_snapshot(doc_id=self.doc_id)
         assert snapshot["chunk_count"] == 0
@@ -139,7 +141,7 @@ class E2EReadyDocument:
 class SystemDriver:
     """Encapsulates system interactions behind a clean semantic DSL."""
 
-    def __init__(self, e2e_stack):
+    def __init__(self, e2e_stack: RunningStack):
         self.stack = e2e_stack
 
     def _repo_root(self) -> Path:
@@ -304,19 +306,19 @@ class SystemDriver:
             )
             return payload
 
-    def get_query_summary(self, query_id: str) -> QueryRunReviewSummary:
+    def get_query_summary(self, query_id: QueryId) -> QueryRunReviewSummary:
         with self.stack.client() as client:
             response = client.get(f"/queries/{query_id}")
             response.raise_for_status()
             return QueryRunReviewSummary.model_validate(response.json())
 
-    def get_query_trace(self, query_id: str) -> QueryTraceReview:
+    def get_query_trace(self, query_id: QueryId) -> QueryTraceReview:
         with self.stack.client() as client:
             response = client.get(f"/queries/{query_id}/trace")
             response.raise_for_status()
             return QueryTraceReview.model_validate(response.json())
 
-    def get_query_citations(self, query_id: str) -> QueryCitationReview:
+    def get_query_citations(self, query_id: QueryId) -> QueryCitationReview:
         with self.stack.client() as client:
             response = client.get(f"/queries/{query_id}/citations")
             response.raise_for_status()

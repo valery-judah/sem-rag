@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import pytest
+import sqlalchemy as sa
 
 from doc_forge.indexing import DeterministicEmbeddingAdapter, SqlVectorStore
 from doc_forge.lifecycle import ProcessingStatus
@@ -29,7 +30,7 @@ from doc_forge.readmodels import SqlQueryableCorpusReadModel
 pytestmark = pytest.mark.anyio
 
 
-def _read_model(sql_engine) -> SqlQueryableCorpusReadModel:
+def _read_model(sql_engine: sa.Engine) -> SqlQueryableCorpusReadModel:
     return SqlQueryableCorpusReadModel(
         documents=SqlDocumentRepository(sql_engine),
         sections=SqlSectionRepository(sql_engine),
@@ -39,7 +40,7 @@ def _read_model(sql_engine) -> SqlQueryableCorpusReadModel:
     )
 
 
-def _query_service(sql_engine) -> QueryService:
+def _query_service(sql_engine: sa.Engine) -> QueryService:
     read_model = _read_model(sql_engine)
     return QueryService(
         corpus_read_model=read_model,
@@ -58,7 +59,7 @@ def _query_service(sql_engine) -> QueryService:
     )
 
 
-def _replay_service(sql_engine) -> QueryReplayService:
+def _replay_service(sql_engine: sa.Engine) -> QueryReplayService:
     return QueryReplayService(
         run_store=SqlQueryRunStore(sql_engine),
         snapshot_store=SqlQuerySnapshotStore(sql_engine),
@@ -67,10 +68,13 @@ def _replay_service(sql_engine) -> QueryReplayService:
     )
 
 
+from tests.persistence.conftest import ChunkFactory, PersistedDocumentFactory
+
+
 def test_replay_bundle_uses_persisted_snapshot_and_policy(
-    sql_engine,
-    persisted_document_factory,
-    chunk_factory,
+    sql_engine: sa.Engine,
+    persisted_document_factory: PersistedDocumentFactory,
+    chunk_factory: ChunkFactory,
 ) -> None:
     documents = SqlDocumentRepository(sql_engine)
     chunks = SqlChunkRepository(sql_engine)
@@ -132,9 +136,9 @@ def test_replay_bundle_uses_persisted_snapshot_and_policy(
 
 
 def test_replay_reconstructs_stage_inputs_from_persisted_traces(
-    sql_engine,
-    persisted_document_factory,
-    chunk_factory,
+    sql_engine: sa.Engine,
+    persisted_document_factory: PersistedDocumentFactory,
+    chunk_factory: ChunkFactory,
 ) -> None:
     documents = SqlDocumentRepository(sql_engine)
     chunks = SqlChunkRepository(sql_engine)

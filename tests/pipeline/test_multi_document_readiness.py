@@ -15,7 +15,7 @@ def _drain_jobs(client: TestClient, limit: int = 24) -> None:
     raise AssertionError("worker did not drain queue within limit")
 
 
-def test_readiness_and_retrieval_smoke_are_document_scoped(tmp_path, monkeypatch) -> None:
+readiness_and_retrieval_smoke_are_document_scoped(tmp_path: pathlib.Path, monkeypatch) -> None:
     database_path = tmp_path / "multi-doc-ready.db"
     artifact_root = tmp_path / "artifacts"
     db_url = f"sqlite+pysqlite:///{database_path}"

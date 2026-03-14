@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import functools
 from datetime import UTC, datetime
+from pathlib import Path
 from typing import Any, cast
 
 import httpx
@@ -57,7 +58,7 @@ def _route_endpoint(app: FastAPI, *, path: str, method: str):
     raise AssertionError(f"route {method} {path} was not found")
 
 
-def _service(sql_engine: Engine, tmp_path):
+def _service(sql_engine: Engine, tmp_path: Path):
     return get_document_lifecycle_service(
         engine=sql_engine,
         artifact_store=FilesystemArtifactStore(tmp_path / "artifacts"),
@@ -77,7 +78,7 @@ def _query_review_service(sql_engine: Engine):
 
 def _structured_logs(caplog: pytest.LogCaptureFixture) -> list[dict[str, Any]]:
     return [
-        cast(dict[str, Any], record.msg)
+        cast(dict[str, Any], record.msg)  # type: ignore
         for record in caplog.records
         if isinstance(record.msg, dict)
     ]
@@ -94,7 +95,7 @@ class _WorkerStub:
 async def test_status_route_returns_404_for_unknown_document(
     app: FastAPI,
     sql_engine: Engine,
-    tmp_path,
+    tmp_path: Path,
 ) -> None:
     with pytest.raises(HTTPException) as exc_info:
         _route_endpoint(app, path="/documents/{doc_id}/status", method="GET")(
@@ -109,7 +110,7 @@ async def test_status_route_returns_404_for_unknown_document(
 async def test_artifacts_route_returns_404_for_unknown_document(
     app: FastAPI,
     sql_engine: Engine,
-    tmp_path,
+    tmp_path: Path,
 ) -> None:
     with pytest.raises(HTTPException) as exc_info:
         _route_endpoint(app, path="/documents/{doc_id}/artifacts", method="GET")(
@@ -123,7 +124,7 @@ async def test_artifacts_route_returns_404_for_unknown_document(
 async def test_retry_route_returns_404_for_unknown_document(
     app: FastAPI,
     sql_engine: Engine,
-    tmp_path,
+    tmp_path: Path,
 ) -> None:
     with pytest.raises(HTTPException) as exc_info:
         _route_endpoint(app, path="/documents/{doc_id}/retry", method="POST")(
@@ -137,8 +138,8 @@ async def test_retry_route_returns_404_for_unknown_document(
 async def test_retry_route_returns_409_for_ready_document(
     app: FastAPI,
     sql_engine: Engine,
-    tmp_path,
-    persisted_document_factory,
+    tmp_path: Path,
+    persisted_document_factory: Any,
 ) -> None:
     documents = SqlDocumentRepository(sql_engine)
     documents.create(
@@ -161,8 +162,8 @@ async def test_retry_route_returns_409_for_ready_document(
 async def test_retry_route_returns_409_for_non_failed_document(
     app: FastAPI,
     sql_engine: Engine,
-    tmp_path,
-    persisted_document_factory,
+    tmp_path: Path,
+    persisted_document_factory: Any,
 ) -> None:
     documents = SqlDocumentRepository(sql_engine)
     documents.create(
@@ -185,9 +186,9 @@ async def test_retry_route_returns_409_for_non_failed_document(
 async def test_retry_route_returns_202_and_queued_stage_for_failed_document(
     app: FastAPI,
     sql_engine: Engine,
-    tmp_path,
-    persisted_document_factory,
-    lifecycle_event_factory,
+    tmp_path: Path,
+    persisted_document_factory: Any,
+    lifecycle_event_factory: Any,
 ) -> None:
     documents = SqlDocumentRepository(sql_engine)
     lifecycle_events = SqlLifecycleEventRepository(sql_engine)
@@ -233,7 +234,7 @@ async def test_retry_route_returns_202_and_queued_stage_for_failed_document(
 async def test_retrieval_query_returns_404_for_unknown_document(
     app: FastAPI,
     sql_engine: Engine,
-    tmp_path,
+    tmp_path: Path,
 ) -> None:
     with pytest.raises(HTTPException) as exc_info:
         _route_endpoint(app, path="/retrieval/query", method="POST")(
@@ -252,8 +253,8 @@ def test_retrieval_query_validates_positive_k() -> None:
 async def test_queries_route_returns_final_answer_and_persists_artifacts(
     app: FastAPI,
     sql_engine: Engine,
-    persisted_document_factory,
-    chunk_factory,
+    persisted_document_factory: Any,
+    chunk_factory: Any,
 ) -> None:
     documents = SqlDocumentRepository(sql_engine)
     chunks = SqlChunkRepository(sql_engine)
@@ -345,7 +346,7 @@ async def test_healthz_returns_ok(app: FastAPI) -> None:
 async def test_readyz_returns_ok_when_dependencies_load(
     app: FastAPI,
     sql_engine: Engine,
-    tmp_path,
+    tmp_path: Path,
 ) -> None:
     from doc_forge.indexing.embeddings import DeterministicEmbeddingAdapter
     from doc_forge.indexing.vector_store import SqlVectorStore
@@ -367,7 +368,7 @@ async def test_readyz_returns_ok_when_dependencies_load(
 async def test_readyz_creates_artifact_root_when_missing(
     app: FastAPI,
     sql_engine: Engine,
-    tmp_path,
+    tmp_path: Path,
 ) -> None:
     artifact_root = tmp_path / "missing-artifacts"
 
@@ -419,8 +420,8 @@ async def test_run_next_job_returns_job_metadata_when_job_runs(app: FastAPI) -> 
 async def test_query_summary_route_returns_persisted_review_view(
     app: FastAPI,
     sql_engine: Engine,
-    persisted_document_factory,
-    chunk_factory,
+    persisted_document_factory: Any,
+    chunk_factory: Any,
 ) -> None:
     documents = SqlDocumentRepository(sql_engine)
     chunks = SqlChunkRepository(sql_engine)
@@ -470,8 +471,8 @@ async def test_query_summary_route_returns_persisted_review_view(
 async def test_query_trace_route_returns_ordered_persisted_traces(
     app: FastAPI,
     sql_engine: Engine,
-    persisted_document_factory,
-    chunk_factory,
+    persisted_document_factory: Any,
+    chunk_factory: Any,
 ) -> None:
     documents = SqlDocumentRepository(sql_engine)
     chunks = SqlChunkRepository(sql_engine)
@@ -525,8 +526,8 @@ async def test_query_trace_route_returns_ordered_persisted_traces(
 async def test_query_citations_route_reads_persisted_answer_state(
     app: FastAPI,
     sql_engine: Engine,
-    persisted_document_factory,
-    chunk_factory,
+    persisted_document_factory: Any,
+    chunk_factory: Any,
 ) -> None:
     documents = SqlDocumentRepository(sql_engine)
     chunks = SqlChunkRepository(sql_engine)
@@ -642,8 +643,8 @@ async def test_queries_route_returns_failed_query_id_when_execution_fails(
 async def test_http_and_query_logs_are_json_and_correlated(
     app: FastAPI,
     sql_engine: Engine,
-    persisted_document_factory,
-    chunk_factory,
+    persisted_document_factory: Any,
+    chunk_factory: Any,
     caplog: pytest.LogCaptureFixture,
 ) -> None:
     documents = SqlDocumentRepository(sql_engine)
@@ -680,7 +681,7 @@ async def test_http_and_query_logs_are_json_and_correlated(
         )
 
     assert response.status_code == 200
-    structured_logs = [record.msg for record in caplog.records if isinstance(record.msg, dict)]
+    structured_logs = _structured_logs(caplog)
 
     assert any(log["event"] == "http.request.started" for log in structured_logs)
     assert any(log["event"] == "http.request.completed" for log in structured_logs)
@@ -737,9 +738,9 @@ async def test_document_upload_logs_success_and_rejection(
 async def test_retry_delete_and_retrieval_logs_are_structured(
     app: FastAPI,
     sql_engine: Engine,
-    persisted_document_factory,
-    lifecycle_event_factory,
-    chunk_factory,
+    persisted_document_factory: Any,
+    lifecycle_event_factory: Any,
+    chunk_factory: Any,
     caplog: pytest.LogCaptureFixture,
 ) -> None:
     documents = SqlDocumentRepository(sql_engine)

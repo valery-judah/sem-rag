@@ -18,7 +18,7 @@ def _drain_jobs(client: TestClient, limit: int = 12) -> list[dict[str, str | Non
     return runs
 
 
-def test_markdown_document_reaches_ready(tmp_path, monkeypatch) -> None:
+markdown_document_reaches_ready(tmp_path: pathlib.Path, monkeypatch) -> None:
     database_path = tmp_path / "markdown-ready.db"
     artifact_root = tmp_path / "artifacts"
     db_url = f"sqlite+pysqlite:///{database_path}"

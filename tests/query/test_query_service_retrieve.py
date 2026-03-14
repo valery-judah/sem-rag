@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 from typing import Any, cast
+from tests.persistence.conftest import ChunkFactory, PersistedDocumentFactory
 
 import pytest
+from sqlalchemy import Engine
 
 from doc_forge.indexing import DeterministicEmbeddingAdapter, SqlVectorStore
 from doc_forge.lifecycle import ProcessingStatus
@@ -34,7 +36,7 @@ def _payload_dict(value: object) -> dict[str, Any]:
     return cast(dict[str, Any], value)
 
 
-def _read_model(sql_engine) -> SqlQueryableCorpusReadModel:
+def _read_model(sql_engine: Engine) -> SqlQueryableCorpusReadModel:
     return SqlQueryableCorpusReadModel(
         documents=SqlDocumentRepository(sql_engine),
         sections=SqlSectionRepository(sql_engine),
@@ -44,7 +46,7 @@ def _read_model(sql_engine) -> SqlQueryableCorpusReadModel:
     )
 
 
-def _service(sql_engine) -> QueryService:
+def _service(sql_engine: Engine) -> QueryService:
     read_model = _read_model(sql_engine)
     return QueryService(
         corpus_read_model=read_model,
@@ -64,9 +66,9 @@ def _service(sql_engine) -> QueryService:
 
 
 def test_execute_until_selection_persists_selection_trace_and_evidence_sets(
-    sql_engine,
-    persisted_document_factory,
-    chunk_factory,
+    sql_engine: Engine,
+    persisted_document_factory: PersistedDocumentFactory,
+    chunk_factory: ChunkFactory,
 ) -> None:
     documents = SqlDocumentRepository(sql_engine)
     chunks = SqlChunkRepository(sql_engine)
@@ -128,7 +130,7 @@ def test_execute_until_selection_persists_selection_trace_and_evidence_sets(
     )
 
 
-def test_execute_until_selection_handles_empty_snapshot(sql_engine) -> None:
+def test_execute_until_selection_handles_empty_snapshot(sql_engine: Engine) -> None:
     trace_store = SqlQueryTraceStore(sql_engine)
 
     state = _service(sql_engine).execute_until_selection(
@@ -153,9 +155,9 @@ def test_execute_until_selection_handles_empty_snapshot(sql_engine) -> None:
 
 
 def test_execute_until_context_assembly_persists_context_trace_and_manifest(
-    sql_engine,
-    persisted_document_factory,
-    chunk_factory,
+    sql_engine: Engine,
+    persisted_document_factory: PersistedDocumentFactory,
+    chunk_factory: ChunkFactory,
 ) -> None:
     documents = SqlDocumentRepository(sql_engine)
     chunks = SqlChunkRepository(sql_engine)
@@ -216,7 +218,7 @@ def test_execute_until_context_assembly_persists_context_trace_and_manifest(
     )
 
 
-def test_execute_until_context_assembly_handles_empty_snapshot(sql_engine) -> None:
+def test_execute_until_context_assembly_handles_empty_snapshot(sql_engine: Engine) -> None:
     trace_store = SqlQueryTraceStore(sql_engine)
 
     state = _service(sql_engine).execute_until_context_assembly(
@@ -238,9 +240,9 @@ def test_execute_until_context_assembly_handles_empty_snapshot(sql_engine) -> No
 
 
 def test_execute_until_answer_mode_persists_support_and_answer_mode_traces(
-    sql_engine,
-    persisted_document_factory,
-    chunk_factory,
+    sql_engine: Engine,
+    persisted_document_factory: PersistedDocumentFactory,
+    chunk_factory: ChunkFactory,
 ) -> None:
     documents = SqlDocumentRepository(sql_engine)
     chunks = SqlChunkRepository(sql_engine)
@@ -294,7 +296,9 @@ def test_execute_until_answer_mode_persists_support_and_answer_mode_traces(
     assert traces[5].payload["final_answer_mode"] == "direct_answer"
 
 
-def test_execute_until_answer_mode_handles_empty_snapshot_with_abstention(sql_engine) -> None:
+def test_execute_until_answer_mode_handles_empty_snapshot_with_abstention(
+    sql_engine: Engine,
+) -> None:
     trace_store = SqlQueryTraceStore(sql_engine)
 
     state = _service(sql_engine).execute_until_answer_mode(
@@ -319,9 +323,9 @@ def test_execute_until_answer_mode_handles_empty_snapshot_with_abstention(sql_en
 
 
 def test_execute_until_answer_persists_final_answer_and_citation_artifacts(
-    sql_engine,
-    persisted_document_factory,
-    chunk_factory,
+    sql_engine: Engine,
+    persisted_document_factory: PersistedDocumentFactory,
+    chunk_factory: ChunkFactory,
 ) -> None:
     documents = SqlDocumentRepository(sql_engine)
     chunks = SqlChunkRepository(sql_engine)
@@ -390,7 +394,9 @@ def test_execute_until_answer_persists_final_answer_and_citation_artifacts(
     assert persisted.answer_mode.value == "direct_answer"
 
 
-def test_execute_until_answer_handles_empty_snapshot_with_honest_abstention(sql_engine) -> None:
+def test_execute_until_answer_handles_empty_snapshot_with_honest_abstention(
+    sql_engine: Engine,
+) -> None:
     answer_store = SqlQueryAnswerStore(sql_engine)
 
     state = _service(sql_engine).execute_until_answer(

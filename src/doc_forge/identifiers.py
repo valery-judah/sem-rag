@@ -44,8 +44,19 @@ def validate_doc_id(value: str) -> str:
     )
 
 
+def validate_query_id(value: str) -> str:
+    """Validate a query identifier."""
+
+    return _validate_identifier(
+        value,
+        field_name="query_id",
+        reject_dot_segments=True,
+    )
+
+
 WorkspaceId = Annotated[str, Field(min_length=1), AfterValidator(validate_workspace_id)]
 DocId = Annotated[str, Field(min_length=1), AfterValidator(validate_doc_id)]
+QueryId = Annotated[str, Field(min_length=1), AfterValidator(validate_query_id)]
 
 
 def parse_workspace_id(value: str) -> WorkspaceId:
@@ -60,11 +71,20 @@ def parse_doc_id(value: str) -> DocId:
     return validate_doc_id(value)
 
 
+def parse_query_id(value: str) -> QueryId:
+    """Validate and cast a query identifier for non-Pydantic call sites."""
+
+    return validate_query_id(value)
+
+
 __all__ = [
     "DocId",
+    "QueryId",
     "WorkspaceId",
     "parse_doc_id",
+    "parse_query_id",
     "parse_workspace_id",
     "validate_doc_id",
+    "validate_query_id",
     "validate_workspace_id",
 ]

@@ -5,6 +5,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from doc_forge.corpus import SourceReference
+from doc_forge.identifiers import QueryId
 from doc_forge.query import (
     AnswerDraft,
     AnswerMode,
@@ -61,15 +62,15 @@ class _FakeReviewService(QueryReviewService):
         self._trace = trace
         self._citations = citations
 
-    def get_query_summary(self, query_id: str) -> QueryRunReviewSummary:
+    def get_query_summary(self, query_id: QueryId) -> QueryRunReviewSummary:
         assert query_id == self._summary.query_id
         return self._summary
 
-    def get_query_trace_review(self, query_id: str) -> QueryTraceReview:
+    def get_query_trace_review(self, query_id: QueryId) -> QueryTraceReview:
         assert query_id == self._trace.summary.query_id
         return self._trace
 
-    def get_query_citations(self, query_id: str) -> QueryCitationReview:
+    def get_query_citations(self, query_id: QueryId) -> QueryCitationReview:
         assert query_id == self._summary.query_id
         if self._citations is None:
             raise LookupError(query_id)
@@ -80,7 +81,7 @@ class _FakeReplayService(QueryReplayService):
     def __init__(self, bundle: QueryReplayBundle) -> None:
         self._bundle = bundle
 
-    def build_bundle(self, query_id: str) -> QueryReplayBundle:
+    def build_bundle(self, query_id: QueryId) -> QueryReplayBundle:
         assert query_id == self._bundle.query_id
         return self._bundle
 
@@ -90,7 +91,7 @@ _DEFAULT_CITATIONS = object()
 
 def _build_fake_review_artifacts(
     *,
-    query_id: str,
+    query_id: QueryId,
     citations: QueryCitationReview | None | object = _DEFAULT_CITATIONS,
     include_final_artifacts: bool = True,
 ) -> _FakeReviewArtifacts:
@@ -173,7 +174,7 @@ def _build_fake_review_artifacts(
 def _build_collector(
     *,
     repo_root: Path,
-    query_id: str = "qry-123",
+    query_id: QueryId = QueryId("qry-123"),
     citations: QueryCitationReview | None | object = _DEFAULT_CITATIONS,
     include_final_artifacts: bool = True,
 ) -> QueryContextCollector:
@@ -195,7 +196,7 @@ def _build_collector(
     )
 
 
-def _write_e2e_logs(repo_root: Path, *, query_id: str) -> Path:
+def _write_e2e_logs(repo_root: Path, *, query_id: QueryId) -> Path:
     scenario_dir = repo_root / "data" / "logs" / "e2e" / "runs" / "sess-1" / "scenario-1"
     scenario_dir.mkdir(parents=True, exist_ok=True)
     (scenario_dir / "metadata.json").write_text(
@@ -246,9 +247,9 @@ def _write_e2e_logs(repo_root: Path, *, query_id: str) -> Path:
     return scenario_dir
 
 
-def test_collect_query_context_writes_complete_bundle(tmp_path) -> None:
+collect_query_context_writes_complete_bundle(tmp_path: pathlib.Path) -> None:
     repo_root = tmp_path
-    query_id = "qry-complete"
+    query_id = QueryId("qry-complete")
     _write_e2e_logs(repo_root, query_id=query_id)
     collector = _build_collector(repo_root=repo_root, query_id=query_id)
 
@@ -284,9 +285,9 @@ def test_collect_query_context_writes_complete_bundle(tmp_path) -> None:
     assert (collected.bundle_root / "logs" / "query-events.jsonl").exists()
 
 
-def test_collect_query_context_reconstructs_query_response_for_non_eval_bundle(tmp_path) -> None:
+collect_query_context_reconstructs_query_response_for_non_eval_bundle(tmp_path: pathlib.Path) -> None:
     repo_root = tmp_path
-    query_id = "qry-runtime"
+    query_id = QueryId("qry-runtime")
     _write_e2e_logs(repo_root, query_id=query_id)
     collector = _build_collector(repo_root=repo_root, query_id=query_id)
 
@@ -316,11 +317,11 @@ def test_collect_query_context_reconstructs_query_response_for_non_eval_bundle(t
     assert citation["source_reference"]["snippet"] == "under 2.5 seconds median latency"
 
 
-def test_collect_query_context_marks_missing_optional_assets(tmp_path) -> None:
+collect_query_context_marks_missing_optional_assets(tmp_path: pathlib.Path) -> None:
     repo_root = tmp_path
     collector = _build_collector(
         repo_root=repo_root,
-        query_id="qry-missing",
+        query_id=QueryId("qry-missing"),
         citations=None,
         include_final_artifacts=False,
     )
@@ -339,9 +340,9 @@ def test_collect_query_context_marks_missing_optional_assets(tmp_path) -> None:
     }
 
 
-def test_load_manifest_round_trips_written_bundle(tmp_path) -> None:
+load_manifest_round_trips_written_bundle(tmp_path: pathlib.Path) -> None:
     repo_root = tmp_path
-    query_id = "qry-roundtrip"
+    query_id = QueryId("qry-roundtrip")
     _write_e2e_logs(repo_root, query_id=query_id)
     collector = _build_collector(repo_root=repo_root, query_id=query_id)
     collected = collector.collect(query_id)

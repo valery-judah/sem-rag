@@ -19,15 +19,21 @@ from doc_forge.persistence import (
 from doc_forge.stages.extract import DocumentExtractionError, ExtractDocumentStage
 
 
+from pathlib import Path
+from typing import Iterator
+
+
 @pytest.fixture
-def sql_engine(tmp_path):
+def sql_engine(tmp_path: Path) -> Iterator[sa.Engine]:
     db_url = f"sqlite+pysqlite:///{tmp_path / 'extract-markdown.db'}"
     apply_migrations(db_url)
     engine = sa.create_engine(db_url)
     if engine.dialect.name == "sqlite":
 
         @event.listens_for(engine, "connect")
-        def _set_sqlite_pragma(dbapi_connection, connection_record) -> None:
+        def _set_sqlite_pragma(
+            dbapi_connection: sa.Connection, connection_record: sa.Connection
+        ) -> None:
             del connection_record
             cursor = dbapi_connection.cursor()
             cursor.execute("PRAGMA foreign_keys = ON")
@@ -40,17 +46,23 @@ def sql_engine(tmp_path):
 
 
 @pytest.fixture
-def artifact_store(tmp_path) -> FilesystemArtifactStore:
+def artifact_store(tmp_path: Path) -> FilesystemArtifactStore:
     return FilesystemArtifactStore(tmp_path / "artifacts")
 
 
 @pytest.fixture
-def repositories(sql_engine):
+def repositories(
+    sql_engine: sa.Engine,
+) -> tuple[SqlDocumentRepository, SqlLifecycleEventRepository]:
     return SqlDocumentRepository(sql_engine), SqlLifecycleEventRepository(sql_engine)
 
 
 @pytest.fixture
-def extract_stage(sql_engine, repositories, artifact_store: FilesystemArtifactStore):
+def extract_stage(
+    sql_engine: sa.Engine,
+    repositories: tuple[SqlDocumentRepository, SqlLifecycleEventRepository],
+    artifact_store: FilesystemArtifactStore,
+) -> ExtractDocumentStage:
     documents, lifecycle_events = repositories
     return ExtractDocumentStage(
         engine=sql_engine,
@@ -66,7 +78,7 @@ def extract_stage(sql_engine, repositories, artifact_store: FilesystemArtifactSt
 
 def _persist_markdown_document(
     *,
-    documents,
+    documents: SqlDocumentRepository,
     artifact_store: FilesystemArtifactStore,
     doc_id: str = "doc-md-1",
     content: bytes = b"# Overview\n\nFirst paragraph.\n\n```py\nprint('hi')\n```\n",
@@ -102,7 +114,7 @@ def _persist_markdown_document(
 
 def test_markdown_extract_preserves_order_exactly(
     extract_stage: ExtractDocumentStage,
-    repositories,
+    repositories: tuple[SqlDocumentRepository, SqlLifecycleEventRepository],
     artifact_store: FilesystemArtifactStore,
 ) -> None:
     documents, _ = repositories
@@ -119,7 +131,7 @@ def test_markdown_extract_preserves_order_exactly(
 
 def test_markdown_extract_preserves_code_fences(
     extract_stage: ExtractDocumentStage,
-    repositories,
+    repositories: tuple[SqlDocumentRepository, SqlLifecycleEventRepository],
     artifact_store: FilesystemArtifactStore,
 ) -> None:
     documents, _ = repositories
@@ -135,7 +147,7 @@ def test_markdown_extract_preserves_code_fences(
 
 def test_markdown_extract_records_offsets_when_available(
     extract_stage: ExtractDocumentStage,
-    repositories,
+    repositories: tuple[SqlDocumentRepository, SqlLifecycleEventRepository],
     artifact_store: FilesystemArtifactStore,
 ) -> None:
     documents, _ = repositories
@@ -162,7 +174,7 @@ def test_markdown_extract_records_offsets_when_available(
 
 def test_extract_stage_persists_extracted_artifact_before_advance(
     extract_stage: ExtractDocumentStage,
-    repositories,
+    repositories: tuple[SqlDocumentRepository, SqlLifecycleEventRepository],
     artifact_store: FilesystemArtifactStore,
 ) -> None:
     documents, lifecycle_events = repositories
@@ -179,7 +191,7 @@ def test_extract_stage_persists_extracted_artifact_before_advance(
 
 def test_extract_stage_fails_on_decode_error(
     extract_stage: ExtractDocumentStage,
-    repositories,
+    repositories: tuple[SqlDocumentRepository, SqlLifecycleEventRepository],
     artifact_store: FilesystemArtifactStore,
 ) -> None:
     documents, _ = repositories

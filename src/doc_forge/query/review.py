@@ -9,7 +9,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from doc_forge.app.log_events import LogEvent
 from doc_forge.app.logging import get_logger
-from doc_forge.identifiers import DocId, WorkspaceId
+from doc_forge.identifiers import DocId, QueryId, WorkspaceId
 
 from .contracts import (
     AnswerMode,
@@ -81,7 +81,7 @@ class QueryRunReviewSummary(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    query_id: str = Field(min_length=1, description="The unique query identifier.")
+    query_id: QueryId = Field(min_length=1, description="The unique query identifier.")
     workspace_id: WorkspaceId = Field(
         min_length=1,
         description="The workspace this query was executed in.",
@@ -140,7 +140,7 @@ class QueryCitationReview(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    query_id: str = Field(min_length=1, description="The unique query identifier.")
+    query_id: QueryId = Field(min_length=1, description="The unique query identifier.")
     support_state: SupportState = Field(description="The assessed evidence support state.")
     answer_mode: AnswerMode = Field(description="The selected answer generation mode.")
     trust_failure_labels: list[TrustFailureLabel] = Field(
@@ -153,7 +153,9 @@ class QueryReviewLogger:
     def __init__(self, logger: structlog.stdlib.BoundLogger) -> None:
         self._logger = logger
 
-    def query_loaded(self, query_id: str, status: str, trace_count: int, has_answer: bool) -> None:
+    def query_loaded(
+        self, query_id: QueryId, status: str, trace_count: int, has_answer: bool
+    ) -> None:
         self._logger.info(
             LogEvent.REVIEW_QUERY_LOADED,
             query_id=query_id,
@@ -162,7 +164,7 @@ class QueryReviewLogger:
             has_answer=has_answer,
         )
 
-    def trace_loaded(self, query_id: str, trace_count: int, has_answer: bool) -> None:
+    def trace_loaded(self, query_id: QueryId, trace_count: int, has_answer: bool) -> None:
         self._logger.info(
             LogEvent.REVIEW_TRACE_LOADED,
             query_id=query_id,
@@ -171,7 +173,7 @@ class QueryReviewLogger:
         )
 
     def citations_loaded(
-        self, query_id: str, citation_count: int, support_state: str, answer_mode: str
+        self, query_id: QueryId, citation_count: int, support_state: str, answer_mode: str
     ) -> None:
         self._logger.info(
             LogEvent.REVIEW_CITATIONS_LOADED,
@@ -200,7 +202,7 @@ class QueryReviewService:
         self._answer_store = answer_store
         self._logger = logger or QueryReviewLogger(get_logger(self.__class__.__name__))
 
-    def get_query_summary(self, query_id: str) -> QueryRunReviewSummary:
+    def get_query_summary(self, query_id: QueryId) -> QueryRunReviewSummary:
         """Load a summary view for one persisted query run."""
 
         run = self._get_run(query_id)
@@ -216,7 +218,7 @@ class QueryReviewService:
         )
         return summary
 
-    def get_query_trace_review(self, query_id: str) -> QueryTraceReview:
+    def get_query_trace_review(self, query_id: QueryId) -> QueryTraceReview:
         """Load the persisted trace chain for one query run."""
 
         run = self._get_run(query_id)
@@ -238,7 +240,7 @@ class QueryReviewService:
             final_artifacts=answer,
         )
 
-    def get_query_citations(self, query_id: str) -> QueryCitationReview:
+    def get_query_citations(self, query_id: QueryId) -> QueryCitationReview:
         """Load persisted citation artifacts for one completed query run."""
 
         self._get_run(query_id)
@@ -259,7 +261,7 @@ class QueryReviewService:
             citations=answer.citations,
         )
 
-    def _get_run(self, query_id: str) -> QueryRun:
+    def _get_run(self, query_id: QueryId) -> QueryRun:
         run = self._run_store.get_query_run(query_id)
         if run is None:
             raise LookupError(f"query run {query_id!r} was not found")

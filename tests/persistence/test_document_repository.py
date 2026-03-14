@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import pytest
+import sqlalchemy as sa
 
 from doc_forge.corpus import SourceType
 from doc_forge.lifecycle import ProcessingStatus
@@ -11,9 +12,12 @@ from doc_forge.persistence import (
 pytestmark = pytest.mark.persistence
 
 
+from tests.persistence.conftest import PersistedDocumentFactory
+
+
 def test_create_and_get_document_round_trip(
-    sql_engine,
-    persisted_document_factory,
+    sql_engine: sa.Engine,
+    persisted_document_factory: PersistedDocumentFactory,
 ) -> None:
     repository = SqlDocumentRepository(sql_engine)
     document = persisted_document_factory()
@@ -26,8 +30,8 @@ def test_create_and_get_document_round_trip(
 
 
 def test_workspace_isolation_filters_documents(
-    sql_engine,
-    persisted_document_factory,
+    sql_engine: sa.Engine,
+    persisted_document_factory: PersistedDocumentFactory,
 ) -> None:
     repository = SqlDocumentRepository(sql_engine)
     repository.create(persisted_document_factory(doc_id="doc-1", workspace_id="workspace-1"))
@@ -39,8 +43,8 @@ def test_workspace_isolation_filters_documents(
 
 
 def test_list_by_workspace_returns_persisted_documents(
-    sql_engine,
-    persisted_document_factory,
+    sql_engine: sa.Engine,
+    persisted_document_factory: PersistedDocumentFactory,
 ) -> None:
     repository = SqlDocumentRepository(sql_engine)
     expected = [
@@ -62,8 +66,8 @@ def test_list_by_workspace_returns_persisted_documents(
 
 
 def test_update_status_clears_failure_fields_on_non_failed_status(
-    sql_engine,
-    persisted_document_factory,
+    sql_engine: sa.Engine,
+    persisted_document_factory: PersistedDocumentFactory,
 ) -> None:
     repository = SqlDocumentRepository(sql_engine)
     document = persisted_document_factory(
@@ -87,8 +91,8 @@ def test_update_status_clears_failure_fields_on_non_failed_status(
 
 
 def test_update_status_persists_failure_code_and_detail(
-    sql_engine,
-    persisted_document_factory,
+    sql_engine: sa.Engine,
+    persisted_document_factory: PersistedDocumentFactory,
 ) -> None:
     repository = SqlDocumentRepository(sql_engine)
     document = persisted_document_factory()

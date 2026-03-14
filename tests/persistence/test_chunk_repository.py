@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import pytest
+from sqlalchemy.engine import Engine
 from sqlalchemy.exc import IntegrityError
 
 from doc_forge.corpus import Chunk
@@ -9,15 +10,16 @@ from doc_forge.persistence import (
     SqlDocumentRepository,
     SqlSectionRepository,
 )
+from tests.persistence.conftest import ChunkFactory, PersistedDocumentFactory, SectionFactory
 
 pytestmark = pytest.mark.persistence
 
 
 def test_chunk_round_trip_preserves_section_link(
-    sql_engine,
-    persisted_document_factory,
-    section_factory,
-    chunk_factory,
+    sql_engine: Engine,
+    persisted_document_factory: PersistedDocumentFactory,
+    section_factory: SectionFactory,
+    chunk_factory: ChunkFactory,
 ) -> None:
     documents = SqlDocumentRepository(sql_engine)
     sections_repo = SqlSectionRepository(sql_engine)
@@ -56,10 +58,10 @@ def test_chunk_round_trip_preserves_section_link(
 
 
 def test_chunk_ordering_round_trip_is_stable(
-    sql_engine,
-    persisted_document_factory,
-    section_factory,
-    chunk_factory,
+    sql_engine: Engine,
+    persisted_document_factory: PersistedDocumentFactory,
+    section_factory: SectionFactory,
+    chunk_factory: ChunkFactory,
 ) -> None:
     documents = SqlDocumentRepository(sql_engine)
     sections_repo = SqlSectionRepository(sql_engine)
@@ -91,9 +93,9 @@ def test_chunk_ordering_round_trip_is_stable(
 
 
 def test_optional_chunk_fields_round_trip_as_none(
-    sql_engine,
-    persisted_document_factory,
-    chunk_factory,
+    sql_engine: Engine,
+    persisted_document_factory: PersistedDocumentFactory,
+    chunk_factory: ChunkFactory,
 ) -> None:
     documents = SqlDocumentRepository(sql_engine)
     chunks_repo = SqlChunkRepository(sql_engine)
@@ -121,10 +123,10 @@ def test_optional_chunk_fields_round_trip_as_none(
 
 
 def test_replace_for_document_removes_prior_chunks(
-    sql_engine,
-    persisted_document_factory,
-    section_factory,
-    chunk_factory,
+    sql_engine: Engine,
+    persisted_document_factory: PersistedDocumentFactory,
+    section_factory: SectionFactory,
+    chunk_factory: ChunkFactory,
 ) -> None:
     documents = SqlDocumentRepository(sql_engine)
     sections_repo = SqlSectionRepository(sql_engine)
@@ -164,9 +166,9 @@ def test_replace_for_document_removes_prior_chunks(
 
 
 def test_replace_for_document_rejects_cross_document_chunks(
-    sql_engine,
-    persisted_document_factory,
-    chunk_factory,
+    sql_engine: Engine,
+    persisted_document_factory: PersistedDocumentFactory,
+    chunk_factory: ChunkFactory,
 ) -> None:
     documents = SqlDocumentRepository(sql_engine)
     chunks_repo = SqlChunkRepository(sql_engine)
@@ -181,8 +183,8 @@ def test_replace_for_document_rejects_cross_document_chunks(
 
 
 def test_chunk_save_requires_existing_document(
-    sql_engine,
-    chunk_factory,
+    sql_engine: Engine,
+    chunk_factory: ChunkFactory,
 ) -> None:
     chunks_repo = SqlChunkRepository(sql_engine)
 

@@ -9,6 +9,8 @@ from typing import Protocol, cast
 import sqlalchemy as sa
 from sqlalchemy.engine import Engine
 
+from doc_forge.identifiers import QueryId
+
 from .contracts import (
     AnswerDraft,
     AnswerMode,
@@ -100,7 +102,7 @@ query_answers_table = sa.Table(
 class QueryRunStore(Protocol):
     """Persistence interface for query run records."""
 
-    def get_query_run(self, query_id: str) -> QueryRun | None:
+    def get_query_run(self, query_id: QueryId) -> QueryRun | None:
         """Load one persisted query run."""
         ...
 
@@ -110,7 +112,7 @@ class QueryRunStore(Protocol):
 
     def update_query_run_status(
         self,
-        query_id: str,
+        query_id: QueryId,
         status: QueryRunStatus,
         *,
         completed_at: datetime | None = None,
@@ -123,11 +125,11 @@ class QueryRunStore(Protocol):
 class QuerySnapshotStore(Protocol):
     """Persistence interface for captured corpus snapshots."""
 
-    def save_snapshot(self, query_id: str, snapshot: CorpusSnapshot) -> None:
+    def save_snapshot(self, query_id: QueryId, snapshot: CorpusSnapshot) -> None:
         """Persist the captured corpus snapshot for a query run."""
         ...
 
-    def get_snapshot(self, query_id: str) -> CorpusSnapshot | None:
+    def get_snapshot(self, query_id: QueryId) -> CorpusSnapshot | None:
         """Load the captured corpus snapshot for a query run."""
         ...
 
@@ -139,7 +141,7 @@ class QueryTraceStore(Protocol):
         """Persist a stage trace for a query run."""
         ...
 
-    def list_stage_traces(self, query_id: str) -> list[QueryStageTrace]:
+    def list_stage_traces(self, query_id: QueryId) -> list[QueryStageTrace]:
         """Load stage traces for a query run in execution order."""
         ...
 
@@ -149,13 +151,13 @@ class QueryAnswerStore(Protocol):
 
     def save_answer_artifacts(
         self,
-        query_id: str,
+        query_id: QueryId,
         artifacts: FinalQueryArtifacts,
     ) -> None:
         """Persist final answer and citation artifacts for a query run."""
         ...
 
-    def get_answer_artifacts(self, query_id: str) -> FinalQueryArtifacts | None:
+    def get_answer_artifacts(self, query_id: QueryId) -> FinalQueryArtifacts | None:
         """Load persisted final answer artifacts for a query run."""
         ...
 
@@ -166,7 +168,7 @@ class SqlQueryRunStore:
     def __init__(self, engine: Engine) -> None:
         self._engine = engine
 
-    def get_query_run(self, query_id: str) -> QueryRun | None:
+    def get_query_run(self, query_id: QueryId) -> QueryRun | None:
         stmt = sa.select(query_runs_table).where(query_runs_table.c.query_id == query_id)
         with self._engine.begin() as conn:
             row = conn.execute(stmt).mappings().first()
@@ -181,7 +183,7 @@ class SqlQueryRunStore:
 
     def update_query_run_status(
         self,
-        query_id: str,
+        query_id: QueryId,
         status: QueryRunStatus,
         *,
         completed_at: datetime | None = None,
@@ -215,7 +217,7 @@ class SqlQuerySnapshotStore:
     def __init__(self, engine: Engine) -> None:
         self._engine = engine
 
-    def save_snapshot(self, query_id: str, snapshot: CorpusSnapshot) -> None:
+    def save_snapshot(self, query_id: QueryId, snapshot: CorpusSnapshot) -> None:
         row = _snapshot_to_row(query_id, snapshot)
         with self._engine.begin() as conn:
             conn.execute(
@@ -223,7 +225,7 @@ class SqlQuerySnapshotStore:
             )
             conn.execute(sa.insert(query_snapshots_table), [row])
 
-    def get_snapshot(self, query_id: str) -> CorpusSnapshot | None:
+    def get_snapshot(self, query_id: QueryId) -> CorpusSnapshot | None:
         stmt = sa.select(query_snapshots_table).where(query_snapshots_table.c.query_id == query_id)
         with self._engine.begin() as conn:
             row = conn.execute(stmt).mappings().first()
@@ -242,7 +244,7 @@ class SqlQueryTraceStore:
         with self._engine.begin() as conn:
             conn.execute(sa.insert(query_stage_traces_table), [_stage_trace_to_row(trace)])
 
-    def list_stage_traces(self, query_id: str) -> list[QueryStageTrace]:
+    def list_stage_traces(self, query_id: QueryId) -> list[QueryStageTrace]:
         stmt = (
             sa.select(query_stage_traces_table)
             .where(query_stage_traces_table.c.query_id == query_id)
@@ -264,7 +266,7 @@ class SqlQueryAnswerStore:
 
     def save_answer_artifacts(
         self,
-        query_id: str,
+        query_id: QueryId,
         artifacts: FinalQueryArtifacts,
     ) -> None:
         row = _answer_artifacts_to_row(query_id, artifacts)
@@ -274,7 +276,7 @@ class SqlQueryAnswerStore:
             )
             conn.execute(sa.insert(query_answers_table), [row])
 
-    def get_answer_artifacts(self, query_id: str) -> FinalQueryArtifacts | None:
+    def get_answer_artifacts(self, query_id: QueryId) -> FinalQueryArtifacts | None:
         stmt = sa.select(query_answers_table).where(query_answers_table.c.query_id == query_id)
         with self._engine.begin() as conn:
             row = conn.execute(stmt).mappings().first()
@@ -304,7 +306,7 @@ def _row_to_query_run(row: Mapping[str, object]) -> QueryRun:
     return QueryRun.model_validate(payload)
 
 
-def _snapshot_to_row(query_id: str, snapshot: CorpusSnapshot) -> dict[str, object]:
+def _snapshot_to_row(query_id: QueryId, snapshot: CorpusSnapshot) -> dict[str, object]:
     payload = snapshot.model_dump(mode="python")
     payload["query_id"] = query_id
     payload["eligible_doc_ids_json"] = payload.pop("eligible_doc_ids")
@@ -338,7 +340,7 @@ def _row_to_stage_trace(row: Mapping[str, object]) -> QueryStageTrace:
 
 
 def _answer_artifacts_to_row(
-    query_id: str,
+    query_id: QueryId,
     artifacts: FinalQueryArtifacts,
 ) -> dict[str, object]:
     return {

@@ -76,7 +76,7 @@ def test_gemini_pattern_requires_boundaries() -> None:
     assert findings == []
 
 
-def test_staged_scan_flags_added_key(tmp_path: Path) -> None:
+staged_scan_flags_added_key(tmp_path: pathlib.Path: Path) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
     _init_repo(repo)
@@ -94,7 +94,7 @@ def test_staged_scan_flags_added_key(tmp_path: Path) -> None:
     assert "[REDACTED]" in result.stderr
 
 
-def test_staged_scan_ignores_removed_key(tmp_path: Path) -> None:
+staged_scan_ignores_removed_key(tmp_path: pathlib.Path: Path) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
     _init_repo(repo)
@@ -110,7 +110,7 @@ def test_staged_scan_ignores_removed_key(tmp_path: Path) -> None:
     assert result.returncode == 0
 
 
-def test_staged_scan_ignores_unchanged_old_key(tmp_path: Path) -> None:
+staged_scan_ignores_unchanged_old_key(tmp_path: pathlib.Path: Path) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
     _init_repo(repo)
@@ -144,7 +144,7 @@ def test_staged_scan_ignores_unchanged_old_key(tmp_path: Path) -> None:
     assert result.returncode == 0
 
 
-def test_staged_scan_tolerates_non_utf8_added_content(tmp_path: Path) -> None:
+staged_scan_tolerates_non_utf8_added_content(tmp_path: pathlib.Path: Path) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
     _init_repo(repo)
@@ -162,7 +162,7 @@ def test_staged_scan_tolerates_non_utf8_added_content(tmp_path: Path) -> None:
     assert "UnicodeDecodeError" not in result.stderr
 
 
-def test_repo_scan_flags_committed_key(tmp_path: Path) -> None:
+repo_scan_flags_committed_key(tmp_path: pathlib.Path: Path) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
     _init_repo(repo)
@@ -176,7 +176,7 @@ def test_repo_scan_flags_committed_key(tmp_path: Path) -> None:
     assert "safe.py:1" in result.stderr
 
 
-def test_repo_scan_skips_binary_files(tmp_path: Path) -> None:
+repo_scan_skips_binary_files(tmp_path: pathlib.Path: Path) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
     _init_repo(repo)

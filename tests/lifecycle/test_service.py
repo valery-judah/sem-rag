@@ -245,7 +245,7 @@ def test_retry_document_rejects_when_failed_event_has_no_job_stage() -> None:
         service.retry_document(doc_id=document.doc_id)
 
 
-def test_retry_document_resets_to_registered_for_extract_retry(tmp_path) -> None:
+retry_document_resets_to_registered_for_extract_retry(tmp_path: pathlib.Path) -> None:
     document = make_persisted_document(
         doc_id="doc-1",
         ingest_status=ProcessingStatus.FAILED,
@@ -275,7 +275,7 @@ def test_retry_document_resets_to_registered_for_extract_retry(tmp_path) -> None
     assert jobs.list_for_document(document.doc_id)[0].target_stage is DocumentJobStage.EXTRACT
 
 
-def test_retry_document_resets_to_extracting_for_normalize_retry(tmp_path) -> None:
+retry_document_resets_to_extracting_for_normalize_retry(tmp_path: pathlib.Path) -> None:
     document = make_persisted_document(
         doc_id="doc-1",
         ingest_status=ProcessingStatus.FAILED,
@@ -432,7 +432,7 @@ def test_retry_document_cleans_expected_downstream_state(
     assert len(chunk_embeddings.replacements) == expected_counts["chunk_embeddings"]
 
 
-def test_get_artifact_refs_returns_existing_and_missing_paths_correctly(tmp_path) -> None:
+get_artifact_refs_returns_existing_and_missing_paths_correctly(tmp_path: pathlib.Path) -> None:
     artifact_store = FilesystemArtifactStore(tmp_path / "artifacts")
     document = make_persisted_document(doc_id="doc-1")
     artifact_store.write_raw(

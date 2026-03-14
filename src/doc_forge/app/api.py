@@ -20,7 +20,7 @@ from sqlalchemy.engine import Engine
 from structlog.contextvars import bind_contextvars, clear_contextvars
 
 from doc_forge.artifacts import FilesystemArtifactStore
-from doc_forge.identifiers import DocId, WorkspaceId
+from doc_forge.identifiers import DocId, QueryId, WorkspaceId
 from doc_forge.indexing.base import VectorStore
 from doc_forge.lifecycle.service import (
     DocumentArtifactRefs,
@@ -94,7 +94,7 @@ class QueryAnswerResponse(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    query_id: str = Field(min_length=1, description="The unique query identifier.")
+    query_id: QueryId = Field(min_length=1, description="The unique query identifier.")
     answer: AnswerDraft = Field(description="The generated answer draft.")
     support_state: SupportState = Field(
         description="The assessed evidence support state (e.g., sufficient, partial, insufficient)."
@@ -771,7 +771,7 @@ def create_app() -> FastAPI:
         },
     )
     def get_query_summary(
-        query_id: Annotated[str, Field(..., description="The unique query identifier.")],
+        query_id: Annotated[QueryId, Field(..., description="The unique query identifier.")],
         review_service: Annotated[QueryReviewService, Depends(get_query_review_service)],
         logger: structlog.stdlib.BoundLogger = Depends(get_logger),
     ) -> QueryRunReviewSummary:
@@ -812,7 +812,7 @@ def create_app() -> FastAPI:
         },
     )
     def get_query_trace(
-        query_id: Annotated[str, Field(..., description="The unique query identifier.")],
+        query_id: Annotated[QueryId, Field(..., description="The unique query identifier.")],
         review_service: Annotated[QueryReviewService, Depends(get_query_review_service)],
         logger: structlog.stdlib.BoundLogger = Depends(get_logger),
     ) -> QueryTraceReview:
@@ -853,7 +853,7 @@ def create_app() -> FastAPI:
         },
     )
     def get_query_citations(
-        query_id: Annotated[str, Field(..., description="The unique query identifier.")],
+        query_id: Annotated[QueryId, Field(..., description="The unique query identifier.")],
         review_service: Annotated[QueryReviewService, Depends(get_query_review_service)],
         logger: structlog.stdlib.BoundLogger = Depends(get_logger),
     ) -> QueryCitationReview:
