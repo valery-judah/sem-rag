@@ -23,7 +23,7 @@ class ReadinessResult(BaseModel):
 
     doc_id: DocId
     is_ready: bool
-    reasons: list[str] = Field(default_factory=list)
+    reasons: list[str] = Field(default_factory=lambda: [])
     section_count: int = 0
     chunk_count: int = 0
     index_entry_count: int = 0

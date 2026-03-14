@@ -33,7 +33,7 @@ class ChunkEmbedding(BaseModel):
     chunk_id: str
     doc_id: DocId
     embedding_model: str
-    embedding_vector: list[float] = Field(default_factory=list)
+    embedding_vector: list[float] = Field(default_factory=lambda: [])
     created_at: datetime
 
 

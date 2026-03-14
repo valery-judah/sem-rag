@@ -38,11 +38,11 @@ class RenderCitationsTracePayload(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    grounded_evidence_set_ids: list[str] = Field(default_factory=list)
+    grounded_evidence_set_ids: list[str] = Field(default_factory=lambda: [])
     citation_count: int = Field(ge=0)
-    citation_doc_ids: list[str] = Field(default_factory=list)
-    citation_support_roles: list[str] = Field(default_factory=list)
-    provenance_warnings: list[str] = Field(default_factory=list)
+    citation_doc_ids: list[str] = Field(default_factory=lambda: [])
+    citation_support_roles: list[str] = Field(default_factory=lambda: [])
+    provenance_warnings: list[str] = Field(default_factory=lambda: [])
     renderer_version: str = Field(min_length=1)
 
 

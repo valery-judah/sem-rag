@@ -49,7 +49,7 @@ class SelectionDecision(BaseModel):
     status: str = Field(min_length=1)
     final_rank: int | None = Field(default=None, ge=1)
     rerank_score: float
-    rerank_signals: dict[str, float] = Field(default_factory=dict)
+    rerank_signals: dict[str, float] = Field(default_factory=lambda: {})
     drop_reason: str | None = None
     duplicate_of_chunk_id: str | None = None
 
@@ -60,8 +60,8 @@ class NeighborExpansionRecord(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     anchor_chunk_id: str = Field(min_length=1)
-    added_chunk_ids: list[str] = Field(default_factory=list)
-    skipped_chunk_ids: list[str] = Field(default_factory=list)
+    added_chunk_ids: list[str] = Field(default_factory=lambda: [])
+    skipped_chunk_ids: list[str] = Field(default_factory=lambda: [])
 
 
 class SelectionResult(BaseModel):
@@ -69,11 +69,11 @@ class SelectionResult(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    selected_candidates: list[RetrievedCandidate] = Field(default_factory=list)
-    evidence_sets: list[EvidenceSet] = Field(default_factory=list)
-    decisions: list[SelectionDecision] = Field(default_factory=list)
-    duplicate_suppression_notes: list[str] = Field(default_factory=list)
-    neighbor_expansion_notes: list[NeighborExpansionRecord] = Field(default_factory=list)
+    selected_candidates: list[RetrievedCandidate] = Field(default_factory=lambda: [])
+    evidence_sets: list[EvidenceSet] = Field(default_factory=lambda: [])
+    decisions: list[SelectionDecision] = Field(default_factory=lambda: [])
+    duplicate_suppression_notes: list[str] = Field(default_factory=lambda: [])
+    neighbor_expansion_notes: list[NeighborExpansionRecord] = Field(default_factory=lambda: [])
 
 
 class QuerySelector(Protocol):

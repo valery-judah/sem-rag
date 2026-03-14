@@ -23,7 +23,7 @@ class RetrievalQueryRepresentation(BaseModel):
     normalized_question: str = Field(min_length=1)
     request_type: str = Field(min_length=1)
     specificity: str = Field(min_length=1)
-    scope_hints: list[str] = Field(default_factory=list)
+    scope_hints: list[str] = Field(default_factory=lambda: [])
     requires_source_navigation: bool = False
     synthesis_mode: str = Field(min_length=1)
     diagnostic_raw_question: str = Field(min_length=1)
@@ -38,7 +38,7 @@ class QueryRetrievalResult(BaseModel):
     embedding_model: str = Field(min_length=1)
     retrieval_backend: str = Field(min_length=1)
     retrievable_chunk_count: int = Field(ge=0)
-    candidates: list[RetrievedCandidate] = Field(default_factory=list)
+    candidates: list[RetrievedCandidate] = Field(default_factory=lambda: [])
 
 
 class DenseQueryRetriever(Protocol):

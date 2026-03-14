@@ -36,7 +36,7 @@ class QuerySnapshotSummary(BaseModel):
     workspace_id: WorkspaceId = Field(min_length=1, description="The workspace scope.")
     query_started_at: datetime = Field(description="When the query snapshot was taken.")
     eligible_doc_ids: list[DocId] = Field(
-        default_factory=list, description="Document IDs included in the corpus snapshot."
+        default_factory=lambda: [], description="Document IDs included in the corpus snapshot."
     )
     retrieval_index_version: str | None = Field(
         default=None, description="The vector index version used."
@@ -72,7 +72,7 @@ class QueryTraceTimingSummary(BaseModel):
         default=None, ge=0, description="Total duration across all stages."
     )
     stages: list[QueryStageTimingSummary] = Field(
-        default_factory=list, description="Timing breakdown per stage."
+        default_factory=lambda: [], description="Timing breakdown per stage."
     )
 
 
@@ -105,10 +105,10 @@ class QueryRunReviewSummary(BaseModel):
         default=None, description="The selected answer generation mode."
     )
     trust_failure_labels: list[TrustFailureLabel] = Field(
-        default_factory=list, description="Identified trust failure signals."
+        default_factory=lambda: [], description="Identified trust failure signals."
     )
     visible_limitations: list[str] = Field(
-        default_factory=list, description="Disclaimers regarding answer quality."
+        default_factory=lambda: [], description="Disclaimers regarding answer quality."
     )
     has_answer: bool = Field(
         default=False, description="Whether a final answer was successfully generated."
@@ -144,7 +144,7 @@ class QueryCitationReview(BaseModel):
     support_state: SupportState = Field(description="The assessed evidence support state.")
     answer_mode: AnswerMode = Field(description="The selected answer generation mode.")
     trust_failure_labels: list[TrustFailureLabel] = Field(
-        default_factory=list, description="Identified trust failure signals."
+        default_factory=lambda: [], description="Identified trust failure signals."
     )
     citations: CitationBundle = Field(description="The assembled citations for the answer.")
 

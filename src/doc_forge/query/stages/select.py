@@ -35,16 +35,16 @@ class SelectionTracePayload(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     interpreted_query: InterpretedQuery
-    snapshot_doc_ids: list[str] = Field(default_factory=list)
+    snapshot_doc_ids: list[str] = Field(default_factory=lambda: [])
     retrieved_candidate_count: int = Field(ge=0)
-    selected_candidates: list[RetrievedCandidate] = Field(default_factory=list)
-    decisions: list[SelectionDecision] = Field(default_factory=list)
-    evidence_sets: list[EvidenceSet] = Field(default_factory=list)
+    selected_candidates: list[RetrievedCandidate] = Field(default_factory=lambda: [])
+    decisions: list[SelectionDecision] = Field(default_factory=lambda: [])
+    evidence_sets: list[EvidenceSet] = Field(default_factory=lambda: [])
     duplicate_suppression_mode: str = Field(min_length=1)
-    duplicate_suppression_notes: list[str] = Field(default_factory=list)
+    duplicate_suppression_notes: list[str] = Field(default_factory=lambda: [])
     neighbor_expansion_enabled: bool
     neighbor_expansion_cap: int = Field(ge=0)
-    neighbor_expansion_notes: list[dict[str, object]] = Field(default_factory=list)
+    neighbor_expansion_notes: list[dict[str, object]] = Field(default_factory=lambda: [])
     evidence_set_cap: int = Field(ge=1)
 
 

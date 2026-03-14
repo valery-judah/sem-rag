@@ -50,7 +50,7 @@ class ExtractedArtifactPage(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     page_number: int = Field(ge=1)
-    blocks: list[ExtractedArtifactBlock] = Field(default_factory=list)
+    blocks: list[ExtractedArtifactBlock] = Field(default_factory=lambda: [])
 
 
 class ExtractedArtifact(BaseModel):
@@ -61,8 +61,8 @@ class ExtractedArtifact(BaseModel):
     doc_id: DocId
     source_type: SourceType
     extractor_version: str
-    pages: list[ExtractedArtifactPage] = Field(default_factory=list)
-    warnings: list[str] = Field(default_factory=list)
+    pages: list[ExtractedArtifactPage] = Field(default_factory=lambda: [])
+    warnings: list[str] = Field(default_factory=lambda: [])
     meta: dict[str, str] | None = None
 
 
@@ -75,7 +75,7 @@ class NormalizedArtifactBlock(BaseModel):
     text: str
     order_index: int = Field(ge=0)
     heading_level: int | None = Field(default=None, ge=1)
-    heading_path: list[str] = Field(default_factory=list)
+    heading_path: list[str] = Field(default_factory=lambda: [])
     page_number: int | None = Field(default=None, ge=1)
     source_start_offset: int | None = Field(default=None, ge=0)
     source_end_offset: int | None = Field(default=None, ge=0)
@@ -102,6 +102,6 @@ class NormalizedArtifact(BaseModel):
     doc_id: DocId
     source_type: SourceType
     normalizer_version: str
-    blocks: list[NormalizedArtifactBlock] = Field(default_factory=list)
-    warnings: list[str] = Field(default_factory=list)
-    meta: dict[str, str] = Field(default_factory=dict)
+    blocks: list[NormalizedArtifactBlock] = Field(default_factory=lambda: [])
+    warnings: list[str] = Field(default_factory=lambda: [])
+    meta: dict[str, str] = Field(default_factory=lambda: {})

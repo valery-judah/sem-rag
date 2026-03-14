@@ -28,7 +28,7 @@ class AnswerModePolicyDecision(BaseModel):
 
     decision: AnswerModeDecision
     baseline_answer_mode: AnswerMode
-    applied_override_rules: list[str] = Field(default_factory=list)
+    applied_override_rules: list[str] = Field(default_factory=lambda: [])
     policy_version: str = Field(min_length=1)
 
 

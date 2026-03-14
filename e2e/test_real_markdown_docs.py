@@ -100,7 +100,9 @@ def _single_chunk_row(e2e_stack: RunningStack, *, doc_id: str) -> dict[str, obje
 
 
 def _chunk_text_by_id(e2e_stack: RunningStack, *, doc_id: str) -> dict[str, str]:
-    return {str(row["chunk_id"]): str(row["text"]) for row in e2e_stack.db.chunk_rows(doc_id=doc_id)}
+    return {
+        str(row["chunk_id"]): str(row["text"]) for row in e2e_stack.db.chunk_rows(doc_id=doc_id)
+    }
 
 
 def _build_concurrent_cases(count: int = 5) -> tuple[ConcurrentDocCase, ...]:

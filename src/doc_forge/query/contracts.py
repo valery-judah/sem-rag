@@ -35,7 +35,7 @@ class QueryTerminalFailure(BaseModel):
     error_class: str = Field(min_length=1)
     stage_name: QueryStageName | None = None
     message: str = Field(min_length=1)
-    trust_failure_labels: list[TrustFailureLabel] = Field(default_factory=list)
+    trust_failure_labels: list[TrustFailureLabel] = Field(default_factory=lambda: [])
 
 
 class QueryStageName(StrEnum):
@@ -243,7 +243,7 @@ class CorpusSnapshot(BaseModel):
 
     workspace_id: WorkspaceId
     query_started_at: datetime = Field(default_factory=utc_now)
-    eligible_doc_ids: list[DocId] = Field(default_factory=list)
+    eligible_doc_ids: list[DocId] = Field(default_factory=lambda: [])
     retrieval_index_version: str | None = None
     readiness_version: str | None = None
 
@@ -257,12 +257,12 @@ class InterpretedQuery(BaseModel):
     request_type: QueryRequestType
     answer_shape: str = Field(min_length=1)
     specificity: QuerySpecificity
-    scope_hints: list[str] = Field(default_factory=list)
+    scope_hints: list[str] = Field(default_factory=lambda: [])
     requires_synthesis: bool = False
     synthesis_mode: SynthesisMode = SynthesisMode.NONE
     requires_source_navigation: bool = False
-    unsupported_capability_flags: list[UnsupportedCapability] = Field(default_factory=list)
-    normalization_notes: list[str] = Field(default_factory=list)
+    unsupported_capability_flags: list[UnsupportedCapability] = Field(default_factory=lambda: [])
+    normalization_notes: list[str] = Field(default_factory=lambda: [])
 
 
 class RetrievedCandidate(BaseModel):
@@ -301,8 +301,8 @@ class EvidenceSet(BaseModel):
     grouping_mode: EvidenceGroupingMode
     evidence_units: list[EvidenceUnit] = Field(min_length=1)
     purpose: str = Field(min_length=1)
-    coverage_notes: list[str] = Field(default_factory=list)
-    conflict_flags: list[str] = Field(default_factory=list)
+    coverage_notes: list[str] = Field(default_factory=lambda: [])
+    conflict_flags: list[str] = Field(default_factory=lambda: [])
     assembly_reason: str = Field(min_length=1)
 
 
@@ -315,8 +315,8 @@ class ContextItem(BaseModel):
     assembly_rank: int = Field(ge=1)
     rendered_text: str = Field(min_length=1)
     contributing_doc_ids: list[DocId] = Field(min_length=1)
-    heading_paths: list[list[str]] = Field(default_factory=list)
-    locators: list[str] = Field(default_factory=list)
+    heading_paths: list[list[str]] = Field(default_factory=lambda: [])
+    locators: list[str] = Field(default_factory=lambda: [])
     estimated_token_count: int = Field(ge=1)
 
 
@@ -325,15 +325,15 @@ class ContextManifest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    ordered_evidence_set_ids: list[str] = Field(default_factory=list)
-    included_evidence_set_ids: list[str] = Field(default_factory=list)
-    dropped_evidence_set_ids: list[str] = Field(default_factory=list)
-    inclusion_reasons: dict[str, str] = Field(default_factory=dict)
-    exclusion_reasons: dict[str, str] = Field(default_factory=dict)
+    ordered_evidence_set_ids: list[str] = Field(default_factory=lambda: [])
+    included_evidence_set_ids: list[str] = Field(default_factory=lambda: [])
+    dropped_evidence_set_ids: list[str] = Field(default_factory=lambda: [])
+    inclusion_reasons: dict[str, str] = Field(default_factory=lambda: {})
+    exclusion_reasons: dict[str, str] = Field(default_factory=lambda: {})
     token_budget: int = Field(ge=1)
     token_budget_used: int = Field(ge=0)
-    context_items: list[ContextItem] = Field(default_factory=list)
-    duplicate_suppression_notes: list[str] = Field(default_factory=list)
+    context_items: list[ContextItem] = Field(default_factory=lambda: [])
+    duplicate_suppression_notes: list[str] = Field(default_factory=lambda: [])
 
     @model_validator(mode="after")
     def validate_budget(self) -> ContextManifest:
@@ -366,12 +366,12 @@ class SupportAssessment(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     support_state: SupportState
-    qualifying_reason_codes: list[SupportQualifierReason] = Field(default_factory=list)
-    trust_failure_labels: list[TrustFailureLabel] = Field(default_factory=list)
+    qualifying_reason_codes: list[SupportQualifierReason] = Field(default_factory=lambda: [])
+    trust_failure_labels: list[TrustFailureLabel] = Field(default_factory=lambda: [])
     summary: str | None = None
-    unsupported_gaps: list[str] = Field(default_factory=list)
-    conflicting_evidence_notes: list[str] = Field(default_factory=list)
-    provenance_warnings: list[str] = Field(default_factory=list)
+    unsupported_gaps: list[str] = Field(default_factory=lambda: [])
+    conflicting_evidence_notes: list[str] = Field(default_factory=lambda: [])
+    provenance_warnings: list[str] = Field(default_factory=lambda: [])
 
 
 class AnswerModeDecision(BaseModel):
@@ -382,7 +382,7 @@ class AnswerModeDecision(BaseModel):
     answer_mode: AnswerMode
     rationale: str = Field(min_length=1)
     based_on_support_state: SupportState
-    required_qualifying_reason_codes: list[SupportQualifierReason] = Field(default_factory=list)
+    required_qualifying_reason_codes: list[SupportQualifierReason] = Field(default_factory=lambda: [])
     allowed_scope_summary: str | None = None
     must_surface_conflict: bool = False
 
@@ -393,9 +393,9 @@ class AnswerDraft(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     answer_text: str = Field(min_length=1)
-    visible_limitations: list[str] = Field(default_factory=list)
+    visible_limitations: list[str] = Field(default_factory=lambda: [])
     should_render_citations: bool = True
-    grounded_evidence_set_ids: list[str] = Field(default_factory=list)
+    grounded_evidence_set_ids: list[str] = Field(default_factory=lambda: [])
     generator_version: str = Field(min_length=1)
 
 
@@ -414,8 +414,8 @@ class CitationBundle(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    citations: list[CitationRecord] = Field(default_factory=list)
-    material_doc_ids: list[DocId] = Field(default_factory=list)
+    citations: list[CitationRecord] = Field(default_factory=lambda: [])
+    material_doc_ids: list[DocId] = Field(default_factory=lambda: [])
     renderer_version: str | None = None
 
 
@@ -427,7 +427,7 @@ class FinalQueryArtifacts(BaseModel):
     answer: AnswerDraft
     citations: CitationBundle
     support_state: SupportState
-    qualifying_reason_codes: list[SupportQualifierReason] = Field(default_factory=list)
+    qualifying_reason_codes: list[SupportQualifierReason] = Field(default_factory=lambda: [])
     answer_mode: AnswerMode
-    trust_failure_labels: list[TrustFailureLabel] = Field(default_factory=list)
+    trust_failure_labels: list[TrustFailureLabel] = Field(default_factory=lambda: [])
     created_at: datetime = Field(default_factory=utc_now)

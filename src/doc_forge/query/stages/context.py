@@ -40,18 +40,18 @@ class ContextAssemblyTracePayload(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     interpreted_query: InterpretedQuery
-    snapshot_doc_ids: list[str] = Field(default_factory=list)
-    evidence_set_ids: list[str] = Field(default_factory=list)
-    ordered_evidence_set_ids: list[str] = Field(default_factory=list)
+    snapshot_doc_ids: list[str] = Field(default_factory=lambda: [])
+    evidence_set_ids: list[str] = Field(default_factory=lambda: [])
+    ordered_evidence_set_ids: list[str] = Field(default_factory=lambda: [])
     token_budget: int = Field(ge=1)
     token_budget_used: int = Field(ge=0)
-    included_evidence_set_ids: list[str] = Field(default_factory=list)
-    dropped_evidence_set_ids: list[str] = Field(default_factory=list)
-    inclusion_reasons: dict[str, str] = Field(default_factory=dict)
-    exclusion_reasons: dict[str, str] = Field(default_factory=dict)
-    duplicate_suppression_notes: list[str] = Field(default_factory=list)
-    context_items: list[ContextItem] = Field(default_factory=list)
-    decisions: list[ContextAssemblyDecision] = Field(default_factory=list)
+    included_evidence_set_ids: list[str] = Field(default_factory=lambda: [])
+    dropped_evidence_set_ids: list[str] = Field(default_factory=lambda: [])
+    inclusion_reasons: dict[str, str] = Field(default_factory=lambda: {})
+    exclusion_reasons: dict[str, str] = Field(default_factory=lambda: {})
+    duplicate_suppression_notes: list[str] = Field(default_factory=lambda: [])
+    context_items: list[ContextItem] = Field(default_factory=lambda: [])
+    decisions: list[ContextAssemblyDecision] = Field(default_factory=lambda: [])
 
 
 def run(

@@ -29,9 +29,12 @@ def test_pdf_fixture_reaches_ready_and_preserves_page_provenance(e2e_stack: Runn
         artifacts = client.get(f"/documents/{doc_id}/artifacts")
         artifacts.raise_for_status()
         payload = artifacts.json()
-        assert e2e_stack.host_artifact_path(payload["raw_path"]).exists()
-        assert e2e_stack.host_artifact_path(payload["extracted_path"]).exists()
-        assert e2e_stack.host_artifact_path(payload["normalized_path"]).exists()
+        raw_path = e2e_stack.host_artifact_path(payload["raw_path"])
+        assert raw_path is not None and raw_path.exists()
+        extracted_path = e2e_stack.host_artifact_path(payload["extracted_path"])
+        assert extracted_path is not None and extracted_path.exists()
+        normalized_path = e2e_stack.host_artifact_path(payload["normalized_path"])
+        assert normalized_path is not None and normalized_path.exists()
 
         query = client.post(
             "/retrieval/query",

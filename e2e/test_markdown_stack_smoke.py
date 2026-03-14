@@ -4,6 +4,8 @@ from pathlib import Path
 
 import pytest
 
+from e2e.conftest import RunningStack
+
 pytestmark = pytest.mark.e2e
 
 LEGAL_STATUS_PATH = (
@@ -25,7 +27,7 @@ def _assert_status_subsequence(actual: list[str], expected: tuple[str, ...]) -> 
     assert cursor == len(expected), f"expected subsequence {expected}, got {actual}"
 
 
-def test_markdown_fixture_reaches_ready_and_persists_artifacts(e2e_stack) -> None:
+def test_markdown_fixture_reaches_ready_and_persists_artifacts(e2e_stack: RunningStack) -> None:
     smoke_path = Path(__file__).with_name("fixtures").joinpath("smoke.md")
     e2e_stack.log("uploading markdown fixture", path=str(smoke_path))
 
@@ -62,10 +64,12 @@ def test_markdown_fixture_reaches_ready_and_persists_artifacts(e2e_stack) -> Non
         artifacts = client.get(f"/documents/{doc_id}/artifacts")
         artifacts.raise_for_status()
         payload = artifacts.json()
-        assert e2e_stack.host_artifact_path(payload["raw_path"]).exists()
-        assert e2e_stack.host_artifact_path(payload["extracted_path"]).exists()
+        raw_path = e2e_stack.host_artifact_path(payload["raw_path"])
+        assert raw_path is not None and raw_path.exists()
+        extracted_path = e2e_stack.host_artifact_path(payload["extracted_path"])
+        assert extracted_path is not None and extracted_path.exists()
         normalized_path = e2e_stack.host_artifact_path(payload["normalized_path"])
-        assert normalized_path.exists()
+        assert normalized_path is not None and normalized_path.exists()
 
         query = client.post(
             "/retrieval/query",

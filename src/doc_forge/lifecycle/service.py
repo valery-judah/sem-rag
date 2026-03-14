@@ -177,7 +177,7 @@ class RetrievalQueryResult(BaseModel):
         json_schema_extra={"example": "doc_1234abcd"},
     )
     hits: list[VectorSearchHit] = Field(
-        default_factory=list,
+        default_factory=lambda: [],
         description="The list of vector search hits (chunks) returned from the vector store.",
     )
 

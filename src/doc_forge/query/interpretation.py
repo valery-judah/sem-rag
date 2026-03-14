@@ -131,11 +131,11 @@ class RawInterpretedQuery(BaseModel):
     request_type: QueryRequestType
     answer_shape: str = Field(min_length=1)
     specificity: QuerySpecificity
-    scope_hints: list[str] = Field(default_factory=list)
+    scope_hints: list[str] = Field(default_factory=lambda: [])
     synthesis_mode_hint: SynthesisMode = SynthesisMode.NONE
     requires_source_navigation: bool = False
-    unsupported_capability_flags: list[UnsupportedCapability] = Field(default_factory=list)
-    normalization_notes: list[str] = Field(default_factory=list)
+    unsupported_capability_flags: list[UnsupportedCapability] = Field(default_factory=lambda: [])
+    normalization_notes: list[str] = Field(default_factory=lambda: [])
 
 
 class InterpreterMetadata(BaseModel):

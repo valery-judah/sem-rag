@@ -33,7 +33,7 @@ class CitationRenderingResult(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     citation_bundle: CitationBundle
-    provenance_warnings: list[str] = Field(default_factory=list)
+    provenance_warnings: list[str] = Field(default_factory=lambda: [])
     renderer_version: str = Field(min_length=1)
 
 

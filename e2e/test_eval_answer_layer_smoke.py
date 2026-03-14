@@ -4,6 +4,7 @@ import pytest
 
 from doc_forge.evaluation import CriterionVerdict, TrustOutcome
 from doc_forge.query import AnswerMode, SupportState
+from e2e.conftest import RunningStack
 from e2e.eval_support import SMOKE_CASE_IDS, EvalCaseExecutor
 from e2e.support import SystemDriver
 
@@ -20,7 +21,9 @@ KNOWN_RUNTIME_GAP_CASES = (
 
 
 @pytest.mark.parametrize("case_id", SMOKE_CASE_IDS)
-def test_authored_answer_layer_smoke_cases_execute_over_real_stack(e2e_stack, case_id: str) -> None:
+def test_authored_answer_layer_smoke_cases_execute_over_real_stack(
+    e2e_stack: RunningStack, case_id: str
+) -> None:
     driver = SystemDriver(e2e_stack)
     executor = EvalCaseExecutor()
 
@@ -58,7 +61,7 @@ def test_authored_answer_layer_smoke_cases_execute_over_real_stack(e2e_stack, ca
 
 @pytest.mark.parametrize("case_id", KNOWN_RUNTIME_GAP_CASES)
 def test_authored_answer_layer_smoke_cases_produce_expected_current_profiles(
-    e2e_stack, case_id: str
+    e2e_stack: RunningStack, case_id: str
 ) -> None:
     driver = SystemDriver(e2e_stack)
     executor = EvalCaseExecutor()

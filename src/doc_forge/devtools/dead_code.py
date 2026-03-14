@@ -83,9 +83,9 @@ class ModuleInfo:
     path: Path
     is_package: bool
     tree: ast.Module
-    class_definitions: dict[str, ClassDefinition] = field(default_factory=dict)
-    top_level_bindings: dict[str, set[BindingTarget]] = field(default_factory=dict)
-    local_imports: set[str] = field(default_factory=set)
+    class_definitions: dict[str, ClassDefinition] = field(default_factory=lambda: {})
+    top_level_bindings: dict[str, set[BindingTarget]] = field(default_factory=lambda: {})
+    local_imports: set[str] = field(default_factory=lambda: set())
 
 
 @dataclass(frozen=True)
@@ -100,9 +100,9 @@ class ProjectIndex:
     modules_by_name: dict[str, ModuleInfo]
     modules_by_path: dict[Path, ModuleInfo]
     class_definitions: dict[str, ClassDefinition]
-    _export_cache: dict[tuple[str, str], frozenset[ResolvedTarget]] = field(default_factory=dict)
-    _reference_cache: dict[str, frozenset[str]] = field(default_factory=dict)
-    _closure_cache: dict[str, frozenset[str]] = field(default_factory=dict)
+    _export_cache: dict[tuple[str, str], frozenset[ResolvedTarget]] = field(default_factory=lambda: {})
+    _reference_cache: dict[str, frozenset[str]] = field(default_factory=lambda: {})
+    _closure_cache: dict[str, frozenset[str]] = field(default_factory=lambda: {})
 
     def resolve_export(self, module_name: str, export_name: str) -> frozenset[ResolvedTarget]:
         key = (module_name, export_name)
@@ -241,9 +241,9 @@ class ProjectIndex:
             return cached
 
         if root_module_name not in self.modules_by_name:
-            cached = frozenset()
-            self._closure_cache[root_module_name] = cached
-            return cached
+            new_cached: frozenset[str] = frozenset()
+            self._closure_cache[root_module_name] = new_cached
+            return new_cached
 
         visited: set[str] = set()
         queue: deque[str] = deque([root_module_name])

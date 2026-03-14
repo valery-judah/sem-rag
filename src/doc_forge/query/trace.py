@@ -37,7 +37,7 @@ class QueryStageTrace(BaseModel):
     stage_status: QueryStageTraceStatus
     started_at: datetime = Field(default_factory=utc_now)
     finished_at: datetime | None = None
-    payload: dict[str, object] = Field(default_factory=dict)
+    payload: dict[str, object] = Field(default_factory=lambda: {})
 
     @model_validator(mode="after")
     def validate_finished_at(self) -> QueryStageTrace:
@@ -53,4 +53,4 @@ class QueryTraceBundle(BaseModel):
 
     query_id: QueryId = Field(min_length=1)
     run_status: QueryRunStatus
-    stage_traces: list[QueryStageTrace] = Field(default_factory=list)
+    stage_traces: list[QueryStageTrace] = Field(default_factory=lambda: [])

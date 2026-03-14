@@ -28,9 +28,9 @@ class QueryRuntimeState(BaseModel):
     run: QueryRun
     snapshot: CorpusSnapshot | None = None
     interpreted_query: InterpretedQuery | None = None
-    retrieved_candidates: list[RetrievedCandidate] = Field(default_factory=list)
-    selected_candidates: list[RetrievedCandidate] = Field(default_factory=list)
-    evidence_sets: list[EvidenceSet] = Field(default_factory=list)
+    retrieved_candidates: list[RetrievedCandidate] = Field(default_factory=lambda: [])
+    selected_candidates: list[RetrievedCandidate] = Field(default_factory=lambda: [])
+    evidence_sets: list[EvidenceSet] = Field(default_factory=lambda: [])
     context_manifest: ContextManifest | None = None
     support_assessment: SupportAssessment | None = None
     answer_mode_decision: AnswerModeDecision | None = None

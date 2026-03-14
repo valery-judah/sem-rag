@@ -81,8 +81,8 @@ class QueryContextManifest(BaseModel):
     answer_mode: str | None = None
     evaluator_outcome: str | None = None
     assets: QueryContextAssetPaths = Field(default_factory=QueryContextAssetPaths)
-    log_assets: list[QueryContextLogAsset] = Field(default_factory=list)
-    missing_assets: list[str] = Field(default_factory=list)
+    log_assets: list[QueryContextLogAsset] = Field(default_factory=lambda: [])
+    missing_assets: list[str] = Field(default_factory=lambda: [])
 
 
 class QueryContextCollectionExtras(BaseModel):

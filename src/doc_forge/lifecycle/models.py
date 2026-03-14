@@ -44,7 +44,7 @@ class LifecycleEvent(BaseModel):
     to_status: ProcessingStatus
     occurred_at: datetime
     failure_category: FailureCategory | None = None
-    detail: dict[str, str] = Field(default_factory=dict)
+    detail: dict[str, str] = Field(default_factory=lambda: {})
 
     @model_validator(mode="after")
     def validate_failure_fields(self) -> LifecycleEvent:

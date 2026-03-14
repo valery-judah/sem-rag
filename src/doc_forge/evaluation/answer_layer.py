@@ -84,7 +84,7 @@ class QuestionSpec(BaseModel):
     question_class: str = Field(min_length=1)
     support_state: SupportStateLabel
     minimum_provenance: str = Field(min_length=1)
-    gold_sources: list[dict[str, object]] = Field(default_factory=list)
+    gold_sources: list[dict[str, object]] = Field(default_factory=lambda: [])
     user_intent_note: str | None = None
     notes: str | None = None
 
@@ -98,10 +98,10 @@ class AuthoredCase(BaseModel):
     corpus_id: CorpusId
     case_family: str = Field(min_length=1)
     source_type: str = Field(min_length=1)
-    primary_target_failures: list[str] = Field(default_factory=list)
-    secondary_target_failures: list[str] = Field(default_factory=list)
+    primary_target_failures: list[str] = Field(default_factory=lambda: [])
+    secondary_target_failures: list[str] = Field(default_factory=lambda: [])
     question_spec: QuestionSpec
-    authoring_notes: dict[str, object] = Field(default_factory=dict)
+    authoring_notes: dict[str, object] = Field(default_factory=lambda: {})
 
 
 class GoldEvidenceSource(BaseModel):
@@ -126,10 +126,10 @@ class AnswerKeyRecord(BaseModel):
     case_id: str = Field(min_length=1)
     answer_type: str = Field(min_length=1)
     canonical_answer: str | list[str]
-    acceptable_paraphrases: list[str] = Field(default_factory=list)
-    must_include: list[str] = Field(default_factory=list)
-    must_not_include: list[str] = Field(default_factory=list)
-    gold_evidence_set: list[GoldEvidenceSource] = Field(default_factory=list)
+    acceptable_paraphrases: list[str] = Field(default_factory=lambda: [])
+    must_include: list[str] = Field(default_factory=lambda: [])
+    must_not_include: list[str] = Field(default_factory=lambda: [])
+    gold_evidence_set: list[GoldEvidenceSource] = Field(default_factory=lambda: [])
     expected_behavior: ExpectedBehavior
     abstention_expected: bool
     grading_notes: str | None = None
@@ -164,7 +164,7 @@ class AnswerLayerRunInput(BaseModel):
 
     case_id: str = Field(min_length=1)
     answer_text: str = Field(min_length=1)
-    citations: list[AnswerLayerCitation] = Field(default_factory=list)
+    citations: list[AnswerLayerCitation] = Field(default_factory=lambda: [])
 
 
 class AnswerLayerCriterionResult(BaseModel):
@@ -227,13 +227,13 @@ class DatasetFeasibilityAssessment(BaseModel):
 
     total_cases: int = Field(ge=0)
     total_sets: int = Field(ge=0)
-    source_types: list[str] = Field(default_factory=list)
-    case_family_counts: dict[str, int] = Field(default_factory=dict)
-    support_state_counts: dict[str, int] = Field(default_factory=dict)
-    per_criterion: list[CriterionFeasibilityAssessment] = Field(default_factory=list)
-    known_gaps: list[str] = Field(default_factory=list)
-    minimum_additions_if_scope_expands: list[str] = Field(default_factory=list)
-    case_matrix: list[CaseCriterionMatrixRow] = Field(default_factory=list)
+    source_types: list[str] = Field(default_factory=lambda: [])
+    case_family_counts: dict[str, int] = Field(default_factory=lambda: {})
+    support_state_counts: dict[str, int] = Field(default_factory=lambda: {})
+    per_criterion: list[CriterionFeasibilityAssessment] = Field(default_factory=lambda: [])
+    known_gaps: list[str] = Field(default_factory=lambda: [])
+    minimum_additions_if_scope_expands: list[str] = Field(default_factory=lambda: [])
+    case_matrix: list[CaseCriterionMatrixRow] = Field(default_factory=lambda: [])
 
 
 class AnswerLayerCaseRepository:

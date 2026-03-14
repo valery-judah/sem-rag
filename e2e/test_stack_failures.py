@@ -2,10 +2,12 @@ from __future__ import annotations
 
 import pytest
 
+from e2e.conftest import RunningStack
+
 pytestmark = pytest.mark.e2e
 
 
-def test_unsupported_png_is_rejected_over_real_http_stack(e2e_stack) -> None:
+def test_unsupported_png_is_rejected_over_real_http_stack(e2e_stack: RunningStack) -> None:
     with e2e_stack.client() as client:
         e2e_stack.log("uploading unsupported png fixture")
         response = client.post(

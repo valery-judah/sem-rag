@@ -31,11 +31,11 @@ class SupportAssessmentPrecheck(BaseModel):
     name: str = Field(min_length=1)
     status: str = Field(min_length=1)
     support_ceiling: SupportState | None = None
-    reason_codes: list[SupportQualifierReason] = Field(default_factory=list)
+    reason_codes: list[SupportQualifierReason] = Field(default_factory=lambda: [])
     summary: str | None = None
-    unsupported_gaps: list[str] = Field(default_factory=list)
-    conflicting_evidence_notes: list[str] = Field(default_factory=list)
-    provenance_warnings: list[str] = Field(default_factory=list)
+    unsupported_gaps: list[str] = Field(default_factory=lambda: [])
+    conflicting_evidence_notes: list[str] = Field(default_factory=lambda: [])
+    provenance_warnings: list[str] = Field(default_factory=lambda: [])
 
 
 class StructuredSupportJudgment(BaseModel):
@@ -44,10 +44,10 @@ class StructuredSupportJudgment(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     support_state: SupportState
-    supported_claims: list[str] = Field(default_factory=list)
-    unsupported_gaps: list[str] = Field(default_factory=list)
-    conflicting_evidence_notes: list[str] = Field(default_factory=list)
-    provenance_warnings: list[str] = Field(default_factory=list)
+    supported_claims: list[str] = Field(default_factory=lambda: [])
+    unsupported_gaps: list[str] = Field(default_factory=lambda: [])
+    conflicting_evidence_notes: list[str] = Field(default_factory=lambda: [])
+    provenance_warnings: list[str] = Field(default_factory=lambda: [])
     summary: str | None = None
     judge_name: str = Field(min_length=1)
 
@@ -58,7 +58,7 @@ class SupportAssessmentResult(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     assessment: SupportAssessment
-    precheck_results: list[SupportAssessmentPrecheck] = Field(default_factory=list)
+    precheck_results: list[SupportAssessmentPrecheck] = Field(default_factory=lambda: [])
     support_ceiling: SupportState | None = None
     structured_judgment: StructuredSupportJudgment | None = None
 

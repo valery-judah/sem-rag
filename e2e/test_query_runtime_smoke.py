@@ -5,6 +5,7 @@ import json
 import pytest
 
 from doc_forge.query import AnswerMode, QueryContextCollector, SupportState
+from e2e.conftest import RunningStack, TestId
 from e2e.query_support import execute_query_run
 from e2e.support import SystemDriver
 
@@ -12,7 +13,7 @@ pytestmark = pytest.mark.e2e
 
 
 def test_query_runtime_returns_answer_and_review_artifacts_for_ready_markdown(
-    e2e_stack,
+    e2e_stack: RunningStack,
     request: pytest.FixtureRequest,
 ) -> None:
     driver = SystemDriver(e2e_stack)
@@ -49,7 +50,11 @@ def test_query_runtime_returns_answer_and_review_artifacts_for_ready_markdown(
     assert executed.citations_review.query_id == executed.query_id
     assert executed.citations_review.citations.material_doc_ids == [uploaded.doc_id]
 
-    archived_logs = e2e_stack.archive_scenario_logs(test_id=request.node.nodeid)
+    from typing import Any
+
+    node: Any = request.node
+    test_id = TestId(str(node.nodeid))
+    archived_logs = e2e_stack.archive_scenario_logs(test_id=test_id)
     assert set(archived_logs) == {"api", "worker"}
 
     api_lines = archived_logs["api"].read_text(encoding="utf-8").splitlines()
@@ -91,7 +96,9 @@ def test_query_runtime_returns_answer_and_review_artifacts_for_ready_markdown(
     assert (collected.bundle_root / "logs" / "worker.jsonl").is_symlink()
 
 
-def test_query_runtime_empty_workspace_returns_insufficient_support(e2e_stack) -> None:
+def test_query_runtime_empty_workspace_returns_insufficient_support(
+    e2e_stack: RunningStack,
+) -> None:
     driver = SystemDriver(e2e_stack)
     workspace_id = "ws-query-runtime-empty"
 

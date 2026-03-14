@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from functools import cache, lru_cache
-from typing import Annotated
+from typing import Annotated, Any
 
 import sqlalchemy as sa
 from fastapi import Depends
@@ -22,7 +22,7 @@ from doc_forge.indexing import (
 from doc_forge.lifecycle.orchestrator import DocumentLifecycleOrchestrator
 from doc_forge.lifecycle.readiness import ReadinessService
 from doc_forge.lifecycle.service import DocumentLifecycleService
-from doc_forge.lifecycle.worker import DocumentLifecycleWorker
+from doc_forge.lifecycle.worker import DocumentLifecycleWorker, StageRunner
 from doc_forge.normalizers import MarkdownNormalizer, NormalizerRegistry, PdfNormalizer
 from doc_forge.persistence import (
     SqlChunkEmbeddingRepository,
@@ -33,6 +33,7 @@ from doc_forge.persistence import (
     SqlLifecycleEventRepository,
     SqlSectionRepository,
 )
+from doc_forge.persistence.jobs import DocumentJobStage
 from doc_forge.query import QueryService
 from doc_forge.query.answer_generation import (
     DeterministicGroundedAnswerGenerator,
@@ -85,7 +86,7 @@ def _build_engine(database_url: str) -> Engine:
     if engine.dialect.name == "sqlite":
 
         @event.listens_for(engine, "connect")
-        def _set_sqlite_pragma(dbapi_connection, connection_record) -> None:
+        def _set_sqlite_pragma(dbapi_connection: Any, connection_record: Any) -> None:
             del connection_record
             cursor = dbapi_connection.cursor()
             cursor.execute("PRAGMA foreign_keys = ON")
@@ -279,7 +280,7 @@ def get_document_lifecycle_worker(
         artifact_store=artifact_store,
         vector_store=vector_store,
     )
-    stage_runners = {
+    stage_runners: dict[DocumentJobStage, StageRunner] = {
         ExtractDocumentJobStage.target_stage: ExtractDocumentJobStage(stage=extract_stage),
         NormalizeDocumentJobStage.target_stage: NormalizeDocumentJobStage(stage=normalize_stage),
         SectionizeDocumentStage.target_stage: SectionizeDocumentStage(

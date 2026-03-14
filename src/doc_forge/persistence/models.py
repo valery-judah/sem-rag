@@ -292,7 +292,7 @@ class PersistedLifecycleEvent(BaseModel):
     to_status: ProcessingStatus
     occurred_at: datetime
     failure_category: FailureCategory | None = None
-    detail_json: dict[str, str] = Field(default_factory=dict)
+    detail_json: dict[str, str] = Field(default_factory=lambda: {})
 
     @field_validator("occurred_at", mode="before")
     @classmethod

@@ -7,7 +7,7 @@ import sys
 
 import structlog
 
-_CONFIGURED = False
+_configured = False
 
 
 def get_logger(name: str | None = None) -> structlog.stdlib.BoundLogger:
@@ -18,8 +18,8 @@ def get_logger(name: str | None = None) -> structlog.stdlib.BoundLogger:
 def configure_logging(*, service: str, environment: str, level: str) -> None:
     """Configure process-wide JSON logging once."""
 
-    global _CONFIGURED
-    if _CONFIGURED:
+    global _configured
+    if _configured:
         return
 
     shared_processors: list[structlog.types.Processor] = [
@@ -76,18 +76,18 @@ def configure_logging(*, service: str, environment: str, level: str) -> None:
         wrapper_class=structlog.stdlib.BoundLogger,
         cache_logger_on_first_use=False,
     )
-    _CONFIGURED = True
+    _configured = True
 
 
 def reset_logging() -> None:
     """Reset logging configuration for tests."""
 
-    global _CONFIGURED
+    global _configured
     logging.getLogger().handlers.clear()
     logging.captureWarnings(False)
     structlog.reset_defaults()
     structlog.contextvars.clear_contextvars()
-    _CONFIGURED = False
+    _configured = False
 
 
 def _inject_static_fields(*, service: str, environment: str) -> structlog.types.Processor:

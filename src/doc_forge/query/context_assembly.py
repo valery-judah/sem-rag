@@ -39,7 +39,7 @@ class ContextAssemblyResult(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     manifest: ContextManifest
-    decisions: list[ContextAssemblyDecision] = Field(default_factory=list)
+    decisions: list[ContextAssemblyDecision] = Field(default_factory=lambda: [])
 
 
 class ContextAssembler(Protocol):

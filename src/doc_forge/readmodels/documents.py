@@ -78,7 +78,7 @@ class QueryableEmbeddedChunkRecord(QueryableChunkRecord):
     """Read-only queryable chunk projection with its active embedding vector."""
 
     embedding_model: str = Field(min_length=1)
-    embedding_vector: list[float] = Field(default_factory=list)
+    embedding_vector: list[float] = Field(default_factory=lambda: [])
 
 
 class QueryableCorpusReadModel(Protocol):

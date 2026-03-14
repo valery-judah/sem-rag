@@ -11,8 +11,6 @@ from pathlib import Path, PurePosixPath
 from typing import Any, NewType, cast
 from uuid import uuid4
 
-TestId = NewType("TestId", str)
-
 import docker
 import httpx
 import pytest
@@ -22,6 +20,7 @@ from testcontainers.core.image import DockerImage
 from testcontainers.core.network import Network
 from testcontainers.postgres import PostgresContainer
 
+from doc_forge.app.logging import configure_logging, get_logger
 from doc_forge.identifiers import DocId, QueryId
 from doc_forge.persistence.jobs import document_jobs_table
 from doc_forge.persistence.models import (
@@ -33,6 +32,10 @@ from doc_forge.persistence.models import (
 )
 from doc_forge.query.persistence import query_runs_table
 from e2e.runtime_defaults import resolve_e2e_answer_generator
+
+TestId = NewType("TestId", str)
+configure_logging(service="doc_forge-e2e", environment="test", level="INFO")
+_logger = get_logger("e2e")
 
 
 @pytest.hookimpl(hookwrapper=True)
@@ -78,9 +81,7 @@ def _env_flag(name: str) -> bool:
 
 
 def _emit_e2e_log(message: str, **fields: object) -> None:
-    details = ", ".join(f"{key}={value!r}" for key, value in sorted(fields.items()))
-    suffix = f" | {details}" if details else ""
-    print(f"[e2e] {message}{suffix}", flush=True)
+    _logger.info(message, **fields)
 
 
 def _runtime_user() -> str | None:
@@ -121,7 +122,7 @@ class E2EDatabaseInspector:
     def __init__(self, database_url: str) -> None:
         self.database_url = database_url
 
-    def vector_snapshot(self, *, doc_id: DocId) -> dict[str, object]:
+    def vector_snapshot(self, *, doc_id: DocId) -> dict[str, Any]:
         engine = sa.create_engine(self.database_url)
         try:
             with engine.connect() as connection:
@@ -161,7 +162,7 @@ class E2EDatabaseInspector:
             "sample_embedding": None if sample_row is None else dict(sample_row),
         }
 
-    def chunk_rows(self, *, doc_id: DocId) -> list[dict[str, object]]:
+    def chunk_rows(self, *, doc_id: DocId) -> list[dict[str, Any]]:
         engine = sa.create_engine(self.database_url)
         try:
             with engine.connect() as connection:
@@ -186,7 +187,7 @@ class E2EDatabaseInspector:
             engine.dispose()
         return [dict(row) for row in rows]
 
-    def document_row(self, *, doc_id: DocId) -> dict[str, object] | None:
+    def document_row(self, *, doc_id: DocId) -> dict[str, Any] | None:
         engine = sa.create_engine(self.database_url)
         try:
             with engine.connect() as connection:
@@ -201,7 +202,7 @@ class E2EDatabaseInspector:
             engine.dispose()
         return None if row is None else dict(row)
 
-    def lifecycle_events(self, *, doc_id: DocId) -> list[dict[str, object]]:
+    def lifecycle_events(self, *, doc_id: DocId) -> list[dict[str, Any]]:
         engine = sa.create_engine(self.database_url)
         try:
             with engine.connect() as connection:
@@ -227,7 +228,7 @@ class ScenarioTracker:
     log_root: Path
     e2e_log_session_id: str | None
     container_log_paths: dict[str, Path]
-    
+
     tracked_doc_ids: list[DocId] = field(default_factory=lambda: [])
     tracked_query_ids: list[QueryId] = field(default_factory=lambda: [])
     query_debug_artifacts: list[str] = field(default_factory=lambda: [])
@@ -419,7 +420,8 @@ class RunningStack:
             sections.append(
                 "query diagnostics:\n"
                 + "\n".join(
-                    f"  - query_id={query_id}" for query_id in sorted(self.tracker.tracked_query_ids)
+                    f"  - query_id={query_id}"
+                    for query_id in sorted(self.tracker.tracked_query_ids)
                 )
             )
         else:
@@ -427,21 +429,27 @@ class RunningStack:
         if self.tracker.query_debug_artifacts:
             sections.append(
                 "query debug artifacts:\n"
-                + "\n".join(f"  - {artifact}" for artifact in sorted(self.tracker.query_debug_artifacts))
+                + "\n".join(
+                    f"  - {artifact}" for artifact in sorted(self.tracker.query_debug_artifacts)
+                )
             )
         else:
             sections.append("query debug artifacts:\n<none>")
         if self.tracker.query_context_artifacts:
             sections.append(
                 "query context bundles:\n"
-                + "\n".join(f"  - {artifact}" for artifact in sorted(self.tracker.query_context_artifacts))
+                + "\n".join(
+                    f"  - {artifact}" for artifact in sorted(self.tracker.query_context_artifacts)
+                )
             )
         else:
             sections.append("query context bundles:\n<none>")
         if self.tracker.scenario_log_artifacts:
             sections.append(
                 "scenario log artifacts:\n"
-                + "\n".join(f"  - {artifact}" for artifact in sorted(self.tracker.scenario_log_artifacts))
+                + "\n".join(
+                    f"  - {artifact}" for artifact in sorted(self.tracker.scenario_log_artifacts)
+                )
             )
         else:
             sections.append("scenario log artifacts:\n<none>")

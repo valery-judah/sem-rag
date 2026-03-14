@@ -37,9 +37,9 @@ class AnswerModeDecisionTracePayload(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     based_on_support_state: SupportState
-    qualifying_reason_codes: list[SupportQualifierReason] = Field(default_factory=list)
+    qualifying_reason_codes: list[SupportQualifierReason] = Field(default_factory=lambda: [])
     baseline_answer_mode: str = Field(min_length=1)
-    applied_override_rules: list[str] = Field(default_factory=list)
+    applied_override_rules: list[str] = Field(default_factory=lambda: [])
     final_answer_mode: str = Field(min_length=1)
     allowed_scope_summary: str | None = None
     must_surface_conflict: bool

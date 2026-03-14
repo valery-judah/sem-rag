@@ -43,7 +43,7 @@ class GroundedGenerationResult(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     answer_draft: AnswerDraft
-    visible_limitations: list[str] = Field(default_factory=list)
+    visible_limitations: list[str] = Field(default_factory=lambda: [])
     generator_version: str = Field(min_length=1)
 
 

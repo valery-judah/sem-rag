@@ -40,8 +40,8 @@ class GenerateTracePayload(BaseModel):
 
     based_on_support_state: SupportState
     based_on_answer_mode: AnswerMode
-    visible_limitations: list[str] = Field(default_factory=list)
-    grounded_evidence_set_ids: list[str] = Field(default_factory=list)
+    visible_limitations: list[str] = Field(default_factory=lambda: [])
+    grounded_evidence_set_ids: list[str] = Field(default_factory=lambda: [])
     answer_text: str = Field(min_length=1)
     should_render_citations: bool
     generator_version: str = Field(min_length=1)
