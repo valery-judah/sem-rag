@@ -1,5 +1,4 @@
 # Agent Contract
-This is a Python project built with FastAPI.
 
 ## Canonical sources
 - `docs/evergreen/mvp.md` - product scope
@@ -11,17 +10,12 @@ This is a Python project built with FastAPI.
 `docs/evergreen/` is canonical. `docs/delivery/` is reference-only. `docs/workstreams/` is history-only.
 
 ## Commands
-- Use `uv` for Python-related commands.
-- Don't use `npx`, `npm`, or other JavaScript package-manager commands for repo workflows.
-- Use `uv run poe <task>` for Python developer tasks defined in [`poe_tasks.toml`](poe_tasks.toml).
-- Use `make` for local DevEx and infrastructure wrappers such as Docker,
-  Docker Compose, observability stack operations, and docs harness helpers like `make workstream-new type=<work_type> slug=<slug>`, as defined in [`Makefile`](Makefile).
-- If a Python task is not defined in Poe, use `uv run <tool>`.
-- Do not use `pip`, `python -m pip`, `poetry`, or `pipenv` directly.
-- Common anchors: `uv sync`, `uv run poe verify`, `uv run poe run-api`,
-  `uv run poe run-worker`, `make docker-up-build`, `make workstream-new type=feature slug=my-feature`.
-- For the full command catalog and operational guidance, use
-  [`docs/evergreen/runbook.md`](docs/evergreen/runbook.md).
+- Use `uv` as the Python command entrypoint for this repo.
+- Prefer `uv run poe <task>` for defined developer workflows; otherwise use `uv run <tool>`.
+- Do not use `pip`, `python -m pip`, `poetry`, `pipenv`, `npm`, or `npx` for repo workflows.
+- Use `make` for local DevEx and infrastructure wrappers such as Docker, Docker Compose, observability stack operations, and docs harness helpers like `make workstream-new type=<work_type> slug=<slug>`, as defined in [`Makefile`](Makefile).
+- Common anchors: `uv sync`, `uv run poe verify`, `uv run poe run-api`, `uv run poe run-worker`, `make docker-up-build`, `make workstream-new type=feature slug=my-feature`.
+- For the full command catalog and operational guidance, use [`docs/evergreen/runbook.md`](docs/evergreen/runbook.md).
 - To inspect the current command surface directly, use `uv run poe --help` and `make help`.
 
 ## Validation
