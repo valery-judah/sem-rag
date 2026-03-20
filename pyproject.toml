@@ -59,8 +59,12 @@ include = ["src", "tests", "scripts", "e2e"]
 exclude = [
   ".venv",
   ".venv/**",
+  ".venv-*",
+  ".venv-*/**",
   "**/.venv",
   "**/.venv/**",
+  "**/.venv-*",
+  "**/.venv-*/**",
   "**/node_modules",
   "**/__pycache__",
   "**/.*",

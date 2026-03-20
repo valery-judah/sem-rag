@@ -33,7 +33,7 @@ Introduce a strongly-typed event taxonomy, structural typing for standard contex
 - **paths:** `tests/conftest.py`, `src/doc_forge/app/logging.py`
 - **components:** `structlog`, `StructuredLogCapture`, `pytest`
 - **constraints:** Must maintain the performance characteristics of standard Python logging while adding type safety.
-- **read first:** `docs/conventions/python-logging.md`
+- **read first:** `docs/engineering/python-logging.md`
 
 ## Workflow steps
 
@@ -104,4 +104,4 @@ Introduce a strongly-typed event taxonomy, structural typing for standard contex
 - Tests leveraging `structured_caplog` must successfully utilize the newly upgraded schema assertions.
 
 ## Linked artifacts
-- `docs/conventions/python-logging.md`
+- `docs/engineering/python-logging.md`

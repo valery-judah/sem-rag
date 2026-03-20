@@ -24,7 +24,3 @@
 
 ## Development Practices
 - Save any temporary, exploratory, or developer-experience (devex) scripts into the `scripts/devex/` directory.
-
-## Coding Conventions
-- `docs/conventions/python-conventions.md` - coding standards and domain modeling
-- `docs/conventions/python-logging.md` - logging, tracing, and dependency injection patterns
