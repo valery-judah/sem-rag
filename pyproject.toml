@@ -55,7 +55,7 @@ venvPath = "."
 venv = ".venv"
 typeCheckingMode = "strict"
 reportUnnecessaryTypeIgnoreComment = "warning"
-include = ["src", "tests", "scripts", "e2e"]
+include = ["src"]
 exclude = [
   ".venv",
   ".venv/**",

@@ -73,3 +73,4 @@ output/
 # Ignore devex scripts but keep the directory
 scripts/devex/*
 !scripts/devex/.gitkeep
+pyright_output.json

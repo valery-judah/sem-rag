@@ -382,7 +382,9 @@ class AnswerModeDecision(BaseModel):
     answer_mode: AnswerMode
     rationale: str = Field(min_length=1)
     based_on_support_state: SupportState
-    required_qualifying_reason_codes: list[SupportQualifierReason] = Field(default_factory=lambda: [])
+    required_qualifying_reason_codes: list[SupportQualifierReason] = Field(
+        default_factory=lambda: []
+    )
     allowed_scope_summary: str | None = None
     must_surface_conflict: bool = False
 

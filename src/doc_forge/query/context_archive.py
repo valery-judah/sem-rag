@@ -514,7 +514,9 @@ def _classify_log_directory(
         if metadata_path.exists():
             try:
                 data = json.loads(metadata_path.read_text(encoding="utf-8"))
-                metadata: dict[str, Any] = cast(dict[str, Any], data) if isinstance(data, dict) else {}
+                metadata: dict[str, Any] = (
+                    cast(dict[str, Any], data) if isinstance(data, dict) else {}
+                )
             except json.JSONDecodeError:
                 metadata = {}
             test_id = metadata.get("test_id")
