@@ -407,10 +407,6 @@ class QueryService:
             raise QueryStageNotImplementedError("assess_support stage is not configured")
         if self._answer_mode_policy is None:
             raise QueryStageNotImplementedError("decide_answer_mode stage is not configured")
-        if self._answer_generator is None:
-            raise QueryStageNotImplementedError("generate stage is not configured")
-        if self._citation_renderer is None:
-            raise QueryStageNotImplementedError("render_citations stage is not configured")
         retriever = self._retriever
         selector = self._selector
         context_assembler = self._context_assembler

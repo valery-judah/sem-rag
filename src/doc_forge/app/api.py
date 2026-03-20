@@ -7,15 +7,26 @@ from __future__ import annotations
 import hashlib
 import importlib.metadata
 import os
+from collections.abc import Awaitable, Callable
 from pathlib import Path
 from time import perf_counter
 from typing import Annotated
-from collections.abc import Awaitable, Callable
 from uuid import uuid4
 
 import sqlalchemy as sa
 import structlog
-from fastapi import Body, Depends, FastAPI, File, Form, HTTPException, Request, Response, UploadFile, status
+from fastapi import (
+    Body,
+    Depends,
+    FastAPI,
+    File,
+    Form,
+    HTTPException,
+    Request,
+    Response,
+    UploadFile,
+    status,
+)
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy.engine import Engine
@@ -435,7 +446,7 @@ def create_app() -> FastAPI:
         ],
     ) -> DocumentDetailResponse:
         try:
-            document = service._require_document(doc_id)
+            document = service.require_document(doc_id)
             return DocumentDetailResponse(
                 doc_id=document.doc_id,
                 workspace_id=document.workspace_id,

@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from enum import StrEnum
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import sqlalchemy as sa
 from dotenv import load_dotenv
@@ -513,7 +513,8 @@ def _classify_log_directory(
         metadata_path = directory / "metadata.json"
         if metadata_path.exists():
             try:
-                metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+                data = json.loads(metadata_path.read_text(encoding="utf-8"))
+                metadata: dict[str, Any] = cast(dict[str, Any], data) if isinstance(data, dict) else {}
             except json.JSONDecodeError:
                 metadata = {}
             test_id = metadata.get("test_id")

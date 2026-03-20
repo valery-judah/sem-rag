@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any, cast
+
 import structlog
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -172,7 +174,7 @@ def _reconstruct_retrieved_candidates(trace: QueryStageTrace | None) -> list[Ret
     payload = trace.payload.get("candidates")
     if not isinstance(payload, list):
         return []
-    return [RetrievedCandidate.model_validate(item) for item in payload]
+    return [RetrievedCandidate.model_validate(item) for item in cast(list[Any], payload)]
 
 
 def _reconstruct_selection(

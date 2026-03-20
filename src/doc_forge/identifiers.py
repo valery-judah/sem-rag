@@ -7,7 +7,7 @@ from typing import Annotated
 from pydantic import AfterValidator, Field
 
 
-def _validate_identifier(
+def validate_identifier(
     value: str,
     *,
     field_name: str,
@@ -27,7 +27,7 @@ def _validate_identifier(
 def validate_workspace_id(value: str) -> str:
     """Validate a workspace identifier."""
 
-    return _validate_identifier(
+    return validate_identifier(
         value,
         field_name="workspace_id",
         reject_dot_segments=True,
@@ -37,7 +37,7 @@ def validate_workspace_id(value: str) -> str:
 def validate_doc_id(value: str) -> str:
     """Validate a document identifier."""
 
-    return _validate_identifier(
+    return validate_identifier(
         value,
         field_name="doc_id",
         reject_dot_segments=True,
@@ -47,7 +47,7 @@ def validate_doc_id(value: str) -> str:
 def validate_query_id(value: str) -> str:
     """Validate a query identifier."""
 
-    return _validate_identifier(
+    return validate_identifier(
         value,
         field_name="query_id",
         reject_dot_segments=True,

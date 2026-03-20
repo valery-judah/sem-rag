@@ -423,7 +423,7 @@ class DocumentLifecycleService:
     def get_document_status(self, *, doc_id: DocId) -> DocumentStatusResult:
         """Load the current persisted status plus any active queued work."""
 
-        document = self._require_document(doc_id)
+        document = self.require_document(doc_id)
         active_job_stage = None
         if self._jobs is not None:
             for job in self._jobs.list_for_document(doc_id):
@@ -444,7 +444,7 @@ class DocumentLifecycleService:
     def query_document(self, *, doc_id: DocId, text: str, k: int = 3) -> RetrievalQueryResult:
         """Run a document-scoped smoke query against the internal vector store."""
 
-        self._require_document(doc_id)
+        self.require_document(doc_id)
         if self._vector_store is None:
             raise RuntimeError("vector store is not configured")
         hits = self._vector_store.smoke_query(doc_id=doc_id, text=text, k=k)
@@ -465,7 +465,7 @@ class DocumentLifecycleService:
 
     def delete_document(self, *, doc_id: DocId) -> None:
         """Completely remove a document, its artifacts, vectors, and lifecycle history."""
-        document = self._require_document(doc_id)
+        document = self.require_document(doc_id)
         vector_store_deleted = False
         raw_deleted = False
         extracted_deleted = False
@@ -508,7 +508,7 @@ class DocumentLifecycleService:
     def retry_document(self, *, doc_id: DocId) -> RetryDocumentResult:
         """Queue a retry for the latest failed lifecycle stage."""
 
-        document = self._require_document(doc_id)
+        document = self.require_document(doc_id)
         self._logger.retry_eligibility_checked(
             doc_id=doc_id,
             workspace_id=document.workspace_id,
@@ -590,7 +590,7 @@ class DocumentLifecycleService:
     def get_artifact_refs(self, *, doc_id: DocId) -> DocumentArtifactRefs:
         """Return current managed artifact paths for debugging."""
 
-        document = self._require_document(doc_id)
+        document = self.require_document(doc_id)
         if self._artifact_store is None:
             raise RuntimeError("artifact store is not configured")
         raw_path = self._artifact_store.raw_path(
@@ -613,7 +613,7 @@ class DocumentLifecycleService:
             normalized_path=str(normalized_path) if normalized_path.exists() else None,
         )
 
-    def _require_document(self, doc_id: DocId) -> PersistedDocument:
+    def require_document(self, doc_id: DocId) -> PersistedDocument:
         if self._documents is None:
             raise RuntimeError("document repository is not configured")
         document = self._documents.get(doc_id)

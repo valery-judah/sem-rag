@@ -2,14 +2,14 @@ from typing import Annotated, NewType
 
 from pydantic import AfterValidator, Field
 
-from doc_forge.identifiers import _validate_identifier
+from doc_forge.identifiers import validate_identifier
 
 _CorpusId = NewType("_CorpusId", str)
 
 
 def validate_corpus_id(value: str) -> _CorpusId:
     return _CorpusId(
-        _validate_identifier(
+        validate_identifier(
             value,
             field_name="corpus_id",
             reject_dot_segments=True,
