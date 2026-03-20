@@ -12,7 +12,6 @@ from fastapi.routing import APIRoute
 from pydantic import ValidationError
 from sqlalchemy.engine import Engine
 
-from doc_forge.app.api import QueryAnswerResponse, RetrievalQueryRequest, WorkerJobResult
 from doc_forge.app.deps import (
     get_document_lifecycle_service,
     get_document_lifecycle_worker,
@@ -21,6 +20,7 @@ from doc_forge.app.deps import (
     get_queryable_corpus_read_model,
 )
 from doc_forge.app.logging import get_logger
+from doc_forge.app.schemas import QueryAnswerResponse, RetrievalQueryRequest, WorkerJobResult
 from doc_forge.artifacts import FilesystemArtifactStore
 from doc_forge.indexing import DeterministicEmbeddingAdapter, SqlVectorStore
 from doc_forge.lifecycle import FailureCategory, LifecycleStage, ProcessingStatus
