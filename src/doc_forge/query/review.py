@@ -23,11 +23,6 @@ from .contracts import (
     TrustFailureLabel,
 )
 from .persistence import QueryAnswerStore, QueryRunStore, QuerySnapshotStore, QueryTraceStore
-from .review_examples import (
-    QUERY_CITATION_REVIEW_EXAMPLE,
-    QUERY_RUN_REVIEW_SUMMARY_EXAMPLE,
-    QUERY_TRACE_REVIEW_EXAMPLE,
-)
 from .trace import QueryStageTrace, QueryTraceBundle
 
 logger = get_logger(__name__)
@@ -38,17 +33,11 @@ class QuerySnapshotSummary(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    workspace_id: WorkspaceId = Field(min_length=1, description="The workspace scope.")
-    query_started_at: datetime = Field(description="When the query snapshot was taken.")
-    eligible_doc_ids: list[DocId] = Field(
-        default_factory=lambda: [], description="Document IDs included in the corpus snapshot."
-    )
-    retrieval_index_version: str | None = Field(
-        default=None, description="The vector index version used."
-    )
-    readiness_version: str | None = Field(
-        default=None, description="The readiness model version used."
-    )
+    workspace_id: WorkspaceId = Field(min_length=1)
+    query_started_at: datetime
+    eligible_doc_ids: list[DocId] = Field(default_factory=lambda: [])
+    retrieval_index_version: str | None = None
+    readiness_version: str | None = None
 
 
 class QueryStageTimingSummary(BaseModel):
@@ -56,15 +45,11 @@ class QueryStageTimingSummary(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    stage_name: str = Field(min_length=1, description="Name of the stage.")
-    stage_status: str = Field(min_length=1, description="Terminal status of the stage.")
-    started_at: datetime = Field(description="When the stage execution began.")
-    finished_at: datetime | None = Field(
-        default=None, description="When the stage execution completed."
-    )
-    duration_ms: int | None = Field(
-        default=None, ge=0, description="Execution duration in milliseconds."
-    )
+    stage_name: str = Field(min_length=1)
+    stage_status: str = Field(min_length=1)
+    started_at: datetime
+    finished_at: datetime | None = None
+    duration_ms: int | None = Field(default=None, ge=0)
 
 
 class QueryTraceTimingSummary(BaseModel):
@@ -72,95 +57,58 @@ class QueryTraceTimingSummary(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    trace_count: int = Field(ge=0, description="Number of recorded stage traces.")
-    total_duration_ms: int | None = Field(
-        default=None, ge=0, description="Total duration across all stages."
-    )
-    stages: list[QueryStageTimingSummary] = Field(
-        default_factory=lambda: [], description="Timing breakdown per stage."
-    )
+    trace_count: int = Field(ge=0)
+    total_duration_ms: int | None = Field(default=None, ge=0)
+    stages: list[QueryStageTimingSummary] = Field(default_factory=lambda: [])
 
 
 class QueryRunReviewSummary(BaseModel):
     """Summary view over one persisted query run."""
 
-    model_config = ConfigDict(
-        extra="forbid",
-        json_schema_extra={"example": QUERY_RUN_REVIEW_SUMMARY_EXAMPLE},
-    )
+    model_config = ConfigDict(extra="forbid")
 
-    query_id: QueryId = Field(min_length=1, description="The unique query identifier.")
+    query_id: QueryId = Field(min_length=1)
     workspace_id: WorkspaceId = Field(
         min_length=1,
-        description="The workspace this query was executed in.",
     )
-    question: str = Field(min_length=1, description="The user's original question.")
-    status: QueryRunStatus = Field(description="Terminal status of the overall query run.")
-    submitted_at: datetime = Field(description="When the query was submitted.")
-    completed_at: datetime | None = Field(
-        default=None, description="When the query finished executing."
-    )
-    policy_snapshot: dict[str, object] = Field(
-        description="The applied policy configuration for this run."
-    )
-    snapshot_summary: QuerySnapshotSummary | None = Field(
-        default=None, description="Snapshot of the corpus used."
-    )
-    support_state: SupportState | None = Field(
-        default=None, description="The assessed evidence support state."
-    )
-    answer_mode: AnswerMode | None = Field(
-        default=None, description="The selected answer generation mode."
-    )
-    trust_failure_labels: list[TrustFailureLabel] = Field(
-        default_factory=lambda: [], description="Identified trust failure signals."
-    )
-    visible_limitations: list[str] = Field(
-        default_factory=lambda: [], description="Disclaimers regarding answer quality."
-    )
-    has_answer: bool = Field(
-        default=False, description="Whether a final answer was successfully generated."
-    )
-    terminal_failure: QueryTerminalFailure | None = Field(
-        default=None, description="Details if the query failed execution."
-    )
-    trace_summary: QueryTraceTimingSummary = Field(description="Aggregated stage timing details.")
+    question: str = Field(min_length=1)
+    status: QueryRunStatus
+    submitted_at: datetime
+    completed_at: datetime | None = None
+    policy_snapshot: dict[str, object]
+    snapshot_summary: QuerySnapshotSummary | None = None
+    support_state: SupportState | None = None
+    answer_mode: AnswerMode | None = None
+    trust_failure_labels: list[TrustFailureLabel] = Field(default_factory=lambda: [])
+    visible_limitations: list[str] = Field(default_factory=lambda: [])
+    has_answer: bool = False
+    terminal_failure: QueryTerminalFailure | None = None
+    trace_summary: QueryTraceTimingSummary
 
 
 class QueryTraceReview(BaseModel):
     """Detailed persisted trace review payload."""
 
-    model_config = ConfigDict(
-        extra="forbid",
-        json_schema_extra={"example": QUERY_TRACE_REVIEW_EXAMPLE},
-    )
+    model_config = ConfigDict(extra="forbid")
 
-    summary: QueryRunReviewSummary = Field(description="Overall query run summary.")
-    snapshot: CorpusSnapshot | None = Field(
-        default=None, description="The corpus snapshot captured at query time."
-    )
-    trace_bundle: QueryTraceBundle = Field(description="The full stage-by-stage execution trace.")
+    summary: QueryRunReviewSummary
+    snapshot: CorpusSnapshot | None = None
+    trace_bundle: QueryTraceBundle
     final_artifacts: FinalQueryArtifacts | None = Field(
         default=None,
-        description="The final answer and citation artifacts, if generation succeeded.",
     )
 
 
 class QueryCitationReview(BaseModel):
     """Citation-only review payload."""
 
-    model_config = ConfigDict(
-        extra="forbid",
-        json_schema_extra={"example": QUERY_CITATION_REVIEW_EXAMPLE},
-    )
+    model_config = ConfigDict(extra="forbid")
 
-    query_id: QueryId = Field(min_length=1, description="The unique query identifier.")
-    support_state: SupportState = Field(description="The assessed evidence support state.")
-    answer_mode: AnswerMode = Field(description="The selected answer generation mode.")
-    trust_failure_labels: list[TrustFailureLabel] = Field(
-        default_factory=lambda: [], description="Identified trust failure signals."
-    )
-    citations: CitationBundle = Field(description="The assembled citations for the answer.")
+    query_id: QueryId = Field(min_length=1)
+    support_state: SupportState
+    answer_mode: AnswerMode
+    trust_failure_labels: list[TrustFailureLabel] = Field(default_factory=lambda: [])
+    citations: CitationBundle
 
 
 class QueryReviewLogger:

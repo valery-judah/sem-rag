@@ -1,15 +1,11 @@
-# ruff: noqa: B008
-# pyright: reportUnusedFunction=false
 from __future__ import annotations
 
 from typing import Annotated
 
 from fastapi import APIRouter, Body, Depends, status
 
-from doc_forge.lifecycle.service import RetrievalQueryResult
-
 from ..deps import get_internal_app_service
-from ..schemas import ErrorResponse, RetrievalQueryRequest, WorkerJobResult
+from ..schemas import ErrorResponse, RetrievalQueryRequest, RetrievalQueryResponse, WorkerJobResult
 from ..services.internal import InternalAppService
 
 router = APIRouter()
@@ -17,7 +13,7 @@ router = APIRouter()
 
 @router.post(
     "/retrieval/query",
-    response_model=RetrievalQueryResult,
+    response_model=RetrievalQueryResponse,
     status_code=status.HTTP_200_OK,
     summary="Smoke Query Document",
     tags=["Retrieval"],
@@ -36,7 +32,7 @@ router = APIRouter()
 def retrieval_query(
     request: Annotated[RetrievalQueryRequest, Body(description="The query parameters.")],
     service: Annotated[InternalAppService, Depends(get_internal_app_service)],
-) -> RetrievalQueryResult:
+) -> RetrievalQueryResponse:
     return service.retrieval_query(request)
 
 

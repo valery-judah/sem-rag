@@ -9,11 +9,10 @@ from fastapi import HTTPException, status
 from doc_forge.lifecycle.service import (
     DocumentLifecycleService,
     DocumentNotFoundError,
-    RetrievalQueryResult,
 )
 from doc_forge.lifecycle.worker import DocumentLifecycleWorker
 
-from ..schemas import RetrievalQueryRequest, WorkerJobResult
+from ..schemas import RetrievalQueryRequest, RetrievalQueryResponse, WorkerJobResult
 
 
 def _sha256_text(value: str) -> str:
@@ -28,7 +27,7 @@ class InternalAppService:
     worker: DocumentLifecycleWorker
     logger: structlog.stdlib.BoundLogger = structlog.stdlib.get_logger(__name__)
 
-    def retrieval_query(self, request: RetrievalQueryRequest) -> RetrievalQueryResult:
+    def retrieval_query(self, request: RetrievalQueryRequest) -> RetrievalQueryResponse:
         self.logger.info(
             "retrieval.smoke.started",
             doc_id=request.doc_id,
@@ -53,7 +52,7 @@ class InternalAppService:
                 http_status=status.HTTP_200_OK,
                 status="completed",
             )
-            return result
+            return RetrievalQueryResponse.model_validate(result, from_attributes=True)
         except DocumentNotFoundError as exc:
             self.logger.warning(
                 "retrieval.smoke.rejected",

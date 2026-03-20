@@ -89,7 +89,7 @@ Deferred:
 - API DTO ownership changes
 - service model cleanup
 
-### [ ] PR 2. Full App-Layer Boundary and Thin Routers
+### [x] PR 2. Full App-Layer Boundary and Thin Routers
 
 Purpose:
 Introduce the app-layer seam and make it the owner of endpoint orchestration, logging, exception translation, and API response shaping.
@@ -139,7 +139,9 @@ Deferred:
 
 - removal of OpenAPI-facing concerns from internal lifecycle/query result models where that cleanup is purely internal
 
-### [ ] PR 3. Internal Service Model Cleanup and Boundary Hardening
+### [x] PR 3. Internal Service Model Cleanup and Boundary Hardening
+
+
 
 Purpose:
 Remove leftover app- or OpenAPI-facing concerns from internal result models now that the app layer clearly owns the public boundary.

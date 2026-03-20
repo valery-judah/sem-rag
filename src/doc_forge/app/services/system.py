@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sqlalchemy as sa
+from fastapi import HTTPException
 from sqlalchemy.engine import Engine
 
 from doc_forge.artifacts import FilesystemArtifactStore
@@ -43,8 +44,10 @@ class SystemAppService:
                 http_status=500,
                 error_code="ready_check_failed",
             )
-            # Re-raise to let the caller handle it (e.g. throwing HTTPException)
-            raise e
+            raise HTTPException(
+                status_code=500,
+                detail="ready_check_failed",
+            ) from e
 
         logger.info("system.readyz.completed", http_status=200, status="ok")
         return SystemStatusResponse(status="ok")

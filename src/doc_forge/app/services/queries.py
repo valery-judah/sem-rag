@@ -11,14 +11,21 @@ from doc_forge.query import (
 )
 from doc_forge.query.errors import CorpusBoundaryUnavailableError, QueryExecutionFailedError
 from doc_forge.query.review import (
-    QueryCitationReview,
     QueryReviewService,
-    QueryRunReviewSummary,
-    QueryTraceReview,
 )
 
 from ..logging import get_logger as get_app_logger
-from ..schemas import QueryAnswerResponse
+from ..schemas import (
+    AnswerDraft,
+    AnswerMode,
+    CitationBundle,
+    QueryAnswerResponse,
+    QueryCitationReviewResponse,
+    QueryRunSummaryResponse,
+    QueryTraceReviewResponse,
+    SubmitQueryRequest,
+    SupportState,
+)
 
 logger = get_app_logger(__name__)
 
@@ -28,7 +35,7 @@ def _sha256_text(value: str) -> str:
 
 
 class QueriesAppService:
-    """Orchestrates query submission, trace loading, logging, exception mapping, and response shaping."""
+    """Orchestrates query submission, logging, exception mapping, and response shaping."""
 
     def __init__(
         self,
@@ -38,7 +45,7 @@ class QueriesAppService:
         self._query_service = query_service
         self._review_service = review_service
 
-    def submit_query(self, request: QueryRequest) -> QueryAnswerResponse:
+    def submit_query(self, request: SubmitQueryRequest) -> QueryAnswerResponse:
         question_sha256 = _sha256_text(request.question)
         logger.info(
             "query.api.started",
@@ -47,7 +54,8 @@ class QueriesAppService:
             question_sha256=question_sha256,
         )
         try:
-            state = self._query_service.execute_until_answer(request)
+            internal_request = QueryRequest.model_validate(request, from_attributes=True)
+            state = self._query_service.execute_until_answer(internal_request)
         except CorpusBoundaryUnavailableError as exc:
             logger.warning(
                 "query.api.rejected",
@@ -106,10 +114,10 @@ class QueriesAppService:
 
         response = QueryAnswerResponse(
             query_id=state.run.query_id,
-            answer=state.answer_draft,
-            support_state=state.support_assessment.support_state,
-            answer_mode=state.answer_mode_decision.answer_mode,
-            citations=state.citation_bundle,
+            answer=AnswerDraft.model_validate(state.answer_draft, from_attributes=True),
+            support_state=SupportState(state.support_assessment.support_state.value),
+            answer_mode=AnswerMode(state.answer_mode_decision.answer_mode.value),
+            citations=CitationBundle.model_validate(state.citation_bundle, from_attributes=True),
             message="query answer completed with grounded generation and rendered citations",
         )
         logger.info(
@@ -124,7 +132,7 @@ class QueriesAppService:
         )
         return response
 
-    def get_query_summary(self, query_id: QueryId) -> QueryRunReviewSummary:
+    def get_query_summary(self, query_id: QueryId) -> QueryRunSummaryResponse:
         try:
             result = self._review_service.get_query_summary(query_id)
             logger.info(
@@ -135,7 +143,7 @@ class QueriesAppService:
                 http_status=status.HTTP_200_OK,
                 status="loaded",
             )
-            return result
+            return QueryRunSummaryResponse.model_validate(result, from_attributes=True)
         except LookupError as exc:
             logger.warning(
                 "query.review.lookup_failed",
@@ -147,7 +155,7 @@ class QueriesAppService:
             )
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
 
-    def get_query_trace(self, query_id: QueryId) -> QueryTraceReview:
+    def get_query_trace(self, query_id: QueryId) -> QueryTraceReviewResponse:
         try:
             result = self._review_service.get_query_trace_review(query_id)
             logger.info(
@@ -158,7 +166,7 @@ class QueriesAppService:
                 http_status=status.HTTP_200_OK,
                 status="loaded",
             )
-            return result
+            return QueryTraceReviewResponse.model_validate(result, from_attributes=True)
         except LookupError as exc:
             logger.warning(
                 "query.review.lookup_failed",
@@ -170,7 +178,7 @@ class QueriesAppService:
             )
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
 
-    def get_query_citations(self, query_id: QueryId) -> QueryCitationReview:
+    def get_query_citations(self, query_id: QueryId) -> QueryCitationReviewResponse:
         try:
             result = self._review_service.get_query_citations(query_id)
             logger.info(
@@ -182,7 +190,7 @@ class QueriesAppService:
                 http_status=status.HTTP_200_OK,
                 status="loaded",
             )
-            return result
+            return QueryCitationReviewResponse.model_validate(result, from_attributes=True)
         except LookupError as exc:
             logger.warning(
                 "query.review.lookup_failed",

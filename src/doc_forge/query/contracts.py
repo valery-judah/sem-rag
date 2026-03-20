@@ -195,16 +195,9 @@ class QueryRequest(BaseModel):
 
     question: str = Field(
         min_length=1,
-        description="The user's question.",
-        json_schema_extra={"example": "What uses embeddings to retrieve related passages?"},
     )
-    workspace_id: WorkspaceId = Field(
-        description="The workspace scope to search against.",
-        json_schema_extra={"example": "workspace_alpha"},
-    )
-    policy_overrides: QueryPolicyOverride | None = Field(
-        default=None, description="Optional overrides for query policies."
-    )
+    workspace_id: WorkspaceId
+    policy_overrides: QueryPolicyOverride | None = None
 
 
 class QueryRun(BaseModel):

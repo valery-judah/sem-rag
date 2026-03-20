@@ -6,19 +6,21 @@ from fastapi import HTTPException, status
 
 from doc_forge.identifiers import DocId, WorkspaceId
 from doc_forge.lifecycle.service import (
-    DocumentArtifactRefs,
     DocumentLifecycleService,
     DocumentNotFoundError,
-    DocumentStatusResult,
-    RetryDocumentResult,
     RetryNotAllowedError,
     UnsupportedDocumentError,
-    UploadDocumentResult,
 )
 from doc_forge.stages import DocumentRegistrationError
 
 from ..logging import get_logger as get_app_logger
-from ..schemas import DocumentDetailResponse
+from ..schemas import (
+    DocumentArtifactRefsResponse,
+    DocumentDetailResponse,
+    DocumentStatusResponse,
+    RetryDocumentResponse,
+    UploadDocumentResponse,
+)
 
 logger = get_app_logger(__name__)
 
@@ -43,7 +45,7 @@ class DocumentsAppService:
         file_name: str | None,
         content: bytes,
         title: str | None,
-    ) -> UploadDocumentResult:
+    ) -> UploadDocumentResponse:
         try:
             result = self._service.upload_document(
                 workspace_id=workspace_id,
@@ -62,7 +64,7 @@ class DocumentsAppService:
                 http_status=status.HTTP_201_CREATED,
                 status="accepted",
             )
-            return result
+            return UploadDocumentResponse.model_validate(result, from_attributes=True)
         except UnsupportedDocumentError as exc:
             logger.warning(
                 "document.upload.rejected",
@@ -132,7 +134,7 @@ class DocumentsAppService:
         except DocumentNotFoundError as exc:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
 
-    def get_document_status(self, doc_id: DocId) -> DocumentStatusResult:
+    def get_document_status(self, doc_id: DocId) -> DocumentStatusResponse:
         try:
             result = self._service.get_document_status(doc_id=doc_id)
             logger.info(
@@ -145,11 +147,11 @@ class DocumentsAppService:
                 http_status=status.HTTP_200_OK,
                 status="loaded",
             )
-            return result
+            return DocumentStatusResponse.model_validate(result, from_attributes=True)
         except DocumentNotFoundError as exc:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
 
-    def get_document_artifacts(self, doc_id: DocId) -> DocumentArtifactRefs:
+    def get_document_artifacts(self, doc_id: DocId) -> DocumentArtifactRefsResponse:
         try:
             result = self._service.get_artifact_refs(doc_id=doc_id)
             logger.info(
@@ -160,11 +162,11 @@ class DocumentsAppService:
                 http_status=status.HTTP_200_OK,
                 status="loaded",
             )
-            return result
+            return DocumentArtifactRefsResponse.model_validate(result, from_attributes=True)
         except DocumentNotFoundError as exc:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
 
-    def retry_document(self, doc_id: DocId) -> RetryDocumentResult:
+    def retry_document(self, doc_id: DocId) -> RetryDocumentResponse:
         logger.info("document.retry.requested", doc_id=doc_id)
         try:
             result = self._service.retry_document(doc_id=doc_id)
@@ -176,7 +178,7 @@ class DocumentsAppService:
                 http_status=status.HTTP_202_ACCEPTED,
                 status="queued",
             )
-            return result
+            return RetryDocumentResponse.model_validate(result, from_attributes=True)
         except DocumentNotFoundError as exc:
             logger.warning(
                 "document.retry.rejected",

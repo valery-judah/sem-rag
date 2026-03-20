@@ -9,15 +9,16 @@ from pydantic import Field
 
 from doc_forge.app.services.queries import QueriesAppService
 from doc_forge.identifiers import QueryId
-from doc_forge.query import QueryRequest
-from doc_forge.query.review import (
-    QueryCitationReview,
-    QueryRunReviewSummary,
-    QueryTraceReview,
-)
 
 from ..deps import get_queries_app_service
-from ..schemas import ErrorResponse, QueryAnswerResponse
+from ..schemas import (
+    ErrorResponse,
+    QueryAnswerResponse,
+    QueryCitationReviewResponse,
+    QueryRunSummaryResponse,
+    QueryTraceReviewResponse,
+    SubmitQueryRequest,
+)
 
 router = APIRouter(tags=["Queries"])
 
@@ -42,7 +43,7 @@ router = APIRouter(tags=["Queries"])
     },
 )
 def submit_query(
-    request: Annotated[QueryRequest, Body(description="The query request payload.")],
+    request: Annotated[SubmitQueryRequest, Body(description="The query request payload.")],
     service: Annotated[QueriesAppService, Depends(get_queries_app_service)],
 ) -> QueryAnswerResponse:
     return service.submit_query(request)
@@ -50,7 +51,7 @@ def submit_query(
 
 @router.get(
     "/queries/{query_id}",
-    response_model=QueryRunReviewSummary,
+    response_model=QueryRunSummaryResponse,
     status_code=status.HTTP_200_OK,
     summary="Get Query Summary",
     description="Load a summary view for a single persisted query run.",
@@ -64,13 +65,13 @@ def submit_query(
 def get_query_summary(
     query_id: Annotated[QueryId, Field(..., description="The unique query identifier.")],
     service: Annotated[QueriesAppService, Depends(get_queries_app_service)],
-) -> QueryRunReviewSummary:
+) -> QueryRunSummaryResponse:
     return service.get_query_summary(query_id)
 
 
 @router.get(
     "/queries/{query_id}/trace",
-    response_model=QueryTraceReview,
+    response_model=QueryTraceReviewResponse,
     status_code=status.HTTP_200_OK,
     summary="Get Query Trace Review",
     description="Load the full stage-by-stage persisted trace chain for a given query run.",
@@ -84,13 +85,13 @@ def get_query_summary(
 def get_query_trace(
     query_id: Annotated[QueryId, Field(..., description="The unique query identifier.")],
     service: Annotated[QueriesAppService, Depends(get_queries_app_service)],
-) -> QueryTraceReview:
+) -> QueryTraceReviewResponse:
     return service.get_query_trace(query_id)
 
 
 @router.get(
     "/queries/{query_id}/citations",
-    response_model=QueryCitationReview,
+    response_model=QueryCitationReviewResponse,
     status_code=status.HTTP_200_OK,
     summary="Get Query Citations",
     description="Load only the persisted citation artifacts for a completed query run.",
@@ -104,5 +105,5 @@ def get_query_trace(
 def get_query_citations(
     query_id: Annotated[QueryId, Field(..., description="The unique query identifier.")],
     service: Annotated[QueriesAppService, Depends(get_queries_app_service)],
-) -> QueryCitationReview:
+) -> QueryCitationReviewResponse:
     return service.get_query_citations(query_id)

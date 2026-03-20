@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 
 from doc_forge.app.services.system import SystemAppService
 
@@ -48,10 +48,4 @@ def healthz(
 def readyz(
     service: Annotated[SystemAppService, Depends(get_system_app_service)],
 ) -> SystemStatusResponse:
-    try:
-        return service.get_readiness()
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail="ready_check_failed",
-        ) from e
+    return service.get_readiness()

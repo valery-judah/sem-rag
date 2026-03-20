@@ -124,6 +124,46 @@ async def test_status_route_returns_404_for_unknown_document(
     assert exc_info.value.detail == "document 'missing' was not found"
 
 
+async def test_status_route_returns_job_stage_for_known_document(
+    app: FastAPI,
+    sql_engine: Engine,
+    tmp_path: Path,
+    persisted_document_factory: Any,
+) -> None:
+    documents = SqlDocumentRepository(sql_engine)
+    jobs = SqlDocumentJobRepository(sql_engine)
+    documents.create(
+        persisted_document_factory(
+            doc_id="doc-readying",
+            ingest_status=ProcessingStatus.INDEXED,
+        )
+    )
+    jobs.create(
+        DocumentJob(
+            job_id="job-1",
+            doc_id="doc-readying",
+            target_stage=DocumentJobStage.READY_CHECK,
+            status=DocumentJobStatus.RUNNING,
+        )
+    )
+
+    result = _route_endpoint(app, path="/documents/{doc_id}/status", method="GET")(
+        doc_id="doc-readying",
+        service=_service(sql_engine, tmp_path),
+    )
+
+    assert result.model_dump() == {
+        "doc_id": "doc-readying",
+        "ingest_status": "indexed",
+        "source_type": "pdf",
+        "title": "Title for doc-readying",
+        "filename": "doc-readying.pdf",
+        "failure_code": None,
+        "failure_detail": None,
+        "active_job_stage": "READY_CHECK",
+    }
+
+
 async def test_artifacts_route_returns_404_for_unknown_document(
     app: FastAPI,
     sql_engine: Engine,
@@ -226,7 +266,7 @@ async def test_retry_route_returns_202_and_queued_stage_for_failed_document(
             to_status=ProcessingStatus.FAILED,
             failure_category=FailureCategory.PROCESSING,
             detail={
-                "job_stage": "EXTRACT",
+                "job_stage": "SECTIONIZE",
                 "error_code": "extract_failed",
                 "error_detail": "parse error",
             },
@@ -240,12 +280,12 @@ async def test_retry_route_returns_202_and_queued_stage_for_failed_document(
 
     assert result.model_dump() == {
         "doc_id": "doc-failed",
-        "ingest_status": "registered",
-        "queued_stage": "EXTRACT",
+        "ingest_status": "normalized",
+        "queued_stage": "SECTIONIZE",
     }
     queued_jobs = jobs.list_for_document("doc-failed")
     assert len(queued_jobs) == 1
-    assert queued_jobs[0].target_stage.value == "EXTRACT"
+    assert queued_jobs[0].target_stage.value == "SECTIONIZE"
 
 
 async def test_retrieval_query_returns_404_for_unknown_document(

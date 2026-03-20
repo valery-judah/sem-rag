@@ -1,5 +1,3 @@
-# ruff: noqa: B008
-# pyright: reportUnusedFunction=false
 from __future__ import annotations
 
 from typing import Annotated
@@ -16,22 +14,22 @@ from pydantic import Field
 
 from doc_forge.app.services.documents import DocumentsAppService
 from doc_forge.identifiers import DocId, WorkspaceId
-from doc_forge.lifecycle.service import (
-    DocumentArtifactRefs,
-    DocumentStatusResult,
-    RetryDocumentResult,
-    UploadDocumentResult,
-)
 
 from ..deps import get_documents_app_service
-from ..schemas import DocumentDetailResponse, ErrorResponse
+from ..schemas import (
+    DocumentArtifactRefsResponse,
+    DocumentDetailResponse,
+    DocumentStatusResponse,
+    ErrorResponse,
+    RetryDocumentResponse,
+    UploadDocumentResponse,
+)
 
 router = APIRouter(tags=["Documents"])
 
 
 @router.post(
     "/documents",
-    response_model=UploadDocumentResult,
     status_code=status.HTTP_201_CREATED,
     summary="Upload Document",
     description=(
@@ -61,7 +59,7 @@ def upload_document(
         str | None,
         Form(description="Optional custom title for the document. If omitted, uses the filename."),
     ] = None,
-) -> UploadDocumentResult:
+) -> UploadDocumentResponse:
     content = file.file.read()
     return service.upload_document(
         workspace_id=workspace_id,
@@ -111,7 +109,6 @@ def get_document(
 
 @router.get(
     "/documents/{doc_id}/status",
-    response_model=DocumentStatusResult,
     summary="Get Document Status",
     description=(
         "Check the current ingestion status and active job stage "
@@ -127,13 +124,12 @@ def get_document(
 def get_document_status(
     doc_id: Annotated[DocId, Field(..., description="The unique identifier of the document.")],
     service: Annotated[DocumentsAppService, Depends(get_documents_app_service)],
-) -> DocumentStatusResult:
+) -> DocumentStatusResponse:
     return service.get_document_status(doc_id=doc_id)
 
 
 @router.get(
     "/documents/{doc_id}/artifacts",
-    response_model=DocumentArtifactRefs,
     summary="Get Document Artifact References",
     description=(
         "Retrieve the filesystem paths where raw, extracted, and normalized artifacts are stored."
@@ -148,13 +144,12 @@ def get_document_status(
 def get_document_artifacts(
     doc_id: Annotated[DocId, Field(..., description="The unique identifier of the document.")],
     service: Annotated[DocumentsAppService, Depends(get_documents_app_service)],
-) -> DocumentArtifactRefs:
+) -> DocumentArtifactRefsResponse:
     return service.get_document_artifacts(doc_id=doc_id)
 
 
 @router.post(
     "/documents/{doc_id}/retry",
-    response_model=RetryDocumentResult,
     status_code=status.HTTP_202_ACCEPTED,
     summary="Retry Failed Document",
     description=(
@@ -175,5 +170,5 @@ def get_document_artifacts(
 def retry_document(
     doc_id: Annotated[DocId, Field(..., description="The unique identifier of the document.")],
     service: Annotated[DocumentsAppService, Depends(get_documents_app_service)],
-) -> RetryDocumentResult:
+) -> RetryDocumentResponse:
     return service.retry_document(doc_id=doc_id)

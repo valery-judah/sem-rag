@@ -15,7 +15,9 @@ Refactor the FastAPI boundary so `src/doc_forge/app/api.py` becomes app assembly
 
 ## Current status
 - PR 1 has been executed: router modules have been successfully extracted and `api.py` reduced to app assembly.
-- All stable route definitions are now located inside `src/doc_forge/app/routers/` while maintaining current functionality and OpenAPI specs.
+- PR 2 has been executed and committed: app services now own endpoint orchestration, logging, exception translation, and API response shaping behind thin routers.
+- PR 3 has been implemented in the current worktree and passes verification, but it is not yet committed.
+- All stable route definitions are located inside `src/doc_forge/app/routers/`, and the app boundary cleanup is now in its final internal-model hardening phase.
 
 ## Next step
-- Execute PR 2 from `[docs/workstreams/WS-025-api-decoupling/WS-025-plan.md](/Users/val/projects/rag/sem-rag/docs/workstreams/WS-025-api-decoupling/WS-025-plan.md)`: introduce the app-layer orchestration seam to remove business logging and error translation from routers.
+- Review and commit PR 3 from `[docs/workstreams/WS-025-api-decoupling/WS-025-plan.md](/Users/val/projects/rag/sem-rag/docs/workstreams/WS-025-api-decoupling/WS-025-plan.md)`: finish the internal service-model cleanup and boundary hardening already staged in the worktree.

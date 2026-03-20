@@ -12,6 +12,7 @@ from fastapi.routing import APIRoute
 
 from doc_forge.app.deps import get_document_lifecycle_service
 from doc_forge.app.logging import get_logger
+from doc_forge.app.services.documents import DocumentsAppService
 from doc_forge.artifacts import FilesystemArtifactStore
 from doc_forge.stages import DocumentRegistrationError, RegisterDocumentStage
 
@@ -49,9 +50,6 @@ class _UploadFileStub:
 
 def _upload_file(filename: str, content: bytes) -> _UploadFileStub:
     return _UploadFileStub(filename=filename, content=content)
-
-
-from doc_forge.app.services.documents import DocumentsAppService
 
 
 def _service(sql_engine: sa.Engine, tmp_path: Path) -> DocumentsAppService:
