@@ -9,7 +9,9 @@ The product target is broader than the current implementation. The product north
 - `AGENTS.md`: repo workflow entry point for agents
 - `docs/evergreen/mvp.md`: MVP product north star and scope boundary
 - `docs/evergreen/architecture.md`: current-state vs target-state architecture
-- `docs/evergreen/api-contracts.md`: stable interfaces that exist today
+- `docs/evergreen/api-contracts.md`: stable interfaces that exist today (includes API examples)
+- `docs/evergreen/runbook.md`: local operations and troubleshooting
+- `docs/evergreen/manual-e2e.md`: step-by-step manual end-to-end ingestion test
 - `docs/README.md`: documentation map
 
 ## Current Repository Shape
@@ -31,10 +33,28 @@ The product target is broader than the current implementation. The product north
 
 ## Quickstart
 
+Start the local Docker stack (requires Postgres DB):
+```bash
+make docker-up-build
+```
+
+Then prepare the environment:
 ```bash
 uv sync
+```
+
+The API and worker are blocking processes and should be run in separate terminals (or in the background):
+```bash
+# Terminal 1
 uv run poe run-api
+
+# Terminal 2
 uv run poe run-worker
+```
+
+With those running, you can execute the end-to-end tests in another terminal:
+```bash
+# Terminal 3
 uv run poe test-e2e
 ```
 
@@ -75,6 +95,7 @@ docs/
     api-contracts.md
     architecture.md
     runbook.md
+    manual-e2e.md
   workstreams/
   adrs/
   harness/

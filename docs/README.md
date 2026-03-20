@@ -18,6 +18,7 @@ Stable Interfaces:
 
 Commands And Validation:
 - `docs/evergreen/runbook.md`: Canonical. Local operation guidance and standard commands.
+- `docs/evergreen/manual-e2e.md`: Canonical. Step-by-step manual end-to-end ingestion test.
 
 Local LLM / Docker Defaults:
 - `docs/workstreams/WS-008-local-llm/01_local_llm_runtime_note.md`: Execution history for optional MLX/Ollama generation, Apple Silicon host-Ollama defaults for Docker-backed local flows, and the comparison smoke harness.

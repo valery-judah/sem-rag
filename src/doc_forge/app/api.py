@@ -105,7 +105,44 @@ class RetrievalQueryRequest(BaseModel):
 class QueryAnswerResponse(BaseModel):
     """Clean public-facing answer payload for a completed query."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(
+        extra="forbid",
+        json_schema_extra={
+            "example": {
+                "query_id": "qry_1234abcd",
+                "answer": {
+                    "answer_text": "Supports up to 10,000 concurrent connections.",
+                    "visible_limitations": [],
+                    "should_render_citations": True,
+                    "grounded_evidence_set_ids": ["es_9876xyz"],
+                    "generator_version": "v1.0",
+                },
+                "support_state": "sufficient",
+                "answer_mode": "direct_answer",
+                "citations": {
+                    "citations": [
+                        {
+                            "evidence_set_id": "es_9876xyz",
+                            "source_reference": {
+                                "doc_id": "doc_1234abcd",
+                                "document_title": "Database Architecture",
+                                "snippet": "Supports up to 10,000 concurrent connections.",
+                                "section_id": "sec_1",
+                                "heading_path": ["Scalability"],
+                                "page_label": "42",
+                                "chunk_id": "chk_5678",
+                                "passage_anchor": None,
+                            },
+                            "support_role": "primary",
+                        }
+                    ],
+                    "material_doc_ids": ["doc_1234abcd"],
+                    "renderer_version": "v1.0",
+                },
+                "message": "query answer completed with grounded generation and rendered citations",
+            }
+        },
+    )
 
     query_id: QueryId = Field(min_length=1, description="The unique query identifier.")
     answer: AnswerDraft = Field(description="The generated answer draft.")
@@ -136,7 +173,10 @@ class WorkerJobResult(BaseModel):
 class ErrorResponse(BaseModel):
     """Standardized error response payload."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(
+        extra="forbid",
+        json_schema_extra={"example": {"detail": "The requested document was not found."}},
+    )
 
     detail: str = Field(
         ...,
@@ -159,7 +199,24 @@ class SystemStatusResponse(BaseModel):
 class DocumentDetailResponse(BaseModel):
     """Detailed metadata response for a specific registered document."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(
+        extra="forbid",
+        json_schema_extra={
+            "example": {
+                "doc_id": "doc_1234abcd",
+                "workspace_id": "workspace_alpha",
+                "source_type": "pdf",
+                "title": "Database Architecture Design",
+                "filename": "database_architecture.pdf",
+                "uploaded_at": "2024-03-10T15:30:00Z",
+                "checksum": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "ingest_status": "completed",
+                "failure_code": None,
+                "failure_detail": None,
+                "raw_storage_path": "workspaces/workspace_alpha/documents/doc_1234abcd/raw.pdf",
+            }
+        },
+    )
 
     doc_id: str = Field(min_length=1, description="The unique identifier of the document.")
     workspace_id: str = Field(min_length=1, description="The workspace this document belongs to.")
@@ -269,11 +326,40 @@ def create_app() -> FastAPI:
             content=ErrorResponse(detail="Internal server error").model_dump(),
         )
 
-    @app.get("/healthz", tags=["System"], response_model=SystemStatusResponse)
+    @app.get(
+        "/healthz",
+        tags=["System"],
+        response_model=SystemStatusResponse,
+        summary="Health Check",
+        description=(
+            "Lightweight liveness probe that indicates whether the application process is running."
+        ),
+        responses={
+            status.HTTP_500_INTERNAL_SERVER_ERROR: {
+                "model": ErrorResponse,
+                "description": "Internal server error",
+            },
+        },
+    )
     def healthz() -> SystemStatusResponse:
         return SystemStatusResponse(status="ok")
 
-    @app.get("/readyz", tags=["System"], response_model=SystemStatusResponse)
+    @app.get(
+        "/readyz",
+        tags=["System"],
+        response_model=SystemStatusResponse,
+        summary="Readiness Check",
+        description=(
+            "Deep readiness probe that validates connections to the "
+            "database, vector store, and artifact storage."
+        ),
+        responses={
+            status.HTTP_500_INTERNAL_SERVER_ERROR: {
+                "model": ErrorResponse,
+                "description": "Readiness check failed due to unreachable dependencies",
+            },
+        },
+    )
     def readyz(
         engine: Annotated[Engine, Depends(get_engine)],
         artifact_store: Annotated[FilesystemArtifactStore, Depends(get_artifact_store)],
