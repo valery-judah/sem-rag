@@ -8,37 +8,39 @@ This plan is implementation guidance. It does not replace the canonical constrai
 - `[docs/evergreen/architecture.md](/Users/val/projects/rag/sem-rag/docs/evergreen/architecture.md)`
 - `[docs/evergreen/api-contracts.md](/Users/val/projects/rag/sem-rag/docs/evergreen/api-contracts.md)`
 - `[docs/workstreams/WS-025-api-decoupling/WS-025-framing.md](/Users/val/projects/rag/sem-rag/docs/workstreams/WS-025-api-decoupling/WS-025-framing.md)`
+- `[docs/workstreams/WS-025-api-decoupling/WS-025-PR2-handoff.md](/Users/val/projects/rag/sem-rag/docs/workstreams/WS-025-api-decoupling/WS-025-PR2-handoff.md)`
 
 ## Execution Unit
 Use stacked PRs.
 
-Why this fits WS-025:
+Why this still fits WS-025:
 
-- the refactor has multiple earned seams: routers, app services, mappers, DTO ownership, and service-model cleanup
-- stable HTTP contract preservation needs small reviewable deltas
-- log behavior is already tested and should be kept under tight regression control
-- the repo can stay runnable after each step without partial architectural dead ends
+- the refactor has multiple earned seams: router extraction, app services, API DTO ownership, and internal service-model cleanup
+- PR 2 now intentionally includes API-boundary redesign, so it needs reviewable scope and explicit doc updates
+- logging and HTTP behavior are sensitive enough that changes should be isolated and justified
+- the repo can stay runnable after each step without leaving a partial boundary in place for long
 
-Avoid one large refactor PR. It would mix transport moves, DTO ownership changes, and service model cleanup into one review, which is exactly the failure mode this workstream is trying to avoid.
+Avoid one large refactor PR. It would mix transport extraction, app-service introduction, contract changes, and internal cleanup into one review.
 
 ## PR Sizing Rule
 Each PR should:
 
 - introduce one primary seam or one primary ownership change
 - keep the repo runnable and testable
-- preserve stable HTTP behavior unless the PR is explicitly about internal model cleanup only
+- update evergreen docs whenever it changes stable HTTP behavior or earned architecture truth
 - include tests that pin the seam added in that PR
-- defer follow-up cleanup instead of mixing mechanical and semantic changes
+- defer cleanup that does not need to land in the same review
 
-Target size: 4 PRs.
+Target size: 3 PRs.
 
 ## Review Policy
 Each PR description should include:
 
 - purpose
 - files expected to change
-- invariants added or preserved
+- invariants added, preserved, or deliberately changed
 - tests added or adjusted
+- evergreen docs updated in the PR
 - explicit deferrals to the next PR
 
 ## Staged PR Plan
@@ -83,14 +85,14 @@ The app has explicit router modules and `api.py` is transport assembly only.
 
 Deferred:
 
-- moving business logging out of handlers
-- DTO ownership changes
+- moving orchestration concerns out of handlers
+- API DTO ownership changes
 - service model cleanup
 
-### [ ] PR 2. App Services and Thin Routers
+### [ ] PR 2. Full App-Layer Boundary and Thin Routers
 
 Purpose:
-Introduce the app-layer orchestration seam so routers stop owning business logging and error translation.
+Introduce the app-layer seam and make it the owner of endpoint orchestration, logging, exception translation, and API response shaping.
 
 Deliverables:
 
@@ -98,10 +100,14 @@ Deliverables:
 - create `src/doc_forge/app/services/documents.py`
 - create `src/doc_forge/app/services/queries.py`
 - create `src/doc_forge/app/services/internal.py`
-- add dependency providers in `src/doc_forge/app/deps.py` for these app services
-- move endpoint-level business logs from route functions into app services
-- move known domain/internal error translation into app services
-- leave routers responsible only for input parsing, DI, delegation, and returning values
+- add app-service dependency providers in `src/doc_forge/app/deps.py`
+- refactor routers to inject app services and delegate immediately
+- move endpoint-level business logs from routers into app services
+- move domain/internal error translation into app services
+- move response DTO construction into app services
+- add or update app-owned API models in `src/doc_forge/app/schemas.py`
+- update `docs/evergreen/api-contracts.md` for any route-shape, response-shape, or status-code changes introduced by the new boundary
+- update `docs/evergreen/architecture.md` once `app/services` is implemented and validated as an earned seam
 
 Likely files:
 
@@ -110,120 +116,72 @@ Likely files:
 - `src/doc_forge/app/services/documents.py`
 - `src/doc_forge/app/services/queries.py`
 - `src/doc_forge/app/services/internal.py`
-- `src/doc_forge/app/routers/*.py`
-- tests under `tests/app/`
-
-Tests and checks:
-
-- structured logging tests still pass with the same event names and core fields
-- route tests still pass with the same status codes and error details
-- routers no longer contain route-specific `try/except` translation logic
-
-Exit condition:
-Transport concerns and endpoint orchestration are separated by an app-service seam.
-
-Deferred:
-
-- stable-route DTO ownership cleanup
-- lifecycle service result-model cleanup
-
-### [ ] PR 3. Stable Route DTO Boundary and Pure Mappers
-
-Purpose:
-Make the app layer the clear owner of stable HTTP request/response models and centralize model-to-DTO mapping.
-
-Deliverables:
-
-- create `src/doc_forge/app/mappers/documents.py`
-- create `src/doc_forge/app/mappers/queries.py`
-- expand `src/doc_forge/app/schemas.py` to own stable route DTOs
-- ensure stable routes no longer return internal lifecycle/query models directly
-- add explicit request-side app DTO ownership for `POST /queries`, then map to internal `QueryRequest`
-- keep internal/debug routes mixed if that avoids unnecessary scope expansion in this PR
-
-Stable routes covered in this PR:
-
-- `GET /healthz`
-- `GET /readyz`
-- `POST /documents`
-- `GET /documents/{doc_id}`
-- `GET /documents/{doc_id}/status`
-- `GET /documents/{doc_id}/artifacts`
-- `POST /documents/{doc_id}/retry`
-- `POST /queries`
-- `GET /queries/{query_id}`
-- `GET /queries/{query_id}/trace`
-- `GET /queries/{query_id}/citations`
-
-Likely files:
-
 - `src/doc_forge/app/schemas.py`
-- `src/doc_forge/app/mappers/documents.py`
-- `src/doc_forge/app/mappers/queries.py`
-- `src/doc_forge/app/services/documents.py`
-- `src/doc_forge/app/services/queries.py`
+- `src/doc_forge/app/api_examples.py`
 - `src/doc_forge/app/routers/*.py`
+- `docs/evergreen/api-contracts.md`
+- `docs/evergreen/architecture.md`
 - tests under `tests/app/`
 
 Tests and checks:
 
-- route tests assert unchanged JSON payloads for stable routes
-- focused mapper tests cover lifecycle upload/status/artifact/retry mapping
-- focused mapper tests cover query answer/review mapping
-- no stable route response model points directly at lifecycle or query internal schema types
+- routers no longer import `structlog`
+- routers no longer contain route-specific `try/except` translation logic
+- routers no longer build response DTOs inline
+- structured logging tests still pass, or are intentionally updated with clear rationale
+- route tests cover the implemented HTTP behavior and OpenAPI-visible response models after the redesign
+- doc updates match implemented behavior in the same PR
 
 Exit condition:
-Stable HTTP contract ownership is explicit in the app layer, and mapping is centralized.
+The app layer is the clear owner of the API-facing boundary for the affected routes, and routers are transport-thin.
 
 Deferred:
 
-- removal of OpenAPI-facing concerns from internal service result models
+- removal of OpenAPI-facing concerns from internal lifecycle/query result models where that cleanup is purely internal
 
-### [ ] PR 4. Lifecycle Service Model Cleanup and Boundary Hardening
+### [ ] PR 3. Internal Service Model Cleanup and Boundary Hardening
 
 Purpose:
-Remove OpenAPI-facing schema concerns from lifecycle service result models and finalize the internal/app boundary.
+Remove leftover app- or OpenAPI-facing concerns from internal result models now that the app layer clearly owns the public boundary.
 
 Deliverables:
 
-- remove `json_schema_extra` and other OpenAPI-facing schema concerns from lifecycle service result models
-- rename internal lifecycle result models if needed to avoid confusion with app DTO names
+- remove `json_schema_extra` and similar OpenAPI-facing metadata from lifecycle or query internal result models where still present
+- rename internal result models if needed to reduce confusion with app DTOs
 - keep internal result models lightweight and app-agnostic
-- adjust imports and tests so the stable API surface continues to use app DTOs only
-- perform final cleanup of any leftover direct app-schema leakage or route-layer mapping logic
+- perform final cleanup of direct app-schema leakage into internal packages
+- update evergreen docs only if this PR changes earned architectural truth beyond what PR 2 already documented
 
 Likely files:
 
 - `src/doc_forge/lifecycle/service.py`
+- `src/doc_forge/query/`
 - `src/doc_forge/app/schemas.py`
-- `src/doc_forge/app/mappers/documents.py`
-- `src/doc_forge/app/services/documents.py`
-- tests under `tests/app/` and `tests/lifecycle/`
+- `src/doc_forge/app/services/*.py`
+- tests under `tests/app/`, `tests/lifecycle/`, and `tests/query/`
 
 Tests and checks:
 
-- `DocumentLifecycleService` no longer owns OpenAPI-oriented examples or app-contract metadata
-- stable route payloads are unchanged
-- lifecycle service tests still pass on internal models
+- internal service models no longer carry HTTP-contract concerns
+- app-layer tests still pass against app-owned DTOs
 - full repo validation passes
 
 Exit condition:
-The stable HTTP DTO boundary is app-owned, and the lifecycle service no longer carries HTTP-contract concerns.
+The app boundary is explicit and internal services no longer carry API-contract baggage.
 
 ## Merge Order
 Recommended merge order:
 
 1. PR 1: router extraction and app assembly
-2. PR 2: app services and thin routers
-3. PR 3: stable route DTO boundary
-4. PR 4: lifecycle service model cleanup
+2. PR 2: full app-layer boundary and thin routers
+3. PR 3: internal service model cleanup
 
-Do not merge PR 3 before PR 2. The DTO boundary becomes much harder to review if routers still own business logging and error translation.
+Do not re-split DTO ownership out of PR 2. That would recreate the partial boundary this workstream is trying to remove.
 
-Do not merge PR 4 before PR 3. Internal model cleanup should happen only after the app layer clearly owns the stable boundary.
+Do not merge PR 3 before PR 2. Internal model cleanup only makes sense after the app layer clearly owns the API surface.
 
 ## Validation Strategy
-Primary validation command for each PR:
+Primary validation command for each code PR:
 
 ```bash
 uv run poe verify
@@ -231,18 +189,18 @@ uv run poe verify
 
 Additional review expectations:
 
-- inspect the route set and OpenAPI-visible response models after PR 1 and PR 3
-- keep structured logging assertions intact after PR 2
-- confirm stable JSON shapes remain unchanged for all documented stable routes after PR 3 and PR 4
+- inspect the route set and OpenAPI-visible response models after PR 1 and PR 2
+- keep structured logging assertions aligned with intended observability behavior after PR 2
+- confirm evergreen docs match implemented route behavior whenever contract changes are introduced
 
 ## Final Acceptance Criteria
 WS-025 is complete when all of the following are true:
 
 - `src/doc_forge/app/api.py` is application assembly only
 - route declarations live under `src/doc_forge/app/routers/`
-- routers are transport-thin and do not own business logging or domain-error translation
-- stable routes return DTOs owned by the app layer
-- model-to-DTO conversion is centralized in app mappers/services rather than being scattered in route functions
-- `DocumentLifecycleService` no longer owns OpenAPI-facing schema concerns
-- the stable contract in evergreen API docs remains unchanged
+- routers are transport-thin and do not own business logging, domain-error translation, or response DTO construction
+- app services own endpoint orchestration and API-facing result shaping
+- stable-route behavior is documented accurately in evergreen API docs, even where it changed during WS-025
+- `src/doc_forge/app/services/` is an earned internal seam reflected in evergreen architecture docs
+- internal lifecycle/query service models no longer carry unnecessary OpenAPI-facing concerns
 - `uv run poe verify` passes

@@ -10,6 +10,10 @@ from fastapi import Depends
 from sqlalchemy import event
 from sqlalchemy.engine import Engine
 
+from doc_forge.app.services.documents import DocumentsAppService
+from doc_forge.app.services.internal import InternalAppService
+from doc_forge.app.services.queries import QueriesAppService
+from doc_forge.app.services.system import SystemAppService
 from doc_forge.artifacts import FilesystemArtifactStore
 from doc_forge.chunking import ChunkingService
 from doc_forge.extractors import ExtractorRegistry, MarkdownExtractor, PdfExtractor
@@ -386,6 +390,56 @@ def get_query_replay_service(
         snapshot_store=SqlQuerySnapshotStore(engine),
         trace_store=SqlQueryTraceStore(engine),
         answer_store=SqlQueryAnswerStore(engine),
+    )
+
+
+def get_documents_app_service(
+    lifecycle_service: Annotated[DocumentLifecycleService, Depends(get_document_lifecycle_service)],
+) -> DocumentsAppService:
+    """Build the document orchestration app service."""
+    return DocumentsAppService(lifecycle_service=lifecycle_service)
+
+
+def get_queries_app_service(
+    query_service: Annotated[QueryService, Depends(get_query_service)],
+    review_service: Annotated[QueryReviewService, Depends(get_query_review_service)],
+) -> QueriesAppService:
+    """Build the queries app service."""
+    return QueriesAppService(
+        query_service=query_service,
+        review_service=review_service,
+    )
+
+
+def get_system_app_service(
+    engine: Annotated[Engine, Depends(get_engine)],
+    artifact_store: Annotated[FilesystemArtifactStore, Depends(get_artifact_store)],
+    vector_store: Annotated[SqlVectorStore, Depends(get_vector_store)],
+) -> SystemAppService:
+    """Build the system app service."""
+    return SystemAppService(
+        engine=engine,
+        artifact_store=artifact_store,
+        vector_store=vector_store,
+    )
+
+
+def get_internal_app_service(
+    lifecycle_service: Annotated[
+        DocumentLifecycleService,
+        Depends(get_document_lifecycle_service),
+    ],
+    worker: Annotated[
+        DocumentLifecycleWorker,
+        Depends(get_document_lifecycle_worker),
+    ],
+) -> InternalAppService:
+    """Build the internal app service."""
+    from .services.internal import InternalAppService
+
+    return InternalAppService(
+        lifecycle_service=lifecycle_service,
+        worker=worker,
     )
 
 

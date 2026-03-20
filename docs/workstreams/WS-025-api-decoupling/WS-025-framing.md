@@ -1,77 +1,81 @@
 # Framing
 
 ## Problem
-`[src/doc_forge/app/api.py](/Users/val/projects/rag/sem-rag/src/doc_forge/app/api.py)` currently owns too many responsibilities at once:
+`[src/doc_forge/app/api.py](/Users/val/projects/rag/sem-rag/src/doc_forge/app/api.py)` and the extracted router modules still sit too close to application orchestration and HTTP contract concerns at the same time.
 
-- FastAPI app creation and Swagger toggling
-- request middleware and global exception handling
-- route declarations and endpoint metadata
-- endpoint-level business logging
-- domain-error to HTTP-error translation
-- ad hoc model-to-DTO conversion
+The underlying coupling problems are:
 
-The current file is therefore the transport layer, part of the application layer, and part of the HTTP contract layer at the same time.
+- routers and route-adjacent code own transport concerns, endpoint orchestration, business logging, and error translation all at once
+- some stable routes expose app-owned DTOs while others expose internal lifecycle/query models directly
+- internal lifecycle and query packages still carry OpenAPI-facing examples and schema language that should belong to the app layer once the boundary is cleaned up
 
-A second coupling problem exists at the HTTP boundary: some stable routes already use app-layer DTOs from `[src/doc_forge/app/schemas.py](/Users/val/projects/rag/sem-rag/src/doc_forge/app/schemas.py)`, while others expose internal lifecycle/query models directly from `[src/doc_forge/lifecycle/service.py](/Users/val/projects/rag/sem-rag/src/doc_forge/lifecycle/service.py)` and `[src/doc_forge/query/review.py](/Users/val/projects/rag/sem-rag/src/doc_forge/query/review.py)`. That makes it unclear where the stable API contract actually lives.
+That makes it unclear where the public HTTP contract actually lives and keeps the app boundary weaker than it should be.
 
 ## Canonical Constraints
-- The stable HTTP contract in `[docs/evergreen/api-contracts.md](/Users/val/projects/rag/sem-rag/docs/evergreen/api-contracts.md)` must remain unchanged.
-- The current runtime topology in `[docs/evergreen/architecture.md](/Users/val/projects/rag/sem-rag/docs/evergreen/architecture.md)` remains one FastAPI service with internal lifecycle/query seams; this workstream is an internal refactor, not a service split.
+- The current runtime topology in `[docs/evergreen/architecture.md](/Users/val/projects/rag/sem-rag/docs/evergreen/architecture.md)` remains one FastAPI service with internal lifecycle/query seams; this workstream is boundary cleanup, not a service split.
 - No business behavior changes are in scope for lifecycle processing, query execution, readiness checks, or review loading.
-- No route additions, removals, path changes, request-shape changes, or response-shape changes are allowed for stable routes.
+- Stable HTTP contracts may change during this workstream when that change materially improves boundary ownership and is updated in `[docs/evergreen/api-contracts.md](/Users/val/projects/rag/sem-rag/docs/evergreen/api-contracts.md)`.
+- Evergreen docs must stay aligned with implemented behavior. If the HTTP surface changes, `docs/evergreen/api-contracts.md` must change with it. If a new internal seam is earned, `docs/evergreen/architecture.md` should reflect it after implementation and validation.
 
 ## In Scope
-- Split `[src/doc_forge/app/api.py](/Users/val/projects/rag/sem-rag/src/doc_forge/app/api.py)` into app assembly plus router modules.
-- Introduce an app-layer service seam that owns endpoint orchestration, endpoint business logging, HTTP error translation, and DTO mapping.
-- Define and enforce where model-to-DTO conversion happens.
-- Move stable HTTP request/response DTO ownership into the app layer.
-- Remove OpenAPI-oriented schema concerns from lifecycle service result models.
+- Split app assembly from routers and keep `api.py` focused on runtime assembly concerns.
+- Introduce an app-layer service seam that owns endpoint orchestration, endpoint business logging, HTTP error translation, and response shaping.
+- Make the app layer the owner of stable HTTP request/response DTOs.
+- Update stable HTTP contracts where needed to make that ownership explicit and coherent.
+- Remove OpenAPI-oriented schema concerns from internal lifecycle/query service and review models after the app boundary is established.
 
 ## Out Of Scope
 - Changing `DocumentLifecycleService`, `QueryService`, or `QueryReviewService` business behavior.
-- Changing the stable localhost API described in evergreen contracts.
+- Splitting the service into multiple deployable services.
 - Creating class-based controllers.
 - Introducing a public Python package API.
-- Reworking query-stage internals, persistence layout, or worker behavior.
+- Reworking query-stage internals, persistence layout, or worker behavior beyond boundary fallout from the refactor.
 
 ## Current Repo Truth
-Today the route layer is mixed:
+Today the route layer is still mixed:
 
-- stable routes such as `GET /documents/{doc_id}` and `POST /queries` already build app DTOs in `api.py`
-- other stable routes return internal models directly, including lifecycle result models and query review models
-- internal/debug routes such as `POST /retrieval/query` and `POST /internal/run-next-job` are also defined in `api.py`
-- endpoint-level logs such as `document.upload.accepted`, `query.api.started`, and `review.summary.loaded` are emitted directly inside route functions
-- `DocumentLifecycleService` includes internal result models with OpenAPI-oriented `Field` metadata and examples, which is HTTP-contract leakage into the service layer
+- route declarations live in router modules, but the routers still own business logging, `HTTPException` translation, and some response shaping
+- some stable routes already use app-layer DTOs from `[src/doc_forge/app/schemas.py](/Users/val/projects/rag/sem-rag/src/doc_forge/app/schemas.py)`
+- other routes still expose internal models directly from `[src/doc_forge/lifecycle/service.py](/Users/val/projects/rag/sem-rag/src/doc_forge/lifecycle/service.py)` and `[src/doc_forge/query/review.py](/Users/val/projects/rag/sem-rag/src/doc_forge/query/review.py)`
+- internal lifecycle/query models still contain example metadata and HTTP-facing schema phrasing that belongs at the app boundary instead
 
 ## Decisions
-### 1. Controller shape
-Use router modules, not controller classes.
+### 1. Router shape
+Use router modules with thin endpoint functions, not controller classes.
 
-“Controller” in this workstream means the route module plus its thin endpoint functions. Endpoint functions should only:
+Endpoint functions should only:
 - declare FastAPI metadata
 - parse HTTP inputs
 - resolve dependencies
 - call one app service method
-- return the mapped DTO
+- return the result
 
 ### 2. App-layer orchestration
 Introduce app services under `src/doc_forge/app/` for transport-adjacent behavior. These services own:
 - endpoint business logging
 - domain/service invocation
-- HTTPException translation
+- `HTTPException` translation
 - domain/internal-model to app-DTO mapping
 
 Routers must not contain business logging or domain-error handling.
 
 ### 3. DTO boundary
-Enforce app-layer DTOs for stable public routes only.
+The app layer owns the stable HTTP boundary.
 
-Stable routes must return DTOs owned by the app layer. Internal/debug routes may remain on internal models in the first increment if that keeps the refactor smaller and clearer.
+That means:
+- stable routes should return DTOs owned by `src/doc_forge/app/`
+- stable request payload ownership should also live in the app layer where practical
+- internal/debug routes may continue returning internal models when that keeps the design simpler and does not blur the stable public boundary
 
-### 4. Domain model policy
+### 4. Contract change policy
+This workstream is allowed to change stable HTTP contracts if the change is in service of a cleaner boundary and the evergreen contract docs are updated in the same implementation step.
+
+This is no longer framed as a strict no-contract-change internal refactor.
+
+### 5. Domain model policy
 Do not require dataclasses specifically.
 
-Internal lifecycle/query result models may remain Pydantic models or other lightweight internal models, but they must not carry OpenAPI-facing concerns such as `json_schema_extra` or app-contract naming. The key rule is boundary ownership, not the concrete model base class.
+Internal lifecycle/query result models may remain Pydantic models or other lightweight internal models, but they must not carry OpenAPI-facing concerns once the app layer owns the public boundary. The key rule is ownership, not the concrete model base class.
 
 ## Target Structure
 Target module layout:
@@ -100,9 +104,9 @@ Responsibilities:
 
 - `api.py`: create app, configure logging, register middleware, register global exception handlers, include routers
 - `routers/*.py`: route declarations, FastAPI metadata, request parsing, DI, one-call delegation to app services
-- `services/*.py`: endpoint orchestration, endpoint logs, exception translation, mapping invocation
-- `mappers/*.py`: pure conversion helpers from internal/domain models to app DTOs
-- `schemas.py`: stable HTTP DTOs and request models, including OpenAPI examples
+- `services/*.py`: endpoint orchestration, endpoint logs, exception translation, mapping invocation, response shaping
+- `mappers/*.py`: pure conversion helpers from internal/domain models to app DTOs where a separate mapper module remains worthwhile
+- `schemas.py`: app-owned HTTP DTOs and request models, including OpenAPI examples
 
 ## Route Ownership
 Router grouping:
@@ -139,25 +143,27 @@ Stable-route DTO ownership applies to:
 - `GET /queries/{query_id}/trace`
 - `GET /queries/{query_id}/citations`
 
+Internal/debug routes may remain on internal models if that produces a cleaner boundary with less incidental complexity.
+
 ## Mapping Strategy
 Model-to-DTO conversion happens in the app layer, immediately before returning from an app service to a router.
 
 Rules:
 - routers do not construct response DTOs inline, except for trivial constant responses if explicitly chosen
 - domain services and query services do not import app DTOs
-- stable-route request parsing ends at app DTO/request model level, then the app service maps into internal request models as needed
-- internal/debug routes may continue returning internal models until the stable-route split is complete
+- stable-route request parsing should end at app DTO/request model level, then the app service maps into internal request models as needed
+- internal/debug routes may continue returning internal models where appropriate
 
 Required mapping coverage:
-- lifecycle upload/status/artifact/retry results -> app response DTOs
-- persisted document model -> `DocumentDetailResponse`
-- query runtime state -> `QueryAnswerResponse`
-- query review internal models -> app review DTOs for summary, trace, and citations
+- lifecycle upload/status/artifact/retry results to app response DTOs where those routes are part of the stable boundary
+- persisted document model to `DocumentDetailResponse`
+- query runtime state to `QueryAnswerResponse`
+- query review internal models to app review DTOs if PR 2 chooses to stop exposing `query.review` models directly
 
 ## Logging and Error Policy
 - request-scoped middleware logging stays in `api.py`
 - endpoint business logs move from route functions into app services
-- existing event names and key structured fields should be preserved so current log-based tests stay valid
+- existing event names and key structured fields should remain stable unless there is a deliberate observability change
 - app services translate known domain/internal errors into `HTTPException`
 - global unhandled-exception handling remains app-level in `api.py`
 
@@ -167,28 +173,28 @@ This workstream does not introduce a second custom app-exception hierarchy unles
 `[src/doc_forge/app/deps.py](/Users/val/projects/rag/sem-rag/src/doc_forge/app/deps.py)` should continue building domain services and also add provider functions for the new app services. Routers depend on app services, not directly on `DocumentLifecycleService`, `QueryService`, or `QueryReviewService`.
 
 ## Implementation Sequence
-1. Create router, app-service, and mapper modules with no behavioral change.
-2. Move route functions out of `api.py` into routers and keep them thin.
-3. Move endpoint logging and try/except translation into app services.
-4. Introduce pure mappers and stop building DTOs inline in route functions.
-5. Move stable HTTP DTO ownership into the app layer.
-6. Strip OpenAPI-facing schema metadata from lifecycle service result models.
-7. Leave internal/debug routes mixed only if needed to keep the stable-route refactor focused.
+1. Extract routers and keep `api.py` focused on app assembly.
+2. Introduce app services and move endpoint logging, error translation, and response shaping into them.
+3. Make the app layer the clear owner of stable-route DTOs and update evergreen API docs for any contract changes required by that boundary.
+4. Remove leftover OpenAPI-facing schema metadata from internal lifecycle/query models.
+5. Tighten internal naming and boundary clarity without changing business behavior.
 
 ## Validation and Exit Criteria
 - `api.py` contains only app assembly concerns plus middleware and global exception handlers.
 - All route declarations live under `app/routers/`.
-- Routers do not contain endpoint business logging or domain-error translation.
+- Routers do not contain endpoint business logging, domain-error translation, or response DTO construction.
 - Stable routes return DTOs owned by the app layer.
-- `DocumentLifecycleService` no longer owns OpenAPI-facing examples or HTTP-contract schema concerns.
-- Existing stable route paths, methods, request bodies, response shapes, and status codes remain unchanged.
-- Existing structured logging expectations still pass.
-- Validation command for the implementation work is `uv run poe verify`.
+- Internal lifecycle/query packages no longer own unnecessary OpenAPI-facing examples or schema concerns.
+- Evergreen API docs accurately describe the implemented stable HTTP contract, including any deliberate changes made during the workstream.
+- Existing structured logging expectations still pass, or are updated intentionally with clear rationale.
+- Validation command for implementation work is `uv run poe verify`.
 
 ## Implementation Notes
 - Prefer explicit mapper functions over implicit `model_dump()` passthrough at the HTTP boundary.
 - Keep internal lifecycle/query model names distinct from app DTO names to avoid contract confusion.
-- If moving all stable DTOs into one file becomes noisy, it is acceptable to split `schemas.py` into app-owned schema modules later, but this workstream should begin with app ownership first and file shuffling second.
+- If moving all stable DTOs into one file becomes noisy, it is acceptable to split `schemas.py` into app-owned schema modules later, but app ownership matters more than file layout.
 
 ## Linked Artifacts
 - Implementation Plan: `[docs/workstreams/WS-025-api-decoupling/WS-025-plan.md](/Users/val/projects/rag/sem-rag/docs/workstreams/WS-025-api-decoupling/WS-025-plan.md)`
+- PR 2 handoff: `[docs/workstreams/WS-025-api-decoupling/WS-025-PR2-handoff.md](/Users/val/projects/rag/sem-rag/docs/workstreams/WS-025-api-decoupling/WS-025-PR2-handoff.md)`
+- PR 3 handoff: `[docs/workstreams/WS-025-api-decoupling/WS-025-PR3-handoff.md](/Users/val/projects/rag/sem-rag/docs/workstreams/WS-025-api-decoupling/WS-025-PR3-handoff.md)`

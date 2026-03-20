@@ -4,23 +4,13 @@ from __future__ import annotations
 
 from typing import Annotated
 
-import sqlalchemy as sa
-import structlog
-from fastapi import APIRouter, Depends, status
-from sqlalchemy.engine import Engine
+from fastapi import APIRouter, Depends, HTTPException, status
 
-from doc_forge.artifacts import FilesystemArtifactStore
-from doc_forge.indexing.base import VectorStore
+from doc_forge.app.services.system import SystemAppService
 
 from ..api_examples import HEALTHZ_ENDPOINT_DESCRIPTION, READYZ_ENDPOINT_DESCRIPTION
-from ..deps import get_artifact_store, get_engine, get_vector_store
-from ..logging import get_logger as get_app_logger
+from ..deps import get_system_app_service
 from ..schemas import ErrorResponse, SystemStatusResponse
-
-
-def get_logger() -> structlog.stdlib.BoundLogger:
-    return get_app_logger(__name__)
-
 
 router = APIRouter(tags=["System"])
 
@@ -37,8 +27,10 @@ router = APIRouter(tags=["System"])
         },
     },
 )
-def healthz() -> SystemStatusResponse:
-    return SystemStatusResponse(status="ok")
+def healthz(
+    service: Annotated[SystemAppService, Depends(get_system_app_service)],
+) -> SystemStatusResponse:
+    return service.get_health()
 
 
 @router.get(
@@ -54,23 +46,12 @@ def healthz() -> SystemStatusResponse:
     },
 )
 def readyz(
-    engine: Annotated[Engine, Depends(get_engine)],
-    artifact_store: Annotated[FilesystemArtifactStore, Depends(get_artifact_store)],
-    vector_store: Annotated[VectorStore, Depends(get_vector_store)],
-    logger: structlog.stdlib.BoundLogger = Depends(get_logger),
+    service: Annotated[SystemAppService, Depends(get_system_app_service)],
 ) -> SystemStatusResponse:
-    logger.info("system.readyz.started")
     try:
-        with engine.connect() as connection:
-            connection.execute(sa.text("SELECT 1"))
-        artifact_store.ensure_root_writable()
-        vector_store.smoke_query(doc_id="healthcheck", text="healthcheck", k=1)
-    except Exception:
-        logger.exception(
-            "system.readyz.failed",
-            http_status=500,
-            error_code="ready_check_failed",
-        )
-        raise
-    logger.info("system.readyz.completed", http_status=200, status="ok")
-    return SystemStatusResponse(status="ok")
+        return service.get_readiness()
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail="ready_check_failed",
+        ) from e

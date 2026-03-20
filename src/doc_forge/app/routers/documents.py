@@ -2,51 +2,31 @@
 # pyright: reportUnusedFunction=false
 from __future__ import annotations
 
-from pathlib import Path
 from typing import Annotated
 
-import structlog
 from fastapi import (
     APIRouter,
     Depends,
     File,
     Form,
-    HTTPException,
     UploadFile,
     status,
 )
 from pydantic import Field
 
+from doc_forge.app.services.documents import DocumentsAppService
 from doc_forge.identifiers import DocId, WorkspaceId
 from doc_forge.lifecycle.service import (
     DocumentArtifactRefs,
-    DocumentLifecycleService,
-    DocumentNotFoundError,
     DocumentStatusResult,
     RetryDocumentResult,
-    RetryNotAllowedError,
-    UnsupportedDocumentError,
     UploadDocumentResult,
 )
-from doc_forge.stages import DocumentRegistrationError
 
-from ..deps import get_document_lifecycle_service
-from ..logging import get_logger as get_app_logger
+from ..deps import get_documents_app_service
 from ..schemas import DocumentDetailResponse, ErrorResponse
 
-
-def get_logger() -> structlog.stdlib.BoundLogger:
-    return get_app_logger(__name__)
-
-
 router = APIRouter(tags=["Documents"])
-
-
-def _filename_extension(filename: str | None) -> str | None:
-    if not filename:
-        return None
-    suffix = Path(filename).suffix.lower()
-    return suffix or None
 
 
 @router.post(
@@ -76,64 +56,19 @@ def upload_document(
         Form(description="The workspace this document belongs to."),
     ],
     file: Annotated[UploadFile, File(description="The document file (PDF or Markdown).")],
-    service: Annotated[
-        DocumentLifecycleService,
-        Depends(get_document_lifecycle_service),
-    ],
-    logger: structlog.stdlib.BoundLogger = Depends(get_logger),
+    service: Annotated[DocumentsAppService, Depends(get_documents_app_service)],
     title: Annotated[
         str | None,
         Form(description="Optional custom title for the document. If omitted, uses the filename."),
     ] = None,
 ) -> UploadDocumentResult:
     content = file.file.read()
-    try:
-        result = service.upload_document(
-            workspace_id=workspace_id,
-            title=title,
-            filename=file.filename,
-            content=content,
-        )
-        logger.info(
-            "document.upload.accepted",
-            workspace_id=workspace_id,
-            doc_id=result.doc_id,
-            source_type=result.source_type.value,
-            filename_extension=_filename_extension(file.filename),
-            size_bytes=len(content),
-            checksum_sha256=result.checksum,
-            http_status=status.HTTP_201_CREATED,
-            status="accepted",
-        )
-        return result
-    except UnsupportedDocumentError as exc:
-        logger.warning(
-            "document.upload.rejected",
-            workspace_id=workspace_id,
-            filename_extension=_filename_extension(file.filename),
-            size_bytes=len(content),
-            error_code=exc.error_code,
-            http_status=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
-            status="rejected",
-        )
-        raise HTTPException(
-            status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
-            detail=str(exc),
-        ) from exc
-    except DocumentRegistrationError as exc:
-        logger.exception(
-            "document.upload.rejected",
-            workspace_id=workspace_id,
-            filename_extension=_filename_extension(file.filename),
-            size_bytes=len(content),
-            error_code="document_registration_failed",
-            http_status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            status="rejected",
-        )
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="document registration failed",
-        ) from exc
+    return service.upload_document(
+        workspace_id=workspace_id,
+        file_name=file.filename,
+        content=content,
+        title=title,
+    )
 
 
 @router.delete(
@@ -150,30 +85,9 @@ def upload_document(
 )
 def delete_document(
     doc_id: Annotated[DocId, Field(..., description="The unique identifier of the document.")],
-    service: Annotated[
-        DocumentLifecycleService,
-        Depends(get_document_lifecycle_service),
-    ],
-    logger: structlog.stdlib.BoundLogger = Depends(get_logger),
+    service: Annotated[DocumentsAppService, Depends(get_documents_app_service)],
 ) -> None:
-    logger.info("document.delete.started", doc_id=doc_id)
-    try:
-        service.delete_document(doc_id=doc_id)
-    except DocumentNotFoundError as exc:
-        logger.warning(
-            "document.delete.rejected",
-            doc_id=doc_id,
-            error_code="document_not_found",
-            http_status=status.HTTP_404_NOT_FOUND,
-            status="rejected",
-        )
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
-    logger.info(
-        "document.delete.completed",
-        doc_id=doc_id,
-        http_status=status.HTTP_204_NO_CONTENT,
-        status="completed",
-    )
+    service.delete_document(doc_id=doc_id)
 
 
 @router.get(
@@ -190,28 +104,9 @@ def delete_document(
 )
 def get_document(
     doc_id: Annotated[DocId, Field(..., description="The unique identifier of the document.")],
-    service: Annotated[
-        DocumentLifecycleService,
-        Depends(get_document_lifecycle_service),
-    ],
+    service: Annotated[DocumentsAppService, Depends(get_documents_app_service)],
 ) -> DocumentDetailResponse:
-    try:
-        document = service.require_document(doc_id)
-        return DocumentDetailResponse(
-            doc_id=document.doc_id,
-            workspace_id=document.workspace_id,
-            source_type=document.source_type.value,
-            title=document.title,
-            filename=document.filename,
-            uploaded_at=document.uploaded_at.isoformat(),
-            checksum=document.checksum or "",
-            ingest_status=document.ingest_status.value,
-            failure_code=document.failure_code,
-            failure_detail=document.failure_detail,
-            raw_storage_path=document.raw_storage_path or "",
-        )
-    except DocumentNotFoundError as exc:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    return service.get_document(doc_id=doc_id)
 
 
 @router.get(
@@ -231,27 +126,9 @@ def get_document(
 )
 def get_document_status(
     doc_id: Annotated[DocId, Field(..., description="The unique identifier of the document.")],
-    service: Annotated[
-        DocumentLifecycleService,
-        Depends(get_document_lifecycle_service),
-    ],
-    logger: structlog.stdlib.BoundLogger = Depends(get_logger),
+    service: Annotated[DocumentsAppService, Depends(get_documents_app_service)],
 ) -> DocumentStatusResult:
-    try:
-        result = service.get_document_status(doc_id=doc_id)
-        logger.info(
-            "document.status.loaded",
-            doc_id=doc_id,
-            ingest_status=result.ingest_status.value,
-            active_job_stage=(
-                None if result.active_job_stage is None else result.active_job_stage.value
-            ),
-            http_status=status.HTTP_200_OK,
-            status="loaded",
-        )
-        return result
-    except DocumentNotFoundError as exc:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    return service.get_document_status(doc_id=doc_id)
 
 
 @router.get(
@@ -270,25 +147,9 @@ def get_document_status(
 )
 def get_document_artifacts(
     doc_id: Annotated[DocId, Field(..., description="The unique identifier of the document.")],
-    service: Annotated[
-        DocumentLifecycleService,
-        Depends(get_document_lifecycle_service),
-    ],
-    logger: structlog.stdlib.BoundLogger = Depends(get_logger),
+    service: Annotated[DocumentsAppService, Depends(get_documents_app_service)],
 ) -> DocumentArtifactRefs:
-    try:
-        result = service.get_artifact_refs(doc_id=doc_id)
-        logger.info(
-            "document.artifacts.loaded",
-            doc_id=doc_id,
-            has_extracted=result.extracted_path is not None,
-            has_normalized=result.normalized_path is not None,
-            http_status=status.HTTP_200_OK,
-            status="loaded",
-        )
-        return result
-    except DocumentNotFoundError as exc:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    return service.get_document_artifacts(doc_id=doc_id)
 
 
 @router.post(
@@ -313,39 +174,6 @@ def get_document_artifacts(
 )
 def retry_document(
     doc_id: Annotated[DocId, Field(..., description="The unique identifier of the document.")],
-    service: Annotated[
-        DocumentLifecycleService,
-        Depends(get_document_lifecycle_service),
-    ],
-    logger: structlog.stdlib.BoundLogger = Depends(get_logger),
+    service: Annotated[DocumentsAppService, Depends(get_documents_app_service)],
 ) -> RetryDocumentResult:
-    logger.info("document.retry.requested", doc_id=doc_id)
-    try:
-        result = service.retry_document(doc_id=doc_id)
-        logger.info(
-            "document.retry.queued",
-            doc_id=doc_id,
-            queued_stage=result.queued_stage.value,
-            ingest_status=result.ingest_status.value,
-            http_status=status.HTTP_202_ACCEPTED,
-            status="queued",
-        )
-        return result
-    except DocumentNotFoundError as exc:
-        logger.warning(
-            "document.retry.rejected",
-            doc_id=doc_id,
-            error_code="document_not_found",
-            http_status=status.HTTP_404_NOT_FOUND,
-            status="rejected",
-        )
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
-    except RetryNotAllowedError as exc:
-        logger.warning(
-            "document.retry.rejected",
-            doc_id=doc_id,
-            error_code=exc.error_code,
-            http_status=status.HTTP_409_CONFLICT,
-            status="rejected",
-        )
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from exc
+    return service.retry_document(doc_id=doc_id)

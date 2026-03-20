@@ -50,30 +50,47 @@ pytestmark = pytest.mark.anyio
 def _route_endpoint(app: FastAPI, *, path: str, method: str):
     for route in app.routes:
         if isinstance(route, APIRoute) and route.path == path and method in route.methods:
-            return (
-                functools.partial(route.endpoint, logger=get_logger())
-                if route.path != "/healthz"
-                else route.endpoint
-            )
+            # For testing direct route calls, we strip logger dependency injection manually
+            # if the route has it, except for routes that no longer take a logger in the router.
+            import inspect
+
+            sig = inspect.signature(route.endpoint)
+            if "logger" in sig.parameters:
+                return functools.partial(route.endpoint, logger=get_logger())
+            return route.endpoint
     raise AssertionError(f"route {method} {path} was not found")
 
 
 def _service(sql_engine: Engine, tmp_path: Path):
-    return get_document_lifecycle_service(
+    from doc_forge.app.services.documents import DocumentsAppService
+
+    lifecycle_service = get_document_lifecycle_service(
         engine=sql_engine,
         artifact_store=FilesystemArtifactStore(tmp_path / "artifacts"),
     )
+    return DocumentsAppService(lifecycle_service=lifecycle_service)
 
 
 def _query_service(sql_engine: Engine):
-    return get_query_service(
+    from doc_forge.app.services.queries import QueriesAppService
+
+    query_service = get_query_service(
         engine=sql_engine,
         corpus_read_model=get_queryable_corpus_read_model(engine=sql_engine),
     )
+    review_service = get_query_review_service(engine=sql_engine)
+    return QueriesAppService(query_service=query_service, review_service=review_service)
 
 
 def _query_review_service(sql_engine: Engine):
-    return get_query_review_service(engine=sql_engine)
+    from doc_forge.app.services.queries import QueriesAppService
+
+    query_service = get_query_service(
+        engine=sql_engine,
+        corpus_read_model=get_queryable_corpus_read_model(engine=sql_engine),
+    )
+    review_service = get_query_review_service(engine=sql_engine)
+    return QueriesAppService(query_service=query_service, review_service=review_service)
 
 
 def _structured_logs(caplog: pytest.LogCaptureFixture) -> list[dict[str, Any]]:
@@ -236,10 +253,18 @@ async def test_retrieval_query_returns_404_for_unknown_document(
     sql_engine: Engine,
     tmp_path: Path,
 ) -> None:
+    from doc_forge.app.services.internal import InternalAppService
+
     with pytest.raises(HTTPException) as exc_info:
         _route_endpoint(app, path="/retrieval/query", method="POST")(
             request=RetrievalQueryRequest(doc_id="missing", query="consensus", k=2),
-            service=_service(sql_engine, tmp_path),
+            service=InternalAppService(
+                lifecycle_service=get_document_lifecycle_service(
+                    engine=sql_engine,
+                    artifact_store=FilesystemArtifactStore(tmp_path / "artifacts"),
+                ),
+                worker=None,  # type: ignore
+            ),
         )
 
     assert exc_info.value.status_code == 404
@@ -338,7 +363,15 @@ async def test_queries_route_allows_empty_snapshot(
 
 
 async def test_healthz_returns_ok(app: FastAPI) -> None:
-    result = _route_endpoint(app, path="/healthz", method="GET")()
+    from doc_forge.app.services.system import SystemAppService
+
+    result = _route_endpoint(app, path="/healthz", method="GET")(
+        service=SystemAppService(
+            engine=None,  # type: ignore
+            artifact_store=None,  # type: ignore
+            vector_store=None,  # type: ignore
+        )
+    )
 
     assert result.model_dump() == {"status": "ok"}
 
@@ -348,6 +381,7 @@ async def test_readyz_returns_ok_when_dependencies_load(
     sql_engine: Engine,
     tmp_path: Path,
 ) -> None:
+    from doc_forge.app.services.system import SystemAppService
     from doc_forge.indexing.embeddings import DeterministicEmbeddingAdapter
     from doc_forge.indexing.vector_store import SqlVectorStore
 
@@ -357,9 +391,11 @@ async def test_readyz_returns_ok_when_dependencies_load(
     )
 
     result = _route_endpoint(app, path="/readyz", method="GET")(
-        engine=sql_engine,
-        artifact_store=FilesystemArtifactStore(tmp_path / "artifacts"),
-        vector_store=vector_store,
+        service=SystemAppService(
+            engine=sql_engine,
+            artifact_store=FilesystemArtifactStore(tmp_path / "artifacts"),
+            vector_store=vector_store,
+        )
     )
 
     assert result.model_dump() == {"status": "ok"}
@@ -372,6 +408,7 @@ async def test_readyz_creates_artifact_root_when_missing(
 ) -> None:
     artifact_root = tmp_path / "missing-artifacts"
 
+    from doc_forge.app.services.system import SystemAppService
     from doc_forge.indexing.embeddings import DeterministicEmbeddingAdapter
     from doc_forge.indexing.vector_store import SqlVectorStore
 
@@ -381,9 +418,11 @@ async def test_readyz_creates_artifact_root_when_missing(
     )
 
     result = _route_endpoint(app, path="/readyz", method="GET")(
-        engine=sql_engine,
-        artifact_store=FilesystemArtifactStore(artifact_root),
-        vector_store=vector_store,
+        service=SystemAppService(
+            engine=sql_engine,
+            artifact_store=FilesystemArtifactStore(artifact_root),
+            vector_store=vector_store,
+        )
     )
 
     assert result.model_dump() == {"status": "ok"}
@@ -391,8 +430,13 @@ async def test_readyz_creates_artifact_root_when_missing(
 
 
 async def test_run_next_job_returns_null_payload_when_no_job_exists(app: FastAPI) -> None:
+    from doc_forge.app.services.internal import InternalAppService
+
     result = _route_endpoint(app, path="/internal/run-next-job", method="POST")(
-        worker=_WorkerStub(None)
+        service=InternalAppService(
+            lifecycle_service=None,  # type: ignore
+            worker=_WorkerStub(None),  # type: ignore
+        )
     )
 
     assert isinstance(result, WorkerJobResult)
@@ -401,14 +445,19 @@ async def test_run_next_job_returns_null_payload_when_no_job_exists(app: FastAPI
 
 
 async def test_run_next_job_returns_job_metadata_when_job_runs(app: FastAPI) -> None:
+    from doc_forge.app.services.internal import InternalAppService
+
     result = _route_endpoint(app, path="/internal/run-next-job", method="POST")(
-        worker=_WorkerStub(
-            DocumentJob(
-                job_id="job-1",
-                doc_id="doc-1",
-                target_stage=DocumentJobStage.EXTRACT,
-                status=DocumentJobStatus.SUCCEEDED,
-            )
+        service=InternalAppService(
+            lifecycle_service=None,  # type: ignore
+            worker=_WorkerStub(  # type: ignore
+                DocumentJob(
+                    job_id="job-1",
+                    doc_id="doc-1",
+                    target_stage=DocumentJobStage.EXTRACT,
+                    status=DocumentJobStatus.SUCCEEDED,
+                )
+            ),
         )
     )
 
@@ -454,7 +503,7 @@ async def test_query_summary_route_returns_persisted_review_view(
 
     summary = _route_endpoint(app, path="/queries/{query_id}", method="GET")(
         query_id=submitted.query_id,
-        review_service=_query_review_service(sql_engine),
+        service=_query_review_service(sql_engine),
     )
 
     assert summary.query_id == submitted.query_id
@@ -505,7 +554,7 @@ async def test_query_trace_route_returns_ordered_persisted_traces(
 
     review = _route_endpoint(app, path="/queries/{query_id}/trace", method="GET")(
         query_id=submitted.query_id,
-        review_service=_query_review_service(sql_engine),
+        service=_query_review_service(sql_engine),
     )
 
     assert review.summary.query_id == submitted.query_id
@@ -560,7 +609,7 @@ async def test_query_citations_route_reads_persisted_answer_state(
 
     citations = _route_endpoint(app, path="/queries/{query_id}/citations", method="GET")(
         query_id=submitted.query_id,
-        review_service=_query_review_service(sql_engine),
+        service=_query_review_service(sql_engine),
     )
 
     assert citations.query_id == submitted.query_id
@@ -601,7 +650,7 @@ async def test_query_summary_route_returns_failed_run_review_view(
 
     summary = _route_endpoint(app, path="/queries/{query_id}", method="GET")(
         query_id=failed_run.query_id,
-        review_service=_query_review_service(sql_engine),
+        service=_query_review_service(sql_engine),
     )
 
     assert summary.query_id == "qry-failed"
@@ -614,6 +663,8 @@ async def test_query_summary_route_returns_failed_run_review_view(
 async def test_queries_route_returns_failed_query_id_when_execution_fails(
     app: FastAPI,
 ) -> None:
+    from doc_forge.app.services.queries import QueriesAppService
+
     class _FailingQueryService:
         def execute_until_answer(self, request: QueryRequest):
             del request
@@ -633,7 +684,10 @@ async def test_queries_route_returns_failed_query_id_when_execution_fails(
                 question="What failed?",
                 workspace_id="ws-1",
             ),
-            service=_FailingQueryService(),
+            service=QueriesAppService(
+                query_service=_FailingQueryService(),  # type: ignore
+                review_service=None,  # type: ignore
+            ),
         )
 
     assert exc_info.value.status_code == 500

@@ -13,7 +13,6 @@ from fastapi.routing import APIRoute
 from doc_forge.app.deps import get_document_lifecycle_service
 from doc_forge.app.logging import get_logger
 from doc_forge.artifacts import FilesystemArtifactStore
-from doc_forge.lifecycle.service import DocumentLifecycleService
 from doc_forge.stages import DocumentRegistrationError, RegisterDocumentStage
 
 pytestmark = pytest.mark.anyio
@@ -22,7 +21,12 @@ pytestmark = pytest.mark.anyio
 def _upload_endpoint(app: FastAPI):
     for route in app.routes:
         if isinstance(route, APIRoute) and route.path == "/documents" and "POST" in route.methods:
-            return functools.partial(route.endpoint, logger=get_logger())
+            import inspect
+
+            sig = inspect.signature(route.endpoint)
+            if "logger" in sig.parameters:
+                return functools.partial(route.endpoint, logger=get_logger())
+            return route.endpoint
     raise AssertionError("upload route was not found")
 
 
@@ -47,11 +51,15 @@ def _upload_file(filename: str, content: bytes) -> _UploadFileStub:
     return _UploadFileStub(filename=filename, content=content)
 
 
-def _service(sql_engine: sa.Engine, tmp_path: Path) -> DocumentLifecycleService:
-    return get_document_lifecycle_service(
+from doc_forge.app.services.documents import DocumentsAppService
+
+
+def _service(sql_engine: sa.Engine, tmp_path: Path) -> DocumentsAppService:
+    lifecycle_service = get_document_lifecycle_service(
         engine=sql_engine,
         artifact_store=FilesystemArtifactStore(tmp_path / "artifacts"),
     )
+    return DocumentsAppService(lifecycle_service=lifecycle_service)
 
 
 async def test_pdf_upload_registers_successfully(
