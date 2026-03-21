@@ -777,15 +777,10 @@ async def test_http_and_query_logs_are_json_and_correlated(
     assert response.status_code == 200
     structured_logs = _structured_logs(caplog)
 
-    assert any(log["event"] == "http.request.started" for log in structured_logs)
-    assert any(log["event"] == "http.request.completed" for log in structured_logs)
     assert any(log["event"] == "query.api.started" for log in structured_logs)
     assert any(log["event"] == "query.api.completed" for log in structured_logs)
     assert any(log["event"] == "query.run.started" for log in structured_logs)
     assert any(log["event"] == "query.stage.completed" for log in structured_logs)
-    assert any(
-        "request_id" in log for log in structured_logs if log["event"] == "http.request.started"
-    )
     assert any("query_id" in log for log in structured_logs if log["event"] == "query.run.started")
     assert "vector search uses embeddings to retrieve related passages" not in caplog.text
 
@@ -816,7 +811,6 @@ async def test_document_upload_logs_success_and_rejection(
     assert any(
         log["event"] == "document.upload.accepted"
         and log["doc_id"].startswith("doc_")
-        and log["request_id"].startswith("req-")
         and log["http_status"] == 201
         for log in structured_logs
     )

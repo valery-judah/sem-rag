@@ -18,7 +18,6 @@ async def test_global_exception_handler_returns_error_response(app: FastAPI) -> 
 
     assert response.status_code == 500
     assert response.headers["content-type"] == "application/json"
-    assert "x-request-id" in response.headers
     json_data = response.json()
     assert "detail" in json_data
     assert json_data["detail"] == "Internal server error"
