@@ -257,17 +257,22 @@ class DocumentLifecycleWorker:
 def main() -> None:
     """Run the internal lifecycle worker loop."""
 
-    from doc_forge.app.deps import (
-        _build_artifact_store,  # pyright: ignore[reportPrivateUsage]
-        _build_engine,  # pyright: ignore[reportPrivateUsage]
-        get_document_lifecycle_worker,
+    from doc_forge.app.factories import (
+        build_artifact_store,
+        build_document_lifecycle_worker,
+        build_embedding_adapter,
+        build_engine,
     )
     from doc_forge.app.settings import get_settings
 
     settings = get_settings()
-    worker = get_document_lifecycle_worker(
-        engine=_build_engine(settings.database_url),
-        artifact_store=_build_artifact_store(str(settings.artifact_root)),
+    worker = build_document_lifecycle_worker(
+        engine=build_engine(settings.database_url),
+        artifact_store=build_artifact_store(str(settings.artifact_root)),
+        embedding_adapter=build_embedding_adapter(
+            settings.embedding_backend,
+            settings.embedding_model,
+        ),
     )
     poll_seconds = settings.worker_poll_seconds
     while True:
