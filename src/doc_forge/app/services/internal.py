@@ -20,11 +20,10 @@ def _sha256_text(value: str) -> str:
 
 
 @dataclass(frozen=True, slots=True)
-class InternalAppService:
-    """Application service for internal and operator routes."""
+class InternalRetrievalAppService:
+    """Application service for the internal retrieval smoke-test route."""
 
     lifecycle_service: DocumentLifecycleService
-    worker: DocumentLifecycleWorker
     logger: structlog.stdlib.BoundLogger = structlog.stdlib.get_logger(__name__)
 
     def retrieval_query(self, request: RetrievalQueryRequest) -> RetrievalQueryResponse:
@@ -63,6 +62,14 @@ class InternalAppService:
                 status="rejected",
             )
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+
+
+@dataclass(frozen=True, slots=True)
+class InternalWorkerAppService:
+    """Application service for the internal operator job-runner route."""
+
+    worker: DocumentLifecycleWorker
+    logger: structlog.stdlib.BoundLogger = structlog.stdlib.get_logger(__name__)
 
     def run_next_job(self) -> WorkerJobResult:
         self.logger.info("worker.run_next.invoked")

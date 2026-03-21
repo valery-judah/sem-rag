@@ -4,9 +4,9 @@ from typing import Annotated
 
 from fastapi import APIRouter, Body, Depends, status
 
-from ..deps import get_internal_app_service
+from ..deps import get_internal_retrieval_app_service, get_internal_worker_app_service
 from ..schemas import ErrorResponse, RetrievalQueryRequest, RetrievalQueryResponse, WorkerJobResult
-from ..services.internal import InternalAppService
+from ..services.internal import InternalRetrievalAppService, InternalWorkerAppService
 
 router = APIRouter()
 
@@ -31,7 +31,7 @@ router = APIRouter()
 )
 def retrieval_query(
     request: Annotated[RetrievalQueryRequest, Body(description="The query parameters.")],
-    service: Annotated[InternalAppService, Depends(get_internal_app_service)],
+    service: Annotated[InternalRetrievalAppService, Depends(get_internal_retrieval_app_service)],
 ) -> RetrievalQueryResponse:
     return service.retrieval_query(request)
 
@@ -48,6 +48,6 @@ def retrieval_query(
     tags=["Internal Operator"],
 )
 def run_next_job(
-    service: Annotated[InternalAppService, Depends(get_internal_app_service)],
+    service: Annotated[InternalWorkerAppService, Depends(get_internal_worker_app_service)],
 ) -> WorkerJobResult:
     return service.run_next_job()

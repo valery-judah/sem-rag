@@ -8,7 +8,7 @@ from fastapi import Depends
 from sqlalchemy.engine import Engine
 
 from doc_forge.app.services.documents import DocumentsAppService
-from doc_forge.app.services.internal import InternalAppService
+from doc_forge.app.services.internal import InternalRetrievalAppService, InternalWorkerAppService
 from doc_forge.app.services.queries import QueriesAppService
 from doc_forge.app.services.system import SystemAppService
 from doc_forge.artifacts import FilesystemArtifactStore
@@ -234,23 +234,24 @@ def get_system_app_service(
     )
 
 
-def get_internal_app_service(
+def get_internal_retrieval_app_service(
     lifecycle_service: Annotated[
         DocumentLifecycleService,
         Depends(get_document_lifecycle_service),
     ],
+) -> InternalRetrievalAppService:
+    """Build the internal retrieval app service."""
+    return InternalRetrievalAppService(lifecycle_service=lifecycle_service)
+
+
+def get_internal_worker_app_service(
     worker: Annotated[
         DocumentLifecycleWorker,
         Depends(get_document_lifecycle_worker),
     ],
-) -> InternalAppService:
-    """Build the internal app service."""
-    from .services.internal import InternalAppService
-
-    return InternalAppService(
-        lifecycle_service=lifecycle_service,
-        worker=worker,
-    )
+) -> InternalWorkerAppService:
+    """Build the internal worker app service."""
+    return InternalWorkerAppService(worker=worker)
 
 
 def reset_runtime_caches() -> None:

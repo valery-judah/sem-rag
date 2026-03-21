@@ -300,18 +300,17 @@ async def test_retrieval_query_returns_404_for_unknown_document(
     sql_engine: Engine,
     tmp_path: Path,
 ) -> None:
-    from doc_forge.app.services.internal import InternalAppService
+    from doc_forge.app.services.internal import InternalRetrievalAppService
 
     with pytest.raises(HTTPException) as exc_info:
         _route_endpoint(app, path="/retrieval/query", method="POST")(
             request=RetrievalQueryRequest(doc_id="missing", query="consensus", k=2),
-            service=InternalAppService(
+            service=InternalRetrievalAppService(
                 lifecycle_service=get_document_lifecycle_service(
                     engine=sql_engine,
                     artifact_store=FilesystemArtifactStore(tmp_path / "artifacts"),
                     embedding_adapter=get_embedding_adapter(),
                 ),
-                worker=None,  # type: ignore
             ),
         )
 
@@ -478,11 +477,10 @@ async def test_readyz_creates_artifact_root_when_missing(
 
 
 async def test_run_next_job_returns_null_payload_when_no_job_exists(app: FastAPI) -> None:
-    from doc_forge.app.services.internal import InternalAppService
+    from doc_forge.app.services.internal import InternalWorkerAppService
 
     result = _route_endpoint(app, path="/internal/run-next-job", method="POST")(
-        service=InternalAppService(
-            lifecycle_service=None,  # type: ignore
+        service=InternalWorkerAppService(
             worker=_WorkerStub(None),  # type: ignore
         )
     )
@@ -493,11 +491,10 @@ async def test_run_next_job_returns_null_payload_when_no_job_exists(app: FastAPI
 
 
 async def test_run_next_job_returns_job_metadata_when_job_runs(app: FastAPI) -> None:
-    from doc_forge.app.services.internal import InternalAppService
+    from doc_forge.app.services.internal import InternalWorkerAppService
 
     result = _route_endpoint(app, path="/internal/run-next-job", method="POST")(
-        service=InternalAppService(
-            lifecycle_service=None,  # type: ignore
+        service=InternalWorkerAppService(
             worker=_WorkerStub(  # type: ignore
                 DocumentJob(
                     job_id="job-1",

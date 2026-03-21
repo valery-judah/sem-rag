@@ -79,13 +79,6 @@ Because the localhost FastAPI service API is stable:
 - internal Python modules remain changeable unless they are explicitly promoted here later
 - package-level imports are still not downstream-supported interfaces
 
-## Promotion Rule
-An interface should appear in this file only when all of the following are true:
-
-- it exists in the codebase
-- its behavior is exercised by tests or equivalent validation
-- the team intends downstream callers to rely on it
-- the team is willing to treat incompatible changes as breaking changes
 
 ## Relationship To Other Docs
 - [`docs/evergreen/architecture.md`](./architecture.md) describes current repo shape and internal seams behind the service.
