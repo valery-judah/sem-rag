@@ -1,47 +1,56 @@
-"""Internal runtime settings for the upload app."""
+"""Environment-backed runtime configuration."""
 
 from __future__ import annotations
 
+from functools import lru_cache
 from pathlib import Path
+from typing import Literal
 
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class AppSettings(BaseSettings):
-    """Environment-backed runtime configuration."""
+class Settings(BaseSettings):
+    """Typed, validated runtime configuration.
+
+    All fields are read from environment variables prefixed with ``DOC_FORGE_``
+    (e.g. ``DOC_FORGE_LOG_LEVEL``).  ``.env`` is loaded as a local convenience;
+    production config should be injected via env vars or secret files.
+    """
 
     model_config = SettingsConfigDict(
+        env_prefix="DOC_FORGE_",
         env_file=".env",
         env_file_encoding="utf-8",
         extra="ignore",
+        secrets_dir="/run/secrets",
     )
 
+    environment: Literal["dev", "test", "prod"] = "prod"
+    service_name: str = "doc_forge-api"
+    log_level: str = "INFO"
+    enable_swagger: bool = False
+    port: int = Field(default=8000)
+    auto_migrate: bool = False
+    worker_poll_seconds: float = 0.25
+
+    # DATABASE_URL is unprefixed by convention (Alembic, PaaS platforms).
     database_url: str = Field(
         default="postgresql+psycopg://doc-forge:doc-forge@localhost:5432/doc-forge",
-        alias="DATABASE_URL",
+        validation_alias="DATABASE_URL",
     )
-    artifact_root: Path = Field(default=Path("data"), alias="DOC_FORGE_ARTIFACT_ROOT")
-    service_name: str = Field(default="doc_forge-api", alias="DOC_FORGE_SERVICE_NAME")
-    environment: str = Field(default="prod", alias="DOC_FORGE_ENVIRONMENT")
-    enable_swagger: bool = Field(default=False, alias="DOC_FORGE_ENABLE_SWAGGER")
-    log_level: str = Field(default="INFO", alias="DOC_FORGE_LOG_LEVEL")
-    embedding_backend: str = Field(default="deterministic", alias="DOC_FORGE_EMBEDDING_BACKEND")
-    embedding_model_name: str = Field(
-        default="sentence-transformers/all-MiniLM-L6-v2", alias="DOC_FORGE_EMBEDDING_MODEL"
-    )
-    answer_generator_backend: str = Field(
-        default="deterministic", alias="DOC_FORGE_ANSWER_GENERATOR_BACKEND"
-    )
-    answer_generator_model_name: str = Field(
-        default="mlx-community/TinyLlama-1.1B-Chat-v1.0", alias="DOC_FORGE_ANSWER_GENERATOR_MODEL"
-    )
-    answer_generator_max_new_tokens: int = Field(
-        default=256, alias="DOC_FORGE_ANSWER_GENERATOR_MAX_NEW_TOKENS"
-    )
-    answer_generator_temperature: float = Field(
-        default=0.0, alias="DOC_FORGE_ANSWER_GENERATOR_TEMPERATURE"
-    )
+    artifact_root: Path = Field(default=Path("data"))
+
+    embedding_backend: str = "deterministic"
+    embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2"
+    answer_generator_backend: str = "deterministic"
+    answer_generator_model: str = "mlx-community/TinyLlama-1.1B-Chat-v1.0"
+    answer_generator_max_new_tokens: int = 256
+    answer_generator_temperature: float = 0.0
+
+    @property
+    def docs_enabled(self) -> bool:
+        return self.enable_swagger
 
     @field_validator("artifact_root", mode="after")
     @classmethod
@@ -49,6 +58,7 @@ class AppSettings(BaseSettings):
         return v.resolve()
 
 
-def load_settings() -> AppSettings:
-    """Load app settings from the process environment."""
-    return AppSettings()
+@lru_cache
+def get_settings() -> Settings:
+    """Load and cache process-scoped runtime settings."""
+    return Settings()

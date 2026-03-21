@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from functools import cache, lru_cache
+from functools import cache
 from typing import Annotated, Any
 
 import sqlalchemy as sa
@@ -74,14 +74,7 @@ from doc_forge.stages import (
 from doc_forge.structure import SectionDerivationService
 
 from .logging import reset_logging
-from .settings import AppSettings, load_settings
-
-
-@lru_cache(maxsize=1)
-def get_settings() -> AppSettings:
-    """Load and cache process-scoped runtime settings."""
-
-    return load_settings()
+from .settings import Settings, get_settings
 
 
 @cache
@@ -99,7 +92,7 @@ def _build_engine(database_url: str) -> Engine:
     return engine
 
 
-def get_engine(settings: Annotated[AppSettings, Depends(get_settings)]) -> Engine:
+def get_engine(settings: Annotated[Settings, Depends(get_settings)]) -> Engine:
     """Return the shared SQLAlchemy engine for the configured database."""
 
     return _build_engine(settings.database_url)
@@ -111,7 +104,7 @@ def _build_artifact_store(root: str) -> FilesystemArtifactStore:
 
 
 def get_artifact_store(
-    settings: Annotated[AppSettings, Depends(get_settings)],
+    settings: Annotated[Settings, Depends(get_settings)],
 ) -> FilesystemArtifactStore:
     """Return the shared artifact store rooted under the configured path."""
 
@@ -136,7 +129,7 @@ def get_embedding_adapter() -> EmbeddingAdapter:
     settings = get_settings()
     return _build_embedding_adapter(
         settings.embedding_backend,
-        settings.embedding_model_name,
+        settings.embedding_model,
     )
 
 
@@ -186,7 +179,7 @@ def get_answer_generator() -> GroundedAnswerGenerator:
     settings = get_settings()
     return _build_answer_generator(
         settings.answer_generator_backend,
-        settings.answer_generator_model_name,
+        settings.answer_generator_model,
         settings.answer_generator_max_new_tokens,
         settings.answer_generator_temperature,
     )

@@ -5,6 +5,7 @@ import sys
 import pytest
 
 from doc_forge import runtime
+from doc_forge.app.deps import reset_runtime_caches
 
 
 def test_api_command_auto_applies_migrations_when_enabled(
@@ -12,6 +13,7 @@ def test_api_command_auto_applies_migrations_when_enabled(
 ) -> None:
     calls: list[tuple[str, str]] = []
 
+    reset_runtime_caches()
     monkeypatch.setenv("DOC_FORGE_AUTO_MIGRATE", "1")
     monkeypatch.setenv("DATABASE_URL", "sqlite+pysqlite:///tmp/runtime.db")
     monkeypatch.setattr(sys, "argv", ["python", "api"])
@@ -37,6 +39,7 @@ def test_worker_command_skips_auto_migrate_when_disabled(
 ) -> None:
     calls: list[str] = []
 
+    reset_runtime_caches()
     monkeypatch.delenv("DOC_FORGE_AUTO_MIGRATE", raising=False)
     monkeypatch.setattr(sys, "argv", ["python", "worker"])
     monkeypatch.setattr(
@@ -53,6 +56,7 @@ def test_worker_command_skips_auto_migrate_when_disabled(
 def test_migrate_command_uses_locked_helper(monkeypatch: pytest.MonkeyPatch) -> None:
     calls: list[str] = []
 
+    reset_runtime_caches()
     monkeypatch.setattr(sys, "argv", ["python", "migrate"])
     monkeypatch.setattr(
         "doc_forge.runtime.apply_migrations_with_lock",

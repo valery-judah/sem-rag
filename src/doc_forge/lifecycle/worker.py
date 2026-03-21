@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import os
 import time
 from datetime import UTC, datetime
 from time import perf_counter
@@ -263,14 +262,14 @@ def main() -> None:
         _build_engine,  # pyright: ignore[reportPrivateUsage]
         get_document_lifecycle_worker,
     )
-    from doc_forge.app.settings import load_settings
+    from doc_forge.app.settings import get_settings
 
-    settings = load_settings()
+    settings = get_settings()
     worker = get_document_lifecycle_worker(
         engine=_build_engine(settings.database_url),
         artifact_store=_build_artifact_store(str(settings.artifact_root)),
     )
-    poll_seconds = float(os.environ.get("DOC_FORGE_WORKER_POLL_SECONDS", "0.25"))
+    poll_seconds = settings.worker_poll_seconds
     while True:
         job = worker.run_next()
         if job is None:
