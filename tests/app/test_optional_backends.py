@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 from doc_forge.app.deps import (
+    get_answer_generator,
     get_document_lifecycle_service,
+    get_embedding_adapter,
     get_query_service,
     get_queryable_corpus_read_model,
     reset_runtime_caches,
@@ -51,10 +53,13 @@ def test_runtime_services_use_sentence_transformers_when_configured(
     lifecycle_service = get_document_lifecycle_service(
         engine=sql_engine,
         artifact_store=FilesystemArtifactStore(tmp_path / "artifacts"),
+        embedding_adapter=get_embedding_adapter(),
     )
     query_service = get_query_service(
         engine=sql_engine,
         corpus_read_model=get_queryable_corpus_read_model(engine=sql_engine),
+        embedding_adapter=get_embedding_adapter(),
+        answer_generator=get_answer_generator(),
     )
 
     assert (
@@ -85,6 +90,8 @@ def test_query_service_uses_mlx_answer_generator_when_configured(
     service = get_query_service(
         engine=sql_engine,
         corpus_read_model=get_queryable_corpus_read_model(engine=sql_engine),
+        embedding_adapter=get_embedding_adapter(),
+        answer_generator=get_answer_generator(),
     )
 
     assert service._answer_generator.model_name == "mlx-community/test-model"  # type: ignore[attr-defined]

@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from fastapi import FastAPI, HTTPException
 from fastapi.routing import APIRoute
 
-from doc_forge.app.deps import get_document_lifecycle_service
+from doc_forge.app.deps import get_document_lifecycle_service, get_embedding_adapter
 from doc_forge.app.logging import get_logger
 from doc_forge.app.services.documents import DocumentsAppService
 from doc_forge.artifacts import FilesystemArtifactStore
@@ -56,6 +56,7 @@ def _service(sql_engine: sa.Engine, tmp_path: Path) -> DocumentsAppService:
     lifecycle_service = get_document_lifecycle_service(
         engine=sql_engine,
         artifact_store=FilesystemArtifactStore(tmp_path / "artifacts"),
+        embedding_adapter=get_embedding_adapter(),
     )
     return DocumentsAppService(lifecycle_service=lifecycle_service)
 

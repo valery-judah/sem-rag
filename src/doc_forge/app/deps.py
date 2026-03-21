@@ -16,16 +16,13 @@ from doc_forge.indexing import (
     EmbeddingAdapter,
     SqlVectorStore,
 )
-from doc_forge.lifecycle.orchestrator import DocumentLifecycleOrchestrator
 from doc_forge.lifecycle.service import DocumentLifecycleService
 from doc_forge.lifecycle.worker import DocumentLifecycleWorker
 from doc_forge.persistence import (
     SqlChunkEmbeddingRepository,
     SqlChunkRepository,
-    SqlDocumentJobRepository,
     SqlDocumentRepository,
     SqlIndexEntryRepository,
-    SqlLifecycleEventRepository,
     SqlSectionRepository,
 )
 from doc_forge.query import QueryService
@@ -45,11 +42,11 @@ from doc_forge.query.review import QueryReviewService
 from doc_forge.query.selection import DeterministicQuerySelector
 from doc_forge.query.support_assessment import HybridSupportAssessor
 from doc_forge.readmodels import SqlQueryableCorpusReadModel
-from doc_forge.stages import RegisterDocumentStage
 
 from .factories import (
     build_answer_generator,
     build_artifact_store,
+    build_document_lifecycle_service,
     build_document_lifecycle_worker,
     build_embedding_adapter,
     build_engine,
@@ -84,12 +81,13 @@ def get_embedding_adapter() -> EmbeddingAdapter:
 
 def get_vector_store(
     engine: Annotated[Engine, Depends(get_engine)],
+    embedding_adapter: Annotated[EmbeddingAdapter, Depends(get_embedding_adapter)],
 ) -> SqlVectorStore:
     """Build the vector store instance for queries and health checks."""
 
     return SqlVectorStore(
         engine=engine,
-        embedding_adapter=get_embedding_adapter(),
+        embedding_adapter=embedding_adapter,
         index_entries=SqlIndexEntryRepository(engine),
         chunk_embeddings=SqlChunkEmbeddingRepository(engine),
     )
@@ -110,55 +108,28 @@ def get_answer_generator() -> GroundedAnswerGenerator:
 def get_document_lifecycle_service(
     engine: Annotated[Engine, Depends(get_engine)],
     artifact_store: Annotated[FilesystemArtifactStore, Depends(get_artifact_store)],
+    embedding_adapter: Annotated[EmbeddingAdapter, Depends(get_embedding_adapter)],
 ) -> DocumentLifecycleService:
     """Build the lifecycle service used by the internal app."""
 
-    documents = SqlDocumentRepository(engine)
-    jobs = SqlDocumentJobRepository(engine)
-    lifecycle_events = SqlLifecycleEventRepository(engine)
-    sections = SqlSectionRepository(engine)
-    chunks = SqlChunkRepository(engine)
-    index_entries = SqlIndexEntryRepository(engine)
-    chunk_embeddings = SqlChunkEmbeddingRepository(engine)
-    orchestrator = DocumentLifecycleOrchestrator(jobs=jobs)
-    embedding_adapter = get_embedding_adapter()
-    vector_store = SqlVectorStore(
+    return build_document_lifecycle_service(
         engine=engine,
+        artifact_store=artifact_store,
         embedding_adapter=embedding_adapter,
-        index_entries=index_entries,
-        chunk_embeddings=chunk_embeddings,
-    )
-    register_stage = RegisterDocumentStage(
-        engine=engine,
-        documents=documents,
-        lifecycle_events=lifecycle_events,
-        artifact_store=artifact_store,
-    )
-    return DocumentLifecycleService(
-        register_stage=register_stage,
-        orchestrator=orchestrator,
-        documents=documents,
-        jobs=jobs,
-        lifecycle_events=lifecycle_events,
-        artifact_store=artifact_store,
-        sections=sections,
-        chunks=chunks,
-        index_entries=index_entries,
-        chunk_embeddings=chunk_embeddings,
-        vector_store=vector_store,
     )
 
 
 def get_document_lifecycle_worker(
     engine: Annotated[Engine, Depends(get_engine)],
     artifact_store: Annotated[FilesystemArtifactStore, Depends(get_artifact_store)],
+    embedding_adapter: Annotated[EmbeddingAdapter, Depends(get_embedding_adapter)],
 ) -> DocumentLifecycleWorker:
     """Build the internal lifecycle worker with the full stage registry."""
 
     return build_document_lifecycle_worker(
         engine=engine,
         artifact_store=artifact_store,
-        embedding_adapter=get_embedding_adapter(),
+        embedding_adapter=embedding_adapter,
     )
 
 
@@ -182,10 +153,11 @@ def get_query_service(
         SqlQueryableCorpusReadModel,
         Depends(get_queryable_corpus_read_model),
     ],
+    embedding_adapter: Annotated[EmbeddingAdapter, Depends(get_embedding_adapter)],
+    answer_generator: Annotated[GroundedAnswerGenerator, Depends(get_answer_generator)],
 ) -> QueryService:
     """Build the internal query service for end-to-end internal query execution."""
 
-    embedding_adapter = get_embedding_adapter()
     return QueryService(
         corpus_read_model=corpus_read_model,
         run_store=SqlQueryRunStore(engine),
@@ -200,7 +172,7 @@ def get_query_service(
         context_assembler=DeterministicContextAssembler(),
         support_assessor=HybridSupportAssessor(),
         answer_mode_policy=DeterministicAnswerModePolicy(),
-        answer_generator=get_answer_generator(),
+        answer_generator=answer_generator,
         answer_store=SqlQueryAnswerStore(engine),
     )
 

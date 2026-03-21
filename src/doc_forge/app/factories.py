@@ -11,6 +11,7 @@ from functools import cache
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
+    from doc_forge.lifecycle.service import DocumentLifecycleService
     from doc_forge.lifecycle.worker import DocumentLifecycleWorker
 
 import sqlalchemy as sa
@@ -87,6 +88,60 @@ def build_answer_generator(
         )
     raise RuntimeError(
         "DOC_FORGE_ANSWER_GENERATOR_BACKEND must be one of: deterministic, mlx, ollama"
+    )
+
+
+def build_document_lifecycle_service(
+    engine: Engine,
+    artifact_store: FilesystemArtifactStore,
+    embedding_adapter: EmbeddingAdapter,
+) -> DocumentLifecycleService:
+    from doc_forge.indexing import SqlVectorStore
+    from doc_forge.lifecycle.orchestrator import DocumentLifecycleOrchestrator
+    from doc_forge.lifecycle.service import DocumentLifecycleService
+    from doc_forge.persistence import (
+        SqlChunkEmbeddingRepository,
+        SqlChunkRepository,
+        SqlDocumentJobRepository,
+        SqlDocumentRepository,
+        SqlIndexEntryRepository,
+        SqlLifecycleEventRepository,
+        SqlSectionRepository,
+    )
+    from doc_forge.stages import RegisterDocumentStage
+
+    documents = SqlDocumentRepository(engine)
+    jobs = SqlDocumentJobRepository(engine)
+    lifecycle_events = SqlLifecycleEventRepository(engine)
+    sections = SqlSectionRepository(engine)
+    chunks = SqlChunkRepository(engine)
+    index_entries = SqlIndexEntryRepository(engine)
+    chunk_embeddings = SqlChunkEmbeddingRepository(engine)
+    orchestrator = DocumentLifecycleOrchestrator(jobs=jobs)
+    vector_store = SqlVectorStore(
+        engine=engine,
+        embedding_adapter=embedding_adapter,
+        index_entries=index_entries,
+        chunk_embeddings=chunk_embeddings,
+    )
+    register_stage = RegisterDocumentStage(
+        engine=engine,
+        documents=documents,
+        lifecycle_events=lifecycle_events,
+        artifact_store=artifact_store,
+    )
+    return DocumentLifecycleService(
+        register_stage=register_stage,
+        orchestrator=orchestrator,
+        documents=documents,
+        jobs=jobs,
+        lifecycle_events=lifecycle_events,
+        artifact_store=artifact_store,
+        sections=sections,
+        chunks=chunks,
+        index_entries=index_entries,
+        chunk_embeddings=chunk_embeddings,
+        vector_store=vector_store,
     )
 
 

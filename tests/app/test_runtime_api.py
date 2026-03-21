@@ -13,8 +13,10 @@ from pydantic import ValidationError
 from sqlalchemy.engine import Engine
 
 from doc_forge.app.deps import (
+    get_answer_generator,
     get_document_lifecycle_service,
     get_document_lifecycle_worker,
+    get_embedding_adapter,
     get_query_review_service,
     get_query_service,
     get_queryable_corpus_read_model,
@@ -67,6 +69,7 @@ def _service(sql_engine: Engine, tmp_path: Path):
     lifecycle_service = get_document_lifecycle_service(
         engine=sql_engine,
         artifact_store=FilesystemArtifactStore(tmp_path / "artifacts"),
+        embedding_adapter=get_embedding_adapter(),
     )
     return DocumentsAppService(lifecycle_service=lifecycle_service)
 
@@ -77,6 +80,8 @@ def _query_service(sql_engine: Engine):
     query_service = get_query_service(
         engine=sql_engine,
         corpus_read_model=get_queryable_corpus_read_model(engine=sql_engine),
+        embedding_adapter=get_embedding_adapter(),
+        answer_generator=get_answer_generator(),
     )
     review_service = get_query_review_service(engine=sql_engine)
     return QueriesAppService(query_service=query_service, review_service=review_service)
@@ -88,6 +93,8 @@ def _query_review_service(sql_engine: Engine):
     query_service = get_query_service(
         engine=sql_engine,
         corpus_read_model=get_queryable_corpus_read_model(engine=sql_engine),
+        embedding_adapter=get_embedding_adapter(),
+        answer_generator=get_answer_generator(),
     )
     review_service = get_query_review_service(engine=sql_engine)
     return QueriesAppService(query_service=query_service, review_service=review_service)
@@ -302,6 +309,7 @@ async def test_retrieval_query_returns_404_for_unknown_document(
                 lifecycle_service=get_document_lifecycle_service(
                     engine=sql_engine,
                     artifact_store=FilesystemArtifactStore(tmp_path / "artifacts"),
+                    embedding_adapter=get_embedding_adapter(),
                 ),
                 worker=None,  # type: ignore
             ),
