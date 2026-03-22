@@ -58,7 +58,7 @@ The currently earned seams are:
 
 - provenance-bearing corpus primitives for documents, sections, chunks, retrieval hits, and answers
 - explicit document-processing lifecycle progression with a failure state
-- localhost FastAPI service runtime for health, readiness, document lifecycle, query submission, query review, and environment-toggled Swagger UI
+- localhost FastAPI service runtime for health, readiness, document lifecycle, query submission, query review, and config-toggled Swagger UI
 - Docker-local answer-generation defaults that auto-select host Ollama on `Darwin arm64` when it is reachable, while keeping non-Docker process defaults deterministic
 - query-facing read model that admits only `READY` lifecycle documents into the queryable corpus
 - stable query-time corpus snapshots with persisted `eligible_doc_ids`
@@ -89,10 +89,21 @@ Most of these seams are implemented internal architecture. The localhost FastAPI
 
 ## Boundary Between Public API, Internal Architecture, And Planned Work
 ### Stable Public API
-The stable public interface is the localhost FastAPI HTTP API defined in [`docs/evergreen/api-contracts.md`](./api-contracts.md). The stable boundary is the running service route set plus its OpenAPI description. The public Python package interface remains intentionally empty.
+The stable public interface is the localhost FastAPI HTTP API defined in [`docs/evergreen/api-contracts.md`](./api-contracts.md). The stable boundary is the enumerated stable route set documented there. Optional OpenAPI and Swagger exposure may describe additional runtime-exposed internal routes when enabled, but that runtime schema is not, by itself, the stable public contract. The public Python package interface remains intentionally empty.
 
 ### Implemented Internal Architecture
 The `corpus` layer, query read model, Python query runtime, queue worker, executable stages from registration through readiness, artifact store, persistence/indexing helpers, evaluation harness, and devtools exist in code and are exercised by tests. These package seams are current implementation truth, but they remain internal unless promoted into [`docs/evergreen/api-contracts.md`](./api-contracts.md).
+
+Within that internal architecture, the documents HTTP path now uses a
+facade-plus-edge-mapping split: `DocumentsFacade` is the transport-neutral
+caller surface for document routes, while `DocumentLifecycleService` remains
+the workflow engine beneath it. That split is an earned internal seam, not a
+public Python API commitment.
+
+The current repo shape is still asymmetric. Internal retrieval continues to use
+`DocumentLifecycleService` directly for its smoke-query path, and the query,
+internal, and system route families still contain HTTP-aware app services
+rather than following the same documents pattern everywhere.
 
 ### Planned MVP Capabilities Not Yet Implemented
 The target product in [`docs/evergreen/mvp.md`](./mvp.md) still exceeds the runtime that exists today. The following user-facing capabilities are not implemented in `src/doc_forge/`:

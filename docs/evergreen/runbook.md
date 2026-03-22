@@ -84,8 +84,8 @@ uv run poe verify
 
 ## Local HTTP Runtime
 - `uv run poe run-api` runs the stable localhost FastAPI service at `http://127.0.0.1:8000` with health, readiness, document lifecycle, query, and review routes.
-- `http://127.0.0.1:8000/docs` serves the Swagger UI for the local contract when the app runs in `dev`; `uv run poe run-api` enables that by default through `DOC_FORGE_ENVIRONMENT=dev`.
-- `http://127.0.0.1:8000/openapi.json` serves the live OpenAPI schema for the same contract.
+- `http://127.0.0.1:8000/docs` serves the Swagger UI only when `DOC_FORGE_ENABLE_SWAGGER=true`; `DOC_FORGE_ENVIRONMENT=dev` alone does not enable it.
+- `http://127.0.0.1:8000/openapi.json` serves the live mounted-app schema on the same condition. That schema includes the internal-only debug and operator routes mounted in the same app, so use [`docs/evergreen/api-contracts.md`](./api-contracts.md) for the stable public subset.
 - `uv run poe run-worker` runs the queue-draining lifecycle worker that advances documents from `REGISTERED` to `READY`.
 - `uv run poe test-e2e` runs the docker-backed end-to-end document lifecycle suite under `tests/e2e/`.
 - `DOC_FORGE_E2E_VERBOSE=1 uv run poe test-e2e` enables step-by-step e2e progress logs plus richer failure diagnostics.
