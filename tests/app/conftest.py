@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 from collections.abc import Iterator
+from pathlib import Path
 
 import pytest
 from fastapi import FastAPI
+from sqlalchemy.engine import Engine
 
 from doc_forge.app.api import create_app
 from doc_forge.app.deps import reset_runtime_caches
@@ -11,9 +13,9 @@ from doc_forge.app.deps import reset_runtime_caches
 
 @pytest.fixture
 def app(
-    sql_engine,
+    sql_engine: Engine,
     db_url: str,
-    tmp_path,
+    tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> Iterator[FastAPI]:
     del sql_engine

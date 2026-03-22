@@ -52,7 +52,7 @@ def test_raw_artifact_store_rejects_unmanaged_relative_paths(tmp_path: Path) -> 
     store = FilesystemArtifactStore(tmp_path / "artifacts")
 
     with pytest.raises(ValueError, match="managed root"):
-        store._resolve_relative_path("../escape.txt")
+        store.resolve_relative_path("../escape.txt")
 
 
 @pytest.mark.parametrize("workspace_id", [".", "..", "ws/unsafe", r"ws\unsafe", " ws-1", "ws-1 "])

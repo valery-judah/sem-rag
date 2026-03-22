@@ -64,6 +64,9 @@ class FilesystemArtifactStore:
             self.normalized_relative_path(workspace_id=workspace_id, doc_id=doc_id)
         )
 
+    def resolve_relative_path(self, relative_path: str) -> Path:
+        return self._resolve_relative_path(relative_path)
+
     def write_raw(
         self,
         *,

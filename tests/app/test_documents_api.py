@@ -3,6 +3,7 @@ from __future__ import annotations
 import functools
 import hashlib
 from pathlib import Path
+from typing import NoReturn
 
 import httpx
 import pytest
@@ -14,7 +15,11 @@ from doc_forge.app.deps import get_document_lifecycle_service, get_embedding_ada
 from doc_forge.app.logging import get_logger
 from doc_forge.app.services.documents import DocumentsAppService
 from doc_forge.artifacts import FilesystemArtifactStore
-from doc_forge.stages import DocumentRegistrationError, RegisterDocumentStage
+from doc_forge.stages import (
+    DocumentRegistrationError,
+    RegisterDocumentRequest,
+    RegisterDocumentStage,
+)
 
 pytestmark = pytest.mark.anyio
 
@@ -45,7 +50,7 @@ class _UploadFileStub:
         self.file = _StubFile(content)
 
     async def read(self) -> bytes:
-        return self.file._content
+        return self.file.read()
 
 
 def _upload_file(filename: str, content: bytes) -> _UploadFileStub:
@@ -175,7 +180,10 @@ async def test_upload_route_maps_registration_error_to_500(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    def _raise_registration_error(self, request):
+    def _raise_registration_error(
+        self: RegisterDocumentStage,
+        request: RegisterDocumentRequest,
+    ) -> NoReturn:
         del self, request
         raise DocumentRegistrationError("synthetic registration failure")
 

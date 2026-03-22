@@ -9,6 +9,8 @@ from typing import Literal
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+DEFAULT_SECRETS_DIR = Path("/run/secrets")
+
 
 class Settings(BaseSettings):
     """Typed, validated runtime configuration.
@@ -23,7 +25,7 @@ class Settings(BaseSettings):
         env_file=".env",
         env_file_encoding="utf-8",
         extra="ignore",
-        secrets_dir="/run/secrets",
+        secrets_dir=DEFAULT_SECRETS_DIR if DEFAULT_SECRETS_DIR.is_dir() else None,
     )
 
     environment: Literal["dev", "test", "prod"] = "prod"

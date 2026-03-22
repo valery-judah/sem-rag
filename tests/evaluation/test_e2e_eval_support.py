@@ -22,16 +22,16 @@ from doc_forge.query.review import (
     QueryTraceTimingSummary,
 )
 from doc_forge.query.trace import QueryTraceBundle
-from e2e.eval_support import _parse_page_label, runtime_query_to_answer_layer_input
+from e2e.eval_support import parse_page_label, runtime_query_to_answer_layer_input
 from e2e.query_support import ExecutedQueryRun
 from e2e.support import QueryAnswerResponse
 
 
 def test_parse_page_label_handles_single_and_range_forms() -> None:
-    assert _parse_page_label("p. 3") == (3, None)
-    assert _parse_page_label("pp. 8-10") == (8, 10)
-    assert _parse_page_label("appendix") == (None, None)
-    assert _parse_page_label(None) == (None, None)
+    assert parse_page_label("p. 3") == (3, None)
+    assert parse_page_label("pp. 8-10") == (8, 10)
+    assert parse_page_label("appendix") == (None, None)
+    assert parse_page_label(None) == (None, None)
 
 
 def test_runtime_query_to_answer_layer_input_remaps_runtime_doc_ids() -> None:

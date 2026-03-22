@@ -175,7 +175,7 @@ def _source_reference_to_answer_layer_citation(
     authored_doc_id = runtime_doc_id_map.get(source_reference.doc_id) or parse_corpus_id(
         source_reference.doc_id
     )
-    page_start, page_end = _parse_page_label(source_reference.page_label)
+    page_start, page_end = parse_page_label(source_reference.page_label)
     return AnswerLayerCitation(
         doc_id=authored_doc_id,
         document_title=source_reference.document_title,
@@ -186,7 +186,7 @@ def _source_reference_to_answer_layer_citation(
     )
 
 
-def _parse_page_label(page_label: str | None) -> tuple[int | None, int | None]:
+def parse_page_label(page_label: str | None) -> tuple[int | None, int | None]:
     if page_label is None:
         return None, None
     single = re.fullmatch(r"p\.\s*(\d+)", page_label)
