@@ -13,10 +13,10 @@ Turn RFC Phase 2 into the first reviewable seed-corpus package for the eval harn
 - `docs/evergreen/api-contracts.md`
 
 #### Canonical Evaluation Semantics
-- `docs/evergreen/eval-vocabulary.md`
-- `docs/evergreen/eval-support-semantics.md`
-- `docs/evergreen/eval-scenario-taxonomy.md`
-- `docs/evergreen/eval-failure-taxonomy.md`
+- `docs/delivery/eval-vocabulary.md`
+- `docs/delivery/eval-support-semantics.md`
+- `docs/delivery/eval-scenario-taxonomy.md`
+- `docs/delivery/eval-failure-taxonomy.md`
 
 #### Delivery Rationale And Phase Definition
 - `docs/delivery/workflow.md`

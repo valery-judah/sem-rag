@@ -23,7 +23,7 @@ This document is subordinate to:
 1. `docs/evergreen/mvp.md`
 2. `docs/evergreen/architecture.md`
 3. `docs/evergreen/api-contracts.md`
-4. `docs/evergreen/eval-support-semantics.md`
+4. `docs/delivery/eval-support-semantics.md`
 5. [`04_query-lifecycle-requirements-final.md`](./04_query-lifecycle-requirements-final.md)
 6. [`07_design.md`](./07_design.md)
 7. [`11_stage-1-queryable-corpus-boundary-design.md`](./11_stage-1-queryable-corpus-boundary-design.md)
@@ -262,7 +262,7 @@ Stable base reviewed during Stage 2:
 - `docs/evergreen/mvp.md`
 - `docs/evergreen/architecture.md`
 - `docs/evergreen/api-contracts.md`
-- `docs/evergreen/eval-support-semantics.md`
+- `docs/delivery/eval-support-semantics.md`
 
 Promoted or worthy of promotion from Stage 2:
 

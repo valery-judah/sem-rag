@@ -28,7 +28,6 @@ For the broader documentation index and read-order map, use [`docs/README.md`](.
 - Current architecture and durable boundaries: `docs/evergreen/architecture.md`
 - Stable localhost HTTP and OpenAPI contract: `docs/evergreen/api-contracts.md`
 - Commands and validation guidance: `docs/evergreen/runbook.md`
-- Evaluation semantics: `docs/evergreen/eval-vocabulary.md`, `docs/evergreen/eval-support-semantics.md`, `docs/evergreen/eval-scenario-taxonomy.md`, and `docs/evergreen/eval-failure-taxonomy.md`
 - Workflow rationale and promotion rules: `docs/delivery/workflow.md` as reference only
 - Execution history and prior framing: `docs/workstreams/`
 

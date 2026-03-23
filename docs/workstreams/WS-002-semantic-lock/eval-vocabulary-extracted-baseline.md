@@ -1,6 +1,6 @@
 # Evaluation Vocabulary for MVP Document-Grounded QA
 
-> Archival note: This file is a historical extraction snapshot kept for WS-002 continuity. It is not the live source of truth. Live evaluation semantics now reside in `docs/evergreen/eval-vocabulary.md`, `docs/evergreen/eval-support-semantics.md`, `docs/evergreen/eval-scenario-taxonomy.md`, and `docs/evergreen/eval-failure-taxonomy.md`.
+> Archival note: This file is a historical extraction snapshot kept for WS-002 continuity. It is not the live source of truth. Live evaluation semantics now reside in `docs/delivery/eval-vocabulary.md`, `docs/delivery/eval-support-semantics.md`, `docs/delivery/eval-scenario-taxonomy.md`, and `docs/delivery/eval-failure-taxonomy.md`.
 
 **Status:** Draft  
 **Scope:** MVP / Version 1  

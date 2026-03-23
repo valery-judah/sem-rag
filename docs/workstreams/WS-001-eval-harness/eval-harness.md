@@ -133,9 +133,9 @@ Main steps:
 Artifacts:
 
 * `docs/evergreen/eval-principles.md`
-* `docs/evergreen/eval-vocabulary.md`
-* `docs/evergreen/eval-failure-taxonomy.md`
-* `docs/evergreen/eval-support-semantics.md`
+* `docs/delivery/eval-vocabulary.md`
+* `docs/delivery/eval-failure-taxonomy.md`
+* `docs/delivery/eval-support-semantics.md`
 
 Exit criteria:
 
@@ -400,9 +400,9 @@ If I were making this concrete today, I would require this minimum set:
 **Evergreen**
 
 * `docs/evergreen/eval-principles.md`
-* `docs/evergreen/eval-vocabulary.md`
-* `docs/evergreen/eval-failure-taxonomy.md`
-* `docs/evergreen/eval-support-semantics.md`
+* `docs/delivery/eval-vocabulary.md`
+* `docs/delivery/eval-failure-taxonomy.md`
+* `docs/delivery/eval-support-semantics.md`
 
 **Scenario and dataset**
 

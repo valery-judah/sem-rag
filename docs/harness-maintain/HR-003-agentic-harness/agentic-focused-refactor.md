@@ -14,10 +14,10 @@ This note interprets prior changes. It does not override `docs/evergreen/` autho
 The reflection is grounded in the following recent changes:
 
 - `docs/workstreams/WS-002-semantic-lock/workstream.md`: semantic-lock framing, review, and closure
-- `docs/evergreen/eval-vocabulary.md`: glossary and layer-name authority
-- `docs/evergreen/eval-support-semantics.md`: support-state, citation, and abstention authority
-- `docs/evergreen/eval-scenario-taxonomy.md`: frozen scenario-class authority for baseline authoring
-- `docs/evergreen/eval-failure-taxonomy.md`: failure-class authority
+- `docs/delivery/eval-vocabulary.md`: glossary and layer-name authority
+- `docs/delivery/eval-support-semantics.md`: support-state, citation, and abstention authority
+- `docs/delivery/eval-scenario-taxonomy.md`: frozen scenario-class authority for baseline authoring
+- `docs/delivery/eval-failure-taxonomy.md`: failure-class authority
 - `docs/delivery/workflow.md`: workflow cleanup to remove competing semantic authority
 - `docs/delivery/eval-harness-rfc-sections-1-10.md`: normative harness guidance aligned to evergreen semantics
 - `docs/delivery/eval-harness-rfc-sections-11-15.md`: operating-model guidance aligned to evergreen semantics
@@ -58,10 +58,10 @@ The first method was comparative review across evergreen docs, RFC sections, wor
 ### 2. Tighten ownership boundaries
 The cleanup treated semantic ownership as an architectural boundary:
 
-- vocabulary and layer names stay in `docs/evergreen/eval-vocabulary.md`
-- support-state, citation, and abstention rules stay in `docs/evergreen/eval-support-semantics.md`
-- scenario classes stay in `docs/evergreen/eval-scenario-taxonomy.md`
-- failure classes stay in `docs/evergreen/eval-failure-taxonomy.md`
+- vocabulary and layer names stay in `docs/delivery/eval-vocabulary.md`
+- support-state, citation, and abstention rules stay in `docs/delivery/eval-support-semantics.md`
+- scenario classes stay in `docs/delivery/eval-scenario-taxonomy.md`
+- failure classes stay in `docs/delivery/eval-failure-taxonomy.md`
 
 Other docs can apply these concepts, but they should not redefine them locally.
 
@@ -155,7 +155,7 @@ Start agentic-harness tasks from `docs/harness-maintain/README.md` so the work i
 When this note conflicts with current semantic definitions or MVP scope, the canonical docs win:
 
 - `docs/evergreen/mvp.md`
-- `docs/evergreen/eval-vocabulary.md`
-- `docs/evergreen/eval-support-semantics.md`
-- `docs/evergreen/eval-scenario-taxonomy.md`
-- `docs/evergreen/eval-failure-taxonomy.md`
+- `docs/delivery/eval-vocabulary.md`
+- `docs/delivery/eval-support-semantics.md`
+- `docs/delivery/eval-scenario-taxonomy.md`
+- `docs/delivery/eval-failure-taxonomy.md`

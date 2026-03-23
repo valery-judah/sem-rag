@@ -321,7 +321,7 @@ These scenarios should be RAG-specific. They are not generic user stories. They 
 
 ### 6.1 Scenario categories
 
-The canonical scenario classes and class meanings are governed by `docs/evergreen/eval-scenario-taxonomy.md`.
+The canonical scenario classes and class meanings are governed by `docs/delivery/eval-scenario-taxonomy.md`.
 
 The workflow should use those same class names consistently. The notes below describe workflow-specific design pressure, not alternate semantic definitions.
 
@@ -450,7 +450,7 @@ An evidence unit should have, conceptually, the following properties:
 
 ### 7.3 Support-state semantics
 
-The canonical criteria for support-state labeling are governed by `docs/evergreen/eval-support-semantics.md`.
+The canonical criteria for support-state labeling are governed by `docs/delivery/eval-support-semantics.md`.
 
 For workflow modeling, use these labels consistently without redefining them locally:
 
@@ -694,7 +694,7 @@ The workflow should explicitly model failure as part of the system domain.
 
 A strong RAG workflow does not only describe the success path. It also names the ways the system can fail, because those failures often determine both architecture and evaluation priorities.
 
-The canonical failure classes, definitions, and examples are governed by `docs/evergreen/eval-failure-taxonomy.md`.
+The canonical failure classes, definitions, and examples are governed by `docs/delivery/eval-failure-taxonomy.md`.
 
 The workflow should use those same classes when reasoning about pressure points instead of introducing local variants.
 

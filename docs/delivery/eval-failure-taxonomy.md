@@ -66,7 +66,7 @@ Use this class when relevant evidence is not discovered or not ranked usefully.
 Examples:
 
 - relevant evidence absent from top-k;
-- partial support outranking complete support;
+- `PARTIALLY_SUPPORTED` evidence outranking `SUPPORTED` evidence;
 - retrieval dominated by noisy long passages;
 - cross-document support missed;
 - source-navigation retrieval returning non-resolvable fragments.
@@ -114,44 +114,8 @@ Use this class when the system behaves untrustworthily under weak support.
 
 Examples:
 
-- confident unsupported answer on insufficient-support cases;
+- confident unsupported answer on cases that are not `SUPPORTED`;
 - fabricated provenance;
-- refusal to narrow scope under partial support;
+- refusal to narrow scope on `PARTIALLY_SUPPORTED` cases;
 - misleading certainty language under degraded retrieval;
 - silent fallback to weakly related evidence.
-
----
-
-## 4. Relationship to release policy
-
-Not all failure classes are equally severe, but the following are presumptively release-blocking for MVP:
-
-- fabricated provenance;
-- repeated confident unsupported answering on insufficient-evidence cases;
-- citation non-resolvability on otherwise successful answers;
-- loss of mixed-format trust behavior in common cases.
-
-Severity and gating policy may be elaborated elsewhere, but those policies should use the failure classes defined here.
-
----
-
-## 5. Diagnostic Log Correlation
-
-To root-cause failures identified by the evaluator, correlate the failure class with the centralized `service_log_events` stored in Postgres (or streamed in Loki). Because the application uses a strongly-typed `LogEvent` taxonomy, you can reliably pivot from a `case_id` or `query_id` to specific internal diagnostic signals.
-
-### 5.1 Representation & Segmentation
-When investigating document structure issues:
-- Search for `event = 'lifecycle.stage.failed'` or `event = 'lifecycle.stage.completed'`.
-- Filter `payload->>'stage_name'` for `extract`, `normalize`, `sectionize`, or `chunk`.
-- Extract `payload->>'error_code'` to identify parsing crashes or extraction limitations.
-
-### 5.2 Retrieval
-When investigating missing evidence or poor ranking:
-- Search for `event = 'retrieval.smoke.executed'` to inspect baseline index performance (`hit_count`, `top_hit_chunk_id`).
-- Search for `event = 'query.stage.completed'` with `payload->>'stage_name' = 'retrieve'` to check duration and status.
-
-### 5.3 Context Assembly & Answering
-When investigating unsupported synthesis, context truncation, or abstention failures:
-- Search for `event = 'query.run.completed'` to review the final `support_state` and `answer_mode` decided by the system before generation.
-- Search for `event = 'query.llm.generated'` to see which generator backend and model produced the actual answer text.
-- Search for `event = 'query.run.failed'` to extract `error_class` and `message` if the pipeline crashed before answering.

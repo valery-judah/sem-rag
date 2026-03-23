@@ -17,7 +17,7 @@ This baseline is derived from:
 
 - `docs/evergreen/mvp.md`
 - `docs/evergreen/architecture.md`
-- `docs/evergreen/eval-support-semantics.md`
+- `docs/delivery/eval-support-semantics.md`
 - `docs/workstreams/WS-006-query-lifecycle/00_requirements-v0.md`
 - `docs/workstreams/WS-006-query-lifecycle/01_requirements-critique.md`
 - `src/doc_forge/_contracts/models.py`

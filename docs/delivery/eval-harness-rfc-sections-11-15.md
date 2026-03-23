@@ -95,7 +95,7 @@ The harness should treat the corpus manifest as the source of truth for reproduc
 
 ### 11.4 Scenario classes required in the baseline dataset
 
-The baseline dataset must include cases across the canonical scenario classes defined in `docs/evergreen/eval-scenario-taxonomy.md`. This section fixes the required coverage and per-class dataset purpose for the baseline.
+The baseline dataset must include cases across the canonical scenario classes defined in `docs/delivery/eval-scenario-taxonomy.md`. This section fixes the required coverage and per-class dataset purpose for the baseline.
 
 #### 11.4.1 Direct factual lookup
 Purpose:
@@ -454,7 +454,7 @@ Claim-level judgment is more expensive, but it is important for grounded systems
 
 ### 12.5 Support-state judgment
 
-The harness must judge support state strictly according to `docs/evergreen/eval-support-semantics.md`.
+The harness must judge support state strictly according to `docs/delivery/eval-support-semantics.md`.
 
 Judging mechanics:
 - record one explicit support-state label for the requested answer shape;
@@ -693,10 +693,10 @@ To keep the long-running workflow disciplined, the following sequencing rules sh
 ### 13.9 Recommended workstream outputs by phase
 
 #### Phase 1
-- `docs/evergreen/eval-vocabulary.md`
-- `docs/evergreen/eval-support-semantics.md`
-- `docs/evergreen/eval-scenario-taxonomy.md`
-- `docs/evergreen/eval-failure-taxonomy.md`
+- `docs/delivery/eval-vocabulary.md`
+- `docs/delivery/eval-support-semantics.md`
+- `docs/delivery/eval-scenario-taxonomy.md`
+- `docs/delivery/eval-failure-taxonomy.md`
 
 #### Phase 2
 - `evals/corpus/corpus-manifest.json`

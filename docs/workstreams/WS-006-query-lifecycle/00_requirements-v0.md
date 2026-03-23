@@ -17,8 +17,8 @@ This artifact is a workstream planning document. It must stay aligned with:
 - `docs/evergreen/mvp.md` for product scope
 - `docs/evergreen/architecture.md` for current implementation truth
 - `docs/delivery/workflow.md` for the conceptual lifecycle model
-- `docs/evergreen/eval-vocabulary.md` for canonical evaluation terminology
-- `docs/evergreen/eval-support-semantics.md` and `docs/evergreen/eval-scenario-taxonomy.md` for canonical support-state and scenario meanings
+- `docs/delivery/eval-vocabulary.md` for canonical evaluation terminology
+- `docs/delivery/eval-support-semantics.md` and `docs/delivery/eval-scenario-taxonomy.md` for canonical support-state and scenario meanings
 - `docs/workstreams/WS-003-seed-corpus/21_critical_failures.md` for the MVP trust-priority failure set
 
 It does not create a public API contract or broaden MVP scope.
@@ -168,7 +168,7 @@ At minimum:
 - the system must not overstate what the evidence supports
 - answer generation must preserve enough linkage to explain why the answer was returned
 
-For evaluation and review, supported answers and unsupported answers should use the meanings from `docs/evergreen/eval-vocabulary.md` rather than local synonyms.
+For evaluation and review, supported answers and unsupported answers should use the meanings from `docs/delivery/eval-vocabulary.md` rather than local synonyms.
 
 ### R10. Citation rendering and source inspection
 Supported answers must include inspectable citations at useful MVP granularity.
@@ -322,10 +322,10 @@ Representative unsupported or degraded scenarios abstain or narrow scope honestl
 - `docs/evergreen/mvp.md`
 - `docs/evergreen/architecture.md`
 - `docs/delivery/workflow.md`
-- `docs/evergreen/eval-vocabulary.md`
-- `docs/evergreen/eval-support-semantics.md`
-- `docs/evergreen/eval-scenario-taxonomy.md`
-- `docs/evergreen/eval-failure-taxonomy.md`
+- `docs/delivery/eval-vocabulary.md`
+- `docs/delivery/eval-support-semantics.md`
+- `docs/delivery/eval-scenario-taxonomy.md`
+- `docs/delivery/eval-failure-taxonomy.md`
 - `docs/workstreams/WS-003-seed-corpus/21_critical_failures.md`
 - `src/doc_forge/_contracts/models.py`
 - `src/doc_forge/retrieval.py`

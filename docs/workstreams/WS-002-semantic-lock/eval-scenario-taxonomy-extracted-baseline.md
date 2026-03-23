@@ -1,6 +1,6 @@
 # Evaluation Scenario Taxonomy for MVP Document-Grounded QA
 
-> Archival note: This file is a historical extraction snapshot kept for WS-002 continuity. It is not the live source of truth. Live scenario semantics now reside in `docs/evergreen/eval-scenario-taxonomy.md`, with related live authority in `docs/evergreen/eval-vocabulary.md` and `docs/evergreen/eval-support-semantics.md`.
+> Archival note: This file is a historical extraction snapshot kept for WS-002 continuity. It is not the live source of truth. Live scenario semantics now reside in `docs/delivery/eval-scenario-taxonomy.md`, with related live authority in `docs/delivery/eval-vocabulary.md` and `docs/delivery/eval-support-semantics.md`.
 
 **Status:** Draft  
 **Scope:** MVP / Version 1  

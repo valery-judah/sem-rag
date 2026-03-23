@@ -34,20 +34,5 @@ Evaluation Docs:
 - `adrs/`: durable architecture decision records promoted out of individual workstreams when needed
 - `harness/`: templates, conventions, playbooks, and helper scripts for humans and agents
 
-## Evaluation Docs Map
-Use this map when working on evaluation semantics, the eval harness, or related dataset design.
-
-Glossary And Layer Names:
-- `docs/evergreen/eval-vocabulary.md`: Canonical. Evaluation glossary, term normalization, and layer names.
-
-Support, Citation, And Abstention:
-- `docs/evergreen/eval-support-semantics.md`: Canonical. Support-state criteria, citation expectations, and abstention rules.
-
-Scenario Taxonomy:
-- `docs/evergreen/eval-scenario-taxonomy.md`: Canonical. Scenario classes and classification rules.
-
-Failure Taxonomy:
-- `docs/evergreen/eval-failure-taxonomy.md`: Canonical. Failure classes and classification rules.
-
 ## Where New Work Goes
 - Put new implementation work, RFC/proposal material, decisions, evidence, and handoff notes in the relevant folder under `docs/workstreams/WS-XXX-{slug}` folders. Choose a `work_type` from `docs/harness/taxonomy/workstream-taxonomy.md`, then prefer `make workstream-new type=feature slug=my-feature` to create the scaffold. `WS-XXX-workstream.md` is the canonical lightweight workstream card, and `WS-XXX-framing.md` is the scaffold for the framing stage. The underlying script is `docs/harness/scripts/new-workstream.sh <work_type> <slug>`.

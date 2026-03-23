@@ -279,10 +279,10 @@ For MVP harness purposes, assume:
 
 Live semantic authority for the evaluation harness now resides in the evergreen evaluation docs:
 
-- `docs/evergreen/eval-vocabulary.md`
-- `docs/evergreen/eval-support-semantics.md`
-- `docs/evergreen/eval-scenario-taxonomy.md`
-- `docs/evergreen/eval-failure-taxonomy.md`
+- `docs/delivery/eval-vocabulary.md`
+- `docs/delivery/eval-support-semantics.md`
+- `docs/delivery/eval-scenario-taxonomy.md`
+- `docs/delivery/eval-failure-taxonomy.md`
 
 This RFC depends on those definitions and should use them consistently rather than restating them.
 
@@ -415,7 +415,7 @@ Every scenario included in the harness should specify:
 - the primary layers under pressure.
 
 ### 7.3 Required initial scenario classes
-The canonical meanings of the scenario classes below are governed by `docs/evergreen/eval-scenario-taxonomy.md`. This RFC fixes the minimum required coverage and the design pressure each class must apply.
+The canonical meanings of the scenario classes below are governed by `docs/delivery/eval-scenario-taxonomy.md`. This RFC fixes the minimum required coverage and the design pressure each class must apply.
 
 #### A. Direct factual lookup
 This class must pressure:
@@ -523,7 +523,7 @@ The taxonomy exists to:
 
 ### 8.2 Canonical failure classes
 
-The live definitions and examples for the failure classes are governed by `docs/evergreen/eval-failure-taxonomy.md`.
+The live definitions and examples for the failure classes are governed by `docs/delivery/eval-failure-taxonomy.md`.
 
 Harness reports and review notes should use the following classes consistently:
 

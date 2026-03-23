@@ -26,8 +26,8 @@ This document is subordinate to:
 1. `docs/evergreen/mvp.md`
 2. `docs/evergreen/architecture.md`
 4. `docs/evergreen/api-contracts.md`
-5. `docs/evergreen/eval-support-semantics.md`
-6. `docs/evergreen/eval-failure-taxonomy.md`
+5. `docs/delivery/eval-support-semantics.md`
+6. `docs/delivery/eval-failure-taxonomy.md`
 7. [`04_query-lifecycle-requirements-final.md`](./04_query-lifecycle-requirements-final.md)
 8. [`07_design.md`](./07_design.md)
 9. [`16_stage-6-support-assessment-answer-mode-design.md`](./16_stage-6-support-assessment-answer-mode-design.md)

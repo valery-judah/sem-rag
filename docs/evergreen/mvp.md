@@ -8,7 +8,7 @@
 - `docs/evergreen/architecture.md`: Canonical. Current repo shape and implementation gap.
 - `docs/evergreen/api-contracts.md`: Canonical. Stable runtime interfaces that exist today.
 - `docs/README.md`: Canonical. Docs index and task-based routes.
-- `docs/evergreen/eval-support-semantics.md`: Canonical. Support-state criteria, citation expectations, and abstention rules.
+- `docs/delivery/eval-support-semantics.md`: Canonical. Support-state criteria, citation expectations, and abstention rules.
 
 ## 1. Problem
 

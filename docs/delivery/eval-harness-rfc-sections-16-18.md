@@ -169,19 +169,19 @@ Role:
 - defines the normative and operational document set;
 - links to companion artifacts.
 
-#### 16.3.2 `docs/evergreen/eval-vocabulary.md`
+#### 16.3.2 `docs/delivery/eval-vocabulary.md`
 Role:
 - freezes shared terms such as document, section, passage, anchor, evidence unit, evidence set, support state, citation, abstention, and failure class;
 - prevents semantic drift across ingestion, retrieval, answer generation, and evaluation.
 
-#### 16.3.3 `docs/evergreen/eval-support-semantics.md`
+#### 16.3.3 `docs/delivery/eval-support-semantics.md`
 Role:
 - defines sufficient, partial, and insufficient support;
 - defines acceptable support alternatives;
 - defines evidence-set sufficiency rules;
 - defines what counts as groundedness for MVP.
 
-#### 16.3.4 `docs/evergreen/eval-failure-taxonomy.md`
+#### 16.3.4 `docs/delivery/eval-failure-taxonomy.md`
 Role:
 - enumerates failure classes and sub-classes;
 - provides examples and likely upstream causes;
@@ -392,8 +392,8 @@ If implementation needs to start with the smallest viable artifact set, begin wi
 
 **Evergreen**
 - `docs/evergreen/eval-harness-rfc.md`
-- `docs/evergreen/eval-vocabulary.md`
-- `docs/evergreen/eval-failure-taxonomy.md`
+- `docs/delivery/eval-vocabulary.md`
+- `docs/delivery/eval-failure-taxonomy.md`
 
 **Execution**
 - `evals/corpus/corpus-manifest.json`

@@ -21,7 +21,7 @@ This design is subordinate to:
 1. `docs/evergreen/mvp.md`
 2. `docs/evergreen/architecture.md`
 3. `docs/evergreen/api-contracts.md`
-4. `docs/evergreen/eval-support-semantics.md`
+4. `docs/delivery/eval-support-semantics.md`
 5. [`04_query-lifecycle-requirements-final.md`](./04_query-lifecycle-requirements-final.md)
 6. [`07_design.md`](./07_design.md)
 7. [`13_stage-3-retrieval-foundation-design.md`](./13_stage-3-retrieval-foundation-design.md)

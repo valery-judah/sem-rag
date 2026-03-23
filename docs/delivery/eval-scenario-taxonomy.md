@@ -115,7 +115,7 @@ Primary pressure:
 
 Classification note:
 
-Do not use this label for merely hard questions if the corpus still contains sufficient support.
+Do not use this label for merely hard questions if the case is still `SUPPORTED`.
 
 ### 3.7 Degraded-source edge case
 

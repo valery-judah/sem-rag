@@ -126,7 +126,7 @@ The main remaining gap to the MVP is product surface and hardening rather than m
 - Do not treat `docs/delivery/workflow.md` as authority for current implementation truth. It is workflow rationale and promotion guidance, not the current-state source of truth.
 - Do not infer additional public API stability beyond the routes documented in `docs/evergreen/api-contracts.md` from internal lifecycle routes, worker seams, or package exports.
 - Do not infer support assessment, answer-mode selection, generation, or citation rendering from the existence of `InterpretedQuery`, support-state enums, trust-failure labels, `EvidenceSet` objects, or `ContextManifest` objects in `src/doc_forge/query/contracts.py`.
-- When referencing support-state or trust-failure vocabulary, normalize against [`docs/evergreen/eval-support-semantics.md`](./eval-support-semantics.md) and related evergreen eval docs instead of restating workstream-specific framing as runtime fact.
+- When referencing support-state or trust-failure vocabulary, normalize against [`docs/delivery/eval-support-semantics.md`](./eval-support-semantics.md) and related evergreen eval docs instead of restating workstream-specific framing as runtime fact.
 - Do not promote a new seam into evergreen architecture just because it appears in one prototype or one workstream. It should be implemented repo truth and exercised under tests or equivalent validation pressure.
 
 

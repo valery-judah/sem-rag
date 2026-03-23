@@ -21,7 +21,7 @@ This document is subordinate to:
 1. `docs/evergreen/mvp.md`
 2. `docs/evergreen/architecture.md`
 4. `docs/evergreen/api-contracts.md`
-5. `docs/evergreen/eval-support-semantics.md`
+5. `docs/delivery/eval-support-semantics.md`
 6. [`04_query-lifecycle-requirements-final.md`](./04_query-lifecycle-requirements-final.md)
 7. [`07_design.md`](./07_design.md)
 8. [`14_stage-4-selection-evidence-set-construction-design.md`](./14_stage-4-selection-evidence-set-construction-design.md)

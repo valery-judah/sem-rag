@@ -10,10 +10,10 @@ updated: 2026-03-10
 tags: []
 # Optional later note: paths that become relevant once framing work starts.
 affected_paths:
-  - docs/evergreen/eval-vocabulary.md
-  - docs/evergreen/eval-support-semantics.md
-  - docs/evergreen/eval-scenario-taxonomy.md
-  - docs/evergreen/eval-failure-taxonomy.md
+  - docs/delivery/eval-vocabulary.md
+  - docs/delivery/eval-support-semantics.md
+  - docs/delivery/eval-scenario-taxonomy.md
+  - docs/delivery/eval-failure-taxonomy.md
   - docs/delivery/eval-harness-rfc-sections-1-10.md
   - docs/delivery/eval-harness-rfc-sections-11-15.md
   - docs/evergreen/mvp.md
@@ -30,19 +30,19 @@ depends_on:
   - WS-001
 # Optional later note: durable docs that may need review or update.
 evergreen_targets:
-  - docs/evergreen/eval-vocabulary.md
-  - docs/evergreen/eval-support-semantics.md
-  - docs/evergreen/eval-scenario-taxonomy.md
-  - docs/evergreen/eval-failure-taxonomy.md
+  - docs/delivery/eval-vocabulary.md
+  - docs/delivery/eval-support-semantics.md
+  - docs/delivery/eval-scenario-taxonomy.md
+  - docs/delivery/eval-failure-taxonomy.md
 adr_links: []
 rfc_links:
   - docs/delivery/eval-harness-rfc-sections-1-10.md
   - docs/delivery/eval-harness-rfc-sections-11-15.md
 validation_evidence:
-  - docs/evergreen/eval-vocabulary.md
-  - docs/evergreen/eval-support-semantics.md
-  - docs/evergreen/eval-scenario-taxonomy.md
-  - docs/evergreen/eval-failure-taxonomy.md
+  - docs/delivery/eval-vocabulary.md
+  - docs/delivery/eval-support-semantics.md
+  - docs/delivery/eval-scenario-taxonomy.md
+  - docs/delivery/eval-failure-taxonomy.md
   - docs/delivery/workflow.md
   - docs/delivery/eval-harness-rfc-sections-1-10.md
   - docs/delivery/eval-harness-rfc-sections-11-15.md
@@ -115,7 +115,7 @@ RFC section 13.1 defined the semantic-lock phase and its intended outputs. Those
 - Archived the original extracted vocabulary and scenario-taxonomy snapshots in this workstream as `*-extracted-baseline.md` artifacts with explicit non-authoritative notices.
 - Decided to freeze the canonical scenario taxonomy for baseline authoring while leaving dataset composition, rubric policy, and suite composition open for later phases.
 - Updated the scenario-taxonomy evergreen doc to state the freeze boundary explicitly and to require an explicit semantic-change decision for rename, split, merge, or redefinition changes.
-- Aligned the Phase 1 RFC outputs list so `docs/evergreen/eval-scenario-taxonomy.md` is included alongside the other semantic-lock artifacts.
+- Aligned the Phase 1 RFC outputs list so `docs/delivery/eval-scenario-taxonomy.md` is included alongside the other semantic-lock artifacts.
 - Reviewed the evergreen semantics docs, `docs/delivery/workflow.md`, and the pruned RFC sections for semantic gaps, authority contradictions, and duplicate definitions.
 - Normalized workflow and RFC support-state wording to sufficient support, partial support, and insufficient support.
 - Renamed workflow and dataset-authoring headings to the frozen canonical scenario-class names while preserving aliases only as explanatory notes.
@@ -128,5 +128,5 @@ RFC section 13.1 defined the semantic-lock phase and its intended outputs. Those
 - RFC core: `docs/delivery/eval-harness-rfc-sections-1-10.md`
 - RFC implementation plan: `docs/delivery/eval-harness-rfc-sections-11-15.md`
 - Related framing work: `docs/workstreams/WS-001-eval-harness/workstream.md`
-- Evergreen semantic outputs: `docs/evergreen/eval-vocabulary.md`, `docs/evergreen/eval-support-semantics.md`, `docs/evergreen/eval-scenario-taxonomy.md`, `docs/evergreen/eval-failure-taxonomy.md`
+- Evergreen semantic outputs: `docs/delivery/eval-vocabulary.md`, `docs/delivery/eval-support-semantics.md`, `docs/delivery/eval-scenario-taxonomy.md`, `docs/delivery/eval-failure-taxonomy.md`
 - Historical transition artifacts retained in this workstream: `eval-vocabulary-extracted-baseline.md`, `eval-scenario-taxonomy-extracted-baseline.md`

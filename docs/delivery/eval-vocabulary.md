@@ -132,7 +132,15 @@ A **useful citation** is a citation a reviewer or user can realistically follow 
 
 A **support state** is the evaluator's judgment about whether the available corpus evidence warrants the requested claim or answer shape.
 
-The canonical criteria for sufficient, partial, and insufficient support are governed by `eval-support-semantics.md`.
+The canonical support states are:
+
+- `SUPPORTED`
+- `PARTIALLY_SUPPORTED`
+- `UNSUPPORTED_IN_CORPUS`
+- `UNSUPPORTED_QUESTION_TYPE`
+- `AMBIGUOUS_OR_CONFLICTING`
+
+Their criteria and answer-policy rules are governed by `eval-support-semantics.md`.
 
 ### 4.13 Supported answer
 
@@ -245,6 +253,6 @@ The following terms should be treated as loaded and should not be used without t
 
 Use these documents for the semantic areas intentionally split out of this glossary:
 
-- `eval-support-semantics.md`: support-state criteria, citation expectations, and honest abstention.
+- `eval-support-semantics.md`: canonical support states, answer-policy rules, and minimum provenance contract.
 - `eval-scenario-taxonomy.md`: canonical scenario classes and classification rules.
 - `eval-failure-taxonomy.md`: failure classes, examples, and release-relevant severity framing.

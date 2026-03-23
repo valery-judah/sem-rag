@@ -1,9 +1,9 @@
 # MVP Critical Failure Specification for Source-Grounded QA over PDF and Markdown
 
 **Status:** Draft  
-**Applies to:** MVP / Version 1  
+**Applies to:** MVP / Version 2  
 **Scope:** Question-answering over user-uploaded text-based PDF and Markdown documents  
-**Derived from:** `mvp.md`, `mvp_rag_eval_rubric_and_failure_annotation_guide.md`
+**Derived from:** `mvp.md`
 
 ---
 
