@@ -1,6 +1,0 @@
-2026-02-18T03:14:05Z INFO loading environment prod
-2026-02-18T03:14:06Z INFO export GCP_PROJECT=meridian-prod-757233
-2026-02-18T03:14:06Z INFO export GEMINI_API_KEY=AIza24O2bKUU6Z5prHoYwmaVn57kZORN-EVtlem
-2026-02-18T03:14:07Z INFO using aws access key AKIAAM038D7OY27YR5HN
-2026-02-18T03:14:08Z WARN smoke probe returned 502 from https://api-prod.us-central1.meridian.invalid/health
-2026-02-18T03:14:09Z INFO notifying slack via https://hooks.slack.com/services/XM4RYWIDN/L00TVLV2R/2viiH2XD2NVXd5loYGaZsLj8

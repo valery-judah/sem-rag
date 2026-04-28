@@ -1,5 +1,0 @@
-customer_id,email,plan,region,last_invoice_id,amount_usd
-cus_51105257,alerts@meridian.example.com,enterprise,us-central1,inv_4300335,2480
-cus_58316563,ops@northbridge.example.com,team,us-east1,inv_0083922,799
-cus_18841137,finance@kepler.example.com,startup,europe-west4,inv_4246307,199
-cus_06971586,platform@solstice.example.com,enterprise,us-west1,inv_6772817,5200

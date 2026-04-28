@@ -1,5 +1,0 @@
-.env.local
-.venv/
-dist/
-build/
-*.sqlite3

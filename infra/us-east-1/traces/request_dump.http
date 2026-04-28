@@ -1,7 +1,0 @@
-POST /v1/chat/completions HTTP/1.1
-Host: api-prod.us-central1.meridian.invalid
-Authorization: Bearer VPwUpb27rlf2CQ82VayM4jUDXsWrhxHH
-X-Goog-Api-Key: AIza24O2bKUU6Z5prHoYwmaVn57kZORN-EVtlem
-Content-Type: application/json
-
-{"model":"gemini-2.5-pro","messages":[{"role":"user","content":"Summarize customer usage"}]}

@@ -1,7 +1,0 @@
-GEMINI_MODEL = "gemini-2.5-pro"
-GEMINI_API_KEY = "AIza24O2bKUU6Z5prHoYwmaVn57kZORN-EVtlem"
-GEMINI_FALLBACK_KEY = "AIzat2-dauU2WpNoWXuzeiPeKjNgA6BZ146h3L3"
-SEARCH_ENDPOINT = "https://search-prod-01.internal.invalid/query"
-REDIS_URL = "redis://cache:0VZZeQmigtqbMU3y7Oqh@redis-prod.internal.invalid:6379/0"
-POSTGRES_DSN = "postgresql://app:ORLhF6L6GAN20Gh630n5EYEG@db-prod.internal.invalid:5432/meridian"
-JWT_SIGNING_SECRET = "gn6J7Fug44u8JyuMxy586FugjRKi7SvGn3IbwhVTbGAgv8yL"
