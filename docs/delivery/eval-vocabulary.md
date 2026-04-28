@@ -2,9 +2,9 @@
 
 **Status:** Draft  
 **Scope:** MVP / Version 1  
-**Last updated:** 2026-03-10  
-**Related docs:** `mvp.md`, `eval-support-semantics.md`, `eval-scenario-taxonomy.md`, `eval-failure-taxonomy.md`  
-**Authority note:** This file is the evergreen glossary for evaluation terms. RFCs may explain or operationalize these terms, but they do not override this document.
+**Last updated:** 2026-03-23  
+**Related docs:** `mvp.md`, `docs/evergreen/retrieval-hierarchy.md`, `eval-support-semantics.md`, `eval-scenario-taxonomy.md`, `eval-failure-taxonomy.md`  
+**Authority note:** This file is the evergreen glossary for evaluation-specific terms and terminology normalization. Core retrieval hierarchy and shared structural concepts are owned by `docs/evergreen/retrieval-hierarchy.md`. RFCs may explain or operationalize these terms, but they do not override the owning docs.
 
 ---
 
@@ -14,12 +14,12 @@ This document defines the canonical vocabulary used by the MVP evaluation harnes
 
 Its role is to keep the team on a stable, system-specific glossary for:
 
-- core evaluation nouns;
+- evaluation-specific nouns;
 - terminology normalization rules;
 - evaluation layer names;
 - loaded terms that should not be used loosely.
 
-Support-state criteria, citation expectations, scenario classes, and detailed failure classes live in adjacent evergreen documents.
+Shared structural concepts such as `Document`, `Section`, `Passage`, and the canonical retrieval hierarchy live in `docs/evergreen/retrieval-hierarchy.md`. Support-state criteria, citation expectations, scenario classes, and detailed failure classes live in adjacent evergreen documents.
 
 ---
 
@@ -30,13 +30,12 @@ Support-state criteria, citation expectations, scenario classes, and detailed fa
 When terms conflict or drift, use the following precedence order:
 
 1. `mvp.md` governs product scope, supported inputs, trust guarantees, and explicit deferrals.
-2. The evergreen evaluation docs govern live evaluation semantics:
+2. `docs/evergreen/retrieval-hierarchy.md` governs the canonical retrieval hierarchy and shared structural concepts used across product, architecture, and evaluation.
+3. The evergreen evaluation docs govern live evaluation semantics:
    - `eval-vocabulary.md`
    - `eval-support-semantics.md`
-   - `eval-scenario-taxonomy.md`
-   - `eval-failure-taxonomy.md`
-3. `eval-harness-rfc-sections-1-10.md` and `eval-harness-rfc-sections-11-15.md` provide rationale, architecture, and operational history.
-4. `workflow.md` may generalize internal modeling language, but it may not broaden MVP inputs, provenance guarantees, or evaluation success criteria.
+4. `eval-harness-rfc-sections-1-10.md` and `eval-harness-rfc-sections-11-15.md` provide rationale, architecture, and operational history.
+5. `workflow.md` may generalize internal modeling language, but it may not broaden MVP inputs, provenance guarantees, or evaluation success criteria.
 
 ### 2.2 Reconciliation principles
 
@@ -81,32 +80,23 @@ A **corpus** is the bounded collection of source documents the system is allowed
 
 ### 4.2 Document
 
-A **document** is a source artifact with stable identity inside the corpus.
-
-For MVP, supported document types are limited to:
-
-- text-based PDF;
-- Markdown.
+A **document** uses the canonical structural meaning from `docs/evergreen/retrieval-hierarchy.md`.
 
 ### 4.3 Section
 
-A **section** is a structurally meaningful subdivision within a document, usually tied to a heading or recoverable hierarchical boundary.
+A **section** uses the canonical structural meaning from `docs/evergreen/retrieval-hierarchy.md`.
 
 ### 4.4 Passage
 
-A **passage** is the default retrievable text unit used to discover evidence.
+A **passage** uses the canonical structural meaning from `docs/evergreen/retrieval-hierarchy.md`.
 
 ### 4.5 Anchor
 
-An **anchor** is a recoverable reference to a source location.
-
-For MVP, anchors may be coarse. Exact span anchoring is not required.
+An **anchor** is a recoverable reference to a source location. For canonical structural expectations, including coarse MVP provenance, use `docs/evergreen/retrieval-hierarchy.md`.
 
 ### 4.6 Evidence unit
 
-An **evidence unit** is any source-linked representation that can legitimately support a user-visible claim.
-
-For MVP, an evidence unit is primarily a passage, optionally supplemented by section metadata or nearby context.
+An **evidence unit** is any source-linked representation that can legitimately support a user-visible claim. For MVP evaluation, this is usually a passage plus any needed nearby structural context built on the canonical meanings from `docs/evergreen/retrieval-hierarchy.md`.
 
 ### 4.7 Evidence set
 
@@ -253,6 +243,7 @@ The following terms should be treated as loaded and should not be used without t
 
 Use these documents for the semantic areas intentionally split out of this glossary:
 
+- `docs/evergreen/retrieval-hierarchy.md`: canonical retrieval hierarchy, shared structural concepts, and concept-to-implementation mapping.
 - `eval-support-semantics.md`: canonical support states, answer-policy rules, and minimum provenance contract.
 - `eval-scenario-taxonomy.md`: canonical scenario classes and classification rules.
 - `eval-failure-taxonomy.md`: failure classes, examples, and release-relevant severity framing.

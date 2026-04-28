@@ -37,6 +37,10 @@ cmd = "python -c \"from doc_forge.indexing import require_sentence_transformers;
 help = "Run the read-only verification suite"
 sequence = ["fmt-check", "lint", "type", "test"]
 
+[tasks.clean]
+help = "Remove generated local state while preserving durable repo inputs"
+cmd = "python -m doc_forge.devtools.repo_clean"
+
 [tasks.check]
 help = "Alias for the read-only verification suite"
 sequence = ["verify"]

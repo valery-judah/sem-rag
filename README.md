@@ -71,6 +71,7 @@ uv run poe fmt-check
 uv run poe lint
 uv run poe type
 uv run poe test
+uv run poe clean --dry-run
 uv run poe verify
 ```
 

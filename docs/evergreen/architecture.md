@@ -13,6 +13,9 @@ It is the canonical architecture statement for:
 - earned internal seams
 - the boundary between public API, internal architecture, and planned work
 
+For the canonical retrieval hierarchy, provenance-bearing structural concepts, and the concept-to-implementation map for retrieval-addressable units, use [`docs/evergreen/retrieval-hierarchy.md`](./retrieval-hierarchy.md).
+For the conceptual document and query lifecycles, and the high-level evidence flow between them, use [`docs/evergreen/lifecycle-and-evidence-flow.md`](./lifecycle-and-evidence-flow.md).
+
 ## When To Use
 - Starting work on a subsystem
 - Checking which doc is authoritative before changing code or docs
@@ -137,6 +140,8 @@ Future architecture should be promoted here only after it becomes implemented re
 
 ## Documentation Authority
 - `docs/evergreen/mvp.md`: product north star and scope boundary
+- `docs/evergreen/lifecycle-and-evidence-flow.md`: conceptual document/query lifecycles and evidence-flow framing
+- `docs/evergreen/retrieval-hierarchy.md`: canonical retrieval hierarchy and shared structural concepts
 - `docs/evergreen/api-contracts.md`: stable public interfaces that are implemented today
 - this file: current architecture, earned internal seams, and gap to the MVP
 - `docs/README.md`: docs system map
