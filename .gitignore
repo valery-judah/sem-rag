@@ -29,6 +29,11 @@ pip-wheel-metadata/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+.pyright/
+.hypothesis/
+.tox/
+.nox/
+.cache/
 .coverage
 .coverage.*
 htmlcov/
@@ -64,6 +69,7 @@ credentials.*
 .DS_Store
 .vscode/
 .idea/
+.claude/
 
 # rag test corpus
 input/
