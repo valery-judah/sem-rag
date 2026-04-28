@@ -2,11 +2,14 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from doc_forge.devtools import repo_clean
 
 
 def test_build_cleanup_plan_includes_generated_state_and_preserves_inputs(tmp_path: Path) -> None:
     (tmp_path / ".pytest_cache").mkdir()
+    (tmp_path / ".tmp_uv_cache").mkdir()
     (tmp_path / ".coverage").write_text("data", encoding="utf-8")
     (tmp_path / "data" / "raw" / "workspace").mkdir(parents=True)
     (tmp_path / "data" / "huggingface" / "hub").mkdir(parents=True)
@@ -24,6 +27,7 @@ def test_build_cleanup_plan_includes_generated_state_and_preserves_inputs(tmp_pa
     planned_paths = {target.relative_path for target in targets}
 
     assert ".pytest_cache" in planned_paths
+    assert ".tmp_uv_cache" in planned_paths
     assert ".coverage" in planned_paths
     assert "data/raw" in planned_paths
     assert "tests/__pycache__" in planned_paths
@@ -36,9 +40,9 @@ def test_build_cleanup_plan_includes_generated_state_and_preserves_inputs(tmp_pa
 
 
 def test_main_dry_run_reports_targets_without_deleting(
-    monkeypatch,
+    monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
-    capsys,
+    capsys: pytest.CaptureFixture[str],
 ) -> None:
     logs_dir = tmp_path / "data" / "logs"
     logs_dir.mkdir(parents=True)
@@ -52,9 +56,9 @@ def test_main_dry_run_reports_targets_without_deleting(
 
 
 def test_main_removes_optional_model_cache_when_requested(
-    monkeypatch,
+    monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
-    capsys,
+    capsys: pytest.CaptureFixture[str],
 ) -> None:
     model_cache = tmp_path / "data" / "huggingface" / "hub"
     model_cache.mkdir(parents=True)
@@ -65,3 +69,19 @@ def test_main_removes_optional_model_cache_when_requested(
     assert exit_code == 0
     assert not (tmp_path / "data" / "huggingface").exists()
     assert "data/huggingface" in capsys.readouterr().out
+
+
+def test_main_removes_uv_cache_by_default(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    uv_cache_dir = tmp_path / ".tmp_uv_cache" / "wheels"
+    uv_cache_dir.mkdir(parents=True)
+    monkeypatch.setattr(repo_clean, "_resolve_repo_root", lambda: tmp_path)
+
+    exit_code = repo_clean.main([])
+
+    assert exit_code == 0
+    assert not (tmp_path / ".tmp_uv_cache").exists()
+    assert ".tmp_uv_cache" in capsys.readouterr().out

@@ -22,6 +22,7 @@ _STATIC_DIR_TARGETS: tuple[CleanupTarget, ...] = (
     CleanupTarget(".ruff_cache", "dir", "ruff cache"),
     CleanupTarget(".mypy_cache", "dir", "mypy cache"),
     CleanupTarget(".pyright", "dir", "pyright cache"),
+    CleanupTarget(".tmp_uv_cache", "dir", "uv package cache"),
     CleanupTarget("htmlcov", "dir", "coverage HTML output"),
     CleanupTarget("data/raw", "dir", "raw lifecycle artifacts"),
     CleanupTarget("data/normalized", "dir", "normalized lifecycle artifacts"),

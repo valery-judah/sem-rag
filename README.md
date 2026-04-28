@@ -62,6 +62,7 @@ uv run poe test-e2e
 
 - Use `uv run poe <task>` for Python developer tasks such as formatting, linting, type checking, tests, migrations, and local app commands.
 - Use `make <target>` for Docker, Compose, observability, and other local DevEx wrappers.
+- Host-side `uv` commands use the repo-local cache configured in `uv.toml` at `./.tmp_uv_cache`.
 
 Python developer tasks run through Poe:
 

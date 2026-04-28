@@ -16,6 +16,8 @@ Command model:
 - `uv run poe <task>` for Python developer tasks
 - `make <target>` for Docker, Compose, observability, docs harness helpers,
   and other local DevEx wrappers
+- Host-side `uv` commands use the repo-local cache configured in `uv.toml`
+  at `./.tmp_uv_cache`
 
 ## Local Setup / Common Commands
 ```bash
@@ -99,7 +101,7 @@ uv run poe verify
 - `make observability-up-build` starts the separate central observability stack defined in `docker-compose.observability.yml`.
 - `make observability-down` stops the separate observability stack.
 - `uv run poe observability-loader-scan` runs a one-shot metadata scan over existing query bundles and indexes them into the observability Postgres store.
-- `uv run poe clean --dry-run` shows which generated caches, lifecycle artifacts, query bundles, archived logs, and tool-local virtual environments under `tools/` would be removed.
+- `uv run poe clean --dry-run` shows which generated caches, lifecycle artifacts, query bundles, archived logs, the repo-local uv cache at `./.tmp_uv_cache`, and tool-local virtual environments under `tools/` would be removed.
 - `uv run poe clean` removes that generated local state while preserving user-provided inputs such as files directly under `data/` and non-generated files under `tools/` by default. Pass `--include-model-cache` if you also want to remove `data/huggingface/`.
 - In Docker Compose, the `api` and `worker` runtimes self-apply Alembic migrations at startup before serving traffic or draining jobs.
 - Container JSON logs are archived under `data/logs/compose/runs/<run_id>/` with stable links at `data/logs/compose/latest/`.
