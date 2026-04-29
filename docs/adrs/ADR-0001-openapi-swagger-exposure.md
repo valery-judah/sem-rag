@@ -4,9 +4,11 @@
 - Date: 2026-03-12
 
 ## Context
+
 Operators and developers need a way to inspect the `doc_forge` API payloads, especially the internal test routes (`/queries`, `/documents`, etc.). The application currently uses FastAPI, which provides an OpenAPI schema and Swagger UI by default, but it does not have explicit configuration around its exposure, title, or version. Since `doc_forge` currently has no stable public API (as documented in `docs/evergreen/api-contracts.md`), we need a deliberate design for exposing these docs without implying they represent a stabilized public interface.
 
 ## Decision
+
 We will explicitly configure FastAPI's OpenAPI and Swagger UI exposure with the following design:
 
 1. **Endpoints:**

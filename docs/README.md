@@ -1,6 +1,7 @@
 # Documentation Map
 
 ## Purpose
+
 `docs/` is the repository documentation system for durable product truth, current repo documentation, optional execution records, architecture decisions, and reusable documentation tooling.
 
 Authority note: `docs/evergreen/` holds the canonical product and repo truth. `docs/delivery/` may contain planning, architecture, or workflow drafts retained for reference, but it is not the canonical source of product scope. 
@@ -11,6 +12,7 @@ Product Scope:
 - `docs/evergreen/mvp.md`: Canonical. Product north star and scope boundary.
 
 Implementation Truth:
+
 - `docs/evergreen/architecture.md`: Canonical. Current architecture and implementation gap.
 - `docs/evergreen/lifecycle-and-evidence-flow.md`: Canonical. Conceptual document/query lifecycles and high-level evidence flow.
 - `docs/evergreen/retrieval-hierarchy.md`: Canonical. Retrieval hierarchy, provenance-bearing structure, and concept-to-implementation map for retrieval units.
@@ -29,6 +31,7 @@ Evaluation Docs:
 - See `Evaluation Docs Map` below for the detailed route across evergreen, delivery, and workstream material.
 
 ## Directory Map
+
 - `evergreen/`: current durable system truth and operational references
 - `conventions/`: coding standards, observability rules, and implementation patterns
 - `delivery/`: non-canonical planning, architecture, and workflow drafts kept for reference
