@@ -71,6 +71,7 @@ credentials.*
 .vscode/
 .idea/
 .claude/
+.obsidian/
 
 # rag test corpus
 input/

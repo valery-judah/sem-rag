@@ -1,12 +1,5 @@
 # MVP Critical Failure Specification for Source-Grounded QA over PDF and Markdown
 
-**Status:** Draft  
-**Applies to:** MVP / Version 2  
-**Scope:** Question-answering over user-uploaded text-based PDF and Markdown documents  
-**Derived from:** `mvp.md`
-
----
-
 ## 1. Purpose
 
 This document defines the **critical failure model** for the MVP question-answering system.
@@ -683,11 +676,13 @@ Every failed or borderline run should receive **one primary failure label**. If 
 
 A useful order for choosing a primary label is:
 
-1. Did the answer materially exceed support? → `U1` or `U2`
-2. Did the system make the wrong answer/abstain decision? → `A1` or `A2`
-3. Was provenance non-inspectable or false? → `P1` or `P2`
-4. Was the failure fundamentally caused by visible structure damage? → `I1`
-5. Was the question outside MVP scope but answered as supported? → `S1`
+1. Was the question fundamentally outside MVP scope but answered as supported? → `S1`
+2. Did the answer materially exceed support? → `U1` or `U2`
+3. Did the system make the wrong answer/abstain decision? → `A1` or `A2`
+4. Was provenance non-inspectable or false? → `P1` or `P2`
+5. Was the failure fundamentally caused by visible structure damage? → `I1`
+
+Check `S1` early when the question depends on a capability the MVP explicitly excludes, such as OCR-only content, rich table/figure/chart/image understanding, external-world retrieval, or other deferred scope. If the question is in scope but the corpus lacks support, prefer `A2`, `U1`, or `U2` according to the answer behavior.
 
 ---
 
@@ -779,11 +774,14 @@ Before final answer emission, the system should make or approximate these decisi
 At minimum, log:
 
 - query text,
+- corpus and document identifiers involved in the query,
 - retrieved units and scores,
+- evidence selected for the support decision,
 - answer text,
 - returned provenance payload,
 - answer/abstain decision,
 - source type slice (`pdf`, `markdown`, `mixed`),
+- ingestion, structure, or provenance degradation flags relevant to the response,
 - whether the question likely hit a known unsupported scope boundary.
 
 Without these logs, several of the selected failures can only be diagnosed superficially.

@@ -1,216 +1,82 @@
-# MVP: Question-Answering Service over PDF Books and Markdown Files
+# MVP Spec: Question-Answering Service over PDF Books and Markdown Files
 
-**Status:** Draft  
-**Scope:** MVP / Version 1  
-**Last updated:** 2026-03-10
+## 1. Overview
 
-## Read Next
-- `docs/evergreen/architecture.md`: Canonical. Current repo shape and implementation gap.
-- `docs/evergreen/api-contracts.md`: Canonical. Stable runtime interfaces that exist today.
-- `docs/README.md`: Canonical. Docs index and task-based routes.
-- `docs/delivery/eval-support-semantics.md`: Canonical. Support-state criteria, citation expectations, and abstention rules.
+The MVP is a document question-answering and evidence-inspection service for engineers working with a bounded collection of user-uploaded text-based PDFs and Markdown files. It helps users ask focused natural-language questions across technical books, manuals, specs, notes, and internal documents without manually searching, skimming, and reconciling source material.
 
-## 1. Problem
+The service is trust-first: answers must be grounded in retrieved corpus evidence, include inspectable source references for material claims, and honestly narrow, qualify, surface ambiguity, state limitations, or abstain when the corpus does not provide enough support. The MVP proves a constrained mixed-format corpus can become a trustworthy queryable knowledge source; it is not a general research agent, full document-intelligence platform, OCR system, rich PDF understanding system, or external web retrieval tool.
 
-Users often have collections of technical books, manuals, notes, and internal documents in **PDF** and **Markdown** formats, but these materials are difficult to query as a single knowledge source.
+### 1.1 Document Authority
 
-The information exists, but it is trapped inside long-form documents that are slow to browse manually. Relevant content may be spread across multiple files, chapters, or sections. PDF books are particularly difficult because their structure is not always explicit, and Markdown files vary in organization and quality.
+This document is the governing source for MVP product scope, supported inputs, product promise, user-facing trust guarantees, non-goals, and explicit deferrals.
 
-The consequence is repeated search loops, reading overhead, and decision risk when users cannot quickly verify what the corpus actually says.
+Authority boundaries:
 
-As a result, users must manually search, skim, and cross-reference documents to answer even straightforward questions. Basic file search or keyword search is often not enough because it does not reliably provide:
+- `docs/evergreen/mvp.md` owns MVP scope, supported inputs, trust guarantees, non-goals, and explicit deferrals.
+- `docs/evergreen/functional-requirements.md` owns the 12 minimal functional requirements and acceptance criteria.
+- `docs/evergreen/lifecycle-and-evidence-flow.md` owns conceptual lifecycle controls that protect the MVP trust contract.
+- `docs/evergreen/architecture.md` owns current implementation truth and earned internal seams.
+- Delivery, workflow, workstream, and architecture documents may generalize internal concepts for modeling or implementation, but they do not broaden MVP product scope.
 
-- grounded answers based on the uploaded corpus
-- references back to the relevant source material
-- synthesis across multiple files
-- a consistent way to work across PDF and Markdown inputs
+If another document implies broader MVP behavior than this document allows, this document wins for product scope. Broader concepts remain implementation detail, future work, or non-MVP unless explicitly promoted here.
 
-The problem this MVP addresses is how to turn a collection of PDF books and Markdown files into a queryable knowledge base that can answer user questions and point back to the relevant source content.
+Acceptance criteria, lifecycle controls, architecture seams, and evaluation language must be interpreted through this boundary. They must not add OCR, rich PDF layout reconstruction, image, figure, chart, or table-centric understanding, collaboration, version history, external web retrieval, production observability, or other deferred capabilities to MVP scope.
 
-## 2. Goal
+## 2. Problem Statement
 
-Build a service where a user can:
+Engineers often rely on long-form technical materials such as books, manuals, specifications, design notes, and internal Markdown documents. These materials are useful, but they are difficult to query as a single knowledge source.
 
-- upload a focused collection of **PDF books** and **Markdown files**
-- have those documents ingested into a unified internal corpus
-- ask natural-language questions over the whole collection
-- receive answers grounded in the uploaded documents
-- inspect which documents, pages, chapters, or sections informed the answer
+Manual search and skimming are slow. Relevant information may be spread across multiple files, chapters, or sections, creating repeated search loops, reading overhead, and decision risk when users cannot quickly determine what the corpus says or where it says it.
 
-The MVP should prove that a focused mixed-format document collection can be converted into a usable **question-answering and evidence-inspection system** with source-backed responses.
+LLM-based document QA systems, usually implemented with retrieval-augmented generation, can reduce some of this friction by retrieving relevant passages and generating natural-language answers.
 
-## 3. Why This MVP Exists Now
+However, basic RAG-style implementations often still do not reliably provide:
 
-This MVP exists to validate a small set of product and feasibility hypotheses without overextending the scope of Version 1.
+- grounded answers based only on the uploaded corpus;
+- synthesis across related documents;
+- source references that users can inspect;
+- enough evidence detail for users to verify why an answer was produced;
+- clear behavior when the corpus does not support an answer.
 
-### 3.1 Product hypotheses
+The MVP addresses this problem by turning a focused collection of text-based PDFs and Markdown files into a question-answerable corpus with inspectable evidence.
 
-1. Engineers working with technical books, manuals, specs, and notes derive real value from asking questions over a bounded document collection rather than searching files manually.
-2. Users trust a system more when it provides grounded answers with inspectable supporting evidence rather than answer text alone.
-3. A single interface over a focused corpus provides better utility than isolated file browsing or keyword search.
+## 3. Jobs To Be Done
+### Primary Job
 
-### 3.2 Technical feasibility hypotheses
+When an engineer needs to answer a focused technical question from a bounded set of uploaded PDFs and Markdown documents, they hire the product to produce a corpus-grounded answer with inspectable evidence, so they can make a confident technical decision without manually searching, skimming, and reconciling source material.
+### Supporting Jobs
 
-1. PDF and Markdown sources can be normalized well enough to support useful retrieval and source-grounded answers.
-2. The system can preserve enough traceability through ingestion, retrieval, and answer generation to make provenance inspectable.
-3. Mixed-format document collections can be handled without collapsing the user experience into format-specific workflows.
+To complete the primary job, the product must help the user:
 
-### 3.3 Fallback validation path
+- **Find** relevant support even when it is spread across multiple files, chapters, sections, or notes.
+- **Synthesize** a concise answer from the available corpus evidence.
+- **Verify** the answer by exposing inspectable source evidence behind it.
+- **Navigate** from the answer back to the relevant source locations.
+- **Qualify** the answer by distinguishing between fully supported, partially supported, ambiguous, conflicting, and unsupported evidence.
 
-The product target for MVP remains a mixed-format corpus of PDFs and Markdown files.
+### Product implication
 
-If PDF normalization fails to clear a usefulness threshold during beta validation, the team may run a Markdown-first beta to validate question flow, answer trust, and source inspection behavior without redefining the long-term MVP target.
-This contingency is binding on downstream architecture and workflow documents: mixed-format remains the MVP target, and Markdown-first is a validation fallback only.
+The JTBD implies that the MVP should not optimize only for answer fluency. It should optimize for **trustable answer workflow**.
 
-The objective is not to solve every document-processing problem. The objective is to validate that this product shape is useful and technically viable with a constrained first version.
+## 4. MVP Product Promise
 
-## 4. Product Definition
+The MVP promises a trustable question-answering workflow over a bounded uploaded corpus.
 
-The MVP is a **document question-answering and evidence-inspection service** over a bounded user-provided corpus.
+For every user question, the product must follow this response contract:
 
-At a high level, the service performs four functions:
+1. If corpus evidence is sufficient, answer from that evidence and provide inspectable source references for material claims.
+2. If evidence is partial, weak, ambiguous, or conflicting, answer narrowly, qualify the response, and surface the uncertainty.
+3. If the corpus does not support the question or the request is outside MVP scope, abstain or state the limitation explicitly.
 
-1. **Ingest** user-uploaded PDF and Markdown documents.
-2. **Normalize and structure** the documents into an internal representation that preserves source boundaries and recoverable structure.
-3. **Retrieve** relevant content for a user question from across the uploaded collection.
-4. **Answer** the question using retrieved content and provide source references for inspection.
+## 5. Primary Use Cases
 
-The product is successful if a user can reach a supported answer, inspect the evidence behind it, and recognize when the corpus does not support a confident response.
+The MVP supports a small set of question patterns over a bounded corpus of supported PDFs and Markdown files. These use cases describe the primary ways users interact with the corpus; the shared response contract is defined in the MVP Product Promise above.
 
-## 5. Users and Primary Jobs To Be Done
+Unless otherwise stated, every use case follows that promise rather than restating the grounding, provenance, and abstention rules locally.
 
-### Initial beta users
+### 5.1 Factual lookup
 
-- engineers working with technical books, manuals, specs, and notes
-
-### Possible expansion users after MVP
-
-- researchers or students working with a focused reading corpus
-- internal knowledge workers querying a personal or team document collection
-
-### Primary jobs to be done
-
-Users want to:
-
-- find answers without manually reading entire books or notes
-- ask focused questions in natural language over a bounded collection
-- synthesize an answer from one or more relevant documents
-- inspect the supporting evidence behind an answer
-- navigate back to the source material behind an answer
-- understand when the corpus does not support a reliable answer
-
-## 6. Inputs
-
-### Supported inputs in MVP
-
-- **Text-based PDF files**
-- **Markdown files**
-
-### Input assumptions
-
-- PDFs are primarily text-based and do not require OCR.
-- PDF normalization is intentionally lightweight and aimed at recoverable text structure for retrieval and provenance, not exact layout reproduction.
-- Markdown files are UTF-8 text and may contain headings, lists, paragraphs, and code blocks.
-- Some Markdown files may originate from PDF-to-Markdown conversion.
-- The service may accept a collection rather than a single file.
-
-Internal architecture or workflow documents may use generic terms such as `document`, but MVP-supported inputs remain limited to text-based PDFs and Markdown files.
-
-### Input metadata requirements
-
-For each document, the system should preserve or derive, where possible:
-
-- document identifier
-- file name / display title
-- source type (`pdf` or `markdown`)
-- source reference within the service
-- upload timestamp
-
-## 7. In Scope
-
-The MVP includes the following capabilities.
-
-### 7.1 Document ingestion
-
-- accept user-uploaded PDF and Markdown files
-- register them as part of a single corpus for a user or workspace
-- persist enough metadata to identify and retrieve those documents later
-
-### 7.2 Structure recovery and normalization
-
-- extract text from supported inputs
-- recover document structure where possible
-- construct section and header hierarchy from Markdown and from PDF-derived text when recoverable
-- preserve document boundaries and coarse, recoverable source locations
-
-For MVP, the system should emphasize **sections and headers** as the primary structural abstraction.
-For PDFs, provenance should be recoverable at a coarse level such as page and inferred heading or section path when available; exact paragraph-level anchoring is not required.
-Preserving code blocks or table-like fragments during normalization does not mean table-centric question answering or rich table understanding is in scope for MVP.
-
-### 7.3 Retrieval preparation
-
-- split documents into retrieval-ready units
-- associate each unit with document and section context
-- store enough metadata to trace a retrieval unit back to its source document and section path
-
-### 7.4 Question answering over the corpus
-
-- accept natural-language questions over the uploaded collection
-- retrieve relevant content from one or more documents
-- generate answers based on retrieved source material
-- return source references with the answer
-
-### 7.5 Source-grounded navigation
-
-- show which documents contributed to an answer
-- identify relevant sections, chapters, and pages when available
-- allow a user to inspect the source backing the answer
-
-## 8. Out of Scope
-
-The following are explicitly deferred from MVP.
-
-### 8.1 Input and parsing exclusions
-
-- scanned PDFs that require OCR
-- rich layout reconstruction
-- special parsing for tables, diagrams, charts, and pictures
-- figure understanding
-- complex footnotes, sidebars, or margin annotations
-
-### 8.2 Retrieval and indexing exclusions
-
-- lexical index as a first-class retrieval layer
-- advanced hybrid retrieval tuning
-- sophisticated reranking pipelines beyond basic MVP needs
-
-### 8.3 Derived knowledge exclusions
-
-- stored summaries as a first-class artifact
-- synthetic questions
-- graph or entity-relation extraction
-- precomputed derived knowledge views beyond core retrieval units
-
-### 8.4 Product/platform exclusions
-
-- collaboration and sharing
-- multi-tenant permissions and ACL enforcement beyond simple ownership boundaries
-- incremental sync from external drives or connectors
-- workflow automation
-- billing, quotas, or advanced admin controls
-- production-grade observability and operations hardening
-
-### 8.5 Question classes outside MVP
-
-- questions requiring external world knowledge not present in the uploaded corpus
-- questions whose answer depends mainly on tables, figures, or images
-- exact scholarly citation formatting
-- strong compare-and-contrast behavior that depends on deliberate source diversification or exhaustive coverage of differing views
-- guaranteed exhaustive retrieval over very large corpora
-
-## 9. Primary Use Cases
-
-### 9.1 Factual lookup
+The user asks for a specific fact, definition, requirement, or statement expected to appear in the uploaded corpus.
 
 Examples:
 
@@ -218,24 +84,33 @@ Examples:
 - “How does this book define Y?”
 - “What are the requirements for Z?”
 
-### 9.2 Localized explanation
+The expected interaction is a concise answer that helps the user avoid manually finding and reading the relevant passage.
+
+### 5.2 Localized explanation
+
+The user asks for an explanation of a concept, process, or section-level topic discussed in one part of the corpus.
 
 Examples:
 
 - “Explain the retry strategy described in these notes.”
 - “Summarize the chapter’s explanation of backpropagation.”
 
-### 9.3 Multi-source synthesis
+The expected interaction is a focused explanation that preserves the local context instead of turning into a general-purpose tutorial.
+
+### 5.3 Basic synthesis
+
+The user asks what one or more uploaded documents say about a topic that may be discussed across multiple sources.
 
 Examples:
 
 - “What do these documents say about vector databases?”
 - “Synthesize the guidance on caching from Book A and my notes.”
 
-The MVP may synthesize across multiple relevant documents and show the supporting sources, but this is secondary to the core promise of grounded answers and inspectable evidence. It does not promise strong compare-and-contrast behavior across all relevant viewpoints.
-When sources differ or support is incomplete, the system may surface uncertainty, narrow the scope of the answer, or abstain rather than imply exhaustive reconciliation.
+The expected interaction is a compact synthesis across relevant retrieved material. The MVP does not promise exhaustive compare-and-contrast behavior across every possible viewpoint in the corpus.
 
-### 9.4 Source navigation
+### 5.4 Source navigation
+
+The user asks where a topic is discussed or which source locations are relevant.
 
 Examples:
 
@@ -243,167 +118,260 @@ Examples:
 - “Which book or section covers distributed transactions?”
 - “Show the passages relevant to this question.”
 
-## 10. Success Criteria
+The expected interaction is a navigational response that helps the user jump to relevant documents, pages, sections, or passages.
 
-The MVP is successful if a user can:
+### 5.5 Unsupported, partial, or ambiguous questions
 
-- upload a small collection of PDF and Markdown documents
-- ask a question over that collection
-- receive an answer based primarily on retrieved source content
-- inspect which source documents and sections informed the answer
-- understand when the corpus does not contain enough evidence for a reliable answer
-- decide whether to trust the answer by inspecting the supporting evidence
+The user asks a question that the active corpus does not fully answer, answers only in part, or answers differently across sources.
 
-From an engineering perspective, success means:
+Examples:
 
-- the service ingests both supported file types into one corpus
-- structure recovery is good enough to identify documents and sections reliably in common cases
-- retrieval works across document boundaries
-- generated answers remain tied to source references
-- failure cases are transparent rather than fabricated
+- “What is the recommended production configuration?”
+- “Do these documents agree on the retry policy?”
+- “What does the corpus say about pricing?”
 
-## 11. Non-Goals
+The expected interaction is a response that helps the user understand the support state of the corpus, not just the apparent answer.
 
-This MVP is **not** intended to:
+## 6. Core User Flow
 
-- fully understand arbitrary PDFs
-- solve OCR and layout reconstruction
-- replace deep manual reading for all workflows
-- provide perfect answers for every question type
-- support every document format from day one
-- act as a general-purpose research agent over the public web
+The MVP user-facing flow is the simplest path by which a user turns a bounded document collection into corpus-grounded answers with inspectable evidence.
 
-## 12. Invariants and Hard Requirements
+1. **Create a bounded corpus**
 
-These are the properties that should remain true even if implementation details change. Together they define the MVP trust contract.
+   The user uploads a focused set of supported documents: text-based PDFs and Markdown files.
 
-### 12.1 Stable document identity
+2. **Wait until the corpus is queryable**
 
-Each uploaded document must have a stable internal identifier so the system can track it throughout ingestion, retrieval, and answer generation.
+   The system processes the uploaded documents and makes them available as a searchable, question-answerable corpus.
 
-### 12.2 Structural integrity
+3. **Ask a corpus-scoped question**
 
-Recovered section and header relationships must form a valid document hierarchy where such structure is present or can be inferred.
+   The user asks a natural-language question about the uploaded corpus.
 
-### 12.3 Traceability
+4. **Receive a grounded response**
 
-Each retrieval unit used for answering must be traceable back to:
+   The system answers from corpus evidence when support is sufficient. When support is partial, conflicting, weak, missing, or outside MVP scope, the system narrows, qualifies, surfaces ambiguity, abstains, or states the limitation.
 
-- its source document
-- its section or chapter path when available
-- its page or source location when available
+5. **Inspect the evidence**
 
-For PDFs, this traceability may be coarse. The system must preserve recoverable provenance, but it does not need to guarantee exact paragraph-level anchors in MVP.
+   The user can inspect the source documents and source locations behind the response.
 
-### 12.4 Grounded answering
+6. **Decide whether to trust or investigate further**
 
-Answers must be based on retrieved corpus content rather than unsupported model inference. The system must not fabricate supporting provenance for a claim.
+   Based on the answer, qualification, abstention, limitation, and evidence, the user decides whether the corpus sufficiently answers the question or whether further source inspection is needed.
 
-### 12.5 Honest failure behavior
+The flow preserves the MVP invariants: bounded corpus, corpus-grounded answering, inspectable provenance, honest uncertainty, no fabricated source support, and explicit scope boundaries.
+## 7. Out of Scope / Explicit Deferrals
 
-When the corpus does not contain enough evidence, the system should narrow scope, abstain, or say so explicitly rather than produce a confident unsupported answer.
+The MVP is intentionally limited to a trustable question-answering workflow over a focused, user-uploaded corpus of text-based PDFs and Markdown files.
 
-## 13. Answer Quality Expectations
+This section defines what the MVP does **not** promise. Functional requirements define the minimum required system behaviors, and lifecycle/evidence-flow documents define how the trust contract is preserved internally. The exclusions below prevent adjacent capabilities from being interpreted as part of MVP scope.
 
-For MVP, answers should be:
+### 7.1 Input and parsing exclusions
 
-- grounded in retrieved source content
-- limited to what the uploaded corpus supports
-- explicit about uncertainty when evidence is weak
-- accompanied by source references useful for inspection
-- willing to narrow scope or abstain when support is insufficient
+The MVP does not support:
 
-The service should prefer a qualified answer such as:
+- scanned PDFs or documents that require OCR;
+- image-heavy PDFs where the answer depends on visual content;
+- rich PDF layout reconstruction;
+- table-centric parsing or table-centric question answering;
+- figure, diagram, image, or chart understanding;
+- complex footnote, sidebar, margin annotation, or scholarly apparatus handling;
+- exact scholarly citation formatting.
 
-> I could not find enough support in the uploaded documents.
+The MVP may preserve table-like text, code blocks, headings, or other recoverable structure when available, but preserving such text does not mean specialized table, layout, image, or citation understanding is in scope.
 
-rather than provide unsupported synthesis.
+### 7.2 Retrieval and indexing deferrals
 
-## 14. Proposed User Experience
+The MVP does not require:
 
-A minimal end-to-end user flow is:
+- lexical search as a first-class retrieval layer;
+- advanced hybrid retrieval tuning;
+- sophisticated reranking pipelines beyond basic MVP needs;
+- guaranteed exhaustive retrieval across very large corpora;
+- very large corpus optimization.
 
-1. The user uploads one or more PDF and Markdown files.
-2. The service ingests and structures the collection.
-3. The user asks a question in natural language.
-4. The service retrieves relevant content from the corpus.
-5. The service returns:
-   - an answer
-   - the supporting sources
-   - enough source detail to inspect the origin of the answer
+The MVP requires retrieval that is good enough to support the defined question-answering workflow over a bounded corpus, with evidence that remains traceable and inspectable.
 
-The user should be able to treat the corpus as a single question-answerable workspace.
+### 7.3 Derived knowledge deferrals
 
-## 15. Implementation Boundary for MVP
+The MVP does not create or maintain derived knowledge products such as:
 
-This document defines the product promise and minimum trust guarantees for MVP. It intentionally does not lock the team into a detailed retrieval or representation design.
+- stored summaries as first-class artifacts;
+- synthetic questions;
+- entity extraction or entity resolution systems;
+- graph or entity-relation extraction;
+- automatic knowledge graph generation;
+- precomputed derived knowledge views beyond retrieval-ready evidence units.
 
-Framing authority: this document governs MVP product scope, supported inputs, trust guarantees, and explicit deferrals. Architecture and workflow documents may generalize internal concepts for modeling or implementation, but they may not broaden the MVP on their own.
+The MVP answers from retrieved corpus evidence at query time rather than promising a separate derived knowledge layer.
 
-For MVP, implementation should follow these high-level constraints:
+### 7.4 Product and platform deferrals
 
-- use a lightweight structural model before retrieval rather than treating documents as flat text
-- keep PDF normalization lightweight and focused on recoverable structure and provenance
-- preserve enough source context to support grounded answers and source inspection
-- allow answers to synthesize across one or more relevant documents when the evidence supports it
+The MVP does not include:
 
-The exact internal schema, retrieval-unit semantics, metadata payloads, anchor model, context-assembly policy, and evaluation strategy belong in architecture and workflow documents rather than this framing doc.
+- arbitrary enterprise search;
+- live web retrieval or external-world research;
+- cloud-drive connectors or incremental background sync;
+- collaboration, sharing, or team workspace workflows;
+- collaborative editing;
+- fine-tuning;
+- workflow automation;
+- billing, quotas, or advanced admin controls;
+- complex access control, multi-tenant permissions, or ACL enforcement beyond simple user/workspace ownership boundaries;
+- production-grade observability, operational dashboards, audit systems, or full production hardening.
 
-## 16. Deferred Work
+These may be future platform capabilities, but they are not required to validate the MVP promise.
 
-The following items are intentionally deferred to later versions.
+### 7.5 Question classes outside MVP
 
-### 16.1 Parsing and structure
+The MVP does not promise reliable answers for:
 
-- OCR for scanned PDFs
-- special handling for tables
-- special handling for figures, diagrams, and pictures
-- richer anchor systems and layout-aware citation
+- questions requiring external-world knowledge not present in the uploaded corpus;
+- questions whose answer depends mainly on tables, figures, diagrams, charts, or images;
+- questions requiring exhaustive compare-and-contrast across all possible relevant sources;
+- questions requiring deliberate source diversification beyond basic synthesis;
+- questions requiring guaranteed exhaustive retrieval over very large corpora;
+- requests for exact scholarly citation formatting.
 
-### 16.2 Retrieval
+For these cases, the expected MVP behavior is to state the limitation, narrow the answer to what the corpus supports, surface uncertainty, or abstain.
 
-- lexical index
-- hybrid retrieval tuning
-- advanced reranking
-- very large corpus optimization
+### 7.6 Boundary statement
 
-### 16.3 Derived knowledge
+Architecture, lifecycle, retrieval, and workflow documents may define internal models or implementation approaches, but they do not broaden MVP scope on their own.
 
-- summaries
-- synthetic questions
-- graph extraction
-- entity resolution and knowledge graph workflows
+The MVP remains bounded by:
 
-### 16.4 Product surface
+- supported inputs: text-based PDFs and Markdown files;
+- supported corpus model: a focused uploaded corpus scoped to a user or workspace;
+- supported answer behavior: corpus-grounded answers, qualified answers, ambiguity handling, explicit limitations, or abstention;
+- supported evidence behavior: inspectable provenance based on recoverable document identity, source type, page, section, heading, or source-location metadata.
 
-- cloud-drive connectors
-- sharing and team workspaces
-- background synchronization
-- administrative controls
-- operational dashboards and full production hardening
+## 8. Functional Requirements
 
-## 17. Open Questions
+The canonical MVP functional requirements are the 12 minimal functional requirements in `docs/evergreen/functional-requirements.md`. That document owns the acceptance criteria for supported uploads, bounded corpus creation, stable source identity, processing status, text extraction, minimum provenance, traceable evidence units, corpus retrieval, evidence handoff, grounded answering, support-aware response behavior, and evidence rendering.
 
-These decisions are intentionally left open for the next design pass.
+This section does not duplicate those criteria or broaden MVP scope.
 
-1. What maximum corpus size should MVP support reliably?
-2. What minimum source reference should be exposed to users for PDFs: page only, page plus heading, or page plus inferred section path?
-3. How should the product behave for malformed or weakly structured documents?
-4. How much PDF structure recovery is required before the product is considered useful?
-5. What answer UI is sufficient for source inspection in MVP?
+## 9. Non-Functional Requirements / Trust Requirements
 
-## 18. Summary
+The MVP is trust-first. A fluent answer is not sufficient if it violates the evidence contract.
 
-This MVP is a focused service for asking questions over a bounded user-uploaded collection of PDF books and Markdown files.
+These non-functional requirements define the minimum quality attributes required for a trustworthy MVP. They do not define implementation architecture, full production observability, enterprise security, collaboration, version history, or production hardening.
 
-It is intentionally constrained.
+### NFR1. Groundedness
 
-Version 1 is about proving that the system can:
+Answers must remain within what the active uploaded corpus supports. The system must not import model prior knowledge and present it as corpus-backed.
 
-- ingest a mixed-format corpus
-- recover enough structure to support retrieval
-- answer questions over the uploaded documents
-- ground those answers in identifiable source material
-- let the user inspect the evidence behind the answer
+### NFR2. Evidence-strength calibration
 
-It is not yet about full document intelligence, advanced parsing, or broad analytical comparison across sources.
+Response strength must match evidence strength.
+
+When evidence is sufficient, the system may answer directly.
+When evidence is partial, weak, ambiguous, conflicting, missing, or outside MVP scope, the system must narrow, qualify, surface ambiguity, abstain, or state the relevant limitation.
+
+### NFR3. Provenance inspectability
+
+Material answer claims must be inspectable through source references.
+
+Minimum MVP provenance expectations are:
+
+| Source type | Minimum MVP provenance expectation |
+|---|---|
+| PDF | Document identity plus page where recoverable |
+| Markdown | Document identity plus section or heading path where recoverable |
+| Mixed-format synthesis | Usable provenance for each materially contributing source |
+
+### NFR4. Provenance integrity
+
+The system must not fabricate documents, pages, sections, headings, anchors, source locations, or source support.
+
+Coarse real provenance is better than precise false provenance.
+
+### NFR5. Scope honesty
+
+The system must not treat unsupported capabilities as supported.
+
+For questions involving unsupported input types, unsupported question types, or external knowledge outside the active corpus, the system must state the limitation rather than answer speculatively.
+
+### NFR6. Degraded-state safety
+
+The system must handle degraded evidence states honestly.
+
+Examples:
+
+- weak structure must reduce section-level precision;
+- weak PDF page mapping must reduce page-level precision;
+- insufficient evidence must trigger narrowing, qualification, or abstention;
+- conflicting evidence must be surfaced rather than collapsed into a single unsupported answer;
+- unavailable provenance must prevent a claim from being presented as corpus-supported.
+
+### NFR7. Minimum diagnostic traceability
+
+The MVP must make it possible to inspect or log enough information to evaluate trust failures.
+
+At minimum, this includes:
+
+- query text;
+- corpus and document identifiers involved in the query;
+- retrieved evidence units and scores;
+- evidence selected for answer/support decision;
+- answer text;
+- answer versus abstain decision;
+- support-state estimate or decision where available;
+- returned provenance payload;
+- source type slice: `pdf`, `markdown`, or `mixed`;
+- whether the request crossed a known unsupported scope boundary;
+- ingestion, structure, or provenance degradation flags relevant to the response.
+
+This is not a full production observability commitment. It is the minimum diagnostic surface needed to evaluate whether the MVP preserved the evidence contract.
+
+## 10. MVP Failure Model and Evaluation
+
+The MVP should be evaluated against a compact set of first-tier failures that directly protect the product promise.
+
+### 10.1 Support states
+
+Each evaluated question should first be classified by what the corpus actually supports:
+
+| Support state | Expected behavior |
+|---|---|
+| `SUPPORTED` | Answer directly and cite inspectable support |
+| `PARTIALLY_SUPPORTED` | Answer narrowly or qualify unsupported portions |
+| `UNSUPPORTED_IN_CORPUS` | Abstain or state lack of support |
+| `UNSUPPORTED_QUESTION_TYPE` | State the MVP limitation explicitly |
+| `AMBIGUOUS_OR_CONFLICTING` | Surface ambiguity, conflict, or source-specific differences |
+
+### 10.2 First-tier MVP failures
+
+The MVP should track these primary failure labels:
+
+| Label | Failure                                                  | Why it matters                                                           |
+| ----- | -------------------------------------------------------- | ------------------------------------------------------------------------ |
+| `U1`  | Unsupported answer                                       | The system states material claims not supported by the corpus.           |
+| `U2`  | Partially supported answer presented as complete         | The system overstates what the evidence supports.                        |
+| `A1`  | Wrong abstention                                         | The system refuses or narrows despite sufficient support.                |
+| `A2`  | Failed abstention                                        | The system answers when it should abstain, narrow, or surface ambiguity. |
+| `P1`  | Provenance missing or too weak to inspect                | The user cannot verify the answer with reasonable effort.                |
+| `P2`  | Incorrect provenance                                     | The system cites sources or locations that do not support the answer.    |
+| `I1`  | Ingestion or structure failure visible in answer quality | Normalization damage harms retrieval, answering, or provenance.          |
+| `S1`  | Scope-boundary failure                                   | The system answers an out-of-scope question as if it were supported.     |
+
+Detailed definitions, severity, reviewer workflow, and remediation guidance belong in the first-tier failure specification rather than this MVP spec.
+
+### 10.3 Evaluation dataset requirements
+
+A practical MVP evaluation set should include:
+
+- direct PDF factual lookup;
+- direct Markdown factual lookup;
+- localized explanation;
+- mixed-format synthesis;
+- source navigation;
+- partial-support questions;
+- unsupported-in-corpus questions;
+- ambiguous or conflicting-source questions;
+- out-of-scope table, figure, chart, image, or external-world questions;
+- malformed or weakly structured input cases.
+
+A practical initial evaluation target is **50 to 100 annotated questions**, with results sliced by source type, question class, support state, provenance expectation, and primary failure label.
