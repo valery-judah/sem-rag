@@ -17,19 +17,19 @@ Use this order when docs differ:
 
 1. [MVP](../../evergreen/mvp.md)
 2. Evergreen eval docs:
-   - [Eval Vocabulary](../../delivery/eval-vocabulary.md)
-   - [Eval Support Semantics](../../delivery/eval-support-semantics.md)
+   - [Eval Vocabulary](eval-vocabulary.md)
+   - [Eval Support Semantics](eval-support-semantics.md)
    - [Eval Scenario Taxonomy](../../delivery/eval-scenario-taxonomy.md)
    - `eval-failure-taxonomy.md`
 3. Stable runtime contract:
    - [API Contracts](../../evergreen/api-contracts.md)
 4. Workstream docs and authored eval sets as implementation-facing guidance and examples
 
-This ordering is stated explicitly in [Eval Vocabulary](../../delivery/eval-vocabulary.md).
+This ordering is stated explicitly in [Eval Vocabulary](eval-vocabulary.md).
 
 ## Canonical vocabulary to preserve
 
-[Eval Vocabulary](../../delivery/eval-vocabulary.md) matters for this workstream because it fixes the terms that result-use-case docs should use.
+[Eval Vocabulary](eval-vocabulary.md) matters for this workstream because it fixes the terms that result-use-case docs should use.
 
 Preferred terms:
 
@@ -71,7 +71,7 @@ Loaded terms that should not be used loosely:
 
 ### Support-state and citation requirements
 
-[Eval Support Semantics](../../delivery/eval-support-semantics.md) is the main semantic source for result behavior:
+[Eval Support Semantics](eval-support-semantics.md) is the main semantic source for result behavior:
 
 - `sufficient support`: direct answer is allowed
 - `partial support`: answer should be qualified, narrowed, or explicitly incomplete
@@ -319,8 +319,8 @@ These matter for WS-032 because they show the repo already has two different "re
 
 If the goal is to define or compare result use cases, read in this order:
 
-1. [Eval Vocabulary](../../delivery/eval-vocabulary.md)
-2. [Eval Support Semantics](../../delivery/eval-support-semantics.md)
+1. [Eval Vocabulary](eval-vocabulary.md)
+2. [Eval Support Semantics](eval-support-semantics.md)
 3. [MVP](../../evergreen/mvp.md)
 4. [API Contracts](../../evergreen/api-contracts.md)
 5. [`src/doc_forge/app/schemas.py`](../../../src/doc_forge/app/schemas.py)
@@ -340,5 +340,5 @@ If WS-032 is about "writing" results specifically, the strongest current inputs 
 
 - [supported_localized_explanation_cases_rn2](../../../evals/cases/sets/supported_localized_explanation_cases_rn2/)
 - [partial_synthesis_research_1](../../../evals/cases/sets/partial_synthesis_research_1/)
-- [Eval Support Semantics](../../delivery/eval-support-semantics.md)
-- [Eval Vocabulary](../../delivery/eval-vocabulary.md)
+- [Eval Support Semantics](eval-support-semantics.md)
+- [Eval Vocabulary](eval-vocabulary.md)

@@ -88,13 +88,13 @@ uv run poe verify
 `uv run poe db-revision` creates a new revision file under `src/doc_forge/persistence/migrations/versions/`. Schema changes to lifecycle metadata should update both the SQLAlchemy table definitions and a reviewed Alembic revision.
 
 ## Local HTTP Runtime
-- `uv run poe run-api` runs the stable localhost FastAPI service at `http://127.0.0.1:8000` with health, readiness, document lifecycle, query, and review routes.
+- `uv run poe run-api` runs the localhost FastAPI service at `http://127.0.0.1:8000` with health, readiness, document lifecycle, query, and review routes.
 - `http://127.0.0.1:8000/docs` serves the Swagger UI only when `DOC_FORGE_ENABLE_SWAGGER=true`; `DOC_FORGE_ENVIRONMENT=dev` alone does not enable it.
-- `http://127.0.0.1:8000/openapi.json` serves the live mounted-app schema on the same condition. That schema includes the internal-only debug and operator routes mounted in the same app, so use [`docs/evergreen/api-contracts.md`](./api-contracts.md) for the stable public subset.
+- `http://127.0.0.1:8000/openapi.json` serves the live mounted-app schema on the same condition. That schema includes draft, diagnostic, and internal-only routes mounted in the same app, so use [`docs/evergreen/api-contracts.md`](./api-contracts.md) for the intended external HTTP boundary.
 - `uv run poe run-worker` runs the queue-draining lifecycle worker that advances documents from `REGISTERED` to `READY`.
 - `uv run poe test-e2e` runs the docker-backed end-to-end document lifecycle suite under `tests/e2e/`.
 - `DOC_FORGE_E2E_VERBOSE=1 uv run poe test-e2e` enables step-by-step e2e progress logs plus richer failure diagnostics.
-- `POST /retrieval/query` remains a local retrieval smoke/debug route rather than part of the stable public contract.
+- `POST /retrieval/query` remains a local retrieval smoke/debug route rather than part of the draft public product contract.
 - `POST /internal/run-next-job` exists for tests and local debug; normal local operation should prefer the worker loop.
 - `make docker-up-build` starts the local Postgres, API, and worker stack defined in `docker-compose.yml`.
 - On `Darwin arm64`, `make docker-up-build` and `uv run poe test-e2e` prefer host Ollama at `http://host.docker.internal:11434` with `llama3.2:1b` when the host Ollama service is reachable; other hosts keep deterministic answer generation by default.

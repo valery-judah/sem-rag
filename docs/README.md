@@ -17,8 +17,8 @@ Implementation Truth:
 - `docs/evergreen/lifecycle-and-evidence-flow.md`: Canonical. Conceptual document/query lifecycles and high-level evidence flow.
 - `docs/evergreen/retrieval-hierarchy.md`: Canonical. Retrieval hierarchy, provenance-bearing structure, and concept-to-implementation map for retrieval units.
 
-Stable Interfaces:
-- `docs/evergreen/api-contracts.md`: Canonical. Stable localhost FastAPI and OpenAPI interfaces that exist today.
+API Contracts:
+- `docs/evergreen/api-contracts.md`: Canonical draft. MVP-aligned localhost HTTP contract and current local route surface.
 
 Commands And Validation:
 - `docs/evergreen/runbook.md`: Canonical. Local operation guidance and standard commands.

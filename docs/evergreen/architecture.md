@@ -1,6 +1,6 @@
 # Architecture
 
-**Status:** Verified
+**Status:** Draft
 **Last verified:** 2026-03-13
 
 ## Purpose
@@ -88,11 +88,11 @@ The currently earned seams are:
 - separate local observability services for centralized query/eval metadata
   indexing and service-log browsing over existing filesystem outputs
 
-Most of these seams are implemented internal architecture. The localhost FastAPI service routes are additionally promoted as stable public contracts in [`docs/evergreen/api-contracts.md`](./api-contracts.md).
+Most of these seams are implemented internal architecture. The localhost FastAPI service routes are documented as the current draft external HTTP contract in [`docs/evergreen/api-contracts.md`](./api-contracts.md), but that contract is not yet promoted as downstream-stable.
 
 ## Boundary Between Public API, Internal Architecture, And Planned Work
-### Stable Public API
-The stable public interface is the localhost FastAPI HTTP API defined in [`docs/evergreen/api-contracts.md`](./api-contracts.md). The stable boundary is the enumerated stable route set documented there. Optional OpenAPI and Swagger exposure may describe additional runtime-exposed internal routes when enabled, but that runtime schema is not, by itself, the stable public contract. The public Python package interface remains intentionally empty.
+### Draft Public API
+The draft public interface is the localhost FastAPI HTTP API described in [`docs/evergreen/api-contracts.md`](./api-contracts.md). That document records the current route surface and the intended MVP-facing contract, but it is not yet a downstream compatibility guarantee. Optional OpenAPI and Swagger exposure may describe additional runtime-exposed internal routes when enabled, but that runtime schema is not, by itself, the public product contract. The public Python package interface remains intentionally empty.
 
 ### Implemented Internal Architecture
 The `corpus` layer, query read model, Python query runtime, queue worker, executable stages from registration through readiness, artifact store, persistence/indexing helpers, evaluation harness, and devtools exist in code and are exercised by tests. These package seams are current implementation truth, but they remain internal unless promoted into [`docs/evergreen/api-contracts.md`](./api-contracts.md).
@@ -115,19 +115,20 @@ The target product in [`docs/evergreen/mvp.md`](./mvp.md) still exceeds the runt
 - no end-user source-inspection UI beyond the current HTTP review and artifact-inspection routes
 
 ## Gap To MVP
-The current runtime has earned lifecycle processing through `READY`, full query execution through grounded answer generation and citation rendering, and a stable localhost HTTP service API.
+The current runtime has earned lifecycle processing through `READY`, full query execution through grounded answer generation and citation rendering, and a callable localhost HTTP service API.
 
 The main remaining gap to the MVP is product surface and hardening rather than missing core query stages:
 
 - no end-user source-inspection UI beyond the current service routes
 - no stable public Python package API
+- no promoted stable HTTP compatibility contract
 - local-first runtime and operator ergonomics still dominate over broader productization
 
 ## Agent Guardrails
 - Do not treat `src/doc_forge/corpus/` or `src/doc_forge/lifecycle/` as public package API. They are real implemented architecture, but they remain internal unless `docs/evergreen/api-contracts.md` promotes them.
 - Do not redefine evaluation semantics here. Support-state, scenario, citation, and failure meanings are owned by the evergreen eval docs.
 - Do not treat `docs/delivery/workflow.md` as authority for current implementation truth. It is workflow rationale and promotion guidance, not the current-state source of truth.
-- Do not infer additional public API stability beyond the routes documented in `docs/evergreen/api-contracts.md` from internal lifecycle routes, worker seams, or package exports.
+- Do not infer public API stability from internal lifecycle routes, worker seams, package exports, or live OpenAPI exposure. `docs/evergreen/api-contracts.md` is currently a draft HTTP contract, not a downstream stability guarantee.
 - Do not infer support assessment, answer-mode selection, generation, or citation rendering from the existence of `InterpretedQuery`, support-state enums, trust-failure labels, `EvidenceSet` objects, or `ContextManifest` objects in `src/doc_forge/query/contracts.py`.
 - When referencing support-state or trust-failure vocabulary, normalize against [`docs/delivery/eval-support-semantics.md`](./eval-support-semantics.md) and related evergreen eval docs instead of restating workstream-specific framing as runtime fact.
 - Do not promote a new seam into evergreen architecture just because it appears in one prototype or one workstream. It should be implemented repo truth and exercised under tests or equivalent validation pressure.
@@ -142,6 +143,6 @@ Future architecture should be promoted here only after it becomes implemented re
 - `docs/evergreen/mvp.md`: product north star and scope boundary
 - `docs/evergreen/lifecycle-and-evidence-flow.md`: conceptual document/query lifecycles and evidence-flow framing
 - `docs/evergreen/retrieval-hierarchy.md`: canonical retrieval hierarchy and shared structural concepts
-- `docs/evergreen/api-contracts.md`: stable public interfaces that are implemented today
+- `docs/evergreen/api-contracts.md`: draft external HTTP contract and current local route surface
 - this file: current architecture, earned internal seams, and gap to the MVP
 - `docs/README.md`: docs system map

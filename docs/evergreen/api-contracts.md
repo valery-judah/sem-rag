@@ -1,100 +1,229 @@
 # API Contracts
 
-**Status:** Verified
-**Last verified:** 2026-03-21
+**Status:** Draft
+**Last reviewed:** 2026-04-29
 
 ## Purpose
-This document defines the stable external interfaces that are actually implemented and safe for downstream reliance.
 
-## Current State
-As of 2026-03-21, `doc_forge` has one stable public interface family:
+This document defines the draft external HTTP contract for the local `doc_forge` service.
 
-- a localhost HTTP service API served by FastAPI
-- an optional OpenAPI description for the mounted app surface when Swagger exposure is enabled
-- an optional Swagger UI for local inspection of that mounted app surface when Swagger exposure is enabled
+The contract is being aligned with the MVP product promise in [`mvp.md`](./mvp.md): users upload supported documents into a bounded scope, ask corpus-scoped questions, receive grounded answers or honest abstentions, and inspect source evidence.
 
-The stable contract is the local service started by `uv run poe run-api`, not the internal Python package layout under `src/doc_forge/`.
+Because this document is draft, it is not yet a downstream compatibility guarantee. It records the intended public boundary and the current local route surface so implementation and product scope can converge before the contract is promoted to stable.
 
-## Scope
-### In Scope
-- the stable localhost HTTP routes exposed by the FastAPI app
-- the optional OpenAPI schema and Swagger UI exposed by that runtime when enabled
-- the boundary between stable public routes, runtime-exposed internal routes, and changeable internal modules
+## Authority Boundaries
 
-### Out Of Scope
-- internal module boundaries
-- direct imports from `src/doc_forge/`
-- workstream proposals and delivery drafts
-- implementation details behind the service routes
+- [`mvp.md`](./mvp.md) owns product scope, supported inputs, trust guarantees, non-goals, and deferrals.
+- [`functional-requirements.md`](./functional-requirements.md) owns the 12 minimal MVP functional requirements and acceptance criteria.
+- [`architecture.md`](./architecture.md) owns current implementation truth and internal seams.
+- This document owns the external HTTP contract once promoted from draft.
 
-## Stable Interfaces
-### Stable Public HTTP Routes
-When started via `uv run poe run-api`, the stable local service base URL is:
+If this document implies broader product behavior than the MVP allows, the MVP wins. If this document describes a route that is implemented but not MVP-aligned, the route remains a local/runtime surface rather than a stable product contract.
+
+## Draft Status
+
+The localhost FastAPI service is real and callable, but the public API boundary is still being shaped.
+
+Until this document is promoted out of draft:
+
+- route paths, request fields, response fields, and status codes may change;
+- current local routes should not be treated as long-term downstream-stable interfaces;
+- OpenAPI visibility does not make a route part of the public product contract;
+- internal Python modules under `src/doc_forge/` remain non-public;
+- implementation changes that affect the intended public HTTP boundary should update this document in the same change.
+
+## MVP Contract Principles
+
+The eventual stable API should preserve these MVP-facing properties:
+
+1. **Bounded scope is explicit.** Uploads and queries carry a user/workspace/corpus boundary, and queries never retrieve evidence outside that boundary.
+2. **Supported inputs are clear.** Text-based PDFs and Markdown files are accepted; unsupported files are rejected or clearly flagged.
+3. **Processing state is inspectable.** A caller can tell whether a document or corpus is processing, queryable, failed, or queryable with limitations.
+4. **Provenance survives the workflow.** Documents, evidence units, retrieval results, answers, and citations retain source identity and source type.
+5. **Answers are evidence-bound.** Query responses answer from retrieved corpus evidence, qualify uncertainty, state limitations, or abstain.
+6. **Evidence is inspectable.** Source references resolve to real uploaded documents and recoverable source locations such as Markdown headings or PDF pages.
+7. **Diagnostics support trust review.** Query runs expose enough trace or review data to debug unsupported answers, wrong abstentions, and false provenance without becoming production observability.
+
+## Current Local HTTP Surface
+
+The service is started with:
+
+```bash
+uv run poe run-api
+```
+
+Default local base URLs:
 
 - `http://127.0.0.1:8000`
 - `http://localhost:8000`
 
-The stable localhost route set is:
+The following routes are currently implemented and are candidates for the public contract, subject to the draft caveats above.
 
-- `GET /healthz`
-- `GET /readyz`
-- `POST /documents`
-- `DELETE /documents/{doc_id}`
-- `GET /documents/{doc_id}`
-- `GET /documents/{doc_id}/status`
-- `GET /documents/{doc_id}/artifacts`
-- `POST /documents/{doc_id}/retry`
-- `POST /queries`
-- `GET /queries/{query_id}`
-- `GET /queries/{query_id}/trace`
-- `GET /queries/{query_id}/citations`
+### System
 
-Stable identifier validation at this boundary is:
+| Method | Path | Draft role |
+|---|---|---|
+| `GET` | `/healthz` | Process liveness check. |
+| `GET` | `/readyz` | Runtime readiness check. |
 
-- `workspace_id` inputs must be non-empty, must not have leading or trailing whitespace, and must not contain `/`, `\\`, `.`, or `..` path-segment forms.
-- `doc_id` values remain string-backed and field names are unchanged; generated values such as `doc_<hex>` remain valid.
-- `query_id` path values use the same non-empty, trimmed, no-separator, no-dot-segment validation rules as other stable identifiers.
+### Documents
 
-These routes are stable at the HTTP boundary: path, method, request shape, response shape, and documented status codes should not change incompatibly without first updating this file.
+| Method | Path | Draft role |
+|---|---|---|
+| `POST` | `/documents` | Upload a supported PDF or Markdown document into a bounded workspace scope. |
+| `GET` | `/documents/{doc_id}` | Read registered document metadata. |
+| `GET` | `/documents/{doc_id}/status` | Read document processing status. |
+| `GET` | `/documents/{doc_id}/artifacts` | Local artifact inspection; candidate diagnostic surface, not yet the MVP evidence-inspection contract. |
+| `POST` | `/documents/{doc_id}/retry` | Retry a failed document lifecycle stage; operational surface, not required by MVP product scope. |
+| `DELETE` | `/documents/{doc_id}` | Delete a document and its indexing data; implemented, but deletion/reindexing semantics are not part of the MVP promise. |
 
-Runtime exposure alone does not make a route part of the stable public contract; only the routes enumerated in this section carry compatibility guarantees.
+Draft upload request semantics:
 
-### Optional Runtime Schema And Docs
-When `DOC_FORGE_ENABLE_SWAGGER=true`, the FastAPI runtime also exposes:
+```text
+multipart/form-data
+  workspace_id: non-empty bounded scope identifier
+  file: text-based PDF or Markdown file
+  title: optional display title
+```
 
-- `GET /openapi.json`, which describes the currently mounted app surface
-- `GET /docs`, which serves the Swagger UI for that same mounted app surface
+Draft upload response semantics:
 
-`DOC_FORGE_ENVIRONMENT=dev` alone does not enable these endpoints. They are available only when the existing Swagger exposure toggle is enabled.
+```json
+{
+  "doc_id": "...",
+  "ingest_status": "...",
+  "source_type": "pdf | markdown",
+  "filename": "...",
+  "title": "...",
+  "uploaded_at": "...",
+  "checksum": "..."
+}
+```
 
-Because the mounted app currently includes both stable public routes and internal-only routes, the live OpenAPI description is useful runtime documentation but is not, by itself, the definition of the stable public contract.
+Draft document status semantics:
 
-### Runtime-Exposed But Non-Public Routes
-The following HTTP routes are implemented and callable in the mounted app, but they are not part of the stable public contract:
+```json
+{
+  "doc_id": "...",
+  "ingest_status": "...",
+  "source_type": "pdf | markdown",
+  "title": "...",
+  "filename": "...",
+  "failure_code": null,
+  "failure_detail": null
+}
+```
 
-- `POST /retrieval/query`, which remains a retrieval smoke/debug endpoint
-- `POST /internal/run-next-job`, which remains an internal operator/test endpoint
+The implementation may use lifecycle-specific status names internally. The stable contract still needs a clear external mapping to the MVP status concepts: `processing`, `queryable`, `queryable_with_limitations`, and `failed`.
 
-These routes may change without the compatibility guarantees that apply to the stable public route list above.
+### Queries
 
-## Other Implemented But Not Public
-The following are implemented but are not part of the stable public contract:
+| Method | Path | Draft role |
+|---|---|---|
+| `POST` | `/queries` | Ask a natural-language question against a bounded workspace scope. |
+| `GET` | `/queries/{query_id}` | Read query-run summary and support outcome. |
+| `GET` | `/queries/{query_id}/citations` | Inspect source references used by the answer. |
+| `GET` | `/queries/{query_id}/trace` | Inspect query-stage trace for trust debugging. |
 
-- direct imports from `src/doc_forge/query/`, `src/doc_forge/readmodels/`, `src/doc_forge/lifecycle/`, and other package internals
-- persistence artifacts such as `query_runs`, `query_snapshots`, and `query_stage_traces`
+Draft query request semantics:
 
-## Compatibility And Change Control
-Because the localhost FastAPI service API is stable:
+```json
+{
+  "workspace_id": "...",
+  "question": "What does the corpus say about retry behavior?"
+}
+```
 
-- incompatible changes to the stable route set require updating this file first
-- OpenAPI-visible request or response shape changes for stable routes are contract changes
-- runtime exposure in `/openapi.json` does not promote an internal route into the stable public contract
-- internal Python modules remain changeable unless they are explicitly promoted here later
-- package-level imports are still not downstream-supported interfaces
+Current runtime payloads may also expose local diagnostic fields such as policy overrides. Those fields are not automatically part of the stable MVP contract.
 
+Draft query response semantics:
+
+```json
+{
+  "query_id": "...",
+  "answer": {
+    "answer_text": "...",
+    "visible_limitations": []
+  },
+  "support_state": "sufficient | partial | insufficient",
+  "answer_mode": "...",
+  "citations": {
+    "citations": [
+      {
+        "source_reference": {
+          "doc_id": "...",
+          "document_title": "...",
+          "snippet": "...",
+          "heading_path": ["..."],
+          "page_label": null,
+          "chunk_id": "..."
+        },
+        "support_role": "..."
+      }
+    ]
+  },
+  "message": "..."
+}
+```
+
+The stable response shape may be flattened later. The stable semantics must preserve:
+
+- answer text or explicit abstention/limitation;
+- evidence support state or equivalent answer posture, with enough qualification to represent supported, partial, unsupported, out-of-scope, and ambiguous/conflicting outcomes;
+- source references tied to evidence actually used;
+- source type and recoverable source location;
+- no fabricated documents, pages, headings, anchors, or source support.
+
+## Runtime-Exposed But Non-Public Routes
+
+The following routes are implemented for local smoke, testing, or operation, but they are not draft public product API:
+
+| Method | Path | Role |
+|---|---|---|
+| `POST` | `/retrieval/query` | Document-scoped retrieval smoke/debug endpoint. |
+| `POST` | `/internal/run-next-job` | Internal operator/test endpoint for one queued lifecycle job. |
+
+These routes may change or disappear without public API migration.
+
+## Optional Runtime Schema And Docs
+
+When `DOC_FORGE_ENABLE_SWAGGER=true`, the runtime exposes:
+
+- `GET /openapi.json`
+- `GET /docs`
+
+`DOC_FORGE_ENVIRONMENT=dev` alone does not enable these endpoints.
+
+The live OpenAPI document describes the mounted runtime, which may include draft routes, diagnostic routes, and internal-only routes. It is useful for local inspection, but it is not itself the public product contract.
+
+## Identifier Rules
+
+Draft external identifiers should remain safe for use in paths, logs, and artifact references.
+
+Current validation expectations:
+
+- `workspace_id` values are non-empty, trimmed, and must not contain `/`, `\\`, `.`, or `..` path-segment forms.
+- `doc_id` values are string-backed; generated values such as `doc_<hex>` remain valid.
+- `query_id` path values follow the same non-empty, trimmed, no-separator, no-dot-segment validation rules as other stable identifiers.
+
+The final stable contract should keep identifier validation explicit.
+
+## Open Contract Decisions
+
+Before this document can be promoted from draft, resolve:
+
+1. Whether the product boundary is named `workspace`, `corpus`, or both.
+2. The external status vocabulary and mapping from internal lifecycle states.
+3. The external support-state vocabulary and mapping from current runtime states to MVP support outcomes.
+4. Whether document retry, deletion, and artifact inspection are public API, local operator API, or internal-only.
+5. Whether query responses should expose current nested DTOs or a flatter product-facing shape.
+6. The minimum evidence-inspection response shape for Markdown, PDF, and mixed-source answers, including where source type appears.
+7. The compatibility policy for future route and payload changes.
 
 ## Relationship To Other Docs
-- [`docs/evergreen/architecture.md`](./architecture.md) describes current repo shape and internal seams behind the service.
-- [`docs/evergreen/runbook.md`](./runbook.md) describes how to start and operate the local runtime.
-- [`docs/evergreen/mvp.md`](./mvp.md) describes the target product, not the service contract by itself.
-- `docs/delivery/` and `docs/workstreams/` may describe future changes, but they do not override this contract.
+
+- [`mvp.md`](./mvp.md) defines the target product and trust contract.
+- [`functional-requirements.md`](./functional-requirements.md) defines MVP acceptance criteria.
+- [`architecture.md`](./architecture.md) describes current runtime implementation truth behind these routes.
+- [`runbook.md`](./runbook.md) describes how to start and operate the local runtime.
+- `docs/delivery/` and `docs/workstreams/` may describe delivery slices or future changes, but they do not override this contract.

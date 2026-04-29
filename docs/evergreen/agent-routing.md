@@ -26,7 +26,7 @@ For the broader documentation index and read-order map, use [`docs/README.md`](.
 ## Canonical Doc Owners
 - Product scope: `docs/evergreen/mvp.md`
 - Current architecture and durable boundaries: `docs/evergreen/architecture.md`
-- Stable localhost HTTP and OpenAPI contract: `docs/evergreen/api-contracts.md`
+- Draft localhost HTTP contract: `docs/evergreen/api-contracts.md`
 - Commands and validation guidance: `docs/evergreen/runbook.md`
 - Workflow rationale and promotion rules: `docs/delivery/workflow.md` as reference only
 - Execution history and prior framing: `docs/workstreams/`
@@ -85,7 +85,7 @@ For lifecycle runtime changes:
 - then inspect `src/doc_forge/lifecycle/service.py`, `src/doc_forge/lifecycle/orchestrator.py`, and `src/doc_forge/lifecycle/worker.py`
 - then inspect the relevant stage module under `src/doc_forge/stages/`
 - then inspect `tests/app/test_documents_api.py`, `tests/stages/`, `tests/lifecycle/`, and `tests/pipeline/`
-- if the change would create a stable external API, update `docs/evergreen/api-contracts.md` first instead of treating the internal route as public
+- if the change would create or alter an external HTTP boundary, update `docs/evergreen/api-contracts.md` instead of treating the internal route as public
 
 For persistence changes:
 - open `src/doc_forge/persistence/`
@@ -123,5 +123,5 @@ Use these proof points to distinguish implemented seams from doc-only intent:
 
 ## Guardrails
 - Do not treat this file as the canonical architecture statement. It is a routing and implementation map.
-- Do not infer stable public API from any internal route, package export, fixture, or repository seam unless `docs/evergreen/api-contracts.md` says so.
+- Do not infer public API stability from any internal route, package export, fixture, repository seam, or live OpenAPI exposure. `docs/evergreen/api-contracts.md` is currently a draft contract.
 - Do not promote a seam here unless it is implemented and backed by current validation surfaces.
