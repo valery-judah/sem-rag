@@ -7,7 +7,7 @@ cleanup() {
     echo "====================================="
     echo "Tearing down the stack..."
     echo "====================================="
-    make docker-down
+    make stack-down
     if [[ -n "${TMP_FILE:-}" && -f "${TMP_FILE:-}" ]]; then
         rm "$TMP_FILE"
     fi
@@ -17,7 +17,7 @@ trap cleanup EXIT
 echo "====================================="
 echo "1. Starting docker stack..."
 echo "====================================="
-make docker-up-build
+make stack-up
 
 echo "====================================="
 echo "2. Waiting for API to be reachable..."

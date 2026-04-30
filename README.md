@@ -1,88 +1,76 @@
 # doc_forge
 
-Minimal question-answering MVP scaffold for a user-provided document corpus.
+doc_forge answers questions over a bounded corpus of uploaded PDF and Markdown files and shows the
+evidence behind each answer. The product scope is in [`docs/evergreen/mvp.md`](docs/evergreen/mvp.md),
+and [`docs/evergreen/architecture.md`](docs/evergreen/architecture.md) says how much of it is built.
 
-The product target is broader than the current implementation. The product north star lives in `docs/evergreen/mvp.md`, which defines the MVP scope for question answering over a bounded PDF and Markdown corpus with inspectable evidence. Supporting delivery and workflow material may exist in `docs/delivery/`, but it is not the canonical scope definition.
+## Requirements
+- Python 3.11+ and [`uv`](https://docs.astral.sh/uv/)
+- Docker with Compose, for the local stack and the end-to-end tests
+- Optional: [Ollama](https://ollama.com/) with `llama3.2:1b` for generated answers on Apple
+  Silicon
 
-## Read First
-
-- `AGENTS.md`: repo workflow entry point for agents
-- `docs/evergreen/mvp.md`: MVP product north star and scope boundary
-- `docs/evergreen/architecture.md`: current-state vs target-state architecture
-- `docs/evergreen/api-contracts.md`: stable interfaces that exist today (includes API examples)
-- `docs/evergreen/runbook.md`: local operations and troubleshooting
-- `docs/evergreen/manual-e2e.md`: step-by-step manual end-to-end ingestion test
-- `docs/README.md`: documentation map
-
-## Current Repository Shape
-
-- `src/doc_forge/`: internal runtime code for lifecycle, query, persistence, evaluation, and devtools
-- `e2e/`: docker-backed end-to-end and smoke scenarios plus shared runtime and evaluation helpers
-- `evals/`: authored evaluation corpora, case sets, and related schemas used by the evaluation subsystem
-- `docs/evergreen/`: durable canonical product and repo documentation
-- `docs/delivery/`: planning, architecture, and workflow drafts retained for reference; not the product north star
-- `docs/workstreams/`: optional time-scoped execution records
-- `docs/adrs/`: durable architectural decisions when needed
-
-## E2E And Evaluation Subsystems
-
-- `src/doc_forge/evaluation/`: internal evaluation subsystem for authored answer-layer cases, identifiers, and evaluation logic
-- `e2e/`: docker-backed subsystem for end-to-end runtime coverage, query smokes, authored eval smokes, and shared test drivers
-- `evals/`: repository data for evaluation runs, including committed corpora and authored case storage under `evals/cases/`
-- `tests/evaluation/`: focused unit coverage for evaluation helpers and answer-layer behavior
-
-## Quickstart
-
-Start the local Docker stack (requires Postgres DB):
-```bash
-make docker-up-build
-```
-
-Then prepare the environment:
-```bash
-uv sync
-```
-
-The API and worker are blocking processes and should be run in separate terminals (or in the background):
-```bash
-# Terminal 1
-uv run poe run-api
-
-# Terminal 2
-uv run poe run-worker
-```
-
-With those running, you can execute the end-to-end tests in another terminal:
-```bash
-# Terminal 3
-uv run poe test-e2e
-```
-
-## Command Model
-
-- Use `uv run poe <task>` for Python developer tasks such as formatting, linting, type checking, tests, migrations, and local app commands.
-- Use `make <target>` for Docker, Compose, observability, and other local DevEx wrappers.
-- Host-side `uv` commands use the repo-local cache configured in `uv.toml` at `./.tmp_uv_cache`.
-
-Python developer tasks run through Poe:
+## Quick start
 
 ```bash
-uv run poe fmt
-uv run poe fmt-check
-uv run poe lint
-uv run poe type
-uv run poe test
-uv run poe clean --dry-run
-uv run poe verify
+make setup
+make verify
 ```
 
-Local DevEx and infrastructure wrappers stay in `Makefile`:
+Start Postgres, the API, and the worker in Docker:
 
 ```bash
-make docker-up-build
-make docker-log-index
-make observability-up-build
-make observability-down
+make stack-up
 ```
+
+The API is on `http://127.0.0.1:8000`. Check the stack with `make stack-status` and
+`make stack-logs`, and stop it with `make stack-down`.
+
+To work on the API or the worker with reload, stop the stack, start only its Postgres, and run
+them on the host, each in its own terminal:
+
+```bash
+make stack-up-db
+make db-migrate
+make app-api
+make app-worker
+```
+
+Run the end-to-end tests. They build an image and start their own containers, so they don't need
+the stack:
+
+```bash
+make e2e-test
+```
+
+`make help` lists every command. The [runbook](docs/evergreen/runbook.md) explains when to use
+each one.
+
+## Optional dependencies
+- `make setup-llm` installs sentence-transformers for model-backed embeddings.
+- `make setup-mac` also installs MLX for answer generation on Apple Silicon.
+
+`make setup-sync` removes these groups again, so rerun the one you need after it.
+
+## PDF-to-Markdown conversion
+Agents can convert a PDF into a Markdown copy with Marker and a local OCR model. Ask with an
+absolute path, for example "Convert /absolute/path/to/source.pdf to Markdown." The conversion
+runs locally and is separate from the `pypdf` ingestion that the app uses. The
+[runbook](docs/evergreen/runbook.md#pdf-to-markdown-conversion) has the steps, the command, and
+the checks.
+
+## Docs
+- [Docs index](docs/README.md)
+- [Runbook](docs/evergreen/runbook.md): commands, local workflows, and troubleshooting
+- [Observability operations](docs/evergreen/observability-operations.md): logs, query bundles,
+  and the observability stack
+- [MVP](docs/evergreen/mvp.md), [architecture](docs/evergreen/architecture.md), and
+  [API contracts](docs/evergreen/api-contracts.md)
+
+## Configuration
+- Runtime settings come from `.env`. See `.env.example` and the runbook's configuration
+  section.
+- Host `uv` commands use the repository-local cache in `./.tmp_uv_cache`, set in `uv.toml`.
+- Packaging and tools: `pyproject.toml`. Python tasks: `poe_tasks.toml`.
 
 Added Keys (test anti-clone)

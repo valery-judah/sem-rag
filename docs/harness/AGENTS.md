@@ -10,13 +10,13 @@ If the task is to start a new non-trivial workstream, first use `docs/harness/ta
 Then run:
 
 ```bash
-make workstream-new type=<work_type> slug=<slug>
+make docs-workstream-new TYPE=<work_type> SLUG=<slug>
 ```
 
 Example:
 
 ```bash
-make workstream-new type=feature slug=parser-contract-cleanup
+make docs-workstream-new TYPE=feature SLUG=parser-contract-cleanup
 ```
 
 The underlying script remains available for direct use when needed:

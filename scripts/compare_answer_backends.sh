@@ -37,7 +37,7 @@ cleanup() {
 
   echo ""
   echo "==> Cleaning up..."
-  make docker-down >/dev/null 2>&1 || docker compose down >/dev/null 2>&1 || true
+  make stack-down >/dev/null 2>&1 || docker compose down >/dev/null 2>&1 || true
   if [ -n "$HOST_OLLAMA_PID" ]; then
     kill "$HOST_OLLAMA_PID" >/dev/null 2>&1 || true
     wait "$HOST_OLLAMA_PID" >/dev/null 2>&1 || true
@@ -275,7 +275,7 @@ if [ "$USE_HOST_OLLAMA" = "1" ]; then
   docker compose up -d --build db api worker
 else
   echo "==> Starting application stack via docker-compose..."
-  COMPOSE_PROFILES=ollama make docker-up-build
+  COMPOSE_PROFILES=ollama make stack-up
 fi
 
 echo "==> Waiting for API to become ready..."

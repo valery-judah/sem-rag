@@ -1,43 +1,42 @@
-# Documentation Map
+# Docs
 
-## Purpose
+`evergreen/` is canonical and wins when sources disagree. `delivery/` holds earlier planning
+drafts kept for reference. `workstreams/` records the history of past work and isn't kept up to
+date.
 
-`docs/` is the repository documentation system for durable product truth, current repo documentation, optional execution records, architecture decisions, and reusable documentation tooling.
+## Repository and infrastructure
+- `evergreen/runbook.md`: commands, local workflows, PDF-to-Markdown conversion, configuration, and troubleshooting
+- `evergreen/observability-operations.md`: the observability stack, where logs and query bundles are saved, and eval run flows
+- `engineering/`: Python domain modeling, logging, testing, and coding conventions
+- `conventions/commit-message-conventions.md`: commit message format and types
+- `harness/`: workstream templates, playbooks, taxonomy, and helper scripts
 
-Authority note: `docs/evergreen/` holds the canonical product and repo truth. `docs/delivery/` may contain planning, architecture, or workflow drafts retained for reference, but it is not the canonical source of product scope. 
+## Product
+- `evergreen/mvp.md`: product scope and its boundary
+- `evergreen/functional-requirements.md`: MVP acceptance criteria
+- `evergreen/first-tier-failures.md`: critical failure model for source-grounded answers
+- `evergreen/case-matrix-build.md`: how evaluation cases cover the MVP trust contract
+- `../evals/cases/README.md`: authored evaluation cases and their schemas
 
-## Quick Routes
+## Architecture
+- `evergreen/architecture.md`: current architecture and the gap to the target
+- `evergreen/lifecycle-and-evidence-flow.md`: document and query lifecycles and the evidence flow
+- `evergreen/retrieval-hierarchy.md`: retrieval units, provenance structure, and where each is implemented
+- `evergreen/api-contracts.md`: MVP HTTP contract and the current local routes
+- `adrs/`: architecture decisions
 
-Product Scope:
-- `docs/evergreen/mvp.md`: Canonical. Product north star and scope boundary.
+## History
+- `workstreams/`: past workstreams, for example `WS-008-local-llm/` for the local Ollama and MLX setup
+- `delivery/`: earlier MVP, workflow, and eval harness drafts
 
-Implementation Truth:
+## Where new work goes
+Create a workstream for new implementation work, proposals, decisions, evidence, and handoff
+notes:
 
-- `docs/evergreen/architecture.md`: Canonical. Current architecture and implementation gap.
-- `docs/evergreen/lifecycle-and-evidence-flow.md`: Canonical. Conceptual document/query lifecycles and high-level evidence flow.
-- `docs/evergreen/retrieval-hierarchy.md`: Canonical. Retrieval hierarchy, provenance-bearing structure, and concept-to-implementation map for retrieval units.
+```bash
+make docs-workstream-new TYPE=feature SLUG=my-feature
+```
 
-API Contracts:
-- `docs/evergreen/api-contracts.md`: Canonical draft. MVP-aligned localhost HTTP contract and current local route surface.
-
-Commands And Validation:
-- `docs/evergreen/runbook.md`: Canonical. Local operation guidance and standard commands.
-- `docs/evergreen/manual-e2e.md`: Canonical. Step-by-step manual end-to-end ingestion test.
-
-Local LLM / Docker Defaults:
-- `docs/workstreams/WS-008-local-llm/01_local_llm_runtime_note.md`: Execution history for optional MLX/Ollama generation, Apple Silicon host-Ollama defaults for Docker-backed local flows, and the comparison smoke harness.
-
-Evaluation Docs:
-- See `Evaluation Docs Map` below for the detailed route across evergreen, delivery, and workstream material.
-
-## Directory Map
-
-- `evergreen/`: current durable system truth and operational references
-- `conventions/`: coding standards, observability rules, and implementation patterns
-- `delivery/`: non-canonical planning, architecture, and workflow drafts kept for reference
-- `workstreams/`: optional time-scoped execution records, RFC/proposal material, design notes, and evidence
-- `adrs/`: durable architecture decision records promoted out of individual workstreams when needed
-- `harness/`: templates, conventions, playbooks, and helper scripts for humans and agents
-
-## Where New Work Goes
-- Put new implementation work, RFC/proposal material, decisions, evidence, and handoff notes in the relevant folder under `docs/workstreams/WS-XXX-{slug}` folders. Choose a `work_type` from `docs/harness/taxonomy/workstream-taxonomy.md`, then prefer `make workstream-new type=feature slug=my-feature` to create the scaffold. `WS-XXX-workstream.md` is the canonical lightweight workstream card, and `WS-XXX-framing.md` is the scaffold for the framing stage. The underlying script is `docs/harness/scripts/new-workstream.sh <work_type> <slug>`.
+Pick the type from `harness/taxonomy/workstream-taxonomy.md`. The command creates
+`workstreams/WS-XXX-<slug>/` with a `WS-XXX-workstream.md` card and a `WS-XXX-framing.md`
+scaffold. Move decisions that should last into `evergreen/` or `adrs/`.

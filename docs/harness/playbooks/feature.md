@@ -4,7 +4,7 @@
 Use for new user-visible capability or meaningful product behavior expansion.
 
 ## Start Here
-- Choose `feature` from `docs/harness/taxonomy/workstream-taxonomy.md`, then create the workstream with `make workstream-new type=feature slug=<slug>`.
+- Choose `feature` from `docs/harness/taxonomy/workstream-taxonomy.md`, then create the workstream with `make docs-workstream-new TYPE=feature SLUG=<slug>`.
 - Treat `WS-XXX-workstream.md` as the canonical entrypoint for the workstream.
 - Use `WS-XXX-framing.md` to complete the framing-stage problem, scope, and exit-criteria notes before execution.
 - Add `decisions.md`, `evidence.md`, `handoff.md`, or `notes.md` only when they improve continuity, traceability, or validation.

@@ -1,12 +1,19 @@
+# Python tasks. `make help` is the command catalog, and each Make target that
+# runs Python code calls one of these tasks. Task names use the same prefixes
+# as the Make targets: setup-, app-, db-, e2e-, observability-, query-context-.
+# Checks keep short names.
+
+# --- Checks ---
+
 [tasks.fmt]
-help = "Format and auto-fix lint issues"
+help = "Format and auto-fix lint issues (writes files)"
 sequence = [
     { cmd = "ruff format ." },
     { cmd = "ruff check . --fix" }
 ]
 
 [tasks.fmt-check]
-help = "Check formatting without modifying files"
+help = "Check formatting without changing files"
 cmd = "ruff format . --check"
 
 [tasks.lint]
@@ -14,72 +21,78 @@ help = "Run lint checks"
 cmd = "ruff check ."
 
 [tasks.type]
-help = "Run static type checks"
+help = "Run strict type checks"
 cmd = "pyright"
 
 [tasks.test]
 help = "Run unit tests"
 cmd = "pytest tests"
 
-[tasks.test-e2e]
-help = "Run docker-backed end-to-end tests"
-cmd = "pytest e2e -m e2e -o addopts='-q -s'"
-
-[tasks.smoke-llm]
-help = "Verify the optional embedding dependency group is installed"
-cmd = "python -c \"from doc_forge.indexing import require_sentence_transformers; require_sentence_transformers(); print('smoke-llm-ok')\""
-
-[tasks.smoke-mac]
-help = "Verify the optional Apple Silicon generation dependency group is installed"
-cmd = "python -c \"from doc_forge.indexing import require_sentence_transformers; from doc_forge.query.answer_generation import require_mlx_lm; require_sentence_transformers(); require_mlx_lm(); print('smoke-mac-ok')\""
-
 [tasks.verify]
-help = "Run the read-only verification suite"
+help = "Run format check, lint, types, and unit tests"
 sequence = ["fmt-check", "lint", "type", "test"]
 
-[tasks.clean]
-help = "Remove generated local state while preserving durable repo inputs"
-cmd = "python -m doc_forge.devtools.repo_clean"
-
-[tasks.check]
-help = "Alias for the read-only verification suite"
-sequence = ["verify"]
-
 [tasks.secret-scan]
-help = "Scan tracked repository files for leaked keys"
+help = "Scan tracked files for leaked keys"
 cmd = "python -m doc_forge.devtools.secret_scan --scope repo"
 
 [tasks.secret-scan-staged]
 help = "Scan staged added lines for leaked keys"
 cmd = "python -m doc_forge.devtools.secret_scan --scope staged-added"
 
-[tasks.run-api]
-help = "Run the internal lifecycle FastAPI app"
+# --- Setup ---
+
+[tasks.setup-check-llm]
+help = "Check that the optional llm dependency group is installed"
+cmd = "python -c \"from doc_forge.indexing import require_sentence_transformers; require_sentence_transformers(); print('llm group ok')\""
+
+[tasks.setup-check-mac]
+help = "Check that the optional llm and mac dependency groups are installed"
+cmd = "python -c \"from doc_forge.indexing import require_sentence_transformers; from doc_forge.query.answer_generation import require_mlx_lm; require_sentence_transformers(); require_mlx_lm(); print('llm and mac groups ok')\""
+
+[tasks.clean]
+help = "Remove generated local state and keep repository inputs (--dry-run to preview)"
+cmd = "python -m doc_forge.devtools.repo_clean"
+
+# --- App on the host ---
+
+[tasks.app-api]
+help = "Run the FastAPI app on http://127.0.0.1:8000 with reload"
 cmd = "uvicorn doc_forge.app.api:app --reload"
 
-[tasks.run-worker]
-help = "Run the internal lifecycle worker loop"
+[tasks.app-worker]
+help = "Run the lifecycle worker loop"
 cmd = "python -m doc_forge.lifecycle.worker"
 
-[tasks.migrate]
-help = "Apply Alembic migrations using DATABASE_URL"
+# --- Database migrations ---
+
+[tasks.db-migrate]
+help = "Apply Alembic migrations to DATABASE_URL"
 cmd = "alembic -c alembic.ini upgrade head"
 
 [tasks.db-revision]
-help = "Create a new Alembic revision with MESSAGE='...'"
+help = "Create a new Alembic revision with the given message"
 cmd = "alembic -c alembic.ini revision -m '${message}'"
 args = [{name = "message", positional = true, required = true}]
 
-[tasks.observability-loader-scan]
-help = "Index existing query bundles into the observability store"
+# --- End-to-end tests ---
+
+[tasks.e2e-test]
+help = "Run the end-to-end tests in their own Docker containers"
+cmd = "pytest e2e -m e2e -o addopts='-q -s'"
+
+# --- Observability and query context ---
+
+[tasks.observability-scan]
+help = "Index collected query bundles into the observability store"
 cmd = "python -m doc_forge.devtools.evalops_loader scan"
 
-[tasks.collect-query-context]
+[tasks.query-context-collect]
 help = "Collect a query context bundle under data/context/queries/"
 cmd = "python -m doc_forge.devtools.query_context collect-query-context --query-id '${query_id}'"
 args = [{name = "query_id", positional = true, required = true}]
 
-[tasks.show-query-context]
-help = "Show bundle paths and metadata for a collected query context"
+[tasks.query-context-show]
+help = "Show the paths and metadata of a collected query context bundle"
 cmd = "python -m doc_forge.devtools.query_context show-query-context --query-id '${query_id}'"
 args = [{name = "query_id", positional = true, required = true}]

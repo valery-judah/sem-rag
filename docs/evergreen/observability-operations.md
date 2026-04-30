@@ -49,7 +49,7 @@ There are two separate local stacks with different roles.
 
 Command:
 ```bash
-make docker-up-build
+make stack-up
 ```
 
 ### Start only the observability stack when:
@@ -59,7 +59,7 @@ make docker-up-build
 
 Command:
 ```bash
-make observability-up-build
+make observability-up
 ```
 
 ### Start both stacks when:
@@ -69,8 +69,8 @@ make observability-up-build
 - you want loader and log shipping to pick up new artifacts as they appear
 
 Recommended order:
-1. `make docker-up-build`
-2. `make observability-up-build`
+1. `make stack-up`
+2. `make observability-up`
 
 This order is preferred because the main stack is the data producer. The
 observability stack can also be started later, since it ingests filesystem
@@ -82,8 +82,8 @@ You do not need `docker-compose.yml`.
 The e2e suite starts its own isolated runtime stack. If you want central
 analysis while or after e2e runs, start only the observability stack yourself:
 ```bash
-make observability-up-build
-uv run poe test-e2e
+make observability-up
+make e2e-test
 ```
 
 ## Storage Paths And What They Mean
@@ -165,24 +165,24 @@ inspect the run centrally.
 
 1. Start the main stack:
 ```bash
-make docker-up-build
+make stack-up
 ```
 2. Optionally start observability:
 ```bash
-make observability-up-build
+make observability-up
 ```
 3. Run your upload and query flow through the HTTP API.
 4. Collect the query bundle:
 ```bash
-uv run poe collect-query-context <query_id>
+make query-context-collect QUERY_ID=<query_id>
 ```
 5. If observability was started after the query, force a metadata scan:
 ```bash
-uv run poe observability-loader-scan
+make observability-scan
 ```
 6. Inspect:
 ```bash
-uv run poe show-query-context <query_id>
+make query-context-show QUERY_ID=<query_id>
 ```
 
 Use this path when the starting point is a known `query_id`.
@@ -193,11 +193,11 @@ lifecycle coverage under the isolated e2e runtime.
 
 1. Start central observability if you want immediate indexing/log shipping:
 ```bash
-make observability-up-build
+make observability-up
 ```
 2. Run the suite:
 ```bash
-uv run poe test-e2e
+make e2e-test
 ```
 
 Results:
@@ -215,7 +215,7 @@ central stores to capture query ids, case ids, outcomes, and logs.
 
 1. Start central observability:
 ```bash
-make observability-up-build
+make observability-up
 ```
 2. Run the authored answer-layer e2e smoke:
 ```bash
@@ -246,11 +246,11 @@ Use this when runs already happened and you only want analysis.
 
 1. Start observability:
 ```bash
-make observability-up-build
+make observability-up
 ```
 2. Run a one-shot rescan if needed:
 ```bash
-uv run poe observability-loader-scan
+make observability-scan
 ```
 3. Inspect `data/context/queries/` directly or use Grafana/Loki.
 
@@ -271,7 +271,7 @@ optional eval files when they exist.
 ### For manual or compose queries
 The bundle is not guaranteed to exist until you collect it explicitly:
 ```bash
-uv run poe collect-query-context <query_id>
+make query-context-collect QUERY_ID=<query_id>
 ```
 
 Once that bundle exists:
@@ -283,7 +283,7 @@ Once that bundle exists:
 ### If you know the query id
 1. Run:
 ```bash
-uv run poe show-query-context <query_id>
+make query-context-show QUERY_ID=<query_id>
 ```
 2. Use the bundle root from that output.
 3. In Grafana or Loki, query by `query_id`.
@@ -296,7 +296,7 @@ or the bundle root.
 ### If you know only the latest local run
 Run:
 ```bash
-make docker-log-index
+make stack-log-paths
 ```
 
 That prints:
@@ -308,7 +308,7 @@ That prints:
 When the main goal is eval analysis rather than general e2e confidence, use this
 order:
 
-1. `make observability-up-build`
+1. `make observability-up`
 2. `uv run pytest e2e/test_eval_answer_layer_smoke.py -m e2e -o addopts="-q -s"`
 3. open Grafana on `http://127.0.0.1:3000`
 4. inspect Postgres-backed metadata by `case_id` or `evaluator_outcome`
@@ -325,25 +325,25 @@ This gives the cleanest answer to:
 
 ## Commands Summary
 ```bash
-make docker-up-build
-make observability-up-build
+make stack-up
+make observability-up
 make observability-down
-uv run poe observability-loader-scan
-uv run poe test-e2e
-uv run poe collect-query-context <query_id>
-uv run poe show-query-context <query_id>
-make docker-log-index
+make observability-scan
+make e2e-test
+make query-context-collect QUERY_ID=<query_id>
+make query-context-show QUERY_ID=<query_id>
+make stack-log-paths
 uv run pytest e2e/test_eval_answer_layer_smoke.py -m e2e -o addopts="-q -s"
 uv run pytest e2e/test_query_runtime_smoke.py -m e2e -o addopts="-q -s"
 ```
 
 ## Troubleshooting
 - If observability Postgres shows no rows, check that bundles exist under
-  `data/context/queries/` and run `uv run poe observability-loader-scan`.
+  `data/context/queries/` and run `make observability-scan`.
 - If Loki shows no logs, check `data/logs/` first; Loki only ingests what is
   already archived there.
 - If you ran a manual Compose query and cannot find it centrally, collect the
-  bundle explicitly with `uv run poe collect-query-context`.
+  bundle explicitly with `make query-context-collect QUERY_ID=<query_id>`.
 - If Grafana is up but empty, verify both datasources are healthy and that the
   central stack is reading the repo-local `data/` mounts.
 - If `vector` shows duplicate-fingerprint warnings for some e2e files, treat

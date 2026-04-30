@@ -40,6 +40,14 @@ For local operator workflows, the repo now also has a separate Compose-based
 observability stack that indexes query/eval bundle metadata into a dedicated
 Postgres instance and centralizes JSON service logs in Loki.
 
+High-fidelity PDF-to-Markdown conversion with Marker and local `llama.cpp` is
+an optional operator preprocessing workflow documented in
+[`runbook.md`](./runbook.md). It is not a runtime dependency, service,
+ingestion backend, or earned architectural seam. Runtime PDF extraction remains
+the page-aware, text-layer `pypdf` implementation in
+`src/doc_forge/extractors/pdf.py`. Using the operator workflow does not broaden
+the MVP to scanned-document OCR or rich PDF layout understanding.
+
 ## Bounded Contexts
 The currently relevant bounded contexts are:
 
@@ -130,6 +138,10 @@ The main remaining gap to the MVP is product surface and hardening rather than m
 - Do not treat `docs/delivery/workflow.md` as authority for current implementation truth. It is workflow rationale and promotion guidance, not the current-state source of truth.
 - Do not infer public API stability from internal lifecycle routes, worker seams, package exports, or live OpenAPI exposure. `docs/evergreen/api-contracts.md` is currently a draft HTTP contract, not a downstream stability guarantee.
 - Do not infer support assessment, answer-mode selection, generation, or citation rendering from the existence of `InterpretedQuery`, support-state enums, trust-failure labels, `EvidenceSet` objects, or `ContextManifest` objects in `src/doc_forge/query/contracts.py`.
+- Do not describe the optional Marker/`llama.cpp` PDF-to-Markdown workflow as
+  implemented runtime ingestion. Promoting it would require an explicit
+  architecture decision plus dependency, model-weight license, resource,
+  security, provenance, and failure-semantics review.
 - When referencing support-state or trust-failure vocabulary, normalize against [`docs/delivery/eval-support-semantics.md`](./eval-support-semantics.md) and related evergreen eval docs instead of restating workstream-specific framing as runtime fact.
 - Do not promote a new seam into evergreen architecture just because it appears in one prototype or one workstream. It should be implemented repo truth and exercised under tests or equivalent validation pressure.
 

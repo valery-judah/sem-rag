@@ -49,7 +49,7 @@ The eventual stable API should preserve these MVP-facing properties:
 The service is started with:
 
 ```bash
-uv run poe run-api
+make app-api
 ```
 
 Default local base URLs:
