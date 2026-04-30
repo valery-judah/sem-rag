@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import json
 import os
+import signal
 import subprocess
+import time
 from pathlib import Path
 
 
@@ -85,6 +87,43 @@ def test_container_log_wrapper_filters_non_json_lines_from_archive(tmp_path: Pat
     assert "plain-text-startup-line" in completed.stdout
     assert "plain-text-warning" in completed.stdout
     assert log_path.read_text(encoding="utf-8").splitlines() == [json.dumps({"event": "json-line"})]
+
+
+def test_container_log_wrapper_writes_each_line_while_the_child_runs(tmp_path: Path) -> None:
+    log_path = tmp_path / "runtime.jsonl"
+    command = [
+        str(_wrapper_path()),
+        "python",
+        "-c",
+        (
+            "import json, time; "
+            "print(json.dumps({'event': 'still-running'}), flush=True); "
+            "time.sleep(30)"
+        ),
+    ]
+    env = os.environ | {"DOC_FORGE_JSON_LOG_PATH": str(log_path)}
+
+    process = subprocess.Popen(
+        command,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        env=env,
+        start_new_session=True,
+    )
+    try:
+        deadline = time.monotonic() + 5
+        archived = ""
+        while time.monotonic() < deadline:
+            if log_path.exists():
+                archived = log_path.read_text(encoding="utf-8")
+                if archived:
+                    break
+            time.sleep(0.05)
+    finally:
+        os.killpg(process.pid, signal.SIGTERM)
+        process.wait(timeout=5)
+
+    assert archived.splitlines() == [json.dumps({"event": "still-running"})]
 
 
 def test_container_log_wrapper_skips_archiving_when_path_is_empty(tmp_path: Path) -> None:

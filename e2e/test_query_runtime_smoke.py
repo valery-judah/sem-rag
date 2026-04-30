@@ -60,7 +60,7 @@ def test_query_runtime_returns_answer_and_review_artifacts_for_ready_markdown(
     api_lines = archived_logs["api"].read_text(encoding="utf-8").splitlines()
     assert api_lines
     parsed_api_logs = [json.loads(line) for line in api_lines]
-    assert any(log["event"] == "http.request.started" for log in parsed_api_logs)
+    assert any(log["event"] == "query.api.started" for log in parsed_api_logs)
     assert any(log["event"] == "query.run.completed" for log in parsed_api_logs)
 
     latest_api_log = (

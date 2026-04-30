@@ -22,7 +22,9 @@ import pathlib
 import sys
 
 path = pathlib.Path(sys.argv[1])
-with path.open("a", encoding="utf-8") as handle:
+# Line buffering writes each line when it arrives, so readers of the archive,
+# such as the e2e log collection, see the latest events.
+with path.open("a", encoding="utf-8", buffering=1) as handle:
     for line in sys.stdin:
         candidate = line.rstrip("\n")
         try:
