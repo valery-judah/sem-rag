@@ -85,25 +85,4 @@ make observability-up-build
 make observability-down
 ```
 
-## Repository Map
-
-```text
-AGENTS.md
-docs/
-  README.md
-  delivery/
-  evergreen/
-    mvp.md
-    api-contracts.md
-    architecture.md
-    runbook.md
-    manual-e2e.md
-  workstreams/
-  adrs/
-  harness/
-e2e/
-evals/
-src/doc_forge/
-  __init__.py
-  evaluation/
-```
+Added Keys (test anti-clone)
